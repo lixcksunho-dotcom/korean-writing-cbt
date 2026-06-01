@@ -4,6 +4,12 @@
 -- Supabase SQL Editor에서 실행하세요
 -- =============================================
 
+-- 005가 미실행된 DB 대비: passage 컬럼 + essay 타입 허용 보장
+ALTER TABLE public.questions ADD COLUMN IF NOT EXISTS passage text;
+ALTER TABLE public.questions DROP CONSTRAINT IF EXISTS questions_type_check;
+ALTER TABLE public.questions ADD CONSTRAINT questions_type_check
+  CHECK (type IN ('multiple', 'short', 'essay'));
+
 ALTER TABLE public.questions ADD COLUMN IF NOT EXISTS points int NOT NULL DEFAULT 0;
 ALTER TABLE public.quiz_answers ADD COLUMN IF NOT EXISTS ai_score int;
 ALTER TABLE public.quiz_answers ADD COLUMN IF NOT EXISTS ai_feedback jsonb;
