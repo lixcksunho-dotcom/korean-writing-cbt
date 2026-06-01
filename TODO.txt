@@ -102,7 +102,7 @@
     - [완료] 원고지 AI 채점 서버 액션에 구독 강제(직접 호출로 무료 사용 차단)
     - [완료] 결제 금액 서버 검증(정가 5,000원 일치 확인)
     - [완료] 구독 RLS 구멍 차단(사용자 self-insert 제거, Service Role로만 발급)
-            → migration 007 실행 + SUPABASE_SERVICE_ROLE_KEY 설정 필요
+            → migration 007 실행 완료(2026-06-01). 단, 결제 켜기 전 SUPABASE_SERVICE_ROLE_KEY 설정 필요
     - [남음] 관리자 페이지(/admin) 권한은 OK(getUser+이메일 확인). 실제 배포 후 재점검
 
 15. 저작권 검토

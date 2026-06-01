@@ -6,6 +6,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { FileText, Eye, EyeOff } from "lucide-react";
 import GoogleButton from "@/components/ui/GoogleButton";
+import KakaoButton from "@/components/ui/KakaoButton";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -79,7 +80,10 @@ export default function LoginPage() {
             <h1 className="text-2xl font-black text-[#0f172a] mb-1 tracking-tight">로그인</h1>
             <p className="text-[#64748b] text-sm mb-7">계정에 로그인하여 학습을 이어가세요</p>
 
-            <GoogleButton />
+            <div className="space-y-2.5">
+              <GoogleButton />
+              <KakaoButton />
+            </div>
 
             <div className="relative my-6">
               <div className="absolute inset-0 flex items-center">
