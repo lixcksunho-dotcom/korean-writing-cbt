@@ -1,0 +1,136 @@
+====================================================
+  한국실용글쓰기 CBT - 작업 순서 정리
+  작성일: 2026-06-01
+====================================================
+
+
+[1단계] 배포 세팅 (가장 먼저)
+------------------------------------------------------
+1. [완료] 도메인 구매 → kptest.cloud
+
+2. GitHub 저장소 생성
+   - github.com 접속 → New repository
+   - 이름: korean-writing-cbt (Private 권장)
+
+3. 프로젝트 GitHub에 올리기
+   - 터미널에서 korean-writing-cbt 폴더로 이동 후:
+     git init
+     git add .
+     git commit -m "init"
+     git remote add origin https://github.com/본인아이디/korean-writing-cbt.git
+     git push -u origin main
+
+4. Vercel 배포
+   - vercel.com 접속 → GitHub 계정 연결
+   - 방금 만든 저장소 import
+   - 환경변수 입력 (.env.local 내용 전부):
+       NEXT_PUBLIC_SUPABASE_URL
+       NEXT_PUBLIC_SUPABASE_ANON_KEY
+       SUPABASE_SERVICE_ROLE_KEY (결제 구독 발급에 필수, 서버 전용)
+       ANTHROPIC_API_KEY
+       ADMIN_EMAILS
+       NEXT_PUBLIC_TOSS_CLIENT_KEY (나중에 실키로 교체)
+       TOSS_SECRET_KEY (나중에 실키로 교체)
+   - Deploy 클릭
+
+5. 도메인 연결
+   - Vercel 프로젝트 설정 → Domains → kptest.cloud 추가
+   - Vercel이 알려주는 DNS 값을 가비아 DNS 설정에 입력
+   - 적용까지 최대 24시간 (보통 10~30분)
+
+
+[2단계] 소셜 로그인 연동
+------------------------------------------------------
+6. 구글 로그인 연동
+   - Google Cloud Console(console.cloud.google.com) 접속
+   - 새 프로젝트 생성 → OAuth 2.0 클라이언트 ID 발급
+   - 승인된 리디렉션 URI: https://itzhfbsbwuoedncnjhzt.supabase.co/auth/v1/callback
+   - Client ID, Client Secret 복사
+   - Supabase 대시보드 → Authentication → Providers → Google 활성화 후 붙여넣기
+
+7. 네이버 로그인 연동
+   - 네이버 개발자센터(developers.naver.com) 접속
+   - 애플리케이션 등록 → 네아로(네이버 아이디로 로그인) 선택
+   - 콜백 URL: https://itzhfbsbwuoedncnjhzt.supabase.co/auth/v1/callback
+   - Client ID, Client Secret 복사
+   - Supabase → Authentication → Providers → Naver 활성화 후 붙여넣기
+
+
+[3단계] 결제 연동 (토스페이먼츠)
+------------------------------------------------------
+8. 토스페이먼츠 실 계정 발급
+   - tosspayments.com 접속 → 사업자 가입
+   - 사업자등록번호 필요 (개인사업자 or 법인)
+   - 심사 통과 후 실 키 발급 (test_ck_ → 실제 키로 교체)
+   - .env.local 및 Vercel 환경변수 업데이트:
+       NEXT_PUBLIC_TOSS_CLIENT_KEY=live_ck_...
+       TOSS_SECRET_KEY=live_sk_...
+
+9. Anthropic API 크레딧 충전
+   - console.anthropic.com 접속 → Billing → 크레딧 충전
+
+
+[4단계] 시험 환경 완성
+------------------------------------------------------
+10. 객관식 문제 환경 구현
+    - 실제 시험과 동일한 UI/UX
+    - 보기 선택 → 즉시 채점 또는 전체 제출 후 채점
+
+11. 주관식 문제 환경 구현
+    - 단답형 텍스트 입력
+    - 정답 비교 로직
+
+12. 서술형(원고지) 문제 환경 구현
+    - 원고지 UI에서 직접 입력
+    - AI 채점 연동 (Anthropic API)
+    - 항목별 점수 + 첨삭 결과 표시
+
+
+[5단계] 커뮤니티 구축
+------------------------------------------------------
+13. 채팅/커뮤니티 기능
+    - Supabase Realtime 활용 (추가 비용 없음, 이미 사용 중)
+    - 또는 외부 서비스: 채널톡, Discord Embed 등 간단히 붙이는 것도 방법
+    - 게시판형 vs 실시간 채팅 방향 먼저 결정 필요
+
+
+[6단계] 보안 & 저작권 검토
+------------------------------------------------------
+14. 보안 점검 항목  [2026-06-01 1차 점검·수정 완료]
+    - [완료] API 키 클라이언트 노출 없음 (ANTHROPIC/TOSS_SECRET는 서버 전용)
+    - [완료] proxy.ts 인증 검증을 getSession→getUser로 변경(쿠키 위조 차단)
+    - [완료] 원고지 AI 채점 서버 액션에 구독 강제(직접 호출로 무료 사용 차단)
+    - [완료] 결제 금액 서버 검증(정가 5,000원 일치 확인)
+    - [완료] 구독 RLS 구멍 차단(사용자 self-insert 제거, Service Role로만 발급)
+            → migration 007 실행 + SUPABASE_SERVICE_ROLE_KEY 설정 필요
+    - [남음] 관리자 페이지(/admin) 권한은 OK(getUser+이메일 확인). 실제 배포 후 재점검
+
+15. 저작권 검토
+    - 한국실용글쓰기 기출문제 사용 가능 여부 확인
+    - 한국언론진흥재단 or 주관 기관에 문의
+    - 문제 출처 표기 방식 결정
+
+
+[7단계] 앱 발행 (웹 배포 안정화 후)
+------------------------------------------------------
+16. 안드로이드 앱
+    - Google Play Console 계정 생성 (1회 $25 약 35,000원)
+    - Next.js 웹앱을 PWA로 패키징하거나 Capacitor/Expo 사용
+    - 앱 심사 제출 (보통 1~3일)
+
+17. iOS 앱
+    - Apple Developer Program 가입 (연 $99 약 140,000원)
+    - 동일하게 PWA 또는 Capacitor 방식
+    - 앱 심사 제출 (보통 1~7일, 까다로움)
+
+
+====================================================
+  참고 사항
+====================================================
+
+- 현재 .env.local 위치: C:\Users\선호\실용글쓰기\.env.local
+- Supabase 프로젝트 URL: https://itzhfbsbwuoedncnjhzt.supabase.co
+- 푸터 이메일: support@kptest.cloud (도메인 메일 설정 필요)
+- 앱 발행은 웹이 안정된 후 진행 권장
+
+====================================================
