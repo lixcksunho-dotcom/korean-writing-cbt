@@ -4,15 +4,19 @@ import { useState, useEffect, useRef, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { Clock, ChevronLeft, ChevronRight, Send, AlertCircle, CheckCircle2, FileText, ChevronDown } from 'lucide-react'
 import { createSession, submitSession } from '@/app/(main)/cbt/actions'
+import ManuscriptGrid from '@/components/manuscript/ManuscriptGrid'
 
 export type Question = {
   id: string
   number: number
   type: 'multiple' | 'short' | 'essay'
+  points?: number
   question: string
   options: string[] | null
   passage?: string | null
 }
+
+const ESSAY_COLS = 20
 
 const CIRCLE_NUMS = ['①', '②', '③', '④', '⑤']
 const EXAM_MINUTES = 100 // 실제 시험 100분
@@ -268,17 +272,30 @@ export default function ExamPlayer({
               />
             )}
 
-            {/* 서술형 */}
+            {/* 서술형 (원고지) */}
             {q.type === 'essay' && (
-              <div>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-[#64748b]">원고지 ({ESSAY_COLS}칸)</span>
+                  <span className="text-xs text-[#94a3b8] tabular-nums">
+                    {Array.from(answers[q.id] ?? '').filter(c => c !== '\n').length}자
+                  </span>
+                </div>
+                {/* 실시간 원고지 미리보기 */}
+                <ManuscriptGrid
+                  text={answers[q.id] ?? ''}
+                  cols={ESSAY_COLS}
+                  rows={Math.max(15, Math.ceil((q.points ?? 100) / ESSAY_COLS) + 5)}
+                />
                 <textarea
                   value={answers[q.id] ?? ''}
                   onChange={e => handleAnswer(q.id, e.target.value)}
-                  placeholder="답안을 작성하세요. 조건에 맞게 완성된 문장으로 쓰세요."
-                  className="w-full border-2 border-[#e2e8f0] rounded-xl px-5 py-4 text-sm focus:outline-none focus:border-[#1e3a5f] transition-colors bg-[#f8fafc] focus:bg-white resize-none h-40 leading-relaxed"
+                  placeholder="답안을 작성하세요. 조건에 맞게 완성된 문장으로 쓰면 위 원고지에 실시간 반영됩니다. (Enter = 줄바꿈, 단락 들여쓰기는 공백)"
+                  className="w-full border-2 border-[#e2e8f0] rounded-xl px-5 py-4 text-sm focus:outline-none focus:border-[#1e3a5f] transition-colors bg-[#f8fafc] focus:bg-white resize-none h-40 leading-relaxed font-mono"
+                  spellCheck={false}
                 />
-                <p className="text-xs text-[#94a3b8] mt-2">
-                  ※ 서술형은 제출 후 모범 답안과 비교하여 직접 채점합니다.
+                <p className="text-xs text-[#94a3b8]">
+                  ※ 제출 후 결과 화면에서 <span className="font-semibold text-[#f59e0b]">AI 채점</span>(항목별 점수·첨삭) 또는 모범 답안 비교가 제공됩니다.
                 </p>
               </div>
             )}

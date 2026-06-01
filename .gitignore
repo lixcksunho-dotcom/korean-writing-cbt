@@ -45,3 +45,7 @@ next-env.d.ts
 
 # 로컬 작업 메모/스크린샷 (원하면 주석 처리해서 올리세요)
 /screenshots/
+
+# 기출 원본 PDF/이미지 (저작권 — 저장소에 올리지 않음. 파생 문제는 migration에 포함)
+/test/
+/example/

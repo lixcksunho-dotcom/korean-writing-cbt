@@ -20,7 +20,7 @@ export default async function ExamPage({
 
   const { data: questions } = await supabase
     .from('questions')
-    .select('id, number, type, question, options, passage')
+    .select('id, number, type, points, question, options, passage')
     .eq('year', year)
     .eq('round', round)
     .order('number')
