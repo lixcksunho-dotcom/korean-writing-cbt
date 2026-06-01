@@ -6,7 +6,8 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { FileText, CheckCircle, Eye, EyeOff } from "lucide-react";
 import GoogleButton from "@/components/ui/GoogleButton";
-import KakaoButton from "@/components/ui/KakaoButton";
+// 카카오는 비즈 앱 전환 후 재활성화 예정 (KakaoButton 컴포넌트는 유지)
+// import KakaoButton from "@/components/ui/KakaoButton";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -107,10 +108,7 @@ export default function SignupPage() {
             <h1 className="text-2xl font-black text-[#0f172a] mb-1 tracking-tight">회원가입</h1>
             <p className="text-[#64748b] text-sm mb-7">무료로 시작하세요</p>
 
-            <div className="space-y-2.5">
-              <GoogleButton />
-              <KakaoButton />
-            </div>
+            <GoogleButton />
 
             <div className="relative my-6">
               <div className="absolute inset-0 flex items-center">
