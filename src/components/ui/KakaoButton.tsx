@@ -13,6 +13,9 @@ export default function KakaoButton() {
       provider: "kakao",
       options: {
         redirectTo: `${window.location.origin}/auth/callback`,
+        // 비즈 앱이 아니면 카카오 이메일(account_email) 동의항목을 못 켜서
+        // 기본 요청 시 KOE205가 발생함. 닉네임만 요청해 이 문제를 피한다.
+        scopes: "profile_nickname",
       },
     });
   }
