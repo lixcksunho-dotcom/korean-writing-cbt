@@ -75,7 +75,15 @@ export async function gradeManuscript(text: string, topic: string): Promise<Grad
   const response = await client.messages.create({
     model: 'claude-sonnet-4-6',
     max_tokens: 2000,
-    system: SYSTEM_PROMPT,
+    // 채점 기준(SYSTEM_PROMPT)은 매 요청 동일하므로 프롬프트 캐싱 적용.
+    // 5분 TTL 내 반복 호출 시 시스템 프롬프트 입력 토큰 비용이 크게 절감됨.
+    system: [
+      {
+        type: 'text',
+        text: SYSTEM_PROMPT,
+        cache_control: { type: 'ephemeral' },
+      },
+    ],
     messages: [{
       role: 'user',
       content: `주제: ${topic}\n\n작성한 글 (원고지 형식, 줄바꿈은 \\n으로 표시):\n${text}`,
