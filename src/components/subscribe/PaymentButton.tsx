@@ -3,13 +3,26 @@
 import { useState } from 'react'
 import { loadTossPayments } from '@tosspayments/tosspayments-sdk'
 
-type Method = '카드' | '카카오페이' | '토스페이'
+type Method = 'card' | 'kakaopay' | 'tosspay'
 
 const METHODS: { key: Method; label: string; emoji: string; color: string }[] = [
-  { key: '카드', label: '카드 결제', emoji: '💳', color: 'border-[#1e3a5f] bg-[#1e3a5f] text-white' },
-  { key: '카카오페이', label: '카카오페이', emoji: '💛', color: 'border-[#FEE500] bg-[#FEE500] text-[#3C1E1E]' },
-  { key: '토스페이', label: '토스페이', emoji: '💙', color: 'border-[#0064FF] bg-[#0064FF] text-white' },
+  { key: 'card', label: '카드 결제', emoji: '💳', color: 'border-[#1e3a5f] bg-[#1e3a5f] text-white' },
+  { key: 'kakaopay', label: '카카오페이', emoji: '💛', color: 'border-[#FEE500] bg-[#FEE500] text-[#3C1E1E]' },
+  { key: 'tosspay', label: '토스페이', emoji: '💙', color: 'border-[#0064FF] bg-[#0064FF] text-white' },
 ]
+
+// 토스 SDK는 method에 영문 enum('CARD' 등)만 받음.
+// 카카오페이/토스페이는 카드 결제의 간편결제 자체창(easyPay 코드)으로 연다.
+function tossMethodParams(method: Method): Record<string, unknown> {
+  switch (method) {
+    case 'kakaopay':
+      return { method: 'CARD', card: { flowMode: 'DIRECT', easyPay: 'KAKAOPAY' } }
+    case 'tosspay':
+      return { method: 'CARD', card: { flowMode: 'DIRECT', easyPay: 'TOSSPAY' } }
+    default:
+      return { method: 'CARD' }
+  }
+}
 
 export default function PaymentButton({
   userId,
@@ -34,7 +47,7 @@ export default function PaymentButton({
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await (payment.requestPayment as (req: any) => Promise<void>)({
-        method,
+        ...tossMethodParams(method),
         amount: { currency: 'KRW', value: 5000 },
         orderId,
         orderName: 'AI 원고지 채점 1개월',
