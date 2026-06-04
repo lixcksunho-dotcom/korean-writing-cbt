@@ -5,10 +5,10 @@ import PaymentSection from '@/components/subscribe/PaymentSection'
 import { CheckCircle2, Sparkles, Shield, Zap } from 'lucide-react'
 
 const FEATURES = [
+  '모의고사 서술형 AI 분석·채점 무제한',
   '원고지 AI 채점·첨삭 무제한',
-  '4가지 항목 세부 점수 분석',
-  '맞춤법·문법 교정 목록 제공',
-  '채점 기록 무제한 저장',
+  '항목별 점수 + 잘한 점·보완점 첨삭',
+  '채점·분석 기록 저장',
 ]
 
 export default async function SubscribePage() {
@@ -55,8 +55,8 @@ export default async function SubscribePage() {
           <Sparkles className="h-3.5 w-3.5" />
           AI 채점 구독
         </div>
-        <h1 className="text-2xl font-black text-[#0f172a] tracking-tight">AI 원고지 채점</h1>
-        <p className="text-[#64748b] text-sm mt-1">한 달 5,000원으로 무제한 이용</p>
+        <h1 className="text-2xl font-black text-[#0f172a] tracking-tight">AI 채점·분석 구독</h1>
+        <p className="text-[#64748b] text-sm mt-1">서술형·원고지 모두, 한 달 5,000원으로 무제한</p>
       </div>
 
       <div className="bg-white rounded-2xl border border-[#e2e8f0] shadow-[0_4px_20px_rgba(15,31,61,0.08)] overflow-hidden">
