@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { Clock, ChevronLeft, ChevronRight, Send, AlertCircle, CheckCircle2, FileText } from 'lucide-react'
 import { createSession, submitSession } from '@/app/(main)/cbt/actions'
-import ManuscriptGrid from '@/components/manuscript/ManuscriptGrid'
+import EditableManuscript from '@/components/manuscript/EditableManuscript'
 
 export type Question = {
   id: string
@@ -269,29 +269,29 @@ export default function ExamPlayer({
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-semibold text-[#64748b]">
-                    {isManuscriptQ(q) ? `원고지 (${ESSAY_COLS}칸)` : '답안 작성'}
+                    {isManuscriptQ(q) ? `원고지 (${ESSAY_COLS}칸) — 칸에 바로 입력하세요` : '답안 작성'}
                   </span>
                   <span className="text-xs text-[#94a3b8] tabular-nums">
                     {Array.from(answers[q.id] ?? '').filter(c => c !== '\n').length}자
                   </span>
                 </div>
-                {isManuscriptQ(q) && (
-                  <ManuscriptGrid
-                    text={answers[q.id] ?? ''}
+                {isManuscriptQ(q) ? (
+                  <EditableManuscript
+                    value={answers[q.id] ?? ''}
+                    onChange={v => handleAnswer(q.id, v)}
                     cols={ESSAY_COLS}
-                    rows={52}
-                    cell={30}
+                    rows={42}
+                    cell={28}
+                  />
+                ) : (
+                  <textarea
+                    value={answers[q.id] ?? ''}
+                    onChange={e => handleAnswer(q.id, e.target.value)}
+                    placeholder="조건에 맞게 답안을 작성하세요. 기호(㉠, ㉡ 등)가 있으면 그대로 적어 구분하세요."
+                    className="w-full border-2 border-[#e2e8f0] rounded-xl px-5 py-4 text-sm focus:outline-none focus:border-[#1e3a5f] transition-colors bg-[#f8fafc] focus:bg-white resize-none leading-relaxed font-mono h-32"
+                    spellCheck={false}
                   />
                 )}
-                <textarea
-                  value={answers[q.id] ?? ''}
-                  onChange={e => handleAnswer(q.id, e.target.value)}
-                  placeholder={isManuscriptQ(q)
-                    ? '답안을 작성하세요. 입력하면 위 원고지에 실시간 반영됩니다. (Enter = 줄바꿈)'
-                    : '조건에 맞게 답안을 작성하세요. 기호(㉠, ㉡ 등)가 있으면 그대로 적어 구분하세요.'}
-                  className={`w-full border-2 border-[#e2e8f0] rounded-xl px-5 py-4 text-sm focus:outline-none focus:border-[#1e3a5f] transition-colors bg-[#f8fafc] focus:bg-white resize-none leading-relaxed font-mono ${isManuscriptQ(q) ? 'h-56' : 'h-32'}`}
-                  spellCheck={false}
-                />
                 <p className="text-xs text-[#94a3b8]">
                   ※ 제출 후 결과 화면에서 <span className="font-semibold text-[#f59e0b]">AI 채점</span>(항목별 점수·첨삭) 또는 모범 답안 비교가 제공됩니다.
                 </p>

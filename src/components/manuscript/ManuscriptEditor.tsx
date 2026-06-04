@@ -1,12 +1,10 @@
 'use client'
 
-import { useState, useRef, useTransition } from 'react'
+import { useState, useTransition } from 'react'
 import { Send } from 'lucide-react'
 import { gradeManuscript, type GradeResult } from '@/app/(main)/manuscript/actions'
 import ManuscriptResult from './ManuscriptResult'
-
-const COLS = 20
-const ROWS = 20
+import EditableManuscript from './EditableManuscript'
 
 const TOPICS = [
   '친환경 생활 방식의 중요성에 대해 자신의 의견을 쓰시오.',
@@ -16,25 +14,6 @@ const TOPICS = [
   '직접 입력',
 ]
 
-function textToGrid(text: string): (string)[][] {
-  const grid: string[][] = Array.from({ length: ROWS }, () => Array(COLS).fill(''))
-  const lines = text.split('\n')
-  let row = 0
-
-  for (const line of lines) {
-    if (row >= ROWS) break
-    const chars = Array.from(line)
-    let col = 0
-    for (const char of chars) {
-      if (col >= COLS) { row++; col = 0; if (row >= ROWS) break }
-      grid[row][col] = char
-      col++
-    }
-    row++
-  }
-  return grid
-}
-
 export default function ManuscriptEditor() {
   const [topicIdx, setTopicIdx] = useState(0)
   const [customTopic, setCustomTopic] = useState('')
@@ -42,10 +21,8 @@ export default function ManuscriptEditor() {
   const [result, setResult] = useState<GradeResult | null>(null)
   const [error, setError] = useState('')
   const [isPending, startTransition] = useTransition()
-  const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   const topic = topicIdx === TOPICS.length - 1 ? customTopic : TOPICS[topicIdx]
-  const grid = textToGrid(text)
   const charCount = Array.from(text).filter(c => c !== '\n').length
   const canSubmit = charCount >= 50 && topic.trim().length > 0
 
@@ -105,10 +82,10 @@ export default function ManuscriptEditor() {
         )}
       </div>
 
-      {/* 원고지 그리드 */}
+      {/* 원고지 입력 (칸에 바로 작성) */}
       <div className="mb-5">
         <div className="flex items-center justify-between mb-2">
-          <p className="text-sm font-semibold text-gray-700">원고지 (400자)</p>
+          <p className="text-sm font-semibold text-gray-700">원고지 (400자) — 칸에 바로 입력하세요</p>
           <span className={[
             'text-xs font-medium tabular-nums',
             charCount > 380 ? 'text-red-500' : charCount > 300 ? 'text-amber-500' : 'text-gray-400',
@@ -116,69 +93,15 @@ export default function ManuscriptEditor() {
             {charCount} / 400자
           </span>
         </div>
-
-        {/* 그리드 컨테이너 */}
-        <div
-          className="overflow-x-auto rounded-lg border-2 border-[#1e3a5f]/40 cursor-text select-none bg-white"
-          onClick={() => textareaRef.current?.focus()}
-        >
-          <table className="border-collapse" style={{ tableLayout: 'fixed' }}>
-            <colgroup>
-              {/* 행 번호 열 */}
-              <col style={{ width: '20px' }} />
-              {Array.from({ length: COLS }, (_, i) => (
-                <col key={i} style={{ width: '18px' }} className="sm:w-[22px] md:w-[26px]" />
-              ))}
-            </colgroup>
-            <tbody>
-              {grid.map((row, rowIdx) => (
-                <tr key={rowIdx}>
-                  {/* 행 번호 */}
-                  <td className="text-center text-[8px] text-gray-300 border-r border-gray-200 bg-gray-50 w-5 select-none">
-                    {rowIdx + 1}
-                  </td>
-                  {row.map((char, colIdx) => (
-                    <td
-                      key={colIdx}
-                      className={[
-                        'border border-gray-200 text-center align-middle',
-                        'text-[10px] sm:text-[11px] md:text-xs',
-                        'h-[20px] sm:h-[24px] md:h-[28px]',
-                        'w-[18px] sm:w-[22px] md:w-[26px]',
-                        'font-medium text-gray-800',
-                        char === '' ? '' : 'bg-blue-50/30',
-                      ].join(' ')}
-                    >
-                      {char}
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <p className="text-[11px] text-gray-400 mt-1.5">
-          클릭 후 아래 입력창에서 작성하면 원고지에 실시간 반영됩니다
-        </p>
-      </div>
-
-      {/* 텍스트 입력 */}
-      <div className="mb-5">
-        <div className="flex items-center justify-between mb-2">
-          <p className="text-sm font-semibold text-gray-700">내용 입력</p>
-          <span className="text-[11px] text-gray-400">Enter = 다음 행, 들여쓰기는 공백으로</span>
-        </div>
-        <textarea
-          ref={textareaRef}
+        <EditableManuscript
           value={text}
-          onChange={e => setText(e.target.value)}
-          placeholder={`제목 (첫 줄, 가운데 정렬 위해 앞에 공백 사용)\n\n 본문 첫 단락 (앞에 공백 한 칸)\n\n 두 번째 단락...`}
-          className="w-full h-52 border-2 border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#1e3a5f] transition-colors resize-none font-mono leading-relaxed"
-          autoComplete="off"
-          autoCorrect="off"
-          spellCheck={false}
+          onChange={setText}
+          cols={20}
+          rows={20}
+          cell={30}
+          placeholder="원고지 칸에 바로 입력하세요"
         />
-        <div className="mt-1.5 bg-gray-50 rounded-lg px-3 py-2 text-[11px] text-gray-500 leading-relaxed">
+        <div className="mt-2 bg-gray-50 rounded-lg px-3 py-2 text-[11px] text-gray-500 leading-relaxed">
           <span className="font-medium text-gray-600">원고지 규칙 안내</span>
           {' · '}제목: 첫 줄 오른쪽에서 2~4칸 비우고 시작
           {' · '}본문: 각 단락 첫 칸 공백 들여쓰기

@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react'
 import Link from 'next/link'
 import { ArrowLeft, ChevronRight, ChevronLeft, FileText, ChevronDown, Sparkles, Lock, Loader2 } from 'lucide-react'
-import ManuscriptGrid from '@/components/manuscript/ManuscriptGrid'
+import EditableManuscript from '@/components/manuscript/EditableManuscript'
 import { gradeEssayPractice } from '../actions'
 import type { EssayGrade } from '@/app/(main)/cbt/actions'
 
@@ -109,19 +109,20 @@ export default function PracticeEssay({
         <p className="text-[#0f172a] font-medium leading-relaxed mb-6 whitespace-pre-wrap text-base">{q.question}</p>
 
         <div className="flex items-center justify-between mb-2">
-          <span className="text-xs font-semibold text-[#64748b]">{isManuscript ? `원고지 (${COLS}칸)` : '답안 작성'}</span>
+          <span className="text-xs font-semibold text-[#64748b]">{isManuscript ? `원고지 (${COLS}칸) — 칸에 바로 입력하세요` : '답안 작성'}</span>
           <span className="text-xs text-[#94a3b8] tabular-nums">{charCount}자</span>
         </div>
-        {isManuscript && (
-          <ManuscriptGrid text={answer} cols={COLS} rows={52} cell={30} />
+        {isManuscript ? (
+          <EditableManuscript value={answer} onChange={v => setAnswers(a => ({ ...a, [q.id]: v }))} cols={COLS} rows={42} cell={28} />
+        ) : (
+          <textarea
+            value={answer}
+            onChange={e => setAnswers(a => ({ ...a, [q.id]: e.target.value }))}
+            placeholder="조건에 맞게 답안을 작성하세요. 기호(㉠, ㉡ 등)가 있으면 그대로 적어 구분하세요."
+            className="h-40 w-full border-2 border-[#e2e8f0] rounded-xl px-5 py-4 text-sm focus:outline-none focus:border-[#1e3a5f] transition-colors bg-[#f8fafc] focus:bg-white resize-none leading-relaxed font-mono"
+            spellCheck={false}
+          />
         )}
-        <textarea
-          value={answer}
-          onChange={e => setAnswers(a => ({ ...a, [q.id]: e.target.value }))}
-          placeholder={isManuscript ? '조건에 맞게 답안을 작성하세요. 입력하면 위 원고지에 실시간 반영돼요.' : '조건에 맞게 답안을 작성하세요. 기호(㉠, ㉡ 등)가 있으면 그대로 적어 구분하세요.'}
-          className={`${isManuscript ? 'mt-3 h-56' : 'h-40'} w-full border-2 border-[#e2e8f0] rounded-xl px-5 py-4 text-sm focus:outline-none focus:border-[#1e3a5f] transition-colors bg-[#f8fafc] focus:bg-white resize-none leading-relaxed font-mono`}
-          spellCheck={false}
-        />
 
         {/* AI 채점 */}
         <div className="mt-4">
