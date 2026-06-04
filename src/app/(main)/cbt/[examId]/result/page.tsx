@@ -113,24 +113,36 @@ export default async function ResultPage({
       {/* 서술형 — 원고지 답안 + AI 채점 */}
       {essayQuestions.length > 0 && (
         <div className="mb-8">
-          <h2 className="text-base font-bold text-[#0f172a] mb-4 flex items-center gap-2">
-            <span className="w-6 h-6 rounded-lg bg-amber-100 flex items-center justify-center text-amber-600 text-xs font-black">서</span>
-            서술형 ({essayQuestions.length}문항)
-          </h2>
+          <div className="mb-4">
+            <h2 className="text-base font-bold text-[#0f172a] flex items-center gap-2 flex-wrap">
+              <span className="w-6 h-6 rounded-lg bg-amber-100 flex items-center justify-center text-amber-600 text-xs font-black">서</span>
+              서술형 ({essayQuestions.length}문항)
+              <span className="text-[11px] font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">구독 전용 · AI 분석</span>
+            </h2>
+            <p className="text-xs text-[#94a3b8] mt-1.5">
+              내가 쓴 답안을 AI가 모범 답안과 비교해 <b className="text-amber-700">점수·첨삭</b>으로 분석해 드려요.
+              {!subscription && ' (AI 분석은 구독 시 이용할 수 있어요. 모범 답안은 무료로 볼 수 있어요.)'}
+            </p>
+          </div>
           <div className="space-y-4">
-            {essayQuestions.map(q => {
+            {essayQuestions.map((q, ei) => {
               const a = answerMap.get(q.id)
+              const isManuscript = (q.points ?? 0) >= 200
               return (
                 <div key={q.id} className="bg-white rounded-2xl border-2 border-amber-100 p-5">
                   <div className="flex items-center gap-2 mb-3">
-                    <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-700">{q.number}번 서술형</span>
+                    <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-700">서술형 {ei + 1}번</span>
                     <span className="text-xs text-[#94a3b8]">{q.points}점</span>
                   </div>
                   <p className="text-[#334155] text-sm font-medium mb-4 whitespace-pre-wrap leading-relaxed">{q.question}</p>
                   {a?.user_answer ? (
                     <div className="mb-3">
-                      <p className="text-xs font-semibold text-[#64748b] mb-1.5">내 답안 (원고지)</p>
-                      <ManuscriptGrid text={a.user_answer} cols={20} rows={Math.max(10, Math.ceil((q.points ?? 100) / 20) + 4)} />
+                      <p className="text-xs font-semibold text-[#64748b] mb-1.5">내 답안{isManuscript ? ' (원고지)' : ''}</p>
+                      {isManuscript ? (
+                        <ManuscriptGrid text={a.user_answer} cols={20} rows={52} cell={24} />
+                      ) : (
+                        <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-xl p-4 text-sm text-[#334155] whitespace-pre-wrap leading-relaxed">{a.user_answer}</div>
+                      )}
                     </div>
                   ) : (
                     <p className="text-xs text-[#94a3b8] mb-3">(미작성)</p>
@@ -162,7 +174,13 @@ export default async function ResultPage({
       {/* 객관식·단답형 결과 */}
       {autoQuestions.length > 0 && (
         <>
-          <h2 className="text-base font-bold text-[#0f172a] mb-4">객관식·단답형 상세 결과</h2>
+          <div className="mb-4">
+            <h2 className="text-base font-bold text-[#0f172a] flex items-center gap-2 flex-wrap">
+              객관식 상세 결과
+              <span className="text-[11px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">무료 해설</span>
+            </h2>
+            <p className="text-xs text-[#94a3b8] mt-1.5">정답과 해설은 누구나 무료로 볼 수 있어요.</p>
+          </div>
           <div className="space-y-3">
             {autoQuestions.map(q => {
               const a = answerMap.get(q.id)
@@ -202,9 +220,9 @@ export default async function ResultPage({
                       </div>
                     </div>
                   )}
-                  {q.explanation && !isCorrect && (
+                  {q.explanation && (
                     <div className="ml-10 mt-3 bg-[#f0f7ff] border border-blue-100 rounded-xl px-4 py-3 text-xs text-[#1e4a8f] leading-relaxed">
-                      💡 {q.explanation}
+                      💡 <span className="font-semibold">해설</span> {q.explanation}
                     </div>
                   )}
                 </div>

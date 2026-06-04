@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { FileText, CheckCircle, Eye, EyeOff } from "lucide-react";
@@ -10,7 +9,6 @@ import GoogleButton from "@/components/ui/GoogleButton";
 // import KakaoButton from "@/components/ui/KakaoButton";
 
 export default function SignupPage() {
-  const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -33,7 +31,7 @@ export default function SignupPage() {
       setLoading(false);
       return;
     }
-    if (data.session) { router.push("/dashboard"); router.refresh(); return; }
+    if (data.session) { window.location.assign("/dashboard"); return; }
     setSuccess(true);
     setLoading(false);
   }
@@ -52,7 +50,7 @@ export default function SignupPage() {
             <p className="text-[#64748b] text-sm leading-relaxed">
               이메일로 인증 메일을 발송했습니다.<br />인증 후 로그인해주세요.
             </p>
-            <button onClick={() => router.push("/login")}
+            <button onClick={() => window.location.assign("/login")}
               className="mt-6 w-full btn-primary text-white font-bold py-3.5 rounded-xl text-sm">
               로그인 하러 가기
             </button>

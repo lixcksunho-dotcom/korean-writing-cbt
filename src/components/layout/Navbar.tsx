@@ -5,11 +5,12 @@ import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
-import { BookOpen, FileText, LayoutDashboard, Menu, X, LogOut, PenLine, Sparkles } from "lucide-react";
+import { BookOpen, FileText, LayoutDashboard, Menu, X, LogOut, PenLine, Sparkles, ListChecks } from "lucide-react";
 
 const navItems = [
   { href: "/dashboard", label: "대시보드", icon: LayoutDashboard },
   { href: "/cbt", label: "CBT 문제풀기", icon: BookOpen },
+  { href: "/practice", label: "유형별 연습", icon: ListChecks },
   { href: "/manuscript", label: "원고지 채점", icon: PenLine },
 ];
 

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { FileText, Eye, EyeOff } from "lucide-react";
@@ -10,7 +9,6 @@ import GoogleButton from "@/components/ui/GoogleButton";
 // import KakaoButton from "@/components/ui/KakaoButton";
 
 export default function LoginPage() {
-  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPw, setShowPw] = useState(false);
@@ -28,8 +26,9 @@ export default function LoginPage() {
       setLoading(false);
       return;
     }
-    router.push("/dashboard");
-    router.refresh();
+    // 세션 쿠키가 서버(미들웨어)에 확실히 전달되도록 전체 내비게이션 사용
+    // (router.push는 소프트 내비게이션이라 첫 로그인 시 쿠키가 늦게 반영되어 /login으로 되튕길 수 있음)
+    window.location.assign("/dashboard");
   }
 
   const inputCls = "w-full bg-[#f8fafc] border-2 border-[#e2e8f0] rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#1e3a5f] focus:bg-white transition-all placeholder:text-[#94a3b8]";

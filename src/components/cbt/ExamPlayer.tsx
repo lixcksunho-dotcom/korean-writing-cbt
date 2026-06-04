@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { Clock, ChevronLeft, ChevronRight, Send, AlertCircle, CheckCircle2, FileText, ChevronDown } from 'lucide-react'
+import { Clock, ChevronLeft, ChevronRight, Send, AlertCircle, CheckCircle2, FileText } from 'lucide-react'
 import { createSession, submitSession } from '@/app/(main)/cbt/actions'
 import ManuscriptGrid from '@/components/manuscript/ManuscriptGrid'
 
@@ -19,7 +19,12 @@ export type Question = {
 const ESSAY_COLS = 20
 
 const CIRCLE_NUMS = ['①', '②', '③', '④', '⑤']
-const EXAM_MINUTES = 100 // 실제 시험 100분
+const EXAM_MINUTES = 120 // 실제 시험 120분
+
+// 서술형 중 '원고지(작문지)'로 푸는 문항 = 보고서(장문). 배점이 큰 문항만 원고지 사용.
+// (실제 OMR: 서술형 1~8은 줄 답안칸, 9번 보고서만 대형 원고지)
+const MANUSCRIPT_MIN_POINTS = 200
+const isManuscriptQ = (q: Question) => q.type === 'essay' && (q.points ?? 0) >= MANUSCRIPT_MIN_POINTS
 
 export default function ExamPlayer({
   questions,
@@ -37,7 +42,6 @@ export default function ExamPlayer({
   const [showConfirm, setShowConfirm] = useState(false)
   const [timeLeft, setTimeLeft] = useState(EXAM_MINUTES * 60)
   const [isPending, startTransition] = useTransition()
-  const [passageOpen, setPassageOpen] = useState(true)
 
   const sessionCreated = useRef(false)
   const sessionIdRef = useRef<string | null>(null)
@@ -58,13 +62,6 @@ export default function ExamPlayer({
     return () => clearInterval(timer)
   }, [])
 
-  // 문제 이동 시 지문 열기 초기화 (effect 대신 렌더 중 이전 값 비교 — React 권장 패턴)
-  const [prevIdx, setPrevIdx] = useState(currentIdx)
-  if (prevIdx !== currentIdx) {
-    setPrevIdx(currentIdx)
-    setPassageOpen(true)
-  }
-
   function handleAnswer(questionId: string, value: string) {
     setAnswers(prev => ({ ...prev, [questionId]: value }))
   }
@@ -80,6 +77,9 @@ export default function ExamPlayer({
   }
 
   const q = questions[currentIdx]
+  // 서술형 표시 번호(1~9) — DB 내부 번호(31~39)와 무관하게 등장 순서로 매김
+  const essayList = questions.filter(x => x.type === 'essay')
+  const essayNo = (id: string) => essayList.findIndex(x => x.id === id) + 1
   const answeredCount = Object.keys(answers).length
   const progress = (answeredCount / questions.length) * 100
   const minutes = Math.floor(timeLeft / 60)
@@ -144,7 +144,7 @@ export default function ExamPlayer({
                   ].join(' ')}
                   title={question.type === 'essay' ? '서술형' : ''}
                 >
-                  {question.number}
+                  {question.type === 'essay' ? `서${essayNo(question.id)}` : question.number}
                   {question.type === 'essay' && (
                     <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-amber-400 rounded-full" />
                   )}
@@ -179,7 +179,7 @@ export default function ExamPlayer({
                       : 'bg-[#f1f5f9] text-[#64748b]',
                   ].join(' ')}
                 >
-                  {question.number}
+                  {question.type === 'essay' ? `서${essayNo(question.id)}` : question.number}
                   {question.type === 'essay' && (
                     <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-amber-400 rounded-full" />
                   )}
@@ -188,24 +188,16 @@ export default function ExamPlayer({
             </div>
           </div>
 
-          {/* 지문 (있을 경우) */}
+          {/* 지문/자료 — 실제 시험지처럼 항상 펼쳐진 박스 */}
           {q.passage && (
-            <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-2xl mb-4 overflow-hidden">
-              <button
-                onClick={() => setPassageOpen(v => !v)}
-                className="w-full flex items-center justify-between px-5 py-3.5 text-left hover:bg-[#f1f5f9] transition-colors"
-              >
-                <div className="flex items-center gap-2">
-                  <FileText className="h-4 w-4 text-[#1e3a5f]" />
-                  <span className="text-sm font-bold text-[#1e3a5f]">지 문</span>
-                </div>
-                <ChevronDown className={`h-4 w-4 text-[#94a3b8] transition-transform ${passageOpen ? 'rotate-180' : ''}`} />
-              </button>
-              {passageOpen && (
-                <div className="px-5 pb-5 pt-1 max-h-80 overflow-y-auto">
-                  <p className="text-sm text-[#334155] leading-relaxed whitespace-pre-wrap">{q.passage}</p>
-                </div>
-              )}
+            <div className="bg-white border-2 border-[#1e3a5f]/20 rounded-xl mb-4">
+              <div className="px-5 py-2.5 border-b border-[#1e3a5f]/10 flex items-center gap-2 bg-[#f8fafc] rounded-t-xl">
+                <FileText className="h-4 w-4 text-[#1e3a5f]" />
+                <span className="text-sm font-bold text-[#1e3a5f]">[지문 · 자료]</span>
+              </div>
+              <div className="px-6 py-5 max-h-[30rem] overflow-y-auto">
+                <p className="text-[15px] text-[#1f2937] leading-[1.9] whitespace-pre-wrap">{q.passage}</p>
+              </div>
             </div>
           )}
 
@@ -214,11 +206,11 @@ export default function ExamPlayer({
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-2">
                 <span className="text-sm font-bold text-[#1e3a5f] bg-[#1e3a5f]/8 px-3.5 py-1.5 rounded-full">
-                  {q.number}번
+                  {q.type === 'essay' ? `서술형 ${essayNo(q.id)}번` : `${q.number}번`}
                 </span>
                 {q.type === 'essay' && (
                   <span className="text-xs font-bold text-amber-700 bg-amber-100 px-2.5 py-1 rounded-full">
-                    서술형
+                    {isManuscriptQ(q) ? '원고지 작성' : '서술형'}
                   </span>
                 )}
                 {q.type === 'short' && (
@@ -272,26 +264,32 @@ export default function ExamPlayer({
               />
             )}
 
-            {/* 서술형 (원고지) */}
+            {/* 서술형 — 9번(보고서)만 원고지, 1~8번은 줄 답안 */}
             {q.type === 'essay' && (
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-[#64748b]">원고지 ({ESSAY_COLS}칸)</span>
+                  <span className="text-xs font-semibold text-[#64748b]">
+                    {isManuscriptQ(q) ? `원고지 (${ESSAY_COLS}칸)` : '답안 작성'}
+                  </span>
                   <span className="text-xs text-[#94a3b8] tabular-nums">
                     {Array.from(answers[q.id] ?? '').filter(c => c !== '\n').length}자
                   </span>
                 </div>
-                {/* 실시간 원고지 미리보기 */}
-                <ManuscriptGrid
-                  text={answers[q.id] ?? ''}
-                  cols={ESSAY_COLS}
-                  rows={Math.max(15, Math.ceil((q.points ?? 100) / ESSAY_COLS) + 5)}
-                />
+                {isManuscriptQ(q) && (
+                  <ManuscriptGrid
+                    text={answers[q.id] ?? ''}
+                    cols={ESSAY_COLS}
+                    rows={52}
+                    cell={30}
+                  />
+                )}
                 <textarea
                   value={answers[q.id] ?? ''}
                   onChange={e => handleAnswer(q.id, e.target.value)}
-                  placeholder="답안을 작성하세요. 조건에 맞게 완성된 문장으로 쓰면 위 원고지에 실시간 반영됩니다. (Enter = 줄바꿈, 단락 들여쓰기는 공백)"
-                  className="w-full border-2 border-[#e2e8f0] rounded-xl px-5 py-4 text-sm focus:outline-none focus:border-[#1e3a5f] transition-colors bg-[#f8fafc] focus:bg-white resize-none h-40 leading-relaxed font-mono"
+                  placeholder={isManuscriptQ(q)
+                    ? '답안을 작성하세요. 입력하면 위 원고지에 실시간 반영됩니다. (Enter = 줄바꿈)'
+                    : '조건에 맞게 답안을 작성하세요. 기호(㉠, ㉡ 등)가 있으면 그대로 적어 구분하세요.'}
+                  className={`w-full border-2 border-[#e2e8f0] rounded-xl px-5 py-4 text-sm focus:outline-none focus:border-[#1e3a5f] transition-colors bg-[#f8fafc] focus:bg-white resize-none leading-relaxed font-mono ${isManuscriptQ(q) ? 'h-56' : 'h-32'}`}
                   spellCheck={false}
                 />
                 <p className="text-xs text-[#94a3b8]">

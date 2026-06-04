@@ -30,7 +30,7 @@ export default function EssayGrader({
         setGrade(result)
       } catch (e) {
         const msg = e instanceof Error ? e.message : ''
-        setError(msg === 'SUBSCRIPTION_REQUIRED' ? 'SUBSCRIPTION_REQUIRED' : '채점 중 오류가 발생했습니다.')
+        setError(msg === 'SUBSCRIPTION_REQUIRED' ? 'SUBSCRIPTION_REQUIRED' : '분석 중 오류가 발생했습니다.')
       }
     })
   }
@@ -42,7 +42,7 @@ export default function EssayGrader({
         <div className="flex items-center justify-between mb-3">
           <span className="flex items-center gap-1.5 text-sm font-bold text-[#1e3a5f]">
             <Sparkles className="h-4 w-4 text-[#f59e0b]" />
-            AI 채점 결과
+            AI 분석 결과
           </span>
           <span className="text-sm font-black text-[#1e3a5f]">
             {grade.score} <span className="text-[#94a3b8] font-medium">/ {grade.maxScore}점</span>
@@ -85,7 +85,7 @@ export default function EssayGrader({
         className="mt-3 flex items-center justify-center gap-2 w-full py-3 rounded-xl border-2 border-dashed border-[#f59e0b]/40 bg-amber-50/50 text-sm font-semibold text-amber-700 hover:bg-amber-50 transition-colors"
       >
         <Lock className="h-4 w-4" />
-        구독하고 AI 채점 받기 ({points}점 만점)
+        구독하고 AI 분석 받기 ({points}점 만점)
       </Link>
     )
   }
@@ -98,7 +98,7 @@ export default function EssayGrader({
         className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-[#1e3a5f] hover:bg-[#2d5488] disabled:opacity-60 text-white text-sm font-bold transition-colors"
       >
         <Sparkles className="h-4 w-4" />
-        {isPending ? 'AI 채점 중...' : 'AI 채점 받기'}
+        {isPending ? 'AI 분석 중...' : 'AI 분석 받기'}
       </button>
       {error && error !== 'SUBSCRIPTION_REQUIRED' && (
         <p className="text-xs text-red-500 text-center mt-2">{error}</p>

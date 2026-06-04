@@ -10,13 +10,20 @@ export default async function CbtPage() {
 
   const { data: exams } = await supabase
     .from('questions')
-    .select('year, round')
+    .select('year, round, type')
     .order('year', { ascending: false })
     .order('round', { ascending: false })
 
   const uniqueExams = exams
     ? [...new Map(exams.map(e => [`${e.year}-${e.round}`, e])).values()]
     : []
+
+  // 회차별 문항 수 집계
+  const countMap = new Map<string, number>()
+  for (const e of exams ?? []) {
+    const k = `${e.year}-${e.round}`
+    countMap.set(k, (countMap.get(k) ?? 0) + 1)
+  }
 
   const { data: sessions } = await supabase
     .from('quiz_sessions')
@@ -71,9 +78,9 @@ export default async function CbtPage() {
                           <h2 className="font-bold text-[#0f172a] text-lg leading-tight">{year}년 {round}회</h2>
                           <div className="flex items-center gap-2 text-xs text-[#94a3b8] mt-0.5">
                             <Clock className="h-3 w-3" />
-                            <span>50분</span>
+                            <span>120분</span>
                             <span>·</span>
-                            <span>10문항</span>
+                            <span>{countMap.get(`${year}-${round}`) ?? 0}문항</span>
                           </div>
                         </div>
                       </div>
