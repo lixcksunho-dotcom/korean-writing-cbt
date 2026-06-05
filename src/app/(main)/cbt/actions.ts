@@ -119,6 +119,75 @@ export async function createSession(year: number, round: number): Promise<{ sess
   return { sessionId: data.id }
 }
 
+// 진행중(미완료) 세션을 찾아 이어풀기 상태를 돌려주고, 없으면 새로 만든다.
+// (시험 페이지가 서버에서 호출 → ExamPlayer에 sessionId·저장답안·남은시간 전달)
+export async function getOrCreateExamSession(year: number, round: number): Promise<{
+  sessionId: string
+  savedAnswers: Record<string, string>
+  timeLeft: number | null
+  resumed: boolean
+}> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Unauthorized')
+
+  const { data: existing } = await supabase
+    .from('quiz_sessions')
+    .select('id, saved_answers, time_left, saved_at')
+    .eq('user_id', user.id)
+    .eq('year', year)
+    .eq('round', round)
+    .is('completed_at', null)
+    .order('started_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  if (existing) {
+    return {
+      sessionId: existing.id as string,
+      savedAnswers: (existing.saved_answers as Record<string, string> | null) ?? {},
+      timeLeft: (existing.time_left as number | null) ?? null,
+      resumed: !!existing.saved_at,
+    }
+  }
+
+  const { data: created, error } = await supabase
+    .from('quiz_sessions')
+    .insert({ user_id: user.id, year, round })
+    .select('id')
+    .single()
+  if (error) throw error
+  return { sessionId: created.id as string, savedAnswers: {}, timeLeft: null, resumed: false }
+}
+
+// 시험 중간 저장 (유료 전용). 답안·남은시간을 세션에 보관하고 시험화면을 빠져나간다.
+export async function saveExamProgress(
+  sessionId: string,
+  answers: Record<string, string>,
+  timeLeftSec: number
+): Promise<void> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Unauthorized')
+
+  // 저장하고 나가기는 유료 전용
+  const subscription = await getActiveSubscription(user.id)
+  if (!subscription) throw new Error('SUBSCRIPTION_REQUIRED')
+
+  const { error } = await supabase
+    .from('quiz_sessions')
+    .update({
+      saved_answers: answers,
+      time_left: Math.max(0, Math.round(timeLeftSec)),
+      saved_at: new Date().toISOString(),
+    })
+    .eq('id', sessionId)
+    .eq('user_id', user.id)
+    .is('completed_at', null)
+
+  if (error) throw error
+}
+
 export async function submitSession(
   sessionId: string,
   answers: Record<string, string>

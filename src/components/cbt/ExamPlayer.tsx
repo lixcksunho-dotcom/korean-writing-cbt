@@ -2,8 +2,9 @@
 
 import { useState, useEffect, useRef, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { Clock, ChevronLeft, ChevronRight, Send, AlertCircle, CheckCircle2, FileText } from 'lucide-react'
-import { createSession, submitSession } from '@/app/(main)/cbt/actions'
+import Link from 'next/link'
+import { Clock, ChevronLeft, ChevronRight, Send, AlertCircle, CheckCircle2, FileText, Save, Lock } from 'lucide-react'
+import { submitSession, saveExamProgress } from '@/app/(main)/cbt/actions'
 import EditableManuscript from '@/components/manuscript/EditableManuscript'
 import PassageView from '@/components/cbt/PassageView'
 
@@ -31,32 +32,31 @@ export default function ExamPlayer({
   questions,
   examYear,
   examRound,
+  sessionId,
+  initialAnswers,
+  initialTimeLeft,
+  hasSubscription,
 }: {
   questions: Question[]
   examYear: number
   examRound: number
+  sessionId: string
+  initialAnswers?: Record<string, string>
+  initialTimeLeft?: number | null
+  hasSubscription: boolean
 }) {
   const router = useRouter()
-  const [sessionId, setSessionId] = useState<string | null>(null)
   const [currentIdx, setCurrentIdx] = useState(0)
-  const [answers, setAnswers] = useState<Record<string, string>>({})
+  const [answers, setAnswers] = useState<Record<string, string>>(initialAnswers ?? {})
   const [showConfirm, setShowConfirm] = useState(false)
-  const [timeLeft, setTimeLeft] = useState(EXAM_MINUTES * 60)
+  const [timeLeft, setTimeLeft] = useState(initialTimeLeft ?? EXAM_MINUTES * 60)
   const [isPending, startTransition] = useTransition()
+  const [saving, setSaving] = useState(false)
 
-  const sessionCreated = useRef(false)
-  const sessionIdRef = useRef<string | null>(null)
   const answersRef = useRef(answers)
   useEffect(() => { answersRef.current = answers }, [answers])
-
-  useEffect(() => {
-    if (sessionCreated.current) return
-    sessionCreated.current = true
-    createSession(examYear, examRound).then(({ sessionId: id }) => {
-      setSessionId(id)
-      sessionIdRef.current = id
-    })
-  }, [examYear, examRound])
+  const timeLeftRef = useRef(timeLeft)
+  useEffect(() => { timeLeftRef.current = timeLeft }, [timeLeft])
 
   useEffect(() => {
     const timer = setInterval(() => setTimeLeft(t => Math.max(0, t - 1)), 1000)
@@ -68,13 +68,24 @@ export default function ExamPlayer({
   }
 
   function handleSubmit() {
-    const sid = sessionIdRef.current
-    if (!sid) return
     startTransition(async () => {
-      await submitSession(sid, answersRef.current)
-      router.push(`/cbt/${examYear}-${examRound}/result?session=${sid}`)
+      await submitSession(sessionId, answersRef.current)
+      router.push(`/cbt/${examYear}-${examRound}/result?session=${sessionId}`)
     })
     setShowConfirm(false)
+  }
+
+  // 저장하고 나가기 (유료 전용) — 답안·남은시간 저장 후 시험 목록으로
+  function handleSaveExit() {
+    setSaving(true)
+    startTransition(async () => {
+      try {
+        await saveExamProgress(sessionId, answersRef.current, timeLeftRef.current)
+        router.push('/cbt')
+      } catch {
+        setSaving(false)
+      }
+    })
   }
 
   const q = questions[currentIdx]
@@ -108,6 +119,26 @@ export default function ExamPlayer({
               <Clock className="h-3.5 w-3.5" />
               {String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
             </div>
+            {hasSubscription ? (
+              <button
+                onClick={handleSaveExit}
+                disabled={saving || isPending}
+                title="답안을 저장하고 나중에 이어서 풀 수 있어요"
+                className="flex items-center gap-1.5 text-[#1e3a5f] bg-[#1e3a5f]/8 hover:bg-[#1e3a5f]/15 px-3 py-2 rounded-xl text-sm font-semibold transition-colors disabled:opacity-50"
+              >
+                <Save className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">{saving ? '저장 중...' : '저장하고 나가기'}</span>
+              </button>
+            ) : (
+              <Link
+                href="/subscribe"
+                title="저장하고 나가기는 구독 회원 전용이에요"
+                className="flex items-center gap-1.5 text-[#94a3b8] bg-[#f1f5f9] hover:bg-[#e2e8f0] px-3 py-2 rounded-xl text-sm font-semibold transition-colors"
+              >
+                <Lock className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">저장하고 나가기</span>
+              </Link>
+            )}
             <button
               onClick={() => setShowConfirm(true)}
               className="btn-primary flex items-center gap-1.5 text-white px-4 py-2 rounded-xl text-sm font-semibold"
@@ -363,7 +394,7 @@ export default function ExamPlayer({
               <button onClick={() => setShowConfirm(false)} className="flex-1 py-3 rounded-xl border-2 border-[#e2e8f0] text-[#64748b] font-semibold text-sm hover:bg-[#f8fafc] transition-colors">
                 취소
               </button>
-              <button onClick={handleSubmit} disabled={isPending || !sessionId} className="flex-1 py-3 rounded-xl btn-primary text-white font-bold text-sm disabled:opacity-50">
+              <button onClick={handleSubmit} disabled={isPending} className="flex-1 py-3 rounded-xl btn-primary text-white font-bold text-sm disabled:opacity-50">
                 {isPending ? '제출 중...' : '제출하기'}
               </button>
             </div>

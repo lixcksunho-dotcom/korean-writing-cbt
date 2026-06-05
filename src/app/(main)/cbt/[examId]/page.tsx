@@ -1,6 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import ExamPlayer, { type Question } from '@/components/cbt/ExamPlayer'
+import { getOrCreateExamSession } from '@/app/(main)/cbt/actions'
+import { getActiveSubscription } from '@/lib/subscription'
 
 export default async function ExamPage({
   params,
@@ -27,11 +29,21 @@ export default async function ExamPage({
 
   if (!questions?.length) redirect('/cbt')
 
+  // 진행중 세션 이어풀기(있으면) + 구독 여부(저장하고 나가기 유료 게이팅)
+  const [session, subscription] = await Promise.all([
+    getOrCreateExamSession(year, round),
+    getActiveSubscription(user.id),
+  ])
+
   return (
     <ExamPlayer
       questions={questions as unknown as Question[]}
       examYear={year}
       examRound={round}
+      sessionId={session.sessionId}
+      initialAnswers={session.savedAnswers}
+      initialTimeLeft={session.timeLeft}
+      hasSubscription={!!subscription}
     />
   )
 }

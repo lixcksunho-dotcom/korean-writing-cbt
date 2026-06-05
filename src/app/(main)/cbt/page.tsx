@@ -37,6 +37,15 @@ export default async function CbtPage() {
     (sessions ?? []).map(s => [`${s.year}-${s.round}`, s])
   )
 
+  // 저장하고 나가기로 중간 저장된(미완료) 세션 — '이어풀기' 표시용
+  const { data: inProgress } = await supabase
+    .from('quiz_sessions')
+    .select('year, round')
+    .eq('user_id', user.id)
+    .is('completed_at', null)
+    .not('saved_at', 'is', null)
+  const resumable = new Set((inProgress ?? []).map(s => `${s.year}-${s.round}`))
+
   return (
     <div className="animate-fade-up">
       <div className="mb-8">
@@ -110,11 +119,14 @@ export default async function CbtPage() {
 
                   <div className="flex items-center gap-2">
                     <span className="text-xs bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-full font-semibold">무료</span>
+                    {resumable.has(key) && (
+                      <span className="text-xs bg-amber-100 text-amber-700 px-2.5 py-1 rounded-full font-semibold">이어풀기 가능</span>
+                    )}
                     <Link
                       href={`/cbt/${key}`}
                       className="flex-1 btn-primary flex items-center justify-center gap-1.5 text-white font-semibold py-2.5 rounded-xl text-sm"
                     >
-                      {prev ? '다시 풀기' : '시작하기'}
+                      {resumable.has(key) ? '이어풀기' : prev ? '다시 풀기' : '시작하기'}
                       <ChevronRight className="h-4 w-4" />
                     </Link>
                   </div>
