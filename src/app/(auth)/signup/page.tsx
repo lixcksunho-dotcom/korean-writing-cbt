@@ -25,7 +25,16 @@ export default function SignupPage() {
     if (password !== confirmPassword) { setError("비밀번호가 일치하지 않습니다."); return; }
     setLoading(true);
     const supabase = createClient();
-    const { data, error } = await supabase.auth.signUp({ email, password, options: { data: { name } } });
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { name },
+        // 인증 메일의 확인 링크가 이 주소로 돌아오게 한다(없으면 Site URL=localhost로 감).
+        // /auth/callback 이 code를 세션으로 교환 후 /dashboard 로 보낸다.
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
+      },
+    });
     if (error) {
       setError(error.message.includes("already registered") ? "이미 가입된 이메일입니다." : "회원가입 중 오류가 발생했습니다.");
       setLoading(false);

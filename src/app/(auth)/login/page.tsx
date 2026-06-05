@@ -22,7 +22,15 @@ export default function LoginPage() {
     const supabase = createClient();
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
-      setError("이메일 또는 비밀번호가 올바르지 않습니다.");
+      // 이메일 미인증 상태는 따로 안내(인증 메일 확인 유도)
+      const notConfirmed =
+        error.code === "email_not_confirmed" ||
+        error.message.toLowerCase().includes("not confirmed");
+      setError(
+        notConfirmed
+          ? "이메일 인증이 완료되지 않았습니다. 가입 시 받은 인증 메일의 링크를 눌러주세요."
+          : "이메일 또는 비밀번호가 올바르지 않습니다."
+      );
       setLoading(false);
       return;
     }
