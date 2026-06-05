@@ -76,7 +76,7 @@ export default function PracticeEssay({
             <button
               key={question.id}
               onClick={() => go(i)}
-              className={`h-8 px-3 rounded-lg text-xs font-bold transition-all ${
+              className={`h-9 px-3.5 rounded-lg text-xs font-bold transition-all ${
                 i === idx ? 'bg-gradient-to-br from-amber-500 to-[#d97706] text-white'
                 : grades[question.id] ? 'bg-emerald-100 text-emerald-700'
                 : answers[question.id] ? 'bg-amber-50 text-amber-700'
@@ -113,7 +113,7 @@ export default function PracticeEssay({
           <span className="text-xs text-[#94a3b8] tabular-nums">{charCount}자</span>
         </div>
         {isManuscript ? (
-          <EditableManuscript value={answer} onChange={v => setAnswers(a => ({ ...a, [q.id]: v }))} cols={COLS} rows={42} cell={28} />
+          <EditableManuscript value={answer} onChange={v => setAnswers(a => ({ ...a, [q.id]: v }))} cols={COLS} rows={42} cell={28} maxHeightVh={55} />
         ) : (
           <textarea
             value={answer}

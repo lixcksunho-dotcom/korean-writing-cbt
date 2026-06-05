@@ -62,7 +62,7 @@ export default async function SubscribePage() {
       <div className="bg-white rounded-2xl border border-[#e2e8f0] shadow-[0_4px_20px_rgba(15,31,61,0.08)] overflow-hidden">
         {/* 가격 헤더 */}
         <div className="bg-gradient-to-br from-[#0f1f3d] to-[#1e3a5f] p-7 text-center text-white">
-          <div className="text-5xl font-black mb-1">5,500<span className="text-2xl font-bold">원</span></div>
+          <div className="text-4xl sm:text-5xl font-black mb-1">5,500<span className="text-2xl font-bold">원</span></div>
           <div className="text-white/60 text-sm">/ 30일 · 부가세 포함</div>
           <div className="mt-4 inline-flex items-center gap-1.5 bg-white/10 px-3 py-1.5 rounded-full text-xs">
             <Zap className="h-3.5 w-3.5 text-[#f59e0b]" />

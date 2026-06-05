@@ -26,7 +26,7 @@ export default function ManuscriptResult({
       {/* 점수 카드 */}
       <div className={`rounded-2xl p-8 mb-6 text-center text-white ${pass ? 'bg-gradient-to-br from-green-500 to-emerald-600' : 'bg-gradient-to-br from-[#1e3a5f] to-[#2d5488]'}`}>
         <Trophy className="h-10 w-10 mx-auto mb-3 opacity-90" />
-        <div className="text-5xl font-bold mb-1">{result.totalScore}점</div>
+        <div className="text-3xl sm:text-4xl md:text-5xl font-bold mb-1">{result.totalScore}점</div>
         <div className="text-white/80 mb-2">/ 100점</div>
         <div className={`inline-block px-4 py-1 rounded-full text-sm font-semibold ${pass ? 'bg-white/20' : 'bg-white/10'}`}>
           {pass ? '합격권' : '불합격'}

@@ -1,8 +1,11 @@
 'use client'
 
+import { useEffect, useRef, useState } from 'react'
+
 // 원고지 그리드 렌더러 (입력 textarea와 분리된 표시 전용 컴포넌트)
 // 시험 서술형(긴 글)·원고지 AI 채점 양쪽에서 재사용한다.
 // cell 로 칸 크기를 키울 수 있다(서술형 9번 보고서는 크게).
+// 반응형: 컨테이너 너비를 재서 칸 크기를 자동 축소 → 모바일에서도 가로 오버플로우 없이 꽉 참.
 
 function textToGrid(text: string, cols: number, rows: number): string[][] {
   const grid: string[][] = Array.from({ length: rows }, () => Array(cols).fill(''))
@@ -33,17 +36,35 @@ export default function ManuscriptGrid({
   rows?: number
   cell?: number
 }) {
+  const boxRef = useRef<HTMLDivElement>(null)
+  const [availW, setAvailW] = useState<number | null>(null)
+
+  useEffect(() => {
+    const el = boxRef.current
+    if (!el) return
+    const update = () => setAvailW(el.clientWidth)
+    update()
+    const ro = new ResizeObserver(update)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
+
+  // 인덱스열(~22px) 자리를 빼고 남은 너비에 칸을 맞춤. prop(cell)을 넘지 않음.
+  const fitCell = availW
+    ? Math.max(12, Math.min(cell, Math.floor((availW - 24) / cols)))
+    : cell
+
   const grid = textToGrid(text, cols, rows)
-  const fontPx = Math.round(cell * 0.5)
-  const idxW = Math.max(20, Math.round(cell * 0.9))
+  const fontPx = Math.round(fitCell * 0.5)
+  const idxW = Math.max(18, Math.round(fitCell * 0.9))
 
   return (
-    <div className="overflow-x-auto rounded-lg border-2 border-[#1e3a5f]/40 bg-white">
+    <div ref={boxRef} className="overflow-x-auto rounded-lg border-2 border-[#1e3a5f]/40 bg-white">
       <table className="border-collapse" style={{ tableLayout: 'fixed' }}>
         <colgroup>
           <col style={{ width: `${idxW}px` }} />
           {Array.from({ length: cols }, (_, i) => (
-            <col key={i} style={{ width: `${cell}px` }} />
+            <col key={i} style={{ width: `${fitCell}px` }} />
           ))}
         </colgroup>
         <tbody>
@@ -51,7 +72,7 @@ export default function ManuscriptGrid({
             <tr key={rowIdx}>
               <td
                 className="text-center text-gray-300 border-r border-gray-200 bg-gray-50 select-none"
-                style={{ fontSize: `${Math.max(7, Math.round(cell * 0.32))}px` }}
+                style={{ fontSize: `${Math.max(7, Math.round(fitCell * 0.32))}px` }}
               >
                 {rowIdx + 1}
               </td>
@@ -62,7 +83,7 @@ export default function ManuscriptGrid({
                     'border border-gray-200 text-center align-middle font-medium text-gray-800',
                     char === '' ? '' : 'bg-blue-50/30',
                   ].join(' ')}
-                  style={{ height: `${cell}px`, fontSize: `${fontPx}px` }}
+                  style={{ height: `${fitCell}px`, fontSize: `${fontPx}px` }}
                 >
                   {char}
                 </td>

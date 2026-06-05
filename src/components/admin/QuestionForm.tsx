@@ -98,7 +98,7 @@ export default function QuestionForm({ initial }: { initial?: Question }) {
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
       {/* 기본 정보 */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div>
           <label className={labelCls}>연도</label>
           <input type="number" value={year} onChange={e => setYear(e.target.value)} className={inputCls} required min={2000} max={2099} />

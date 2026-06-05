@@ -135,7 +135,7 @@ export default function ExamPlayer({
                   key={question.id}
                   onClick={() => setCurrentIdx(idx)}
                   className={[
-                    'h-8 w-8 rounded-lg text-xs font-bold transition-all relative',
+                    'h-9 w-9 rounded-lg text-xs font-bold transition-all relative',
                     idx === currentIdx
                       ? 'bg-gradient-to-br from-[#1e3a5f] to-[#2d5488] text-white shadow-md'
                       : answers[question.id]
@@ -173,7 +173,7 @@ export default function ExamPlayer({
                   key={question.id}
                   onClick={() => setCurrentIdx(idx)}
                   className={[
-                    'h-8 w-8 rounded-lg text-xs font-bold transition-all relative',
+                    'h-9 w-9 rounded-lg text-xs font-bold transition-all relative',
                     idx === currentIdx ? 'bg-gradient-to-br from-[#1e3a5f] to-[#2d5488] text-white'
                       : answers[question.id] ? 'bg-emerald-100 text-emerald-700'
                       : 'bg-[#f1f5f9] text-[#64748b]',
@@ -282,6 +282,7 @@ export default function ExamPlayer({
                     cols={ESSAY_COLS}
                     rows={42}
                     cell={28}
+                    maxHeightVh={55}
                   />
                 ) : (
                   <textarea

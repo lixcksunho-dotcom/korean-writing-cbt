@@ -79,7 +79,7 @@ export default async function ResultPage({
           <div className="inline-flex p-4 rounded-2xl mb-4 bg-white/15">
             <Trophy className="h-10 w-10" />
           </div>
-          <div className="text-6xl font-black mb-1 tracking-tight">{scaled}<span className="text-2xl">점</span></div>
+          <div className="text-4xl sm:text-5xl md:text-6xl font-black mb-1 tracking-tight">{scaled}<span className="text-2xl">점</span></div>
           <div className="text-white/70 text-sm mb-4">획득 {earnedPoints} / {totalPoints}점 · 1000점 환산</div>
           <div className="inline-flex items-center gap-1.5 px-5 py-2 rounded-full text-sm font-bold bg-white/20">
             {isPass ? <Star className="h-4 w-4 fill-current" /> : null}
