@@ -1,5 +1,6 @@
 import Navbar from "@/components/layout/Navbar";
 import SiteFooter from "@/components/layout/SiteFooter";
+import ScheduleModal from "@/components/schedule/ScheduleModal";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function MainLayout({ children }: { children: React.ReactNode }) {
@@ -14,6 +15,7 @@ export default async function MainLayout({ children }: { children: React.ReactNo
         {children}
       </main>
       <SiteFooter />
+      <ScheduleModal />
     </div>
   );
 }

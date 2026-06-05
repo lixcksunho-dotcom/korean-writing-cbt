@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { FileText, BookOpen, PenLine, CheckCircle, ArrowRight, Sparkles, Users, Star, TrendingUp, Gift } from "lucide-react";
 import ReviewMarquee from "@/components/landing/ReviewMarquee";
 import SiteFooter from "@/components/layout/SiteFooter";
+import ScheduleModal from "@/components/schedule/ScheduleModal";
 
 export const revalidate = 120
 
@@ -210,6 +211,7 @@ export default async function HomePage() {
       </section>
 
       <SiteFooter />
+      <ScheduleModal />
     </div>
   );
 }
