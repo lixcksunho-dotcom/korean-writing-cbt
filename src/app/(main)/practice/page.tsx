@@ -47,11 +47,11 @@ export default async function PracticePage() {
       grad: 'from-amber-500 to-[#d97706]',
     },
     {
-      href: '/manuscript',
+      href: '/practice/report',
       icon: PenLine,
-      title: '원고지 연습',
-      desc: '자유 주제로 원고지 글쓰기를 연습하고 AI 첨삭을 받아요.',
-      meta: '자유 작성',
+      title: '원고지 보고서 실전',
+      desc: '실제 서술형 9번 보고서 문항을 시간 안에 이어서 작성해요.',
+      meta: '시간제한 · 실전',
       grad: 'from-emerald-500 to-emerald-700',
     },
   ]
