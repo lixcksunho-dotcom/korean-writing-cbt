@@ -13,6 +13,8 @@ export default function SiteFooter() {
           <Link href="/privacy" className="hover:text-white transition-colors">개인정보처리방침</Link>
           <span className="text-white/20">·</span>
           <Link href="/refund" className="hover:text-white transition-colors">취소·환불 정책</Link>
+          <span className="text-white/20">·</span>
+          <Link href="/support" className="hover:text-white transition-colors">고객센터</Link>
         </div>
 
         <div className="space-y-1 leading-relaxed">

@@ -20,7 +20,7 @@ export const BUSINESS = {
   /** 사업장 주소 */
   address: '울산광역시 동구 등대5길 30, 1층 101호(방어동, 진주정)',
   /** 고객센터 이메일 */
-  email: 'support@kptest.cloud',
+  email: 'kptestcbt@gmail.com',
   /** 고객센터 전화번호 (나중에 050 안심번호로 교체 가능) */
   phone: '010-7641-4245',
   /** 개인정보 보호책임자 (미입력 시 대표자명 사용) */
