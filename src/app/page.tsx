@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { FileText, BookOpen, PenLine, CheckCircle, ArrowRight, Sparkles, Users, Star, TrendingUp, Gift } from "lucide-react";
 import ReviewMarquee from "@/components/landing/ReviewMarquee";
+import SiteFooter from "@/components/layout/SiteFooter";
 
 export const revalidate = 120
 
@@ -208,9 +209,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <footer className="bg-[#080f1e] text-white/30 text-center text-xs py-6">
-        © 2024 한국실용글쓰기 CBT · 문의: support@kptest.cloud
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

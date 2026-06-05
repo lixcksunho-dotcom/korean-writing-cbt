@@ -91,7 +91,7 @@ export default async function SubscribePage() {
           {/* 안전 결제 배지 */}
           <div className="flex items-center justify-center gap-1.5 mt-4 text-xs text-[#94a3b8]">
             <Shield className="h-3.5 w-3.5" />
-            토스페이먼츠 안전결제 · SSL 암호화
+            포트원(PortOne) 안전결제 · SSL 암호화
           </div>
         </div>
       </div>

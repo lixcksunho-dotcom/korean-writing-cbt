@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { loadTossPayments } from '@tosspayments/tosspayments-sdk'
+import * as PortOne from '@portone/browser-sdk/v2'
 
 type Method = 'card' | 'kakaopay' | 'tosspay'
 
@@ -11,16 +11,17 @@ const METHODS: { key: Method; label: string; emoji: string; color: string }[] = 
   { key: 'tosspay', label: '토스페이', emoji: '💙', color: 'border-[#0064FF] bg-[#0064FF] text-white' },
 ]
 
-// 토스 SDK는 method에 영문 enum('CARD' 등)만 받음.
-// 카카오페이/토스페이는 카드 결제의 간편결제 자체창(easyPay 코드)으로 연다.
-function tossMethodParams(method: Method): Record<string, unknown> {
+// 포트원 V2 결제수단 매핑.
+// 카드: payMethod 'CARD'. 간편결제(카카오페이/토스페이)는 'EASY_PAY' + easyPayProvider 코드.
+// as const 로 리터럴 타입을 확정해야 PaymentRequest 판별 유니온에 맞는다.
+function portoneMethodParams(method: Method) {
   switch (method) {
     case 'kakaopay':
-      return { method: 'CARD', card: { flowMode: 'DIRECT', easyPay: 'KAKAOPAY' } }
+      return { payMethod: 'EASY_PAY', easyPay: { easyPayProvider: 'EASY_PAY_PROVIDER_KAKAOPAY' } } as const
     case 'tosspay':
-      return { method: 'CARD', card: { flowMode: 'DIRECT', easyPay: 'TOSSPAY' } }
+      return { payMethod: 'EASY_PAY', easyPay: { easyPayProvider: 'EASY_PAY_PROVIDER_TOSSPAY' } } as const
     default:
-      return { method: 'CARD' }
+      return { payMethod: 'CARD' } as const
   }
 }
 
@@ -40,27 +41,37 @@ export default function PaymentButton({
     setError('')
     setLoading(method)
     try {
-      const toss = await loadTossPayments(process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY!)
-      const payment = toss.payment({ customerKey: userId })
+      const paymentId = `sub-${crypto.randomUUID()}`
 
-      const orderId = `sub_${crypto.randomUUID()}`
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await (payment.requestPayment as (req: any) => Promise<void>)({
-        ...tossMethodParams(method),
-        amount: { currency: 'KRW', value: 5000 },
-        orderId,
+      const response = await PortOne.requestPayment({
+        storeId: process.env.NEXT_PUBLIC_PORTONE_STORE_ID!,
+        channelKey: process.env.NEXT_PUBLIC_PORTONE_CHANNEL_KEY!,
+        paymentId,
         orderName: 'AI 원고지 채점 1개월',
-        customerEmail: userEmail,
-        customerName: userName,
-        successUrl: `${window.location.origin}/subscribe/success`,
-        failUrl: `${window.location.origin}/subscribe/fail`,
+        totalAmount: 5000,
+        currency: 'CURRENCY_KRW',
+        customer: {
+          customerId: userId,
+          email: userEmail,
+          fullName: userName,
+        },
+        // 모바일 등 리다이렉트 결제는 이 주소로 paymentId를 달고 돌아온다.
+        redirectUrl: `${window.location.origin}/subscribe/success`,
+        ...portoneMethodParams(method),
       })
-    } catch (e: unknown) {
-      const err = e as { code?: string; message?: string }
-      if (err?.code !== 'USER_CANCEL') {
-        setError(err?.message ?? '결제 중 오류가 발생했습니다.')
+
+      // PC(팝업/iframe)에서는 Promise가 resolve된다. code가 있으면 실패.
+      if (response?.code !== undefined) {
+        setError(response.message ?? '결제 중 오류가 발생했습니다.')
+        return
       }
+
+      // 결제 성공 → 서버 검증 페이지로 이동(여기서 실제 구독 발급)
+      window.location.href =
+        `/subscribe/success?paymentId=${encodeURIComponent(response!.paymentId)}`
+    } catch (e: unknown) {
+      const err = e as { message?: string }
+      setError(err?.message ?? '결제 중 오류가 발생했습니다.')
     } finally {
       setLoading(null)
     }

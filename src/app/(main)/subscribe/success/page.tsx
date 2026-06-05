@@ -11,33 +11,45 @@ const PLAN_PRICE = 5000
 export default async function SuccessPage({
   searchParams,
 }: {
-  searchParams: Promise<{ paymentKey?: string; orderId?: string; amount?: string }>
+  // 포트원은 PC(팝업)에서는 paymentId만, 모바일 리다이렉트에서는
+  // code/message까지 함께 붙여서 돌아온다.
+  searchParams: Promise<{ paymentId?: string; code?: string; message?: string }>
 }) {
-  const { paymentKey, orderId, amount } = await searchParams
+  const { paymentId, code, message } = await searchParams
 
-  if (!paymentKey || !orderId || !amount) redirect('/subscribe')
-
-  // 0. 금액 위변조 방지: URL로 넘어온 금액이 정가와 다르면 즉시 거부
-  //    (클라이언트 결제 요청 금액을 조작해 헐값에 구독하는 공격 차단)
-  if (Number(amount) !== PLAN_PRICE) redirect('/subscribe/fail?reason=amount')
+  // 모바일 리다이렉트에서 결제가 실패하면 code가 실려서 돌아온다.
+  if (code) {
+    redirect(`/subscribe/fail?code=${encodeURIComponent(code)}&message=${encodeURIComponent(message ?? '')}`)
+  }
+  if (!paymentId) redirect('/subscribe')
 
   // 1. 인증 확인
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  // 2. 토스 서버에 결제 확인
-  const confirmRes = await fetch('https://api.tosspayments.com/v1/payments/confirm', {
-    method: 'POST',
-    headers: {
-      Authorization: `Basic ${Buffer.from(`${process.env.TOSS_SECRET_KEY}:`).toString('base64')}`,
-      'Content-Type': 'application/json',
+  // 2. 포트원 서버에 결제 단건 조회로 실제 결제 사실을 검증
+  //    (브라우저에서 넘어온 정보는 신뢰하지 않는다)
+  const verifyRes = await fetch(
+    `https://api.portone.io/payments/${encodeURIComponent(paymentId)}`,
+    {
+      headers: { Authorization: `PortOne ${process.env.PORTONE_API_SECRET}` },
+      cache: 'no-store',
     },
-    body: JSON.stringify({ paymentKey, orderId, amount: PLAN_PRICE }),
-    cache: 'no-store',
-  })
+  )
 
-  if (!confirmRes.ok) redirect('/subscribe/fail?reason=confirm')
+  if (!verifyRes.ok) redirect('/subscribe/fail?reason=confirm')
+
+  const payment = await verifyRes.json()
+
+  // 2-1. 결제 상태가 완료(PAID)인지 확인
+  if (payment?.status !== 'PAID') redirect('/subscribe/fail?reason=status')
+
+  // 2-2. 금액 위변조 방지: 실제 결제 금액이 정가와 다르면 거부
+  //      (클라이언트가 금액을 조작해 헐값에 구독하는 공격 차단)
+  if (Number(payment?.amount?.total) !== PLAN_PRICE) {
+    redirect('/subscribe/fail?reason=amount')
+  }
 
   // 3. 구독 발급 — Service Role로만 기록한다.
   //    (RLS상 사용자 본인은 subscriptions에 직접 insert 할 수 없으므로
@@ -47,12 +59,12 @@ export default async function SuccessPage({
   const expiresAt = new Date()
   expiresAt.setDate(expiresAt.getDate() + 30)
 
-  // order_id에 UNIQUE 제약이 걸려 있어, 새로고침 등으로 같은 주문이
-  // 중복 발급되는 것을 DB 레벨에서 막는다.
+  // order_id(=paymentId)에 UNIQUE 제약이 걸려 있어, 새로고침 등으로 같은
+  // 주문이 중복 발급되는 것을 DB 레벨에서 막는다.
   const { error: insertError } = await admin.from('subscriptions').insert({
     user_id: user.id,
-    payment_key: paymentKey,
-    order_id: orderId,
+    payment_key: payment?.pgTxId ?? paymentId,
+    order_id: paymentId,
     amount: PLAN_PRICE,
     status: 'active',
     expires_at: expiresAt.toISOString(),
