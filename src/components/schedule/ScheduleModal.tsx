@@ -33,6 +33,10 @@ function daysBetween(fromIso: string) {
   const target = new Date(`${fromIso}T00:00:00`)
   return Math.ceil((target.getTime() - startOfToday().getTime()) / 86400000)
 }
+function todayKey() {
+  const d = new Date()
+  return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`
+}
 
 type Status = 'open' | 'upcoming' | 'closed'
 function statusOf(r: Round): Status {
@@ -47,14 +51,22 @@ function statusOf(r: Round): Status {
 export default function ScheduleModal() {
   const [open, setOpen] = useState(false)
 
-  // 세션당 1회 자동 노출 (재방문 시 floating 버튼으로 다시 열 수 있음)
+  // 세션당 1회 자동 노출. 단 '오늘 하루 안 열기'를 누른 날(localStorage)에는 자동으로 안 뜬다.
   useEffect(() => {
     if (typeof window === 'undefined') return
+    const today = todayKey()
+    if (localStorage.getItem('kpt_schedule_hide') === today) return
     if (!sessionStorage.getItem('kpt_schedule_seen')) {
       setOpen(true)
       sessionStorage.setItem('kpt_schedule_seen', '1')
     }
   }, [])
+
+  // 오늘 하루 자동 노출 끄기 (floating 버튼으로는 언제든 다시 열 수 있음)
+  function hideForToday() {
+    if (typeof window !== 'undefined') localStorage.setItem('kpt_schedule_hide', todayKey())
+    setOpen(false)
+  }
 
   // ESC로 닫기 + 열렸을 때 배경 스크롤 잠금
   useEffect(() => {
@@ -179,6 +191,22 @@ export default function ScheduleModal() {
               <p className="mt-2 text-[11px] text-[#b4bfce]">
                 일정은 주관처 사정으로 변경될 수 있습니다. 접수 전 공식 홈페이지에서 확인하세요.
               </p>
+            </div>
+
+            {/* 하단 바: 오늘 하루 안 열기 / 닫기 */}
+            <div className="flex items-center justify-between border-t border-[#eef2f7] px-5 py-3">
+              <button
+                onClick={hideForToday}
+                className="text-xs font-semibold text-[#94a3b8] hover:text-[#64748b] transition-colors"
+              >
+                오늘 하루 안 열기
+              </button>
+              <button
+                onClick={() => setOpen(false)}
+                className="text-xs font-bold text-[#1e3a5f] hover:underline"
+              >
+                닫기
+              </button>
             </div>
           </div>
         </div>
