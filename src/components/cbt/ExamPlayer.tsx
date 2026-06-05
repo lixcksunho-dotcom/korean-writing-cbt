@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Clock, ChevronLeft, ChevronRight, Send, AlertCircle, CheckCircle2, FileText } from 'lucide-react'
 import { createSession, submitSession } from '@/app/(main)/cbt/actions'
 import EditableManuscript from '@/components/manuscript/EditableManuscript'
+import PassageView from '@/components/cbt/PassageView'
 
 export type Question = {
   id: string
@@ -195,8 +196,8 @@ export default function ExamPlayer({
                 <FileText className="h-4 w-4 text-[#1e3a5f]" />
                 <span className="text-sm font-bold text-[#1e3a5f]">[지문 · 자료]</span>
               </div>
-              <div className="px-6 py-5 max-h-[30rem] overflow-y-auto">
-                <p className="text-[15px] text-[#1f2937] leading-[1.9] whitespace-pre-wrap">{q.passage}</p>
+              <div className="px-4 sm:px-5 py-4 max-h-[30rem] overflow-y-auto">
+                <PassageView text={q.passage} />
               </div>
             </div>
           )}
