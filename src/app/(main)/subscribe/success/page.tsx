@@ -6,7 +6,7 @@ import { CheckCircle2, PenLine } from 'lucide-react'
 
 // 구독 1개월 가격(원). 클라이언트가 보내온 금액을 그대로 신뢰하지 않고
 // 이 값과 일치하는지 서버에서 반드시 검증한다.
-const PLAN_PRICE = 5000
+const PLAN_PRICE = 5500
 
 export default async function SuccessPage({
   searchParams,
@@ -83,7 +83,7 @@ export default async function SuccessPage({
         </div>
         <h1 className="text-2xl font-black text-[#0f172a] mb-2">결제 완료!</h1>
         <p className="text-[#64748b] text-sm mb-1">
-          <span className="font-semibold text-[#0f172a]">5,000원</span> 결제가 완료되었습니다.
+          <span className="font-semibold text-[#0f172a]">5,500원</span> 결제가 완료되었습니다.
         </p>
         <p className="text-[#94a3b8] text-xs mb-8">
           {expiresAt.toLocaleDateString('ko-KR')} 까지 AI 원고지 채점을 이용할 수 있어요.

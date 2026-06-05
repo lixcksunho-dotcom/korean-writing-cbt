@@ -13,7 +13,7 @@ export default function RefundPage() {
       <p className="text-sm text-[#94a3b8] mb-8">시행일: 2026년 6월 5일</p>
 
       <Section title="1. 판매 상품">
-        AI 채점·분석 30일 이용권(디지털 콘텐츠) — 5,000원(부가세 포함). 결제 완료 즉시 이용권이
+        AI 채점·분석 30일 이용권(디지털 콘텐츠) — 5,500원(부가세 포함). 결제 완료 즉시 이용권이
         활성화됩니다.
       </Section>
 

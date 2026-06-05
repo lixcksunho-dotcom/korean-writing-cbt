@@ -165,7 +165,7 @@ export default async function DashboardPage() {
             </div>
             <div>
               <p className="font-bold text-amber-900 text-sm">AI 원고지 채점 구독</p>
-              <p className="text-amber-700 text-xs">월 5,000원으로 무제한 이용 가능</p>
+              <p className="text-amber-700 text-xs">월 5,500원으로 무제한 이용 가능</p>
             </div>
           </div>
           <Link href="/subscribe" className="shrink-0 btn-gold text-xs font-bold text-white px-4 py-2 rounded-xl">

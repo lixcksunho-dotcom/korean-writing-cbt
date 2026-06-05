@@ -25,10 +25,8 @@ export default function SiteFooter() {
             통신판매업 신고번호: {biz(BUSINESS.mailOrderNumber)}
           </p>
           <p>주소: {biz(BUSINESS.address)}</p>
-          <p>
-            고객센터: {biz(BUSINESS.email)}
-            {BUSINESS.phone ? ` · ${BUSINESS.phone}` : ''}
-          </p>
+          <p>전화: {biz(BUSINESS.phone)}</p>
+          <p>이메일: {biz(BUSINESS.email)}</p>
         </div>
 
         <p className="mt-4 text-white/25">

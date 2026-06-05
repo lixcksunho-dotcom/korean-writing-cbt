@@ -56,14 +56,14 @@ export default async function SubscribePage() {
           AI 채점 구독
         </div>
         <h1 className="text-2xl font-black text-[#0f172a] tracking-tight">AI 채점·분석 구독</h1>
-        <p className="text-[#64748b] text-sm mt-1">서술형·원고지 모두, 한 달 5,000원으로 무제한</p>
+        <p className="text-[#64748b] text-sm mt-1">서술형·원고지 모두, 한 달 5,500원으로 무제한</p>
       </div>
 
       <div className="bg-white rounded-2xl border border-[#e2e8f0] shadow-[0_4px_20px_rgba(15,31,61,0.08)] overflow-hidden">
         {/* 가격 헤더 */}
         <div className="bg-gradient-to-br from-[#0f1f3d] to-[#1e3a5f] p-7 text-center text-white">
-          <div className="text-5xl font-black mb-1">5,000<span className="text-2xl font-bold">원</span></div>
-          <div className="text-white/60 text-sm">/ 30일</div>
+          <div className="text-5xl font-black mb-1">5,500<span className="text-2xl font-bold">원</span></div>
+          <div className="text-white/60 text-sm">/ 30일 · 부가세 포함</div>
           <div className="mt-4 inline-flex items-center gap-1.5 bg-white/10 px-3 py-1.5 rounded-full text-xs">
             <Zap className="h-3.5 w-3.5 text-[#f59e0b]" />
             결제 즉시 이용 가능

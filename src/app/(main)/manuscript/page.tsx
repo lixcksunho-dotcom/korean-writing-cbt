@@ -56,7 +56,7 @@ export default async function ManuscriptPage() {
                 <Lock className="h-7 w-7 text-white" />
               </div>
               <h2 className="text-xl font-black mb-2">구독 후 이용 가능해요</h2>
-              <p className="text-white/60 text-sm">월 5,000원으로 AI 채점 무제한 이용</p>
+              <p className="text-white/60 text-sm">월 5,500원으로 AI 채점 무제한 이용</p>
             </div>
             <div className="p-6">
               <div className="space-y-2.5 mb-6">
@@ -77,7 +77,7 @@ export default async function ManuscriptPage() {
                 className="btn-gold w-full flex items-center justify-center gap-2 text-white font-bold py-3.5 rounded-xl text-sm"
               >
                 <Sparkles className="h-4 w-4" />
-                5,000원으로 시작하기
+                5,500원으로 시작하기
               </Link>
             </div>
           </div>

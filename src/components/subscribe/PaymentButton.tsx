@@ -48,7 +48,7 @@ export default function PaymentButton({
         channelKey: process.env.NEXT_PUBLIC_PORTONE_CHANNEL_KEY!,
         paymentId,
         orderName: 'AI 원고지 채점 1개월',
-        totalAmount: 5000,
+        totalAmount: 5500,
         currency: 'CURRENCY_KRW',
         customer: {
           customerId: userId,
