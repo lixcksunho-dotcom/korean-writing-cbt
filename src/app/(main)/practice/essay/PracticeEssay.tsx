@@ -23,10 +23,12 @@ export default function PracticeEssay({
   questions,
   title,
   hasSubscription,
+  backHref = '/practice/essay',
 }: {
   questions: PracticeEssayQuestion[]
   title: string
   hasSubscription: boolean
+  backHref?: string
 }) {
   const [idx, setIdx] = useState(0)
   const [answers, setAnswers] = useState<Record<string, string>>({})
@@ -64,7 +66,7 @@ export default function PracticeEssay({
   return (
     <div className="animate-fade-up">
       <div className="flex items-center justify-between mb-5">
-        <Link href="/practice/essay" className="inline-flex items-center gap-1.5 text-sm text-[#64748b] hover:text-[#1e3a5f]">
+        <Link href={backHref} className="inline-flex items-center gap-1.5 text-sm text-[#64748b] hover:text-[#1e3a5f]">
           <ArrowLeft className="h-4 w-4" /> {title}
         </Link>
         <span className="text-sm text-[#94a3b8]">서술형 {idx + 1} / {questions.length}</span>

@@ -11,6 +11,7 @@ export default async function CbtPage() {
   const { data: exams } = await supabase
     .from('questions')
     .select('year, round, type')
+    .lt('year', 9000)
     .order('year', { ascending: false })
     .order('round', { ascending: false })
 

@@ -1,19 +1,27 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { ListChecks, PenLine, FileText, ChevronRight, CircleDot } from 'lucide-react'
+import { ListChecks, PenLine, FileText, ChevronRight, CircleDot, Target } from 'lucide-react'
 
 export default async function PracticePage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  // 유형별 보유 문항 수 (안내용)
-  const { data: rows } = await supabase.from('questions').select('type')
+  // 유형별 보유 문항 수 (안내용) — 유형별 연습 전용(year>=9000)은 제외
+  const { data: rows } = await supabase.from('questions').select('type').lt('year', 9000)
   const multipleCount = (rows ?? []).filter(r => r.type === 'multiple').length
   const essayCount = (rows ?? []).filter(r => r.type === 'essay').length
 
   const cards = [
+    {
+      href: '/practice/types',
+      icon: Target,
+      title: '유형별 집중 연습',
+      desc: '맞춤법·외래어·문장 호응·공문서를 유형별로 골라 고쳐 써요.',
+      meta: '맞춤법·외래어·호응·공문서',
+      grad: 'from-rose-500 to-pink-600',
+    },
     {
       href: '/practice/refine',
       icon: CircleDot,

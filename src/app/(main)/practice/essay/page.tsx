@@ -20,6 +20,7 @@ export default async function EssayPracticePage({
       .from('questions')
       .select('year, round')
       .eq('type', 'essay')
+      .lt('year', 9000)
       .order('year', { ascending: false })
       .order('round', { ascending: false })
     const sets = rows
