@@ -1,0 +1,20 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F59E0B"/>
+      <stop offset="1" stop-color="#D97706"/>
+    </linearGradient>
+  </defs>
+  <!-- 금색 라운드 사각 배경 -->
+  <rect width="64" height="64" rx="15" fill="url(#g)"/>
+  <!-- 원고지 칸(2x2) -->
+  <g stroke="#FFFFFF" stroke-width="3.2" stroke-linejoin="round">
+    <rect x="14" y="15" width="26" height="26" rx="3" fill="none"/>
+    <line x1="27" y1="15" x2="27" y2="41"/>
+    <line x1="14" y1="28" x2="40" y2="28"/>
+  </g>
+  <!-- 펜촉 -->
+  <path d="M30 47 L47 30 L52 35 L35 52 L28 54 Z" fill="#0F1F3D"/>
+  <path d="M47 30 L49 28 A2.8 2.8 0 0 1 54 33 L52 35 Z" fill="#0F172A"/>
+  <path d="M30 47 L35 52 L28 54 Z" fill="#FFFFFF"/>
+</svg>
