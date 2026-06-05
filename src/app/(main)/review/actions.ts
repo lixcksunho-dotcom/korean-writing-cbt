@@ -7,6 +7,9 @@ export async function submitReview(data: {
   displayName: string
   content: string
   rating: number
+  examDate?: string | null
+  examScore?: number | null
+  proofPath?: string | null
 }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -17,6 +20,9 @@ export async function submitReview(data: {
     display_name: data.displayName.trim(),
     content: data.content.trim(),
     rating: data.rating,
+    exam_date: data.examDate || null,
+    exam_score: data.examScore ?? null,
+    proof_path: data.proofPath || null,
   })
 
   if (error) throw new Error(error.message)

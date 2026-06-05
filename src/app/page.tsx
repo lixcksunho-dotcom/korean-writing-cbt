@@ -45,7 +45,7 @@ export default async function HomePage() {
   const supabase = await createClient()
   const { data: reviews } = await supabase
     .from('reviews')
-    .select('id, display_name, content, rating, created_at')
+    .select('id, display_name, content, rating, created_at, exam_score')
     .eq('is_visible', true)
     .order('created_at', { ascending: false })
     .limit(20)

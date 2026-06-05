@@ -8,6 +8,7 @@ type Review = {
   content: string
   rating: number
   created_at: string
+  exam_score?: number | null
 }
 
 function timeAgo(dateStr: string) {
@@ -22,13 +23,20 @@ function timeAgo(dateStr: string) {
 function ReviewCard({ review }: { review: Review }) {
   return (
     <div className="shrink-0 w-72 bg-white rounded-2xl border border-[#e2e8f0] shadow-[0_4px_16px_rgba(15,31,61,0.06)] p-5 mx-2.5">
-      <div className="flex items-center gap-0.5 mb-3">
-        {[1, 2, 3, 4, 5].map(s => (
-          <Star
-            key={s}
-            className={`h-3.5 w-3.5 ${s <= review.rating ? 'fill-[#f59e0b] text-[#f59e0b]' : 'text-[#e2e8f0]'}`}
-          />
-        ))}
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-0.5">
+          {[1, 2, 3, 4, 5].map(s => (
+            <Star
+              key={s}
+              className={`h-3.5 w-3.5 ${s <= review.rating ? 'fill-[#f59e0b] text-[#f59e0b]' : 'text-[#e2e8f0]'}`}
+            />
+          ))}
+        </div>
+        {review.exam_score != null && (
+          <span className="text-[11px] font-black text-[#d97706] bg-amber-50 border border-amber-100 px-2 py-0.5 rounded-full">
+            {review.exam_score}점 합격
+          </span>
+        )}
       </div>
       <p className="text-[#334155] text-sm leading-relaxed mb-4 line-clamp-3">
         &ldquo;{review.content}&rdquo;
