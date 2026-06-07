@@ -3,6 +3,7 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@/lib/supabase/server'
 import { getActiveSubscription } from '@/lib/subscription'
+import { consumeAiTrial, FREE_AI_TRIAL } from '@/lib/aiTrial'
 
 export type EssayGrade = {
   score: number
@@ -38,9 +39,11 @@ export async function gradeExamEssay(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Unauthorized')
 
-  // 서술형 AI 채점은 유료 기능 — 서버에서 구독 강제
+  // 서술형 AI 채점은 유료 기능. 단, 비구독자는 평생 1회 무료 체험 허용.
   const subscription = await getActiveSubscription(user.id)
-  if (!subscription) throw new Error('SUBSCRIPTION_REQUIRED')
+  const trialUsed = Number(user.app_metadata?.ai_trial_used ?? 0)
+  const usingTrial = !subscription
+  if (usingTrial && trialUsed >= FREE_AI_TRIAL) throw new Error('SUBSCRIPTION_REQUIRED')
 
   // 본인 세션의 답안인지 확인
   const { data: session } = await supabase
@@ -101,6 +104,8 @@ export async function gradeExamEssay(
     .update({ ai_score: result.score, ai_feedback: result })
     .eq('id', answerRow.id)
 
+  // 새로 채점에 성공한 경우에만 무료 체험 1회 차감(구독자는 차감 안 함)
+  if (usingTrial) await consumeAiTrial(user.id, trialUsed)
   return result
 }
 

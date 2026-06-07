@@ -23,9 +23,11 @@ const MIN_PER_REPORT = 40 // 보고서 1편당 권장 시간(분)
 export default function ReportRunner({
   questions,
   hasSubscription,
+  aiTrialRemaining = 0,
 }: {
   questions: ReportQuestion[]
   hasSubscription: boolean
+  aiTrialRemaining?: number
 }) {
   const [idx, setIdx] = useState(0)
   const [answers, setAnswers] = useState<Record<string, string>>({})
@@ -33,7 +35,10 @@ export default function ReportRunner({
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [showModel, setShowModel] = useState(false)
   const [timeLeft, setTimeLeft] = useState(questions.length * MIN_PER_REPORT * 60)
+  const [trialSpent, setTrialSpent] = useState(false)
   const [isPending, startTransition] = useTransition()
+
+  const canUseAi = hasSubscription || (aiTrialRemaining > 0 && !trialSpent)
 
   useEffect(() => {
     const t = setInterval(() => setTimeLeft(s => Math.max(0, s - 1)), 1000)
@@ -60,6 +65,7 @@ export default function ReportRunner({
       try {
         const result = await gradeEssayPractice(q.id, answer)
         setGrades(g => ({ ...g, [q.id]: result }))
+        if (!hasSubscription) setTrialSpent(true)
       } catch (err) {
         const msg = err instanceof Error ? err.message : '채점 중 오류가 발생했어요.'
         setErrors(e => ({ ...e, [q.id]: msg === 'SUBSCRIPTION_REQUIRED' ? '서술형 AI 분석은 구독 후 이용할 수 있어요.' : msg }))
@@ -143,13 +149,16 @@ export default function ReportRunner({
 
         {/* AI 분석 */}
         <div className="mt-4">
-          {hasSubscription ? (
-            <button onClick={grade_} disabled={isPending || !answer.trim()} className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold bg-gradient-to-r from-amber-500 to-[#d97706] text-white disabled:opacity-50">
-              {isPending ? <><Loader2 className="h-4 w-4 animate-spin" /> 분석 중...</> : <><Sparkles className="h-4 w-4" /> AI 분석받기</>}
-            </button>
+          {canUseAi ? (
+            <>
+              <button onClick={grade_} disabled={isPending || !answer.trim()} className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold bg-gradient-to-r from-amber-500 to-[#d97706] text-white disabled:opacity-50">
+                {isPending ? <><Loader2 className="h-4 w-4 animate-spin" /> 분석 중...</> : <><Sparkles className="h-4 w-4" /> {hasSubscription ? 'AI 분석받기' : '무료로 1회 AI 분석 체험'}</>}
+              </button>
+              {!hasSubscription && <p className="text-xs text-[#94a3b8] mt-1.5">구독 없이 <span className="font-semibold text-amber-600">1회 무료</span>로 받아볼 수 있어요.</p>}
+            </>
           ) : (
             <Link href="/subscribe" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold border-2 border-amber-300 text-amber-700 hover:bg-amber-50">
-              <Lock className="h-4 w-4" /> 구독하고 AI 분석받기
+              <Lock className="h-4 w-4" /> {trialSpent ? '무료 체험 완료 · 구독하고 무제한' : '구독하고 AI 분석받기'}
             </Link>
           )}
           {errors[q.id] && <p className="text-xs text-red-500 mt-2">{errors[q.id]}</p>}

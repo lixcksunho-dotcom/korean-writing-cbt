@@ -23,11 +23,13 @@ export default function PracticeEssay({
   questions,
   title,
   hasSubscription,
+  aiTrialRemaining = 0,
   backHref = '/practice/essay',
 }: {
   questions: PracticeEssayQuestion[]
   title: string
   hasSubscription: boolean
+  aiTrialRemaining?: number
   backHref?: string
 }) {
   const [idx, setIdx] = useState(0)
@@ -36,7 +38,11 @@ export default function PracticeEssay({
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [passageOpen, setPassageOpen] = useState(true)
   const [showModel, setShowModel] = useState(false)
+  const [trialSpent, setTrialSpent] = useState(false)
   const [isPending, startTransition] = useTransition()
+
+  // 구독자거나, 비구독자라도 무료 체험이 남아있으면 AI 분석 가능
+  const canUseAi = hasSubscription || (aiTrialRemaining > 0 && !trialSpent)
 
   const q = questions[idx]
   const answer = answers[q.id] ?? ''
@@ -56,6 +62,7 @@ export default function PracticeEssay({
       try {
         const result = await gradeEssayPractice(q.id, answer)
         setGrades(g => ({ ...g, [q.id]: result }))
+        if (!hasSubscription) setTrialSpent(true) // 무료 체험 1회 소진
       } catch (err) {
         const msg = err instanceof Error ? err.message : '채점 중 오류가 발생했어요.'
         setErrors(e => ({ ...e, [q.id]: msg === 'SUBSCRIPTION_REQUIRED' ? '서술형 AI 분석은 구독 후 이용할 수 있어요.' : msg }))
@@ -129,17 +136,22 @@ export default function PracticeEssay({
 
         {/* AI 채점 */}
         <div className="mt-4">
-          {hasSubscription ? (
-            <button
-              onClick={grade_}
-              disabled={isPending || !answer.trim()}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold bg-gradient-to-r from-amber-500 to-[#d97706] text-white disabled:opacity-50"
-            >
-              {isPending ? <><Loader2 className="h-4 w-4 animate-spin" /> 분석 중...</> : <><Sparkles className="h-4 w-4" /> AI 분석받기</>}
-            </button>
+          {canUseAi ? (
+            <>
+              <button
+                onClick={grade_}
+                disabled={isPending || !answer.trim()}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold bg-gradient-to-r from-amber-500 to-[#d97706] text-white disabled:opacity-50"
+              >
+                {isPending ? <><Loader2 className="h-4 w-4 animate-spin" /> 분석 중...</> : <><Sparkles className="h-4 w-4" /> {hasSubscription ? 'AI 분석받기' : '무료로 1회 AI 분석 체험'}</>}
+              </button>
+              {!hasSubscription && (
+                <p className="text-xs text-[#94a3b8] mt-1.5">구독 없이 <span className="font-semibold text-amber-600">1회 무료</span>로 AI 첨삭을 받아볼 수 있어요.</p>
+              )}
+            </>
           ) : (
             <Link href="/subscribe" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold border-2 border-amber-300 text-amber-700 hover:bg-amber-50">
-              <Lock className="h-4 w-4" /> 구독하고 AI 분석받기
+              <Lock className="h-4 w-4" /> {trialSpent ? '무료 체험 완료 · 구독하고 무제한' : '구독하고 AI 분석받기'}
             </Link>
           )}
           {errors[q.id] && <p className="text-xs text-red-500 mt-2">{errors[q.id]}</p>}

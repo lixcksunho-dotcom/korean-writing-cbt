@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, FileText, ChevronRight } from 'lucide-react'
 import { getActiveSubscription } from '@/lib/subscription'
+import { getAiTrialStatus } from '@/lib/aiTrial'
 import PracticeEssay, { type PracticeEssayQuestion } from './PracticeEssay'
 
 export default async function EssayPracticePage({
@@ -68,11 +69,14 @@ export default async function EssayPracticePage({
   ])
   if (!questions?.length) redirect('/practice/essay')
 
+  const trial = await getAiTrialStatus()
+
   return (
     <PracticeEssay
       questions={questions as unknown as PracticeEssayQuestion[]}
       title={`${y}년 ${r}회 서술형`}
       hasSubscription={!!subscription}
+      aiTrialRemaining={trial.remaining}
     />
   )
 }
