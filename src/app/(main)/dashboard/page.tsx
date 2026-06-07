@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { BookOpen, PenLine, Trophy, Clock, ChevronRight, ArrowUpRight, Sparkles, CheckCircle2, Gift } from "lucide-react";
+import { BookOpen, PenLine, Trophy, Clock, ChevronRight, ArrowUpRight, Sparkles, CheckCircle2, Gift, TrendingUp } from "lucide-react";
 import ReviewWriteModal from "@/components/review/ReviewWriteModal";
 import { getActiveSubscription, daysUntilExpiry } from "@/lib/subscription";
 import { getAiTrialStatus } from "@/lib/aiTrial";
@@ -157,6 +157,20 @@ export default async function DashboardPage() {
           </div>
         ))}
       </div>
+
+      {/* 학습 리포트 진입 (기록 있을 때) */}
+      {completedSessions.length > 0 && (
+        <Link href="/insights" className="group flex items-center gap-3 bg-white rounded-2xl p-4 mb-8 border border-[#e2e8f0] shadow-[0_4px_16px_rgba(15,31,61,0.06)] hover:border-[#1e3a5f]/30 transition-colors">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#1e3a5f] to-[#2d5488] flex items-center justify-center shrink-0">
+            <TrendingUp className="h-5 w-5 text-white" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="font-bold text-[#0f172a] text-sm">학습 리포트 보기</p>
+            <p className="text-xs text-[#94a3b8]">성적 추이 · 영역별 약점 · 오답노트</p>
+          </div>
+          <ChevronRight className="h-5 w-5 text-[#94a3b8] group-hover:translate-x-1 transition-transform" />
+        </Link>
+      )}
 
       {/* 바로가기 카드 */}
       <div className="grid md:grid-cols-2 gap-4 mb-8">
