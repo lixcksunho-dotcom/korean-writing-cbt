@@ -4,7 +4,8 @@ import { createAdminClient } from '@/lib/supabase/admin'
 // 비구독자에게 주는 무료 AI 분석 체험 횟수.
 // 마이그레이션 없이 Supabase Auth의 app_metadata(ai_trial_used)로 사용량을 기록한다.
 // app_metadata는 service_role로만 수정 가능하므로 사용자가 위조할 수 없다.
-export const FREE_AI_TRIAL = 1
+// 3회 = 'aha' 체험을 충분히 주되, 무제한은 막아 전환을 유도(전환율 레버).
+export const FREE_AI_TRIAL = 3
 
 /** 현재 로그인 사용자의 무료 체험 사용/잔여 횟수 */
 export async function getAiTrialStatus(): Promise<{ used: number; remaining: number }> {

@@ -55,14 +55,18 @@ export default function SignupPage() {
             <div className="w-16 h-16 rounded-2xl bg-emerald-100 flex items-center justify-center mx-auto mb-4">
               <CheckCircle className="h-8 w-8 text-emerald-500" />
             </div>
-            <h2 className="text-xl font-black text-[#0f172a] mb-2">가입 완료!</h2>
+            <h2 className="text-xl font-black text-[#0f172a] mb-2">메일함을 확인해주세요</h2>
             <p className="text-[#64748b] text-sm leading-relaxed">
-              이메일로 인증 메일을 발송했습니다.<br />인증 후 로그인해주세요.
+              <span className="font-semibold text-[#0f172a]">{email || "가입하신 이메일"}</span>로<br />인증 메일을 보냈어요. 링크를 누르면 바로 시작됩니다.
             </p>
+            <div className="mt-4 bg-amber-50 border border-amber-100 rounded-xl px-4 py-3 text-xs text-amber-700 text-left leading-relaxed">
+              💡 메일이 안 보이면 <b>스팸함</b>을 확인하거나, 1~2분 후 다시 확인해주세요.
+            </div>
             <button onClick={() => window.location.assign("/login")}
-              className="mt-6 w-full btn-primary text-white font-bold py-3.5 rounded-xl text-sm">
-              로그인 하러 가기
+              className="mt-5 w-full btn-primary text-white font-bold py-3.5 rounded-xl text-sm">
+              인증 후 로그인하기
             </button>
+            <p className="mt-3 text-xs text-[#94a3b8]">메일 인증이 번거롭다면 <button onClick={() => window.location.assign("/signup")} className="text-emerald-600 font-semibold hover:underline">구글로 다시 시작</button>하면 인증 없이 바로 이용할 수 있어요.</p>
           </div>
         </div>
       </div>
@@ -116,6 +120,7 @@ export default function SignupPage() {
             <p className="text-[#64748b] text-sm mb-7">무료로 시작하세요</p>
 
             <GoogleButton />
+            <p className="mt-2 text-center text-xs text-emerald-600 font-medium">✓ 가장 빠른 방법 · 인증 메일 없이 바로 시작</p>
 
             <div className="relative my-6">
               <div className="absolute inset-0 flex items-center">

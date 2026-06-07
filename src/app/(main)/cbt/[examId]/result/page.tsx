@@ -224,13 +224,13 @@ export default async function ResultPage({
               <span className="w-6 h-6 rounded-lg bg-amber-100 flex items-center justify-center text-amber-600 text-xs font-black">서</span>
               서술형 ({essayQuestions.length}문항)
               <span className="text-[11px] font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">
-                {subscription ? 'AI 분석' : aiTrial.remaining > 0 ? '무료 체험 1회 · AI 분석' : '구독 전용 · AI 분석'}
+                {subscription ? 'AI 분석' : aiTrial.remaining > 0 ? `무료 체험 ${aiTrial.remaining}회 · AI 분석` : '구독 전용 · AI 분석'}
               </span>
             </h2>
             <p className="text-xs text-[#94a3b8] mt-1.5">
               내가 쓴 답안을 AI가 모범 답안과 비교해 <b className="text-amber-700">점수·첨삭</b>으로 분석해 드려요.
               {!subscription && (aiTrial.remaining > 0
-                ? ' 구독 없이 1회 무료로 체험할 수 있어요. 모범 답안은 언제나 무료예요.'
+                ? ` 구독 없이 무료 ${aiTrial.remaining}회 체험할 수 있어요. 모범 답안은 언제나 무료예요.`
                 : ' (AI 분석은 구독 시 이용할 수 있어요. 모범 답안은 무료로 볼 수 있어요.)')}
             </p>
           </div>

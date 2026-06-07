@@ -107,10 +107,10 @@ export default function EssayGrader({
         }`}
       >
         <Sparkles className="h-4 w-4" />
-        {isPending ? 'AI 분석 중...' : canUseTrial ? '무료로 1회 AI 분석 체험' : 'AI 분석 받기'}
+        {isPending ? 'AI 분석 중...' : canUseTrial ? '무료로 AI 분석 체험' : 'AI 분석 받기'}
       </button>
       {canUseTrial && (
-        <p className="text-[11px] text-[#94a3b8] text-center mt-1.5">구독 없이 <span className="font-semibold text-amber-600">1회 무료</span>로 받아볼 수 있어요.</p>
+        <p className="text-[11px] text-[#94a3b8] text-center mt-1.5">구독 없이 <span className="font-semibold text-amber-600">무료 {trial.remaining}회</span> 더 받아볼 수 있어요.</p>
       )}
       {error && error !== 'SUBSCRIPTION_REQUIRED' && (
         <p className="text-xs text-red-500 text-center mt-2">{error}</p>

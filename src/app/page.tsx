@@ -19,8 +19,8 @@ const features = [
   {
     icon: PenLine,
     title: "AI 원고지 채점·첨삭",
-    desc: "AI가 원고지 사용법, 맞춤법, 문법, 논리 구성을 분석하고 100점 만점으로 채점·첨삭해드립니다.",
-    badge: "AI 탑재",
+    desc: "AI가 원고지 사용법, 맞춤법, 문법, 논리 구성을 분석하고 100점 만점으로 채점·첨삭해드립니다. 가입하면 무료 체험을 제공합니다.",
+    badge: "무료 체험",
     badgeStyle: "bg-amber-100 text-amber-700",
     gradient: "from-amber-500 to-orange-600",
   },
@@ -90,10 +90,18 @@ export default async function HomePage() {
             <span className="text-gradient-gold">AI 원고지 첨삭</span>
           </h1>
 
-          <p className="text-white/60 text-lg mb-10 leading-relaxed max-w-xl mx-auto">
+          <p className="text-white/60 text-lg mb-6 leading-relaxed max-w-xl mx-auto">
             기출문제 CBT로 실력을 확인하고,
             AI가 원고지 답안을 즉시 채점·첨삭해드립니다.
           </p>
+
+          <div className="inline-flex flex-wrap items-center justify-center gap-x-2 gap-y-1 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-4 py-2 mb-10 text-sm">
+            <span className="text-emerald-300 font-bold">CBT 완전 무료</span>
+            <span className="text-white/30">·</span>
+            <span className="text-amber-300 font-bold">AI 첨삭 무료 체험</span>
+            <span className="text-white/30">·</span>
+            <span className="text-white/80">구독 시 <b className="text-white">월 5,500원</b>에 무제한</span>
+          </div>
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center mb-16">
             <Link href="/signup" className="btn-gold inline-flex items-center justify-center gap-2 text-white font-bold px-8 py-4 rounded-xl text-base">
@@ -203,7 +211,7 @@ export default async function HomePage() {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,rgba(217,119,6,0.15)_0%,transparent_60%)]" />
         <div className="relative max-w-2xl mx-auto text-center">
           <h2 className="text-3xl font-black text-white mb-4 tracking-tight">지금 바로 시작해보세요</h2>
-          <p className="text-white/60 mb-8 text-base">CBT 문제풀기는 완전 무료입니다</p>
+          <p className="text-white/60 mb-8 text-base">CBT 문제풀기는 완전 무료 · AI 첨삭도 무료 체험 · 구독은 월 5,500원에 무제한</p>
           <Link href="/signup" className="btn-gold inline-flex items-center gap-2 text-white font-bold px-10 py-4 rounded-xl text-base">
             무료로 시작하기 <ArrowRight className="h-5 w-5" />
           </Link>

@@ -92,27 +92,54 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {/* 무료 AI 첨삭 1회 체험 — 비구독자 + 체험 잔여 시 전환 유도 */}
+      {/* 온보딩/전환 유도 — 비구독자 + 무료 체험 잔여 시 */}
       {!sub && aiTrial.remaining > 0 && (
-        <Link
-          href="/practice/essay"
-          className="group block relative overflow-hidden rounded-2xl mb-8 p-5 sm:p-6 border border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50 hover:shadow-[0_8px_24px_rgba(217,119,6,0.15)] transition-all"
-        >
-          <div className="absolute top-0 right-0 w-40 h-40 bg-amber-300 rounded-full blur-3xl opacity-20 -translate-y-1/3 translate-x-1/3" />
-          <div className="relative flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-400 to-[#d97706] flex items-center justify-center shrink-0 shadow-lg shadow-amber-500/30">
-              <Gift className="h-6 w-6 text-white" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-0.5">
-                <h2 className="text-base font-black text-amber-900">서술형 AI 첨삭, 1회 무료 체험</h2>
-                <span className="text-[10px] font-bold text-white bg-amber-500 px-2 py-0.5 rounded-full">FREE</span>
+        completedSessions.length === 0 ? (
+          // 신규 유저: 첫 시험 → 무료 첨삭 2단계 온보딩
+          <div className="relative overflow-hidden rounded-2xl mb-8 p-6 border border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50">
+            <div className="absolute top-0 right-0 w-40 h-40 bg-amber-300 rounded-full blur-3xl opacity-20 -translate-y-1/3 translate-x-1/3" />
+            <div className="relative">
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-[10px] font-bold text-white bg-amber-500 px-2 py-0.5 rounded-full">START</span>
+                <h2 className="text-base font-black text-amber-900">2분이면 끝나는 첫걸음</h2>
               </div>
-              <p className="text-sm text-amber-800/80">내가 쓴 답안을 AI가 모범답안과 비교해 <b>점수·첨삭</b>으로 분석해 드려요. 지금 바로 무료로 받아보세요.</p>
+              <div className="grid sm:grid-cols-2 gap-3 mb-4">
+                <div className="flex items-center gap-2.5 bg-white/70 rounded-xl px-3.5 py-2.5">
+                  <span className="w-6 h-6 rounded-full bg-amber-500 text-white text-xs font-black flex items-center justify-center shrink-0">1</span>
+                  <span className="text-sm font-semibold text-amber-900">모의고사 한 문제 풀어보기</span>
+                </div>
+                <div className="flex items-center gap-2.5 bg-white/70 rounded-xl px-3.5 py-2.5">
+                  <span className="w-6 h-6 rounded-full bg-amber-500 text-white text-xs font-black flex items-center justify-center shrink-0">2</span>
+                  <span className="text-sm font-semibold text-amber-900">내 답안 <b>무료 AI 첨삭</b> 받기</span>
+                </div>
+              </div>
+              <Link href="/cbt" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-[#d97706] text-white text-sm font-black hover:opacity-90 transition-opacity">
+                첫 모의고사 시작하기 <ChevronRight className="h-4 w-4" />
+              </Link>
             </div>
-            <ChevronRight className="h-5 w-5 text-amber-600 shrink-0 group-hover:translate-x-1 transition-transform" />
           </div>
-        </Link>
+        ) : (
+          // 시험 경험 있는 유저: 무료 AI 첨삭으로 유도
+          <Link
+            href="/practice/essay"
+            className="group block relative overflow-hidden rounded-2xl mb-8 p-5 sm:p-6 border border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50 hover:shadow-[0_8px_24px_rgba(217,119,6,0.15)] transition-all"
+          >
+            <div className="absolute top-0 right-0 w-40 h-40 bg-amber-300 rounded-full blur-3xl opacity-20 -translate-y-1/3 translate-x-1/3" />
+            <div className="relative flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-400 to-[#d97706] flex items-center justify-center shrink-0 shadow-lg shadow-amber-500/30">
+                <Gift className="h-6 w-6 text-white" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-0.5">
+                  <h2 className="text-base font-black text-amber-900">서술형 AI 첨삭, 무료 {aiTrial.remaining}회 남음</h2>
+                  <span className="text-[10px] font-bold text-white bg-amber-500 px-2 py-0.5 rounded-full">FREE</span>
+                </div>
+                <p className="text-sm text-amber-800/80">내가 쓴 답안을 AI가 모범답안과 비교해 <b>점수·첨삭</b>으로 분석해 드려요. 지금 바로 무료로 받아보세요.</p>
+              </div>
+              <ChevronRight className="h-5 w-5 text-amber-600 shrink-0 group-hover:translate-x-1 transition-transform" />
+            </div>
+          </Link>
+        )
       )}
 
       {/* 통계 카드 */}
