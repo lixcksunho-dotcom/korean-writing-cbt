@@ -3,6 +3,7 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@/lib/supabase/server'
 import { getActiveSubscription } from '@/lib/subscription'
+import { enforcePaidUsage, recordPaidGrade } from '@/lib/antiSharing'
 
 export type Correction = {
   original: string
@@ -70,6 +71,9 @@ export async function gradeManuscript(text: string, topic: string): Promise<Grad
   const subscription = await getActiveSubscription(user.id)
   if (!subscription) throw new Error('구독이 필요한 기능입니다.')
 
+  // 계정 공유 방지: 기기 수·일일 한도 검사
+  await enforcePaidUsage(user.id)
+
   const client = new Anthropic()
 
   const response = await client.messages.create({
@@ -109,5 +113,6 @@ export async function gradeManuscript(text: string, topic: string): Promise<Grad
     feedback: result,
   })
 
+  await recordPaidGrade(user.id) // 일일 사용량 기록
   return result
 }

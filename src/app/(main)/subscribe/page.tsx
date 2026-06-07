@@ -104,6 +104,12 @@ export default async function SubscribePage() {
             <Shield className="h-3.5 w-3.5" />
             포트원(PortOne) 안전결제 · SSL 암호화 · 자동결제 없음
           </div>
+
+          {/* 계정 공유 금지 고지 */}
+          <p className="mt-3 text-[11px] text-[#94a3b8] text-center leading-relaxed">
+            이용권은 결제한 본인 1인 전용이며, 기기 3대까지 사용할 수 있어요. 계정 공유 등 부정 이용이
+            확인되면 이용이 제한될 수 있고, 이 경우 환불은 제공되지 않습니다.
+          </p>
         </div>
       </div>
     </div>

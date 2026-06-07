@@ -37,18 +37,29 @@ export default function RefundPage() {
         </ul>
       </Section>
 
-      <Section title="3. 환불 신청 방법">
+      <Section title="3. 부정 이용 시 제한 및 환불 불가">
+        본 이용권은 결제한 본인 1인에 한해 사용할 수 있습니다. 아래와 같은 부정 이용이 확인되는 경우
+        사전 통지 없이 이용이 제한·정지될 수 있으며,{' '}
+        <span className="font-semibold text-[#0f172a]">이 경우 잔여 기간에 대한 환불은 제공되지 않습니다.</span>
+        <ul className="list-disc pl-5 space-y-1 mt-2">
+          <li>계정(아이디·비밀번호)을 타인과 공유하거나 다수가 돌려 쓰는 행위</li>
+          <li>허용된 기기 수(최대 3대)를 초과해 여러 기기에서 동시·반복 이용하는 행위</li>
+          <li>비정상적으로 과도한 사용 등 통상적인 1인 학습 범위를 벗어난 이용</li>
+        </ul>
+      </Section>
+
+      <Section title="4. 환불 신청 방법">
         고객센터 이메일({biz(BUSINESS.email)})로 결제하신 계정 정보(가입 이메일)와 함께 환불을
         요청해 주세요. 접수 후 환불 가능 여부를 확인하여 안내드립니다.
       </Section>
 
-      <Section title="4. 환불 처리 기간 및 방법">
+      <Section title="5. 환불 처리 기간 및 방법">
         환불은 원결제수단으로 처리되며, 환불 승인일로부터 결제대행사(포트원 및 제휴 PG사)·카드사의
         영업일 기준 약 3~7일 이내에 완료됩니다. 카드 결제 취소의 경우 카드사 사정에 따라 반영 시점이
         달라질 수 있습니다.
       </Section>
 
-      <Section title="5. 문의처">
+      <Section title="6. 문의처">
         <ul className="list-disc pl-5 space-y-1">
           <li>상호: {biz(BUSINESS.companyName)}</li>
           <li>이메일: {biz(BUSINESS.email)}</li>

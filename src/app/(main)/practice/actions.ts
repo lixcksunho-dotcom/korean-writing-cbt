@@ -4,6 +4,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@/lib/supabase/server'
 import { getActiveSubscription } from '@/lib/subscription'
 import { consumeAiTrial, FREE_AI_TRIAL } from '@/lib/aiTrial'
+import { enforcePaidUsage, recordPaidGrade } from '@/lib/antiSharing'
 import type { EssayGrade } from '@/app/(main)/cbt/actions'
 
 // 서술형 '연습' 채점: 정식 시험 세션과 무관하게 단일 문항을 즉시 채점한다.
@@ -40,6 +41,9 @@ export async function gradeEssayPractice(
   const usingTrial = !subscription
   if (usingTrial && trialUsed >= FREE_AI_TRIAL) throw new Error('SUBSCRIPTION_REQUIRED')
 
+  // 유료(구독) 사용 시 계정 공유 방지: 기기 수·일일 한도 검사
+  if (subscription) await enforcePaidUsage(user.id)
+
   const { data: question } = await supabase
     .from('questions')
     .select('points, question, correct_answer')
@@ -75,6 +79,7 @@ export async function gradeEssayPractice(
 
   // 성공한 경우에만 무료 체험 1회 차감(구독자는 차감 안 함)
   if (usingTrial) await consumeAiTrial(user.id, trialUsed)
+  else await recordPaidGrade(user.id) // 구독자 일일 사용량 기록
   return result
 }
 
