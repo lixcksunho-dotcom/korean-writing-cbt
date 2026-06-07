@@ -185,6 +185,66 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {/* 무료 / 유료 비교 */}
+      <section className="py-16 px-4 bg-white">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-10">
+            <h2 className="text-3xl font-black text-[#0f172a] mb-3 tracking-tight">무료로 시작하고, 필요할 때 무제한</h2>
+            <p className="text-[#64748b] text-base">가입은 무료예요. AI 첨삭은 먼저 무료로 체험하고 결정하세요.</p>
+          </div>
+          <div className="grid md:grid-cols-2 gap-5 items-start">
+            {/* 무료 */}
+            <div className="bg-[#f8fafc] rounded-2xl border border-[#e2e8f0] p-7">
+              <div className="flex items-center gap-2 mb-1">
+                <h3 className="text-xl font-black text-[#0f172a]">무료</h3>
+                <span className="text-xs font-bold text-emerald-700 bg-emerald-100 px-2.5 py-0.5 rounded-full">가입만 하면</span>
+              </div>
+              <p className="text-sm text-[#64748b] mb-5">회원이면 누구나, 결제 없이</p>
+              <ul className="space-y-2.5">
+                {[
+                  'CBT 실전 모의고사 전 회차 풀이',
+                  '객관식 정답·해설 전체 공개',
+                  '서술형 모범답안 열람',
+                  '맞춤법·외래어·문장호응 유형별 연습',
+                  '서술형 AI 첨삭 3회 무료 체험',
+                ].map(t => (
+                  <li key={t} className="flex items-start gap-2.5 text-sm text-[#334155]">
+                    <CheckCircle className="h-4 w-4 text-emerald-500 shrink-0 mt-0.5" />{t}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* 유료 */}
+            <div className="relative bg-gradient-to-br from-[#0f1f3d] to-[#1e3a5f] rounded-2xl p-7 text-white shadow-xl overflow-hidden">
+              <div className="absolute top-0 right-0 w-40 h-40 bg-[#d97706] rounded-full blur-3xl opacity-20 -translate-y-1/3 translate-x-1/3" />
+              <div className="relative">
+                <div className="flex items-center gap-2 mb-1">
+                  <h3 className="text-xl font-black">이용권</h3>
+                  <span className="text-xs font-bold text-[#0f1f3d] bg-amber-400 px-2.5 py-0.5 rounded-full">5,500원 · 30일</span>
+                </div>
+                <p className="text-sm text-white/60 mb-5">1회 결제 · 자동결제 없음 — 합격까지 무제한</p>
+                <ul className="space-y-2.5 mb-6">
+                  {[
+                    '서술형 9문항 AI 첨삭·점수 무제한',
+                    '원고지 AI 채점·첨삭 무제한',
+                    '영역별 약점 분석',
+                    '시험·연습 저장하고 이어풀기',
+                  ].map(t => (
+                    <li key={t} className="flex items-start gap-2.5 text-sm text-white/90">
+                      <Sparkles className="h-4 w-4 text-amber-300 shrink-0 mt-0.5" />{t}
+                    </li>
+                  ))}
+                </ul>
+                <Link href="/signup" className="btn-gold inline-flex items-center justify-center gap-2 w-full text-white font-bold py-3 rounded-xl text-sm">
+                  무료로 체험하고 결정하기 <ArrowRight className="h-4 w-4" />
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* 혜택 */}
       <section className="py-20 px-4 bg-white">
         <div className="max-w-3xl mx-auto text-center">

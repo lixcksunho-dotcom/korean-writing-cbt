@@ -87,13 +87,13 @@ export default function SignupPage() {
             <span className="font-bold text-white text-lg">한국실용글쓰기</span>
           </Link>
           <div>
-            <p className="text-white/40 text-sm mb-2">무료로 시작하세요</p>
+            <p className="text-white/40 text-sm mb-2">가입은 무료예요</p>
             <h2 className="text-3xl font-black text-white mb-4 leading-tight">
-              지금 가입하면<br />
-              <span className="text-gradient-gold">모든 기능 무료!</span>
+              CBT는 무료,<br />
+              <span className="text-gradient-gold">AI 첨삭은 무료 체험!</span>
             </h2>
             <ul className="space-y-2.5">
-              {["CBT 기출문제 전체 무료", "AI 원고지 채점 체험", "학습 기록 자동 저장"].map(t => (
+              {["CBT 기출 모의고사 무료", "서술형 AI 첨삭 3회 무료 체험", "학습 기록 자동 저장"].map(t => (
                 <li key={t} className="flex items-center gap-2 text-white/70 text-sm">
                   <span className="w-5 h-5 rounded-full bg-[#f59e0b]/20 flex items-center justify-center text-[#f59e0b] text-xs font-bold shrink-0">✓</span>
                   {t}
