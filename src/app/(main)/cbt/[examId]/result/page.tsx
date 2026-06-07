@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { CheckCircle2, XCircle, Trophy, RotateCcw, LayoutDashboard, Star, Target, Sparkles, ChevronRight } from 'lucide-react'
+import { CheckCircle2, XCircle, Trophy, RotateCcw, LayoutDashboard, Star, Target, Sparkles, ChevronRight, Lock } from 'lucide-react'
 import { getActiveSubscription } from '@/lib/subscription'
 import { getAiTrialStatus } from '@/lib/aiTrial'
 import { scaleTo1000, tierFor } from '@/lib/grade'
@@ -130,38 +130,68 @@ export default async function ResultPage({
         </Link>
       </div>
 
-      {/* 약점 분석 — 영역별 정답률 */}
+      {/* 약점 분석 — 영역별 정답률 (구독 전용) */}
       {bandStats.length > 0 && (
         <div className="bg-white rounded-2xl border border-[#e2e8f0] shadow-[0_4px_16px_rgba(15,31,61,0.06)] p-5 sm:p-6 mb-6">
-          <div className="flex items-center gap-2 mb-1">
+          <div className="flex items-center gap-2 mb-1 flex-wrap">
             <Target className="h-5 w-5 text-[#1e3a5f]" />
             <h2 className="text-base font-bold text-[#0f172a]">영역별 약점 분석</h2>
+            {!subscription && <span className="text-[10px] font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">구독 전용</span>}
           </div>
           <p className="text-xs text-[#94a3b8] mb-4">객관식 정답률을 영역별로 나눠 봤어요. 낮은 영역을 집중 연습하면 점수가 가장 빨리 올라요.</p>
-          <div className="space-y-3.5">
-            {bandStats.map(b => {
-              const isWeak = weakest?.label === b.label && b.pct < 100
-              const barColor = b.pct >= 80 ? 'bg-emerald-500' : b.pct >= 50 ? 'bg-amber-500' : 'bg-red-400'
-              return (
-                <div key={b.label}>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-sm font-semibold text-[#334155] flex items-center gap-1.5">
-                      {b.label}
-                      {isWeak && <span className="text-[10px] font-bold text-red-500 bg-red-50 px-1.5 py-0.5 rounded-full">약점</span>}
-                    </span>
-                    <span className="text-xs font-bold text-[#64748b] tabular-nums">{b.correct}/{b.total} · {b.pct}%</span>
+
+          {subscription ? (
+            <>
+              <div className="space-y-3.5">
+                {bandStats.map(b => {
+                  const isWeak = weakest?.label === b.label && b.pct < 100
+                  const barColor = b.pct >= 80 ? 'bg-emerald-500' : b.pct >= 50 ? 'bg-amber-500' : 'bg-red-400'
+                  return (
+                    <div key={b.label}>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="text-sm font-semibold text-[#334155] flex items-center gap-1.5">
+                          {b.label}
+                          {isWeak && <span className="text-[10px] font-bold text-red-500 bg-red-50 px-1.5 py-0.5 rounded-full">약점</span>}
+                        </span>
+                        <span className="text-xs font-bold text-[#64748b] tabular-nums">{b.correct}/{b.total} · {b.pct}%</span>
+                      </div>
+                      <div className="h-2 rounded-full bg-[#f1f5f9] overflow-hidden">
+                        <div className={`h-full rounded-full ${barColor}`} style={{ width: `${b.pct}%` }} />
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+              {weakest && weakest.pct < 100 && (
+                <Link href={weakest.href} className="mt-4 flex items-center justify-center gap-1.5 w-full py-2.5 rounded-xl bg-[#1e3a5f]/5 text-[#1e3a5f] text-sm font-bold hover:bg-[#1e3a5f]/10 transition-colors">
+                  <Target className="h-4 w-4" /> ‘{weakest.label}’ 집중 연습하기
+                </Link>
+              )}
+            </>
+          ) : (
+            // 비구독자: 블러 처리된 미리보기 + 잠금 오버레이로 구독 유도
+            <div className="relative">
+              <div className="space-y-3.5 blur-[5px] select-none pointer-events-none" aria-hidden>
+                {bandStats.map(b => (
+                  <div key={b.label}>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-sm font-semibold text-[#334155]">{b.label}</span>
+                      <span className="text-xs font-bold text-[#64748b]">●●% </span>
+                    </div>
+                    <div className="h-2 rounded-full bg-[#f1f5f9] overflow-hidden">
+                      <div className="h-full rounded-full bg-[#cbd5e1]" style={{ width: '60%' }} />
+                    </div>
                   </div>
-                  <div className="h-2 rounded-full bg-[#f1f5f9] overflow-hidden">
-                    <div className={`h-full rounded-full ${barColor}`} style={{ width: `${b.pct}%` }} />
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-          {weakest && weakest.pct < 100 && (
-            <Link href={weakest.href} className="mt-4 flex items-center justify-center gap-1.5 w-full py-2.5 rounded-xl bg-[#1e3a5f]/5 text-[#1e3a5f] text-sm font-bold hover:bg-[#1e3a5f]/10 transition-colors">
-              <Target className="h-4 w-4" /> ‘{weakest.label}’ 집중 연습하기
-            </Link>
+                ))}
+              </div>
+              <div className="absolute inset-0 flex flex-col items-center justify-center text-center gap-2.5">
+                <span className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-amber-100"><Lock className="h-4 w-4 text-amber-600" /></span>
+                <p className="text-sm font-bold text-[#334155]">내 약점 영역, 구독하면 바로 확인</p>
+                <Link href="/subscribe" className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-400 text-[#1e3a5f] text-xs font-black hover:bg-amber-300 transition-colors">
+                  구독하고 약점 분석 보기 <ChevronRight className="h-3.5 w-3.5" />
+                </Link>
+              </div>
+            </div>
           )}
         </div>
       )}

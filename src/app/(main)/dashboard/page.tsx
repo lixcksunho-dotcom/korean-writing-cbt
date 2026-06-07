@@ -1,9 +1,10 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { BookOpen, PenLine, Trophy, Clock, ChevronRight, ArrowUpRight, Sparkles, CheckCircle2 } from "lucide-react";
+import { BookOpen, PenLine, Trophy, Clock, ChevronRight, ArrowUpRight, Sparkles, CheckCircle2, Gift } from "lucide-react";
 import ReviewWriteModal from "@/components/review/ReviewWriteModal";
 import { getActiveSubscription, daysUntilExpiry } from "@/lib/subscription";
+import { getAiTrialStatus } from "@/lib/aiTrial";
 
 function getGreeting() {
   const h = new Date().getHours();
@@ -34,6 +35,9 @@ export default async function DashboardPage() {
       .eq("user_id", user.id),
     getActiveSubscription(user.id),
   ]);
+
+  // 비구독자에게만 무료 AI 첨삭 체험 잔여 확인(전환 유도 배너용)
+  const aiTrial = sub ? { remaining: 0 } : await getAiTrialStatus();
 
   const completedSessions = sessions ?? [];
   const totalAnswered = completedSessions.reduce((sum, s) => sum + (s.total ?? 0), 0);
@@ -87,6 +91,29 @@ export default async function DashboardPage() {
           </div>
         </div>
       </div>
+
+      {/* 무료 AI 첨삭 1회 체험 — 비구독자 + 체험 잔여 시 전환 유도 */}
+      {!sub && aiTrial.remaining > 0 && (
+        <Link
+          href="/practice/essay"
+          className="group block relative overflow-hidden rounded-2xl mb-8 p-5 sm:p-6 border border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50 hover:shadow-[0_8px_24px_rgba(217,119,6,0.15)] transition-all"
+        >
+          <div className="absolute top-0 right-0 w-40 h-40 bg-amber-300 rounded-full blur-3xl opacity-20 -translate-y-1/3 translate-x-1/3" />
+          <div className="relative flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-400 to-[#d97706] flex items-center justify-center shrink-0 shadow-lg shadow-amber-500/30">
+              <Gift className="h-6 w-6 text-white" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-0.5">
+                <h2 className="text-base font-black text-amber-900">서술형 AI 첨삭, 1회 무료 체험</h2>
+                <span className="text-[10px] font-bold text-white bg-amber-500 px-2 py-0.5 rounded-full">FREE</span>
+              </div>
+              <p className="text-sm text-amber-800/80">내가 쓴 답안을 AI가 모범답안과 비교해 <b>점수·첨삭</b>으로 분석해 드려요. 지금 바로 무료로 받아보세요.</p>
+            </div>
+            <ChevronRight className="h-5 w-5 text-amber-600 shrink-0 group-hover:translate-x-1 transition-transform" />
+          </div>
+        </Link>
+      )}
 
       {/* 통계 카드 */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
