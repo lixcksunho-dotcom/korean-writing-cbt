@@ -22,7 +22,7 @@ export default async function DashboardPage() {
 
   const displayName = user.user_metadata?.name || user.email?.split("@")[0] || "회원";
 
-  const [{ data: sessions }, { count: manuscriptCount }, sub] = await Promise.all([
+  const [{ data: sessions }, { data: manuscripts }, sub] = await Promise.all([
     supabase
       .from("quiz_sessions")
       .select("id, year, round, score, total, started_at, completed_at")
@@ -31,10 +31,11 @@ export default async function DashboardPage() {
       .order("completed_at", { ascending: false }),
     supabase
       .from("manuscript_submissions")
-      .select("*", { count: "exact", head: true })
+      .select("created_at")
       .eq("user_id", user.id),
     getActiveSubscription(user.id),
   ]);
+  const manuscriptCount = manuscripts?.length ?? 0;
 
   // 비구독자에게만 무료 AI 첨삭 체험 잔여 확인(전환 유도 배너용)
   const aiTrial = sub ? { remaining: 0 } : await getAiTrialStatus();
@@ -52,6 +53,22 @@ export default async function DashboardPage() {
     ? `${(totalSeconds / 3600).toFixed(1)}h`
     : totalSeconds >= 60 ? `${Math.floor(totalSeconds / 60)}m`
     : totalSeconds > 0 ? `${totalSeconds}s` : "0h";
+
+  // 연속 학습일(스트릭) — 시험·원고지 활동이 있었던 날 기준
+  const activeDays = new Set<string>();
+  for (const s of completedSessions) if (s.completed_at) activeDays.add(new Date(s.completed_at).toISOString().slice(0, 10));
+  for (const m of manuscripts ?? []) if (m.created_at) activeDays.add(new Date(m.created_at as string).toISOString().slice(0, 10));
+  let streak = 0;
+  {
+    const d = new Date();
+    const key = (dt: Date) => dt.toISOString().slice(0, 10);
+    if (!activeDays.has(key(d))) d.setDate(d.getDate() - 1); // 오늘 아직 안 했으면 어제부터 카운트
+    while (activeDays.has(key(d))) { streak++; d.setDate(d.getDate() - 1); }
+  }
+
+  // 이용권 만료 임박(7일 이내) 여부
+  const expiryDays = sub ? daysUntilExpiry(sub.expires_at) : null;
+  const expiringSoon = expiryDays !== null && expiryDays <= 7;
 
   const stats = [
     {
@@ -85,12 +102,33 @@ export default async function DashboardPage() {
               {displayName}님 <span className="text-gradient-gold">오늘도 파이팅!</span>
             </h1>
             <p className="text-white/50 mt-2 text-sm">실용글쓰기 합격을 향해 꾸준히 나아가고 있어요.</p>
+            {streak > 0 && (
+              <span className="inline-flex items-center gap-1.5 mt-3 bg-white/10 border border-white/15 text-white text-xs font-bold px-3 py-1.5 rounded-full">
+                🔥 {streak}일 연속 학습 중
+              </span>
+            )}
           </div>
           <div className="shrink-0 pt-1">
             <ReviewWriteModal defaultName={displayName} />
           </div>
         </div>
       </div>
+
+      {/* 이용권 만료 임박 — 재구매 유도 */}
+      {expiringSoon && (
+        <Link href="/subscribe" className="group flex items-center gap-3 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-4 mb-8 hover:shadow-[0_8px_24px_rgba(217,119,6,0.15)] transition-all">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-[#d97706] flex items-center justify-center shrink-0">
+            <Clock className="h-5 w-5 text-white" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="font-bold text-amber-900 text-sm">
+              이용권이 {expiryDays === 0 ? '오늘' : `${expiryDays}일 뒤`} 만료돼요
+            </p>
+            <p className="text-xs text-amber-700">지금 연장하면 AI 첨삭을 끊김 없이 계속 받을 수 있어요.</p>
+          </div>
+          <span className="shrink-0 btn-gold text-xs font-bold text-white px-4 py-2 rounded-xl">연장하기</span>
+        </Link>
+      )}
 
       {/* 온보딩/전환 유도 — 비구독자 + 무료 체험 잔여 시 */}
       {!sub && aiTrial.remaining > 0 && (
@@ -221,9 +259,14 @@ export default async function DashboardPage() {
               </p>
             </div>
           </div>
-          <Link href="/manuscript" className="shrink-0 text-xs font-bold text-emerald-700 bg-white border border-emerald-200 px-4 py-2 rounded-xl hover:bg-emerald-50 transition-colors">
-            채점하기 →
-          </Link>
+          <div className="shrink-0 flex items-center gap-2">
+            <Link href="/subscribe/history" className="text-xs font-semibold text-emerald-700/80 hover:text-emerald-800 hover:underline">
+              결제 내역
+            </Link>
+            <Link href="/manuscript" className="text-xs font-bold text-emerald-700 bg-white border border-emerald-200 px-4 py-2 rounded-xl hover:bg-emerald-50 transition-colors">
+              채점하기 →
+            </Link>
+          </div>
         </div>
       ) : (
         <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-5 mb-8 flex items-center justify-between gap-4">

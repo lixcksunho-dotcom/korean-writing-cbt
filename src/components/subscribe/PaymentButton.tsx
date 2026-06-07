@@ -36,8 +36,10 @@ export default function PaymentButton({
 }) {
   const [loading, setLoading] = useState<Method | null>(null)
   const [error, setError] = useState('')
+  const [agreed, setAgreed] = useState(false)
 
   async function handlePayment(method: Method) {
+    if (!agreed) { setError('결제 전 이용약관·환불정책에 동의해 주세요.'); return }
     setError('')
     setLoading(method)
     try {
@@ -79,11 +81,21 @@ export default function PaymentButton({
 
   return (
     <div className="space-y-3">
+      {/* 약관·환불정책 동의 (결제 필수) */}
+      <label className="flex items-start gap-2 text-xs text-[#475569] bg-[#f8fafc] border border-[#e2e8f0] rounded-xl px-3.5 py-3 cursor-pointer">
+        <input type="checkbox" checked={agreed} onChange={e => setAgreed(e.target.checked)} className="mt-0.5 h-4 w-4 accent-[#1e3a5f] shrink-0" />
+        <span>
+          <a href="/terms" target="_blank" className="text-[#1e3a5f] font-semibold underline">이용약관</a> 및{' '}
+          <a href="/refund" target="_blank" className="text-[#1e3a5f] font-semibold underline">취소·환불 정책</a>을 확인했으며,
+          본 상품이 1회 결제·30일 이용권(자동결제 없음)이고 계정 공유 등 부정 이용 시 환불이 제한됨에 동의합니다.
+        </span>
+      </label>
+
       {METHODS.map(({ key, label, emoji, color }) => (
         <button
           key={key}
           onClick={() => handlePayment(key)}
-          disabled={loading !== null}
+          disabled={loading !== null || !agreed}
           className={`w-full flex items-center justify-center gap-2.5 py-3.5 rounded-xl font-bold text-sm border-2 transition-all disabled:opacity-60 disabled:cursor-not-allowed hover:-translate-y-0.5 hover:shadow-lg ${color}`}
         >
           <span className="text-base">{emoji}</span>

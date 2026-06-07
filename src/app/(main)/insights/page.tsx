@@ -184,10 +184,15 @@ export default async function InsightsPage() {
 
       {/* 오답노트 */}
       <div className="bg-white rounded-2xl border border-[#e2e8f0] shadow-[0_4px_16px_rgba(15,31,61,0.06)] p-5 sm:p-6">
-        <div className="flex items-center gap-2 mb-1">
+        <div className="flex items-center gap-2 mb-1 flex-wrap">
           <NotebookPen className="h-5 w-5 text-[#1e3a5f]" />
           <h2 className="text-base font-bold text-[#0f172a]">오답노트</h2>
           <span className="text-xs font-bold text-red-500 bg-red-50 px-2 py-0.5 rounded-full">{wrong.length}문항</span>
+          {wrong.length > 0 && (
+            <Link href="/practice/wrong" className="ml-auto inline-flex items-center gap-1 text-xs font-bold text-white bg-[#1e3a5f] hover:bg-[#2d5488] px-3 py-1.5 rounded-lg transition-colors">
+              오답만 다시 풀기 <ChevronRight className="h-3.5 w-3.5" />
+            </Link>
+          )}
         </div>
         <p className="text-xs text-[#94a3b8] mb-4">지금도 틀리는 객관식만 모았어요. 해설을 보며 약점을 메우세요.</p>
 

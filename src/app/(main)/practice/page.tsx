@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { ListChecks, PenLine, FileText, ChevronRight, CircleDot, Target } from 'lucide-react'
+import { ListChecks, PenLine, FileText, ChevronRight, CircleDot, Target, RotateCcw, Bookmark } from 'lucide-react'
 
 export default async function PracticePage() {
   const supabase = await createClient()
@@ -53,6 +53,22 @@ export default async function PracticePage() {
       desc: '실제 서술형 9번 보고서 문항을 시간 안에 이어서 작성해요.',
       meta: '시간제한 · 실전',
       grad: 'from-emerald-500 to-emerald-700',
+    },
+    {
+      href: '/practice/wrong',
+      icon: RotateCcw,
+      title: '오답 다시 풀기',
+      desc: '내가 지금도 틀리는 객관식만 모아 다시 풀어요.',
+      meta: '약점 복습',
+      grad: 'from-red-500 to-rose-600',
+    },
+    {
+      href: '/practice/bookmarks',
+      icon: Bookmark,
+      title: '즐겨찾기 문제',
+      desc: '결과 화면에서 저장한 문제를 모아 다시 풀어요.',
+      meta: '내가 저장한 문제',
+      grad: 'from-amber-500 to-[#d97706]',
     },
   ]
 

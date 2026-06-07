@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { BookOpen, Star, CreditCard, Wallet, FileCheck2, PenLine, ChevronRight, BadgeCheck, Users } from 'lucide-react'
+import { BookOpen, Star, CreditCard, Wallet, FileCheck2, PenLine, ChevronRight, BadgeCheck, Users, Flag } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
 
@@ -8,13 +8,15 @@ export default async function AdminHome() {
   // 관리자 권한은 admin/layout.tsx에서 이미 검증됨. 통계는 service_role로 집계.
   const admin = createAdminClient()
 
-  const [qCount, reviewRows, subRows, examDone, manuscriptCount] = await Promise.all([
+  const [qCount, reviewRows, subRows, examDone, manuscriptCount, reportRows] = await Promise.all([
     admin.from('questions').select('*', { count: 'exact', head: true }),
     admin.from('reviews').select('proof_path, verified, is_visible'),
     admin.from('subscriptions').select('amount, status, expires_at'),
     admin.from('quiz_sessions').select('*', { count: 'exact', head: true }).not('completed_at', 'is', null),
     admin.from('manuscript_submissions').select('*', { count: 'exact', head: true }),
+    admin.from('question_reports').select('resolved'),
   ])
+  const reportPending = (reportRows.data ?? []).filter(r => !r.resolved).length
 
   const reviews = reviewRows.data ?? []
   const reviewTotal = reviews.length
@@ -40,6 +42,7 @@ export default async function AdminHome() {
     { href: '/admin/members', title: '회원 관리', desc: '회원 검색·추가·삭제, 체크로 유료 전환', icon: Users, badge: undefined },
     { href: '/admin/questions', title: '문제 관리', desc: '모의고사·유형별 문제 추가/수정/삭제', icon: BookOpen, badge: undefined },
     { href: '/admin/reviews', title: '후기 관리', desc: '점수 인증 확정·노출/숨김·삭제', icon: BadgeCheck, badge: reviewPending > 0 ? `인증대기 ${reviewPending}` : undefined },
+    { href: '/admin/reports', title: '문제 신고', desc: '오류 신고 확인·처리, 문제 바로 수정', icon: Flag, badge: reportPending > 0 ? `미처리 ${reportPending}` : undefined },
   ]
 
   return (

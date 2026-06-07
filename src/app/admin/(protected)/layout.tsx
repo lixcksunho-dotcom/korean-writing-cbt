@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { Shield, BookOpen, ArrowLeft, Star, LayoutDashboard, Users } from 'lucide-react'
+import { Shield, BookOpen, ArrowLeft, Star, LayoutDashboard, Users, Flag } from 'lucide-react'
 
 // 관리자 전용 보호 영역. 권한이 없으면 전용 로그인(/admin/login)으로 보낸다.
 export default async function ProtectedAdminLayout({ children }: { children: React.ReactNode }) {
@@ -36,6 +36,10 @@ export default async function ProtectedAdminLayout({ children }: { children: Rea
             <Link href="/admin/questions" className="flex items-center gap-1.5 text-sm text-gray-300 hover:text-white transition-colors">
               <BookOpen className="h-4 w-4" />
               문제 관리
+            </Link>
+            <Link href="/admin/reports" className="flex items-center gap-1.5 text-sm text-gray-300 hover:text-white transition-colors">
+              <Flag className="h-4 w-4" />
+              신고
             </Link>
             <Link href="/dashboard" className="flex items-center gap-1.5 text-sm text-gray-300 hover:text-white transition-colors">
               <ArrowLeft className="h-4 w-4" />

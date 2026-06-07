@@ -8,6 +8,9 @@ import { scaleTo1000, tierFor } from '@/lib/grade'
 import ManuscriptGrid from '@/components/manuscript/ManuscriptGrid'
 import EssayGrader from '@/components/cbt/EssayGrader'
 import { AiTrialProvider } from '@/components/cbt/AiTrialContext'
+import BookmarkButton from '@/components/study/BookmarkButton'
+import ReportButton from '@/components/study/ReportButton'
+import PaperShareButton from '@/components/result/PaperShareButton'
 import type { EssayGrade } from '@/app/(main)/cbt/actions'
 
 export default async function ResultPage({
@@ -34,11 +37,13 @@ export default async function ResultPage({
 
   if (!session?.completed_at) redirect('/cbt')
 
-  const [{ data: answers }, { data: questions }, subscription] = await Promise.all([
+  const [{ data: answers }, { data: questions }, subscription, { data: bookmarkRows }] = await Promise.all([
     supabase.from('quiz_answers').select('question_id, user_answer, is_correct, ai_score, ai_feedback').eq('session_id', sessionId),
     supabase.from('questions').select('id, number, type, points, question, options, correct_answer, explanation').eq('year', session.year).eq('round', session.round).order('number'),
     getActiveSubscription(user.id),
+    supabase.from('bookmarks').select('question_id').eq('user_id', user.id),
   ])
+  const bookmarkSet = new Set((bookmarkRows ?? []).map(b => b.question_id as string))
 
   const answerMap = new Map((answers ?? []).map(a => [a.question_id, a]))
   const allQuestions = questions ?? []
@@ -115,6 +120,9 @@ export default async function ResultPage({
               소요 시간 {Math.floor(timeTaken / 60)}분 {timeTaken % 60}초
             </p>
           )}
+          <div className="flex justify-center mt-5">
+            <PaperShareButton round={session.round as number} scaled={scaled} tier={tier.name} />
+          </div>
         </div>
       </div>
 
@@ -336,6 +344,10 @@ export default async function ResultPage({
                       💡 <span className="font-semibold">해설</span> {q.explanation}
                     </div>
                   )}
+                  <div className="ml-10 mt-2.5 flex items-center gap-1.5">
+                    <BookmarkButton questionId={q.id} initial={bookmarkSet.has(q.id)} />
+                    <ReportButton questionId={q.id} />
+                  </div>
                 </div>
               )
             })}
