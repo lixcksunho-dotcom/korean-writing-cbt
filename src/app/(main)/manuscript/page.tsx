@@ -55,8 +55,8 @@ export default async function ManuscriptPage() {
               <div className="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center mx-auto mb-4">
                 <Lock className="h-7 w-7 text-white" />
               </div>
-              <h2 className="text-xl font-black mb-2">구독 후 이용 가능해요</h2>
-              <p className="text-white/60 text-sm">월 5,500원으로 AI 채점 무제한 이용</p>
+              <h2 className="text-xl font-black mb-2">이용권 결제 후 이용 가능해요</h2>
+              <p className="text-white/60 text-sm">5,500원 1회 결제로 30일 무제한 (자동결제 없음)</p>
             </div>
             <div className="p-6">
               <div className="space-y-2.5 mb-6">

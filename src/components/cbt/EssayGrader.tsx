@@ -80,6 +80,17 @@ export default function EssayGrader({
             </ul>
           </div>
         )}
+        {/* 첨삭 직후 업셀 — aha 직후가 전환 최적 타이밍 */}
+        {!hasSubscription && (
+          <Link href="/subscribe" className="mt-3 flex items-center justify-between gap-2 bg-white/70 border border-amber-200 rounded-lg px-3 py-2 hover:bg-amber-50 transition-colors">
+            <span className="text-xs text-amber-800">
+              {trial.remaining > 0
+                ? <>무료 체험 <b>{trial.remaining}회</b> 남음 · 9문항 전체를 무제한으로</>
+                : <>무료 체험을 모두 썼어요 · <b>30일 무제한</b>으로 계속하기</>}
+            </span>
+            <span className="text-xs font-black text-[#1e3a5f] whitespace-nowrap">5,500원 →</span>
+          </Link>
+        )}
       </div>
     )
   }

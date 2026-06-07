@@ -100,7 +100,7 @@ export default async function HomePage() {
             <span className="text-white/30">·</span>
             <span className="text-amber-300 font-bold">AI 첨삭 무료 체험</span>
             <span className="text-white/30">·</span>
-            <span className="text-white/80">구독 시 <b className="text-white">월 5,500원</b>에 무제한</span>
+            <span className="text-white/80"><b className="text-white">5,500원</b>으로 30일 무제한 <span className="text-white/50">(1회 결제)</span></span>
           </div>
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center mb-16">
@@ -211,7 +211,7 @@ export default async function HomePage() {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,rgba(217,119,6,0.15)_0%,transparent_60%)]" />
         <div className="relative max-w-2xl mx-auto text-center">
           <h2 className="text-3xl font-black text-white mb-4 tracking-tight">지금 바로 시작해보세요</h2>
-          <p className="text-white/60 mb-8 text-base">CBT 문제풀기는 완전 무료 · AI 첨삭도 무료 체험 · 구독은 월 5,500원에 무제한</p>
+          <p className="text-white/60 mb-8 text-base">CBT 문제풀기는 완전 무료 · AI 첨삭도 무료 체험 · 5,500원 1회 결제로 30일 무제한</p>
           <Link href="/signup" className="btn-gold inline-flex items-center gap-2 text-white font-bold px-10 py-4 rounded-xl text-base">
             무료로 시작하기 <ArrowRight className="h-5 w-5" />
           </Link>

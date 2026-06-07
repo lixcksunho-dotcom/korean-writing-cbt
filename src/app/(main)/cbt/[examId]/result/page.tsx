@@ -209,7 +209,7 @@ export default async function ResultPage({
               <li className="flex items-center gap-2"><Sparkles className="h-4 w-4 text-amber-300 shrink-0" /> <b>모의고사 6회분</b> 전체 + 유형별 집중 연습</li>
             </ul>
             <Link href="/subscribe" className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-amber-400 text-[#1e3a5f] font-black text-sm hover:bg-amber-300 transition-colors">
-              월 5,500원으로 시작하기 <ChevronRight className="h-4 w-4" />
+              5,500원으로 30일 무제한 <ChevronRight className="h-4 w-4" />
             </Link>
           </div>
         </div>
