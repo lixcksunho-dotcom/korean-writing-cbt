@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { createQuestion, updateQuestion } from '@/app/admin/questions/actions'
+import { createQuestion, updateQuestion } from '@/app/admin/(protected)/questions/actions'
 
 type Question = {
   id?: string

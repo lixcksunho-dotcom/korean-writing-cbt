@@ -1,51 +1,6 @@
-import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
-import Link from 'next/link'
-import { Shield, BookOpen, ArrowLeft, Star, LayoutDashboard, Users } from 'lucide-react'
-
-export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
-
-  const adminEmails = (process.env.ADMIN_EMAILS ?? '').split(',').map(e => e.trim()).filter(Boolean)
-  if (!adminEmails.includes(user.email ?? '')) redirect('/dashboard')
-
-  return (
-    <div className="min-h-screen bg-gray-100">
-      <header className="bg-gray-900 text-white">
-        <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
-          <Link href="/admin" className="flex items-center gap-2 font-bold hover:text-amber-300 transition-colors">
-            <Shield className="h-4 w-4 text-amber-400" />
-            관리자
-          </Link>
-          <div className="flex items-center gap-4">
-            <Link href="/admin" className="flex items-center gap-1.5 text-sm text-gray-300 hover:text-white transition-colors">
-              <LayoutDashboard className="h-4 w-4" />
-              대시보드
-            </Link>
-            <Link href="/admin/members" className="flex items-center gap-1.5 text-sm text-gray-300 hover:text-white transition-colors">
-              <Users className="h-4 w-4" />
-              회원 관리
-            </Link>
-            <Link href="/admin/questions" className="flex items-center gap-1.5 text-sm text-gray-300 hover:text-white transition-colors">
-              <BookOpen className="h-4 w-4" />
-              문제 관리
-            </Link>
-            <Link href="/admin/reviews" className="flex items-center gap-1.5 text-sm text-gray-300 hover:text-white transition-colors">
-              <Star className="h-4 w-4" />
-              후기 관리
-            </Link>
-            <Link href="/dashboard" className="flex items-center gap-1.5 text-sm text-gray-300 hover:text-white transition-colors">
-              <ArrowLeft className="h-4 w-4" />
-              서비스로
-            </Link>
-          </div>
-        </div>
-      </header>
-      <main className="max-w-5xl mx-auto px-4 py-8">
-        {children}
-      </main>
-    </div>
-  )
+// 최상위 admin 레이아웃은 통과용.
+// 실제 권한 검증은 (protected)/layout.tsx 에서 하고,
+// /admin/login 은 검증 없이 접근 가능해야 하므로 여기서는 children만 렌더한다.
+export default function AdminRootLayout({ children }: { children: React.ReactNode }) {
+  return <>{children}</>
 }
