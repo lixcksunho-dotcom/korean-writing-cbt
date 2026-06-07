@@ -3,6 +3,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { CheckCircle2, PenLine } from 'lucide-react'
+import PurchaseTracker from '@/components/analytics/PurchaseTracker'
 
 // 구독 1개월 가격(원). 클라이언트가 보내온 금액을 그대로 신뢰하지 않고
 // 이 값과 일치하는지 서버에서 반드시 검증한다.
@@ -77,6 +78,8 @@ export default async function SuccessPage({
 
   return (
     <div className="max-w-md mx-auto py-16 text-center">
+      {/* GA4 결제 전환 이벤트(설정 시에만 발생) */}
+      <PurchaseTracker orderId={paymentId} amount={PLAN_PRICE} />
       <div className="bg-white rounded-2xl border border-[#e2e8f0] shadow-[0_4px_20px_rgba(15,31,61,0.08)] p-10">
         <div className="w-20 h-20 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-5">
           <CheckCircle2 className="h-10 w-10 text-emerald-500" />

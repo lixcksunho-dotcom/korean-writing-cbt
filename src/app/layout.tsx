@@ -38,6 +38,15 @@ export const metadata: Metadata = {
     follow: true,
     googleBot: { index: true, follow: true, "max-image-preview": "large" },
   },
+  // 검색엔진 사이트 소유확인 — Vercel 환경변수에 코드만 넣으면 head에 자동 삽입.
+  //  GOOGLE_SITE_VERIFICATION : 구글 서치콘솔 'HTML 태그' content 값
+  //  NAVER_SITE_VERIFICATION  : 네이버 서치어드바이저 'HTML 태그' content 값
+  verification: {
+    google: process.env.GOOGLE_SITE_VERIFICATION,
+    other: process.env.NAVER_SITE_VERIFICATION
+      ? { "naver-site-verification": process.env.NAVER_SITE_VERIFICATION }
+      : {},
+  },
 };
 
 export default function RootLayout({
