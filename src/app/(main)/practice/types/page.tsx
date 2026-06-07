@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, ChevronRight, SpellCheck, Globe, Link2, FileText } from 'lucide-react'
 import { getActiveSubscription } from '@/lib/subscription'
+import { getPracticeProgress } from '../actions'
 import PracticeEssay, { type PracticeEssayQuestion } from '../essay/PracticeEssay'
 
 // 유형별 집중 연습 — 연습 전용 센티넬(year=9001), round=유형.
@@ -86,12 +87,17 @@ export default async function TypesPracticePage({
   ])
   if (!questions?.length) redirect('/practice/types')
 
+  // 저장해 둔 진행 상황(유료 전용 기능이지만, 불러오기는 누구나 — 비구독자는 빈 값)
+  const { savedAnswers } = await getPracticeProgress(PRACTICE_YEAR, round)
+
   return (
     <PracticeEssay
       questions={questions as unknown as PracticeEssayQuestion[]}
       title={`유형별 · ${cat.title}`}
       hasSubscription={!!subscription}
       backHref="/practice/types"
+      saveKey={{ year: PRACTICE_YEAR, round }}
+      initialAnswers={savedAnswers}
     />
   )
 }

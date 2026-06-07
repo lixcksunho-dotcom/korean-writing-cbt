@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react'
 import Link from 'next/link'
 import { Sparkles, CheckCircle2, AlertCircle, Lock } from 'lucide-react'
 import { gradeExamEssay, type EssayGrade } from '@/app/(main)/cbt/actions'
+import { useAiTrial } from '@/components/cbt/AiTrialContext'
 
 export default function EssayGrader({
   sessionId,
@@ -21,6 +22,10 @@ export default function EssayGrader({
   const [grade, setGrade] = useState<EssayGrade | null>(initialGrade)
   const [error, setError] = useState('')
   const [isPending, startTransition] = useTransition()
+  const trial = useAiTrial()
+
+  // 비구독자라도 무료 체험(전체 1회, 결과화면 내 모든 서술형이 공유)이 남아 있으면 분석 가능
+  const canUseTrial = !hasSubscription && trial.remaining > 0
 
   function handleGrade() {
     setError('')
@@ -28,6 +33,7 @@ export default function EssayGrader({
       try {
         const result = await gradeExamEssay(sessionId, questionId)
         setGrade(result)
+        if (!hasSubscription) trial.spend() // 무료 체험 1회 소진 → 다른 문항도 잠금
       } catch (e) {
         const msg = e instanceof Error ? e.message : ''
         setError(msg === 'SUBSCRIPTION_REQUIRED' ? 'SUBSCRIPTION_REQUIRED' : '분석 중 오류가 발생했습니다.')
@@ -78,7 +84,8 @@ export default function EssayGrader({
     )
   }
 
-  if (!hasSubscription) {
+  // 비구독자 + 무료 체험 소진 → 구독 유도
+  if (!hasSubscription && !canUseTrial) {
     return (
       <Link
         href="/subscribe"
@@ -95,11 +102,16 @@ export default function EssayGrader({
       <button
         onClick={handleGrade}
         disabled={isPending}
-        className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-[#1e3a5f] hover:bg-[#2d5488] disabled:opacity-60 text-white text-sm font-bold transition-colors"
+        className={`flex items-center justify-center gap-2 w-full py-3 rounded-xl disabled:opacity-60 text-white text-sm font-bold transition-colors ${
+          canUseTrial ? 'bg-gradient-to-r from-amber-500 to-[#d97706] hover:opacity-90' : 'bg-[#1e3a5f] hover:bg-[#2d5488]'
+        }`}
       >
         <Sparkles className="h-4 w-4" />
-        {isPending ? 'AI 분석 중...' : 'AI 분석 받기'}
+        {isPending ? 'AI 분석 중...' : canUseTrial ? '무료로 1회 AI 분석 체험' : 'AI 분석 받기'}
       </button>
+      {canUseTrial && (
+        <p className="text-[11px] text-[#94a3b8] text-center mt-1.5">구독 없이 <span className="font-semibold text-amber-600">1회 무료</span>로 받아볼 수 있어요.</p>
+      )}
       {error && error !== 'SUBSCRIPTION_REQUIRED' && (
         <p className="text-xs text-red-500 text-center mt-2">{error}</p>
       )}

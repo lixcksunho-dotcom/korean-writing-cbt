@@ -77,3 +77,75 @@ export async function gradeEssayPractice(
   if (usingTrial) await consumeAiTrial(user.id, trialUsed)
   return result
 }
+
+// ===== 유형별/연습 '저장하고 나가기' (유료 전용) =====
+// 시험과 동일하게 quiz_sessions 를 재사용한다. (연습은 year=9001 센티넬)
+
+// 진행중(미완료) 연습 세션의 저장된 답안을 돌려준다. 없으면 빈 객체.
+export async function getPracticeProgress(
+  year: number,
+  round: number
+): Promise<{ savedAnswers: Record<string, string>; resumed: boolean }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { savedAnswers: {}, resumed: false }
+
+  const { data: existing } = await supabase
+    .from('quiz_sessions')
+    .select('saved_answers, saved_at')
+    .eq('user_id', user.id)
+    .eq('year', year)
+    .eq('round', round)
+    .is('completed_at', null)
+    .order('started_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  return {
+    savedAnswers: (existing?.saved_answers as Record<string, string> | null) ?? {},
+    resumed: !!existing?.saved_at,
+  }
+}
+
+// 연습 답안을 중간 저장한다(유료 전용). 진행중 세션이 없으면 만든다.
+export async function savePracticeProgress(
+  year: number,
+  round: number,
+  answers: Record<string, string>
+): Promise<void> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Unauthorized')
+
+  // 저장하고 나가기는 유료 전용
+  const subscription = await getActiveSubscription(user.id)
+  if (!subscription) throw new Error('SUBSCRIPTION_REQUIRED')
+
+  const { data: existing } = await supabase
+    .from('quiz_sessions')
+    .select('id')
+    .eq('user_id', user.id)
+    .eq('year', year)
+    .eq('round', round)
+    .is('completed_at', null)
+    .order('started_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  const sessionId = existing?.id as string | undefined
+    ?? (await supabase
+      .from('quiz_sessions')
+      .insert({ user_id: user.id, year, round })
+      .select('id')
+      .single()).data?.id
+
+  if (!sessionId) throw new Error('세션을 만들 수 없습니다.')
+
+  const { error } = await supabase
+    .from('quiz_sessions')
+    .update({ saved_answers: answers, saved_at: new Date().toISOString() })
+    .eq('id', sessionId)
+    .eq('user_id', user.id)
+
+  if (error) throw error
+}

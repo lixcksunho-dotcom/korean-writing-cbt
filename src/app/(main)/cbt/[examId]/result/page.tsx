@@ -1,11 +1,13 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { CheckCircle2, XCircle, Trophy, RotateCcw, LayoutDashboard, Star } from 'lucide-react'
+import { CheckCircle2, XCircle, Trophy, RotateCcw, LayoutDashboard, Star, Target, Sparkles, ChevronRight } from 'lucide-react'
 import { getActiveSubscription } from '@/lib/subscription'
+import { getAiTrialStatus } from '@/lib/aiTrial'
 import { scaleTo1000, tierFor } from '@/lib/grade'
 import ManuscriptGrid from '@/components/manuscript/ManuscriptGrid'
 import EssayGrader from '@/components/cbt/EssayGrader'
+import { AiTrialProvider } from '@/components/cbt/AiTrialContext'
 import type { EssayGrade } from '@/app/(main)/cbt/actions'
 
 export default async function ResultPage({
@@ -57,6 +59,24 @@ export default async function ResultPage({
   const scaled = scaleTo1000(earnedPoints, totalPoints)
   const tier = tierFor(scaled)
   const isPass = tier.name !== '미달'
+
+  // 비구독자 무료 AI 체험 잔여(결과화면 서술형들이 공유)
+  const aiTrial = subscription ? { remaining: 0 } : await getAiTrialStatus()
+
+  // 영역별 약점 분석(객관식 번호 구간 기준)
+  const BANDS = [
+    { label: '어휘·어법·어문 규정', lo: 1, hi: 10, href: '/practice/types' },
+    { label: '글쓰기 계획·조직·고쳐쓰기', lo: 11, hi: 20, href: '/practice/types?set=3' },
+    { label: '독해·자료 해석', lo: 21, hi: 30, href: '/practice/essay' },
+  ]
+  const bandStats = BANDS.map(b => {
+    const qs = autoQuestions.filter(q => (q.number ?? 0) >= b.lo && (q.number ?? 0) <= b.hi)
+    const correct = qs.filter(q => answerMap.get(q.id)?.is_correct).length
+    return { ...b, total: qs.length, correct, pct: qs.length ? Math.round((correct / qs.length) * 100) : 0 }
+  }).filter(b => b.total > 0)
+  const weakest = bandStats.length
+    ? bandStats.reduce((min, b) => (b.pct < min.pct ? b : min))
+    : null
 
   const timeTaken = session.completed_at && session.started_at
     ? Math.round((new Date(session.completed_at).getTime() - new Date(session.started_at).getTime()) / 1000)
@@ -110,18 +130,78 @@ export default async function ResultPage({
         </Link>
       </div>
 
+      {/* 약점 분석 — 영역별 정답률 */}
+      {bandStats.length > 0 && (
+        <div className="bg-white rounded-2xl border border-[#e2e8f0] shadow-[0_4px_16px_rgba(15,31,61,0.06)] p-5 sm:p-6 mb-6">
+          <div className="flex items-center gap-2 mb-1">
+            <Target className="h-5 w-5 text-[#1e3a5f]" />
+            <h2 className="text-base font-bold text-[#0f172a]">영역별 약점 분석</h2>
+          </div>
+          <p className="text-xs text-[#94a3b8] mb-4">객관식 정답률을 영역별로 나눠 봤어요. 낮은 영역을 집중 연습하면 점수가 가장 빨리 올라요.</p>
+          <div className="space-y-3.5">
+            {bandStats.map(b => {
+              const isWeak = weakest?.label === b.label && b.pct < 100
+              const barColor = b.pct >= 80 ? 'bg-emerald-500' : b.pct >= 50 ? 'bg-amber-500' : 'bg-red-400'
+              return (
+                <div key={b.label}>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-sm font-semibold text-[#334155] flex items-center gap-1.5">
+                      {b.label}
+                      {isWeak && <span className="text-[10px] font-bold text-red-500 bg-red-50 px-1.5 py-0.5 rounded-full">약점</span>}
+                    </span>
+                    <span className="text-xs font-bold text-[#64748b] tabular-nums">{b.correct}/{b.total} · {b.pct}%</span>
+                  </div>
+                  <div className="h-2 rounded-full bg-[#f1f5f9] overflow-hidden">
+                    <div className={`h-full rounded-full ${barColor}`} style={{ width: `${b.pct}%` }} />
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+          {weakest && weakest.pct < 100 && (
+            <Link href={weakest.href} className="mt-4 flex items-center justify-center gap-1.5 w-full py-2.5 rounded-xl bg-[#1e3a5f]/5 text-[#1e3a5f] text-sm font-bold hover:bg-[#1e3a5f]/10 transition-colors">
+              <Target className="h-4 w-4" /> ‘{weakest.label}’ 집중 연습하기
+            </Link>
+          )}
+        </div>
+      )}
+
+      {/* 비구독자 전환 유도 */}
+      {!subscription && (
+        <div className="relative overflow-hidden rounded-2xl mb-8 p-6 text-white">
+          <div className="absolute inset-0 bg-gradient-to-br from-[#1e3a5f] to-[#2d5488]" />
+          <div className="relative">
+            <p className="text-xs font-bold text-amber-300 mb-1">합격까지 더 빠르게</p>
+            <h3 className="text-lg font-black mb-3">구독하면 이런 게 열려요</h3>
+            <ul className="space-y-1.5 text-sm text-white/90 mb-5">
+              <li className="flex items-center gap-2"><Sparkles className="h-4 w-4 text-amber-300 shrink-0" /> 서술형 9문항 <b>AI 첨삭·점수 무제한</b></li>
+              <li className="flex items-center gap-2"><Sparkles className="h-4 w-4 text-amber-300 shrink-0" /> 시험·연습 <b>저장하고 이어풀기</b></li>
+              <li className="flex items-center gap-2"><Sparkles className="h-4 w-4 text-amber-300 shrink-0" /> <b>모의고사 6회분</b> 전체 + 유형별 집중 연습</li>
+            </ul>
+            <Link href="/subscribe" className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-amber-400 text-[#1e3a5f] font-black text-sm hover:bg-amber-300 transition-colors">
+              월 5,500원으로 시작하기 <ChevronRight className="h-4 w-4" />
+            </Link>
+          </div>
+        </div>
+      )}
+
       {/* 서술형 — 원고지 답안 + AI 채점 */}
       {essayQuestions.length > 0 && (
+        <AiTrialProvider initialRemaining={aiTrial.remaining}>
         <div className="mb-8">
           <div className="mb-4">
             <h2 className="text-base font-bold text-[#0f172a] flex items-center gap-2 flex-wrap">
               <span className="w-6 h-6 rounded-lg bg-amber-100 flex items-center justify-center text-amber-600 text-xs font-black">서</span>
               서술형 ({essayQuestions.length}문항)
-              <span className="text-[11px] font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">구독 전용 · AI 분석</span>
+              <span className="text-[11px] font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">
+                {subscription ? 'AI 분석' : aiTrial.remaining > 0 ? '무료 체험 1회 · AI 분석' : '구독 전용 · AI 분석'}
+              </span>
             </h2>
             <p className="text-xs text-[#94a3b8] mt-1.5">
               내가 쓴 답안을 AI가 모범 답안과 비교해 <b className="text-amber-700">점수·첨삭</b>으로 분석해 드려요.
-              {!subscription && ' (AI 분석은 구독 시 이용할 수 있어요. 모범 답안은 무료로 볼 수 있어요.)'}
+              {!subscription && (aiTrial.remaining > 0
+                ? ' 구독 없이 1회 무료로 체험할 수 있어요. 모범 답안은 언제나 무료예요.'
+                : ' (AI 분석은 구독 시 이용할 수 있어요. 모범 답안은 무료로 볼 수 있어요.)')}
             </p>
           </div>
           <div className="space-y-4">
@@ -169,6 +249,7 @@ export default async function ResultPage({
             })}
           </div>
         </div>
+        </AiTrialProvider>
       )}
 
       {/* 객관식·단답형 결과 */}

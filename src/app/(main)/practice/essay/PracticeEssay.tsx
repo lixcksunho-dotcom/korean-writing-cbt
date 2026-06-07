@@ -2,10 +2,11 @@
 
 import { useState, useTransition } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, ChevronRight, ChevronLeft, FileText, ChevronDown, Sparkles, Lock, Loader2 } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { ArrowLeft, ChevronRight, ChevronLeft, FileText, ChevronDown, Sparkles, Lock, Loader2, Save, Check } from 'lucide-react'
 import EditableManuscript from '@/components/manuscript/EditableManuscript'
 import PassageView from '@/components/cbt/PassageView'
-import { gradeEssayPractice } from '../actions'
+import { gradeEssayPractice, savePracticeProgress } from '../actions'
 import type { EssayGrade } from '@/app/(main)/cbt/actions'
 
 export type PracticeEssayQuestion = {
@@ -25,24 +26,48 @@ export default function PracticeEssay({
   hasSubscription,
   aiTrialRemaining = 0,
   backHref = '/practice/essay',
+  saveKey,
+  initialAnswers,
 }: {
   questions: PracticeEssayQuestion[]
   title: string
   hasSubscription: boolean
   aiTrialRemaining?: number
   backHref?: string
+  saveKey?: { year: number; round: number }   // 있으면 '저장하고 나가기' 활성화
+  initialAnswers?: Record<string, string>
 }) {
+  const router = useRouter()
   const [idx, setIdx] = useState(0)
-  const [answers, setAnswers] = useState<Record<string, string>>({})
+  const [answers, setAnswers] = useState<Record<string, string>>(initialAnswers ?? {})
   const [grades, setGrades] = useState<Record<string, EssayGrade>>({})
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [passageOpen, setPassageOpen] = useState(true)
   const [showModel, setShowModel] = useState(false)
   const [trialSpent, setTrialSpent] = useState(false)
   const [isPending, startTransition] = useTransition()
+  const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState('')
+  const resumed = !!initialAnswers && Object.keys(initialAnswers).length > 0
 
   // 구독자거나, 비구독자라도 무료 체험이 남아있으면 AI 분석 가능
   const canUseAi = hasSubscription || (aiTrialRemaining > 0 && !trialSpent)
+
+  function saveAndExit() {
+    if (!saveKey) return
+    setSaveError('')
+    setSaving(true)
+    startTransition(async () => {
+      try {
+        await savePracticeProgress(saveKey.year, saveKey.round, answers)
+        router.push(backHref)
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : '저장 중 오류가 발생했어요.'
+        setSaveError(msg === 'SUBSCRIPTION_REQUIRED' ? '저장하고 나가기는 구독 회원만 이용할 수 있어요.' : msg)
+        setSaving(false)
+      }
+    })
+  }
 
   const q = questions[idx]
   const answer = answers[q.id] ?? ''
@@ -72,12 +97,36 @@ export default function PracticeEssay({
 
   return (
     <div className="animate-fade-up">
-      <div className="flex items-center justify-between mb-5">
-        <Link href={backHref} className="inline-flex items-center gap-1.5 text-sm text-[#64748b] hover:text-[#1e3a5f]">
-          <ArrowLeft className="h-4 w-4" /> {title}
+      <div className="flex items-center justify-between mb-5 gap-2">
+        <Link href={backHref} className="inline-flex items-center gap-1.5 text-sm text-[#64748b] hover:text-[#1e3a5f] min-w-0">
+          <ArrowLeft className="h-4 w-4 shrink-0" /> <span className="truncate">{title}</span>
         </Link>
-        <span className="text-sm text-[#94a3b8]">서술형 {idx + 1} / {questions.length}</span>
+        <div className="flex items-center gap-2 shrink-0">
+          {saveKey && (
+            hasSubscription ? (
+              <button
+                onClick={saveAndExit}
+                disabled={saving || isPending}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-[#1e3a5f] text-white hover:bg-[#2d5488] disabled:opacity-50 transition-colors"
+              >
+                {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />} 저장하고 나가기
+              </button>
+            ) : (
+              <Link href="/subscribe" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border border-amber-300 text-amber-700 hover:bg-amber-50">
+                <Lock className="h-3.5 w-3.5" /> 저장하고 나가기
+              </Link>
+            )
+          )}
+          <span className="text-sm text-[#94a3b8] whitespace-nowrap">서술형 {idx + 1} / {questions.length}</span>
+        </div>
       </div>
+
+      {resumed && (
+        <div className="mb-4 flex items-center gap-2 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-xl px-3.5 py-2.5">
+          <Check className="h-4 w-4" /> 저장해 둔 답안을 불러왔어요. 이어서 작성하세요.
+        </div>
+      )}
+      {saveError && <p className="mb-3 text-xs text-red-500">{saveError}</p>}
 
       {/* 번호 그리드 */}
       <div className="bg-white rounded-2xl border border-[#e2e8f0] p-3 mb-4">
