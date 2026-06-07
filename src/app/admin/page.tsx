@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { BookOpen, Star, CreditCard, Wallet, FileCheck2, PenLine, ChevronRight, BadgeCheck } from 'lucide-react'
+import { BookOpen, Star, CreditCard, Wallet, FileCheck2, PenLine, ChevronRight, BadgeCheck, Users } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
 
@@ -37,7 +37,8 @@ export default async function AdminHome() {
   ]
 
   const navCards = [
-    { href: '/admin/questions', title: '문제 관리', desc: '모의고사·유형별 문제 추가/수정/삭제', icon: BookOpen },
+    { href: '/admin/members', title: '회원 관리', desc: '회원 검색·추가·삭제, 체크로 유료 전환', icon: Users, badge: undefined },
+    { href: '/admin/questions', title: '문제 관리', desc: '모의고사·유형별 문제 추가/수정/삭제', icon: BookOpen, badge: undefined },
     { href: '/admin/reviews', title: '후기 관리', desc: '점수 인증 확정·노출/숨김·삭제', icon: BadgeCheck, badge: reviewPending > 0 ? `인증대기 ${reviewPending}` : undefined },
   ]
 
