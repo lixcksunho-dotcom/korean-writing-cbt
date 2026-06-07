@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { FileText, BookOpen, PenLine, CheckCircle, ArrowRight, Sparkles, Users, Star, TrendingUp, Gift } from "lucide-react";
+import { FileText, BookOpen, PenLine, CheckCircle, ArrowRight, Sparkles, Star, Gift } from "lucide-react";
 import ReviewMarquee from "@/components/landing/ReviewMarquee";
 import SiteFooter from "@/components/layout/SiteFooter";
 import ScheduleModal from "@/components/schedule/ScheduleModal";
@@ -35,20 +35,32 @@ const benefits = [
   "학습 기록 대시보드",
 ];
 
-const stats = [
-  { value: "1,200+", label: "학습자", icon: Users },
-  { value: "98%", label: "만족도", icon: Star },
-  { value: "4.9", label: "평점", icon: TrendingUp },
-];
-
 export default async function HomePage() {
   const supabase = await createClient()
-  const { data: reviews } = await supabase
-    .from('reviews')
-    .select('id, display_name, content, rating, created_at, exam_score, verified')
-    .eq('is_visible', true)
-    .order('created_at', { ascending: false })
-    .limit(20)
+  const [{ data: reviews }, { data: qrows }] = await Promise.all([
+    supabase
+      .from('reviews')
+      .select('id, display_name, content, rating, created_at, exam_score, verified')
+      .eq('is_visible', true)
+      .order('created_at', { ascending: false })
+      .limit(20),
+    supabase.from('questions').select('round, type').lt('year', 9000),
+  ])
+
+  // 실제 데이터 기반 지표만 노출 (가짜 수치 사용 안 함)
+  const roundCount = new Set((qrows ?? []).map(r => r.round)).size
+  const questionCount = (qrows ?? []).length
+  const reviewCount = reviews?.length ?? 0
+  const avgRating = reviewCount ? (reviews!.reduce((s, r) => s + (r.rating ?? 0), 0) / reviewCount) : 0
+
+  const stats = [
+    { value: `${roundCount}회분`, label: "실전 모의고사", icon: BookOpen },
+    { value: `${questionCount}`, label: "기출 유형 문항", icon: FileText },
+    // 실사용 후기가 충분할 때만 평점 노출, 아니면 제품 사실로 대체
+    reviewCount >= 3
+      ? { value: `${avgRating.toFixed(1)}★`, label: `실사용 후기 ${reviewCount}개`, icon: Star }
+      : { value: "무제한", label: "서술형 AI 첨삭", icon: Sparkles },
+  ];
 
   return (
     <div className="min-h-screen flex flex-col bg-[#f8fafc]">
