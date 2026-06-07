@@ -106,7 +106,7 @@ export default function ExamPlayer({
       <div className="bg-white rounded-2xl border border-[#e2e8f0] shadow-[0_4px_16px_rgba(15,31,61,0.06)] px-5 py-4 mb-5">
         <div className="flex items-center justify-between mb-3">
           <div>
-            <span className="font-bold text-[#0f172a]">{examYear}년 {examRound}회</span>
+            <span className="font-bold text-[#0f172a]">모의고사 {examRound}회</span>
             <span className="text-[#94a3b8] text-xs ml-2">
               객관식 {multipleCount}문 · 서술형 {essayCount}문
             </span>

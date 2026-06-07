@@ -251,7 +251,7 @@ export default async function DashboardPage() {
                     <BookOpen className="h-4 w-4 text-[#64748b]" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-[#0f172a] text-sm">{s.year}년 {s.round}회</p>
+                    <p className="font-semibold text-[#0f172a] text-sm">모의고사 {s.round}회</p>
                     <p className="text-xs text-[#94a3b8]">{new Date(s.completed_at!).toLocaleDateString("ko-KR")}</p>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">

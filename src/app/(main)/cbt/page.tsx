@@ -12,8 +12,8 @@ export default async function CbtPage() {
     .from('questions')
     .select('year, round, type')
     .lt('year', 9000)
-    .order('year', { ascending: false })
-    .order('round', { ascending: false })
+    .order('year', { ascending: true })
+    .order('round', { ascending: true })
 
   const uniqueExams = exams
     ? [...new Map(exams.map(e => [`${e.year}-${e.round}`, e])).values()]
@@ -85,7 +85,7 @@ export default async function CbtPage() {
                           <BookOpen className="h-5 w-5 text-white" />
                         </div>
                         <div>
-                          <h2 className="font-bold text-[#0f172a] text-lg leading-tight">{year}년 {round}회</h2>
+                          <h2 className="font-bold text-[#0f172a] text-lg leading-tight">모의고사 {round}회</h2>
                           <div className="flex items-center gap-2 text-xs text-[#94a3b8] mt-0.5">
                             <Clock className="h-3 w-3" />
                             <span>120분</span>

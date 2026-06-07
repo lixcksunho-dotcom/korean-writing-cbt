@@ -22,8 +22,8 @@ export default async function EssayPracticePage({
       .select('year, round')
       .eq('type', 'essay')
       .lt('year', 9000)
-      .order('year', { ascending: false })
-      .order('round', { ascending: false })
+      .order('year', { ascending: true })
+      .order('round', { ascending: true })
     const sets = rows
       ? [...new Map(rows.map(r => [`${r.year}-${r.round}`, r])).values()]
       : []
@@ -41,7 +41,7 @@ export default async function EssayPracticePage({
             <Link key={`${year}-${round}`} href={`/practice/essay?set=${year}-${round}`} className="card-hover group flex items-center justify-between bg-white border border-[#e2e8f0] rounded-2xl p-5 shadow-[0_4px_16px_rgba(15,31,61,0.06)]">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center"><FileText className="h-5 w-5 text-amber-600" /></div>
-                <p className="font-bold text-[#0f172a]">{year}년 {round}회 서술형</p>
+                <p className="font-bold text-[#0f172a]">모의고사 {round}회 서술형</p>
               </div>
               <ChevronRight className="h-5 w-5 text-[#94a3b8] group-hover:translate-x-1 transition-transform" />
             </Link>
@@ -74,7 +74,7 @@ export default async function EssayPracticePage({
   return (
     <PracticeEssay
       questions={questions as unknown as PracticeEssayQuestion[]}
-      title={`${y}년 ${r}회 서술형`}
+      title={`모의고사 ${r}회 서술형`}
       hasSubscription={!!subscription}
       aiTrialRemaining={trial.remaining}
     />

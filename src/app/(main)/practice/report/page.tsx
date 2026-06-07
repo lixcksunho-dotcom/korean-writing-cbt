@@ -28,7 +28,7 @@ export default async function ReportPracticePage() {
     question: r.question as string,
     passage: (r.passage as string | null) ?? null,
     correct_answer: r.correct_answer as string,
-    examLabel: `${r.year}년 ${r.round}회`,
+    examLabel: `모의고사 ${r.round}회`,
   }))
 
   if (!questions.length) redirect('/practice')

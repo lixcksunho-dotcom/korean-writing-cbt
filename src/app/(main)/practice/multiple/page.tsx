@@ -20,8 +20,8 @@ export default async function MultiplePracticePage({
       .from('questions')
       .select('year, round')
       .eq('type', 'multiple')
-      .order('year', { ascending: false })
-      .order('round', { ascending: false })
+      .order('year', { ascending: true })
+      .order('round', { ascending: true })
     const sets = rows
       ? [...new Map(rows.map(r => [`${r.year}-${r.round}`, r])).values()]
       : []
@@ -52,7 +52,7 @@ export default async function MultiplePracticePage({
             <Link key={`${year}-${round}`} href={`/practice/multiple?set=${year}-${round}`} className="card-hover group flex items-center justify-between bg-white border border-[#e2e8f0] rounded-2xl p-5 shadow-[0_4px_16px_rgba(15,31,61,0.06)]">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-[#1e3a5f]/8 flex items-center justify-center"><ListChecks className="h-5 w-5 text-[#1e3a5f]" /></div>
-                <p className="font-bold text-[#0f172a]">{year}년 {round}회 객관식</p>
+                <p className="font-bold text-[#0f172a]">모의고사 {round}회 객관식</p>
               </div>
               <ChevronRight className="h-5 w-5 text-[#94a3b8] group-hover:translate-x-1 transition-transform" />
             </Link>
@@ -79,7 +79,7 @@ export default async function MultiplePracticePage({
     const [y, r] = set.split('-').map(Number)
     if (Number.isNaN(y) || Number.isNaN(r)) redirect('/practice/multiple')
     query = query.eq('year', y).eq('round', r)
-    title = `${y}년 ${r}회 객관식`
+    title = `모의고사 ${r}회 객관식`
   }
 
   const { data: questions } = await query
