@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { Shield, BookOpen, ArrowLeft } from 'lucide-react'
+import { Shield, BookOpen, ArrowLeft, Star } from 'lucide-react'
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
@@ -23,6 +23,10 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             <Link href="/admin/questions" className="flex items-center gap-1.5 text-sm text-gray-300 hover:text-white transition-colors">
               <BookOpen className="h-4 w-4" />
               문제 관리
+            </Link>
+            <Link href="/admin/reviews" className="flex items-center gap-1.5 text-sm text-gray-300 hover:text-white transition-colors">
+              <Star className="h-4 w-4" />
+              후기 관리
             </Link>
             <Link href="/dashboard" className="flex items-center gap-1.5 text-sm text-gray-300 hover:text-white transition-colors">
               <ArrowLeft className="h-4 w-4" />

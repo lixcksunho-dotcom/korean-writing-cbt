@@ -1,6 +1,6 @@
 'use client'
 
-import { Star } from 'lucide-react'
+import { Star, BadgeCheck } from 'lucide-react'
 
 type Review = {
   id: string
@@ -9,6 +9,7 @@ type Review = {
   rating: number
   created_at: string
   exam_score?: number | null
+  verified?: boolean | null
 }
 
 function timeAgo(dateStr: string) {
@@ -42,7 +43,14 @@ function ReviewCard({ review }: { review: Review }) {
         &ldquo;{review.content}&rdquo;
       </p>
       <div className="flex items-center justify-between">
-        <span className="text-xs font-semibold text-[#0f172a]">{review.display_name}</span>
+        <span className="text-xs font-semibold text-[#0f172a] flex items-center gap-1">
+          {review.display_name}
+          {review.verified && (
+            <span className="inline-flex items-center gap-0.5 text-[10px] font-bold text-emerald-600" title="점수 인증 완료">
+              <BadgeCheck className="h-3.5 w-3.5" /> 인증
+            </span>
+          )}
+        </span>
         <span className="text-xs text-[#94a3b8]">{timeAgo(review.created_at)}</span>
       </div>
     </div>
