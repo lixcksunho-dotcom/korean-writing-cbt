@@ -7,6 +7,7 @@ import { Clock, ChevronLeft, ChevronRight, Send, AlertCircle, CheckCircle2, File
 import { submitSession, saveExamProgress } from '@/app/(main)/cbt/actions'
 import EditableManuscript from '@/components/manuscript/EditableManuscript'
 import PassageView from '@/components/cbt/PassageView'
+import CopyGuard from '@/components/cbt/CopyGuard'
 
 export type Question = {
   id: string
@@ -401,6 +402,7 @@ export default function ExamPlayer({
           </div>
         </div>
       )}
+      <CopyGuard />
     </div>
   )
 }

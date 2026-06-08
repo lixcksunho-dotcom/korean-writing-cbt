@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { ArrowLeft, ChevronLeft, ChevronRight, Clock, Sparkles, Lock, Loader2, CheckCircle2 } from 'lucide-react'
 import EditableManuscript from '@/components/manuscript/EditableManuscript'
 import PassageView from '@/components/cbt/PassageView'
+import CopyGuard from '@/components/cbt/CopyGuard'
 import { gradeEssayPractice } from '../actions'
 import type { EssayGrade } from '@/app/(main)/cbt/actions'
 
@@ -206,6 +207,7 @@ export default function ReportRunner({
           <button onClick={() => go(Math.min(questions.length - 1, idx + 1))} disabled={idx === questions.length - 1} className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-semibold text-[#64748b] hover:bg-[#f1f5f9] disabled:opacity-30 transition-colors">다음 <ChevronRight className="h-4 w-4" /></button>
         </div>
       </div>
+      <CopyGuard />
     </div>
   )
 }

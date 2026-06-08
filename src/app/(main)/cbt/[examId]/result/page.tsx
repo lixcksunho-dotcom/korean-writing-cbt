@@ -11,6 +11,7 @@ import { AiTrialProvider } from '@/components/cbt/AiTrialContext'
 import BookmarkButton from '@/components/study/BookmarkButton'
 import ReportButton from '@/components/study/ReportButton'
 import PaperShareButton from '@/components/result/PaperShareButton'
+import CopyGuard from '@/components/cbt/CopyGuard'
 import type { EssayGrade } from '@/app/(main)/cbt/actions'
 
 export default async function ResultPage({
@@ -354,6 +355,7 @@ export default async function ResultPage({
           </div>
         </>
       )}
+      <CopyGuard />
     </div>
   )
 }

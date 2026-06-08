@@ -113,3 +113,17 @@ body {
   0% { background-position: -200% center; }
   100% { background-position: 200% center; }
 }
+
+/* CBT 자료 복제 방지 — 본문 텍스트 선택 비활성(답안 입력칸은 예외) */
+.cbt-noselect {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
+}
+.cbt-noselect input,
+.cbt-noselect textarea,
+.cbt-noselect [contenteditable="true"] {
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  user-select: text;
+}

@@ -33,9 +33,10 @@ export default function SiteFooter() {
 
         <p className="mt-4 text-white/30 leading-relaxed">
           본 서비스는 한국실용글쓰기 자격시험 대비를 돕는 <b className="text-white/50">비공식 사설 학습 서비스</b>로,
-          시험 시행·주관 기관과 제휴·후원·인증 관계가 없습니다. 모든 문제·해설·모범답안은 시험 유형을 참고해
-          자체 제작한 오리지널 콘텐츠이며, 기출문제를 복제하지 않습니다. ‘한국실용글쓰기’ 등 명칭의 권리는
-          각 권리자에게 있습니다.
+          시험 시행·주관 기관과 제휴·후원·인증 관계가 없습니다. 모든 문제·지문·자료·해설·모범답안은 시험 유형을
+          참고해 자체 제작한 오리지널 콘텐츠이며, 기출문제를 복제하지 않습니다.
+          <b className="text-white/50"> 이 모든 콘텐츠의 저작권은 운영자(만물아들)에게 단독으로 귀속되며, 무단 복제·캡처·배포·전송을 금합니다.</b>
+          ‘한국실용글쓰기’ 등 시험 명칭의 권리는 각 권리자에게 있습니다.
         </p>
         <p className="mt-3 text-white/25">
           © {BUSINESS.serviceName}. All rights reserved.

@@ -2,12 +2,43 @@
 
 import { useEffect, useRef, useState } from 'react'
 
-// 입력 가능한 원고지 — 투명 textarea를 격자 위에 겹쳐, 칸에 바로 타이핑되게 한다.
-// 진짜 textarea라서 한글 IME 조합도 정상 동작하고, 글자는 격자 칸에 맞춰 보인다.
-// (한글·공백은 한 칸에 거의 정확히, 숫자/영문은 약간의 오차가 있을 수 있으나 실사용엔 충분)
+// 입력 가능한 원고지 — 글자를 '칸마다 직접' 그려 공백·숫자·영문까지 정확히 한 칸씩 들어간다.
+// 입력은 투명 textarea(한글 IME 정상 동작)가 받고, 화면 글자는 칸 단위로 렌더한다.
+// 커서는 현재 입력 위치(selectionStart)를 칸 좌표로 환산해 직접 그린다.
 //
-// 반응형: 컨테이너 실제 너비를 재서 칸 크기를 자동 축소 → 모바일에서도 가로 오버플로우 없이 꽉 참.
-// 스크롤: maxHeightVh를 주면 원고지가 그 높이 안에서만 세로 스크롤된다(문제는 위에 고정).
+// 반응형: 컨테이너 너비를 재서 칸 크기를 자동 축소.
+// 스크롤: maxHeightVh를 주면 그 높이 안에서만 세로 스크롤.
+
+// 글자를 행×열 격자에 배치(자동 줄바꿈 20칸, '\n'은 새 줄). ManuscriptGrid와 동일 규칙.
+function textToGrid(text: string, cols: number, rows: number): string[][] {
+  const grid: string[][] = Array.from({ length: rows }, () => Array(cols).fill(''))
+  const lines = text.split('\n')
+  let row = 0
+  for (const line of lines) {
+    if (row >= rows) break
+    let col = 0
+    for (const ch of Array.from(line)) {
+      if (col >= cols) { row++; col = 0; if (row >= rows) break }
+      if (row >= rows) break
+      grid[row][col] = ch
+      col++
+    }
+    row++
+  }
+  return grid
+}
+
+// 커서 인덱스(selectionStart)를 (행, 열) 칸 좌표로 환산 — textToGrid와 같은 규칙.
+function caretRC(value: string, sel: number, cols: number) {
+  let r = 0, c = 0
+  for (const ch of Array.from(value.slice(0, sel))) {
+    if (ch === '\n') { r++; c = 0; continue }
+    if (c >= cols) { r++; c = 0 }
+    c++
+  }
+  if (c >= cols) { r++; c = 0 }
+  return { r, c }
+}
 
 export default function EditableManuscript({
   value,
@@ -24,13 +55,14 @@ export default function EditableManuscript({
   rows?: number
   cell?: number
   placeholder?: string
-  /** 주면 이 높이(vh) 안에서만 세로 스크롤 — 문제는 화면에 고정 */
   maxHeightVh?: number
 }) {
   const boxRef = useRef<HTMLDivElement>(null)
+  const taRef = useRef<HTMLTextAreaElement>(null)
   const [availW, setAvailW] = useState<number | null>(null)
+  const [sel, setSel] = useState(0)
+  const [focused, setFocused] = useState(false)
 
-  // 컨테이너(스크롤 박스) 너비를 측정해, 칸 크기를 그 너비에 맞게 축소한다.
   useEffect(() => {
     const el = boxRef.current
     if (!el) return
@@ -41,68 +73,108 @@ export default function EditableManuscript({
     return () => ro.disconnect()
   }, [])
 
-  // 사용 칸 크기: 화면에 맞춰 축소하되 prop(cell)을 넘지 않음. 최소 14px 보장.
   const fitCell = availW
     ? Math.max(14, Math.min(cell, Math.floor((availW - 2) / cols)))
     : cell
-
-  const fontPx = Math.round(fitCell * 0.66)
-  const ls = fitCell - fontPx        // 글자 뒤 여백 → 한 글자 = 한 칸
-  const ti = Math.round(ls / 2)      // 칸 안에서 가로 가운데로 살짝 밀기
+  const fontPx = Math.round(fitCell * 0.62)
   const w = cols * fitCell
   const h = rows * fitCell
+
+  const grid = textToGrid(value, cols, rows)
+  const syncSel = () => setSel(taRef.current?.selectionStart ?? 0)
+  const caret = caretRC(value, sel, cols)
+  const caretVisible = focused && caret.r < rows
 
   return (
     <div
       ref={boxRef}
       className="overflow-auto rounded-lg border-2 border-[#1e3a5f]/40 bg-white overscroll-contain"
       style={maxHeightVh ? { maxHeight: `${maxHeightVh}vh` } : undefined}
+      onMouseDown={() => taRef.current?.focus()}
     >
       <div style={{ position: 'relative', width: w, height: h }}>
-        {/* 격자 배경 */}
+        {/* 격자선 */}
         <div
           aria-hidden
           style={{
-            position: 'absolute',
-            inset: 0,
-            pointerEvents: 'none',
+            position: 'absolute', inset: 0, pointerEvents: 'none',
             backgroundImage:
               'linear-gradient(to right,#d1d5db 1px,transparent 1px),linear-gradient(to bottom,#d1d5db 1px,transparent 1px)',
             backgroundSize: `${fitCell}px ${fitCell}px`,
           }}
         />
-        {/* 입력 (투명, 격자 위) */}
+
+        {/* 글자(칸 단위 렌더) */}
+        <div
+          aria-hidden
+          style={{
+            position: 'absolute', inset: 0, pointerEvents: 'none',
+            display: 'grid',
+            gridTemplateColumns: `repeat(${cols}, ${fitCell}px)`,
+            gridAutoRows: `${fitCell}px`,
+            fontFamily: "'Malgun Gothic','맑은 고딕',sans-serif",
+            fontSize: `${fontPx}px`,
+            color: '#1f2937',
+          }}
+        >
+          {grid.flatMap((row, r) =>
+            row.map((ch, c) => (
+              <div key={`${r}-${c}`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}>
+                {ch === ' ' ? ' ' : ch}
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* 커서 */}
+        {caretVisible && (
+          <div
+            aria-hidden
+            style={{
+              position: 'absolute',
+              left: caret.c * fitCell + Math.round(fitCell * 0.12),
+              top: caret.r * fitCell + Math.round(fitCell * 0.15),
+              width: Math.max(1, Math.round(fitCell * 0.06)),
+              height: Math.round(fitCell * 0.7),
+              background: '#1e3a5f',
+              animation: 'kpt-caret-blink 1s steps(1) infinite',
+              pointerEvents: 'none',
+            }}
+          />
+        )}
+
+        {/* 플레이스홀더 */}
+        {!value && placeholder && (
+          <div aria-hidden style={{ position: 'absolute', left: Math.round(fitCell * 0.2), top: Math.round(fitCell * 0.25), color: '#94a3b8', fontSize: `${Math.round(fitCell * 0.4)}px`, pointerEvents: 'none' }}>
+            {placeholder}
+          </div>
+        )}
+
+        {/* 입력(투명) — 글자·커서는 위에서 직접 그리므로 여기선 보이지 않게 */}
         <textarea
+          ref={taRef}
           value={value}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder={placeholder}
+          onChange={(e) => { onChange(e.target.value); syncSel() }}
+          onSelect={syncSel}
+          onKeyUp={syncSel}
+          onClick={syncSel}
+          onFocus={() => { setFocused(true); syncSel() }}
+          onBlur={() => setFocused(false)}
           spellCheck={false}
           autoComplete="off"
           autoCorrect="off"
           style={{
-            position: 'absolute',
-            inset: 0,
-            width: w,
-            height: h,
-            background: 'transparent',
-            border: 'none',
-            outline: 'none',
-            resize: 'none',
-            margin: 0,
-            padding: 0,
+            position: 'absolute', inset: 0, width: w, height: h,
+            background: 'transparent', border: 'none', outline: 'none', resize: 'none',
+            margin: 0, padding: 0,
             fontFamily: "'Malgun Gothic','맑은 고딕',monospace",
-            fontSize: `${fontPx}px`,
-            lineHeight: `${fitCell}px`,
-            letterSpacing: `${ls}px`,
-            textIndent: `${ti}px`,
-            wordBreak: 'break-all',
-            whiteSpace: 'pre-wrap',
-            overflow: 'hidden',
-            color: '#1f2937',
-            caretColor: '#1e3a5f',
+            fontSize: `${fontPx}px`, lineHeight: `${fitCell}px`,
+            color: 'transparent', caretColor: 'transparent',
+            whiteSpace: 'pre-wrap', wordBreak: 'break-all', overflow: 'hidden',
           }}
         />
       </div>
+      <style>{`@keyframes kpt-caret-blink{0%,50%{opacity:1}50.01%,100%{opacity:0}}`}</style>
     </div>
   )
 }

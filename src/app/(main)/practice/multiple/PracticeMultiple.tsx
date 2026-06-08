@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { ArrowLeft, CheckCircle2, XCircle, ChevronRight, FileText, ChevronDown, RotateCcw } from 'lucide-react'
+import CopyGuard from '@/components/cbt/CopyGuard'
 
 export type PracticeQuestion = {
   id: string
@@ -142,6 +143,7 @@ export default function PracticeMultiple({
           <p className="text-sm text-[#64748b]">연습 완료! 총 <span className="font-bold text-[#0f172a]">{questions.length}</span>문항 중 <span className="font-bold text-emerald-600">{right}</span>문항 정답 ({Math.round((right / questions.length) * 100)}%)</p>
         </div>
       )}
+      <CopyGuard />
     </div>
   )
 }
