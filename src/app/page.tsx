@@ -226,10 +226,10 @@ export default async function HomePage() {
                 <p className="text-sm text-white/60 mb-5">1회 결제 · 자동결제 없음 — 합격까지 무제한</p>
                 <ul className="space-y-2.5 mb-6">
                   {[
+                    'AI 예상 점수·합격 등급 판정',
                     '서술형 9문항 AI 첨삭·점수 무제한',
                     '원고지 AI 채점·첨삭 무제한',
-                    '영역별 약점 분석',
-                    '시험·연습 저장하고 이어풀기',
+                    '영역별 약점 분석 · 저장하고 이어풀기',
                   ].map(t => (
                     <li key={t} className="flex items-start gap-2.5 text-sm text-white/90">
                       <Sparkles className="h-4 w-4 text-amber-300 shrink-0 mt-0.5" />{t}

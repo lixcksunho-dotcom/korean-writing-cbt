@@ -5,10 +5,11 @@ import PaymentSection from '@/components/subscribe/PaymentSection'
 import { CheckCircle2, Sparkles, Shield, Zap } from 'lucide-react'
 
 const FEATURES = [
+  'AI 예상 점수·합격 등급 판정 (지금 실력이면 몇 점?)',
   '모의고사 서술형 AI 분석·채점 무제한',
   '원고지 AI 채점·첨삭 무제한',
   '항목별 점수 + 잘한 점·보완점 첨삭',
-  '채점·분석 기록 저장',
+  '영역별 약점 분석 · 채점 기록 저장',
 ]
 
 export default async function SubscribePage() {

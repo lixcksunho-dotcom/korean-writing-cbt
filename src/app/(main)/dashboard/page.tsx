@@ -1,10 +1,11 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { BookOpen, PenLine, Trophy, Clock, ChevronRight, ArrowUpRight, Sparkles, CheckCircle2, Gift, TrendingUp } from "lucide-react";
+import { BookOpen, PenLine, Trophy, Clock, ChevronRight, ArrowUpRight, Sparkles, CheckCircle2, Gift, TrendingUp, Lock, Gauge } from "lucide-react";
 import ReviewWriteModal from "@/components/review/ReviewWriteModal";
 import { getActiveSubscription, daysUntilExpiry } from "@/lib/subscription";
 import { getAiTrialStatus } from "@/lib/aiTrial";
+import { tierFor } from "@/lib/grade";
 
 function getGreeting() {
   const h = new Date().getHours();
@@ -69,6 +70,31 @@ export default async function DashboardPage() {
   // 이용권 만료 임박(7일 이내) 여부
   const expiryDays = sub ? daysUntilExpiry(sub.expires_at) : null;
   const expiringSoon = expiryDays !== null && expiryDays <= 7;
+
+  // ── AI 예상 점수(유료 핵심) ──
+  // 객관식 정답률(→300점) + 서술형 AI 채점 평균(→700점)으로 1000점 환산 예상 점수 추정.
+  let essayRate: number | null = null;
+  if (sub && completedSessions.length > 0) {
+    const { data: ea } = await supabase
+      .from("quiz_answers")
+      .select("ai_score, question_id")
+      .in("session_id", completedSessions.map(s => s.id))
+      .not("ai_score", "is", null);
+    if (ea && ea.length) {
+      const qids = [...new Set(ea.map(a => a.question_id as string))];
+      const { data: qp } = await supabase.from("questions").select("id, points").in("id", qids);
+      const pmap = new Map((qp ?? []).map(q => [q.id as string, q.points as number]));
+      const sumAi = ea.reduce((s, a) => s + (Number(a.ai_score) || 0), 0);
+      const sumP = ea.reduce((s, a) => s + (pmap.get(a.question_id as string) ?? 0), 0);
+      essayRate = sumP > 0 ? sumAi / sumP : null;
+    }
+  }
+  const objRate = totalAnswered > 0 ? totalCorrect / totalAnswered : null;
+  // 서술형 미채점 시 객관식률로 잠정 추정
+  const predicted = objRate == null ? null : Math.round(objRate * 300 + (essayRate ?? objRate) * 700);
+  const predictedTier = predicted != null ? tierFor(predicted) : null;
+  const objPart = objRate != null ? Math.round(objRate * 300) : null;
+  const essayPart = essayRate != null ? Math.round(essayRate * 700) : null;
 
   const stats = [
     {
@@ -195,6 +221,65 @@ export default async function DashboardPage() {
           </div>
         ))}
       </div>
+
+      {/* AI 예상 점수 (유료 핵심) */}
+      {completedSessions.length > 0 && (
+        sub ? (
+          <div className="bg-white rounded-2xl border border-[#e2e8f0] shadow-[0_4px_16px_rgba(15,31,61,0.06)] p-5 sm:p-6 mb-8">
+            <div className="flex items-center gap-2 mb-1">
+              <Gauge className="h-5 w-5 text-[#1e3a5f]" />
+              <h2 className="text-base font-bold text-[#0f172a]">AI 예상 점수</h2>
+              <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">AI 추정</span>
+            </div>
+            <p className="text-xs text-[#94a3b8] mb-4">객관식 정답률과 서술형 AI 채점 평균을 1000점으로 환산한 추정치예요.</p>
+
+            <div className="flex items-end gap-3 mb-4">
+              <span className="text-4xl font-black text-[#0f172a] tracking-tight">{predicted}<span className="text-lg text-[#94a3b8]">점</span></span>
+              {predictedTier && (
+                <span className={`mb-1.5 inline-flex items-center px-3 py-1 rounded-full text-sm font-black ${
+                  predictedTier.color === 'emerald' ? 'bg-emerald-100 text-emerald-700'
+                  : predictedTier.color === 'blue' ? 'bg-blue-100 text-blue-700'
+                  : predictedTier.color === 'amber' ? 'bg-amber-100 text-amber-700'
+                  : 'bg-slate-100 text-slate-600'}`}>
+                  {predictedTier.name === '미달' ? '등급 미달' : `${predictedTier.name} 예상`}
+                </span>
+              )}
+            </div>
+
+            {/* 등급 게이지 */}
+            <ScoreGauge predicted={predicted ?? 0} />
+
+            <div className="flex items-center gap-4 mt-4 text-xs">
+              <span className="text-[#64748b]">객관식 <b className="text-[#0f172a]">{objPart}</b>/300</span>
+              <span className="text-[#64748b]">서술형 <b className="text-[#0f172a]">{essayPart ?? '미채점'}</b>/700</span>
+            </div>
+            {essayPart == null && (
+              <Link href="/cbt" className="mt-3 inline-flex items-center gap-1 text-xs font-bold text-amber-700 hover:underline">
+                서술형 AI 채점을 받으면 예상 점수가 더 정확해져요 <ChevronRight className="h-3.5 w-3.5" />
+              </Link>
+            )}
+          </div>
+        ) : (
+          <Link href="/subscribe" className="group block relative overflow-hidden rounded-2xl border border-[#e2e8f0] shadow-[0_4px_16px_rgba(15,31,61,0.06)] p-5 sm:p-6 mb-8 bg-white">
+            <div className="flex items-center gap-2 mb-1">
+              <Gauge className="h-5 w-5 text-[#1e3a5f]" />
+              <h2 className="text-base font-bold text-[#0f172a]">AI 예상 점수</h2>
+              <span className="text-[10px] font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">구독 전용</span>
+            </div>
+            <p className="text-xs text-[#94a3b8] mb-4">서술형까지 AI가 채점해, 지금 실력이면 <b className="text-[#1e3a5f]">실제 시험에서 몇 점·몇 등급</b>일지 알려줘요.</p>
+            <div className="relative">
+              <div className="blur-[5px] select-none pointer-events-none" aria-hidden>
+                <div className="text-4xl font-black text-[#0f172a] mb-3">7●● <span className="text-lg text-[#94a3b8]">점 · 준2급 예상</span></div>
+                <ScoreGauge predicted={735} />
+              </div>
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
+                <span className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-amber-100"><Lock className="h-4 w-4 text-amber-600" /></span>
+                <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-400 text-[#1e3a5f] text-xs font-black">구독하고 예상 점수 확인 <ChevronRight className="h-3.5 w-3.5" /></span>
+              </div>
+            </div>
+          </Link>
+        )
+      )}
 
       {/* 학습 리포트 진입 (기록 있을 때) */}
       {completedSessions.length > 0 && (
@@ -323,6 +408,46 @@ export default async function DashboardPage() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+// 등급 구간 게이지 — 예상 점수 위치를 색 구간 위에 마커로 표시
+function ScoreGauge({ predicted }: { predicted: number }) {
+  const segs = [
+    { w: 550, c: "bg-slate-200" },
+    { w: 80, c: "bg-amber-200" },
+    { w: 80, c: "bg-amber-400" },
+    { w: 80, c: "bg-sky-300" },
+    { w: 80, c: "bg-blue-500" },
+    { w: 130, c: "bg-emerald-500" },
+  ];
+  const pos = Math.max(0, Math.min(100, predicted / 10));
+  const marks = [
+    { at: 550, label: "준3급" },
+    { at: 630, label: "3급" },
+    { at: 710, label: "준2급" },
+    { at: 790, label: "2급" },
+    { at: 870, label: "1급" },
+  ];
+  return (
+    <div className="relative pt-5">
+      <div className="absolute top-0" style={{ left: `${pos}%`, transform: "translateX(-50%)" }}>
+        <div className="text-[10px] font-black text-[#1e3a5f] whitespace-nowrap text-center">{predicted}</div>
+        <div className="w-0.5 h-2 bg-[#1e3a5f] mx-auto" />
+      </div>
+      <div className="flex h-3 rounded-full overflow-hidden">
+        {segs.map((s, i) => (
+          <div key={i} className={s.c} style={{ width: `${s.w / 10}%` }} />
+        ))}
+      </div>
+      <div className="relative h-4 mt-1">
+        {marks.map(m => (
+          <span key={m.label} className="absolute text-[9px] text-[#94a3b8]" style={{ left: `${m.at / 10}%`, transform: "translateX(-50%)" }}>
+            {m.label}
+          </span>
+        ))}
+      </div>
     </div>
   );
 }
