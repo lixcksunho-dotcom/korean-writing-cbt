@@ -10,45 +10,41 @@ export default async function CbtPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: exams } = await supabase
-    .from('questions')
-    .select('year, round, type')
-    .lt('year', 9000)
-    .order('year', { ascending: true })
-    .order('round', { ascending: true })
+  // 독립적인 4개 조회를 병렬로 — 순차 왕복(4회) → 한 번에
+  const [{ data: exams }, { data: sessions }, { data: inProgress }, subscription] = await Promise.all([
+    supabase
+      .from('questions')
+      .select('year, round, type')
+      .lt('year', 9000)
+      .order('year', { ascending: true })
+      .order('round', { ascending: true }),
+    supabase
+      .from('quiz_sessions')
+      .select('year, round, score, total, completed_at')
+      .eq('user_id', user.id)
+      .not('completed_at', 'is', null)
+      .order('completed_at', { ascending: false }),
+    supabase
+      .from('quiz_sessions')
+      .select('year, round')
+      .eq('user_id', user.id)
+      .is('completed_at', null)
+      .not('saved_at', 'is', null),
+    getActiveSubscription(user.id),
+  ])
 
   const uniqueExams = exams
     ? [...new Map(exams.map(e => [`${e.year}-${e.round}`, e])).values()]
     : []
 
-  // 회차별 문항 수 집계
   const countMap = new Map<string, number>()
   for (const e of exams ?? []) {
     const k = `${e.year}-${e.round}`
     countMap.set(k, (countMap.get(k) ?? 0) + 1)
   }
 
-  const { data: sessions } = await supabase
-    .from('quiz_sessions')
-    .select('year, round, score, total, completed_at')
-    .eq('user_id', user.id)
-    .not('completed_at', 'is', null)
-    .order('completed_at', { ascending: false })
-
-  const sessionMap = new Map(
-    (sessions ?? []).map(s => [`${s.year}-${s.round}`, s])
-  )
-
-  // 저장하고 나가기로 중간 저장된(미완료) 세션 — '이어풀기' 표시용
-  const { data: inProgress } = await supabase
-    .from('quiz_sessions')
-    .select('year, round')
-    .eq('user_id', user.id)
-    .is('completed_at', null)
-    .not('saved_at', 'is', null)
+  const sessionMap = new Map((sessions ?? []).map(s => [`${s.year}-${s.round}`, s]))
   const resumable = new Set((inProgress ?? []).map(s => `${s.year}-${s.round}`))
-
-  const subscription = await getActiveSubscription(user.id)
   const hasSub = !!subscription
 
   return (

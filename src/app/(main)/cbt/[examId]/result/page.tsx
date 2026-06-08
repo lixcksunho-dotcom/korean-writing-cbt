@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { CheckCircle2, XCircle, Trophy, RotateCcw, LayoutDashboard, Star, Target, Sparkles, ChevronRight, Lock } from 'lucide-react'
 import { getActiveSubscription } from '@/lib/subscription'
-import { getAiTrialStatus } from '@/lib/aiTrial'
+import { FREE_AI_TRIAL } from '@/lib/aiTrial'
 import { scaleTo1000, tierFor } from '@/lib/grade'
 import ManuscriptGrid from '@/components/manuscript/ManuscriptGrid'
 import EssayGrader from '@/components/cbt/EssayGrader'
@@ -66,8 +66,9 @@ export default async function ResultPage({
   const tier = tierFor(scaled)
   const isPass = tier.name !== '미달'
 
-  // 비구독자 무료 AI 체험 잔여(결과화면 서술형들이 공유)
-  const aiTrial = subscription ? { remaining: 0 } : await getAiTrialStatus()
+  // 비구독자 무료 AI 체험 잔여 — 이미 받은 user에서 계산(추가 getUser 왕복 제거)
+  const trialUsed = Number(user.app_metadata?.ai_trial_used ?? 0)
+  const aiTrial = { remaining: subscription ? 0 : Math.max(0, FREE_AI_TRIAL - trialUsed) }
 
   // 영역별 약점 분석(객관식 번호 구간 기준)
   const BANDS = [
