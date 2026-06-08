@@ -4,7 +4,7 @@ import Link from "next/link";
 import { BookOpen, PenLine, Trophy, Clock, ChevronRight, ArrowUpRight, Sparkles, CheckCircle2, Gift, TrendingUp, Lock, Gauge } from "lucide-react";
 import ReviewWriteModal from "@/components/review/ReviewWriteModal";
 import { getActiveSubscription, daysUntilExpiry } from "@/lib/subscription";
-import { getAiTrialStatus } from "@/lib/aiTrial";
+import { FREE_AI_TRIAL } from "@/lib/aiTrial";
 import { tierFor } from "@/lib/grade";
 
 function getGreeting() {
@@ -38,8 +38,9 @@ export default async function DashboardPage() {
   ]);
   const manuscriptCount = manuscripts?.length ?? 0;
 
-  // 비구독자에게만 무료 AI 첨삭 체험 잔여 확인(전환 유도 배너용)
-  const aiTrial = sub ? { remaining: 0 } : await getAiTrialStatus();
+  // 무료 AI 첨삭 체험 잔여 — 이미 받아온 user의 app_metadata에서 바로 계산(추가 getUser 왕복 제거)
+  const trialUsed = Number(user.app_metadata?.ai_trial_used ?? 0);
+  const aiTrial = { remaining: sub ? 0 : Math.max(0, FREE_AI_TRIAL - trialUsed) };
 
   const completedSessions = sessions ?? [];
   const totalAnswered = completedSessions.reduce((sum, s) => sum + (s.total ?? 0), 0);
@@ -75,17 +76,15 @@ export default async function DashboardPage() {
   // 객관식 정답률(→300점) + 서술형 AI 채점 평균(→700점)으로 1000점 환산 예상 점수 추정.
   let essayRate: number | null = null;
   if (sub && completedSessions.length > 0) {
+    // 한 번의 조인 쿼리로 ai_score + 문항 배점을 함께 가져온다(쿼리 2→1).
     const { data: ea } = await supabase
       .from("quiz_answers")
-      .select("ai_score, question_id")
+      .select("ai_score, questions(points)")
       .in("session_id", completedSessions.map(s => s.id))
       .not("ai_score", "is", null);
     if (ea && ea.length) {
-      const qids = [...new Set(ea.map(a => a.question_id as string))];
-      const { data: qp } = await supabase.from("questions").select("id, points").in("id", qids);
-      const pmap = new Map((qp ?? []).map(q => [q.id as string, q.points as number]));
       const sumAi = ea.reduce((s, a) => s + (Number(a.ai_score) || 0), 0);
-      const sumP = ea.reduce((s, a) => s + (pmap.get(a.question_id as string) ?? 0), 0);
+      const sumP = ea.reduce((s, a) => s + (Number((a.questions as { points?: number } | null)?.points) || 0), 0);
       essayRate = sumP > 0 ? sumAi / sumP : null;
     }
   }
