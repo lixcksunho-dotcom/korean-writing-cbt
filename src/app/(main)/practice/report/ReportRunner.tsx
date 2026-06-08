@@ -7,6 +7,7 @@ import EditableManuscript from '@/components/manuscript/EditableManuscript'
 import PassageView from '@/components/cbt/PassageView'
 import CopyGuard from '@/components/cbt/CopyGuard'
 import { gradeEssayPractice } from '../actions'
+import { parseCharLimit, manuscriptRows } from '@/lib/charLimit'
 import type { EssayGrade } from '@/app/(main)/cbt/actions'
 
 export type ReportQuestion = {
@@ -51,6 +52,9 @@ export default function ReportRunner({
   const answer = answers[q.id] ?? ''
   const grade = grades[q.id]
   const charCount = Array.from(answer).filter(c => c !== '\n').length
+  const charLimit = parseCharLimit(q.question)
+  const overLimit = charLimit != null && charCount > charLimit
+  const mRows = manuscriptRows(charLimit, COLS, 44)
   const min = Math.floor(timeLeft / 60)
   const sec = timeLeft % 60
   const timeUp = timeLeft === 0
@@ -137,14 +141,19 @@ export default function ReportRunner({
         <p className="text-[#0f172a] font-medium leading-relaxed mb-5 whitespace-pre-wrap text-base">{q.question}</p>
 
         <div className="flex items-center justify-between mb-2">
-          <span className="text-xs font-semibold text-[#64748b]">원고지 ({COLS}칸) — 칸에 바로 입력하세요</span>
-          <span className="text-xs text-[#94a3b8] tabular-nums">{charCount}자</span>
+          <span className="text-xs font-semibold text-[#64748b]">
+            원고지 ({COLS}칸) — 칸에 바로 입력하세요
+            {charLimit != null && <span className="ml-1 text-amber-600">· 제한 {charLimit}자</span>}
+          </span>
+          <span className={`text-xs tabular-nums font-semibold ${overLimit ? 'text-red-500' : 'text-[#94a3b8]'}`}>
+            {charCount}{charLimit != null ? ` / ${charLimit}` : ''}자{overLimit ? ' 초과' : ''}
+          </span>
         </div>
         <EditableManuscript
           value={answer}
           onChange={v => setAnswers(a => ({ ...a, [q.id]: v }))}
           cols={COLS}
-          rows={44}
+          rows={mRows}
           cell={28}
           maxHeightVh={55}
         />

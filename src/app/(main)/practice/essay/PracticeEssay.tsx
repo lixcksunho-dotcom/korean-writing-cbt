@@ -8,6 +8,7 @@ import EditableManuscript from '@/components/manuscript/EditableManuscript'
 import PassageView from '@/components/cbt/PassageView'
 import CopyGuard from '@/components/cbt/CopyGuard'
 import { gradeEssayPractice, savePracticeProgress } from '../actions'
+import { parseCharLimit, manuscriptRows } from '@/lib/charLimit'
 import type { EssayGrade } from '@/app/(main)/cbt/actions'
 
 export type PracticeEssayQuestion = {
@@ -76,6 +77,9 @@ export default function PracticeEssay({
   const grade = grades[q.id]
   const charCount = Array.from(answer).filter(c => c !== '\n').length
   const isManuscript = (q.points ?? 0) >= 200 // 9번 보고서만 원고지, 1~8번은 줄 답안
+  const charLimit = parseCharLimit(q.question) // 문항별 제한 글자수(없으면 null)
+  const overLimit = charLimit != null && charCount > charLimit
+  const mRows = manuscriptRows(charLimit, COLS)
 
   function go(n: number) {
     setIdx(n)
@@ -175,11 +179,16 @@ export default function PracticeEssay({
         <p className="text-[#0f172a] font-medium leading-relaxed mb-6 whitespace-pre-wrap text-base">{q.question}</p>
 
         <div className="flex items-center justify-between mb-2">
-          <span className="text-xs font-semibold text-[#64748b]">{isManuscript ? `원고지 (${COLS}칸) — 칸에 바로 입력하세요` : '답안 작성'}</span>
-          <span className="text-xs text-[#94a3b8] tabular-nums">{charCount}자</span>
+          <span className="text-xs font-semibold text-[#64748b]">
+            {isManuscript ? `원고지 (${COLS}칸) — 칸에 바로 입력하세요` : '답안 작성'}
+            {charLimit != null && <span className="ml-1 text-amber-600">· 제한 {charLimit}자</span>}
+          </span>
+          <span className={`text-xs tabular-nums font-semibold ${overLimit ? 'text-red-500' : 'text-[#94a3b8]'}`}>
+            {charCount}{charLimit != null ? ` / ${charLimit}` : ''}자{overLimit ? ' 초과' : ''}
+          </span>
         </div>
         {isManuscript ? (
-          <EditableManuscript value={answer} onChange={v => setAnswers(a => ({ ...a, [q.id]: v }))} cols={COLS} rows={42} cell={28} maxHeightVh={55} />
+          <EditableManuscript value={answer} onChange={v => setAnswers(a => ({ ...a, [q.id]: v }))} cols={COLS} rows={mRows} cell={28} maxHeightVh={55} />
         ) : (
           <textarea
             value={answer}

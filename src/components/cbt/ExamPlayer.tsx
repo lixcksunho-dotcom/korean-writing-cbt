@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { Clock, ChevronLeft, ChevronRight, Send, AlertCircle, CheckCircle2, FileText, Save, Lock } from 'lucide-react'
 import { submitSession, saveExamProgress } from '@/app/(main)/cbt/actions'
 import EditableManuscript from '@/components/manuscript/EditableManuscript'
+import { parseCharLimit, manuscriptRows } from '@/lib/charLimit'
 import PassageView from '@/components/cbt/PassageView'
 import CopyGuard from '@/components/cbt/CopyGuard'
 
@@ -90,6 +91,10 @@ export default function ExamPlayer({
   }
 
   const q = questions[currentIdx]
+  const qCharLimit = parseCharLimit(q.question)
+  const qCharCount = Array.from(answers[q.id] ?? '').filter(c => c !== '\n').length
+  const qOverLimit = qCharLimit != null && qCharCount > qCharLimit
+  const qRows = manuscriptRows(qCharLimit, ESSAY_COLS)
   // 서술형 표시 번호(1~9) — DB 내부 번호(31~39)와 무관하게 등장 순서로 매김
   const essayList = questions.filter(x => x.type === 'essay')
   const essayNo = (id: string) => essayList.findIndex(x => x.id === id) + 1
@@ -303,9 +308,10 @@ export default function ExamPlayer({
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-semibold text-[#64748b]">
                     {isManuscriptQ(q) ? `원고지 (${ESSAY_COLS}칸) — 칸에 바로 입력하세요` : '답안 작성'}
+                    {qCharLimit != null && <span className="ml-1 text-amber-600">· 제한 {qCharLimit}자</span>}
                   </span>
-                  <span className="text-xs text-[#94a3b8] tabular-nums">
-                    {Array.from(answers[q.id] ?? '').filter(c => c !== '\n').length}자
+                  <span className={`text-xs tabular-nums font-semibold ${qOverLimit ? 'text-red-500' : 'text-[#94a3b8]'}`}>
+                    {qCharCount}{qCharLimit != null ? ` / ${qCharLimit}` : ''}자{qOverLimit ? ' 초과' : ''}
                   </span>
                 </div>
                 {isManuscriptQ(q) ? (
@@ -313,7 +319,7 @@ export default function ExamPlayer({
                     value={answers[q.id] ?? ''}
                     onChange={v => handleAnswer(q.id, v)}
                     cols={ESSAY_COLS}
-                    rows={42}
+                    rows={qRows}
                     cell={28}
                     maxHeightVh={55}
                   />
