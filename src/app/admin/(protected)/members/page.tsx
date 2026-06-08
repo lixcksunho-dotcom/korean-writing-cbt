@@ -1,4 +1,5 @@
 import { createAdminClient } from '@/lib/supabase/admin'
+import { isActivePass } from '@/lib/subscription'
 import MembersClient, { type AdminMember } from './MembersClient'
 
 export const dynamic = 'force-dynamic'
@@ -13,10 +14,9 @@ export default async function AdminMembersPage() {
     admin.from('subscriptions').select('user_id, status, expires_at'),
   ])
 
-  const now = Date.now()
   const paidSet = new Set(
     (subs ?? [])
-      .filter(s => s.status === 'active' && new Date(s.expires_at as string).getTime() >= now)
+      .filter(s => isActivePass(s.status as string, s.expires_at as string))
       .map(s => s.user_id as string)
   )
 

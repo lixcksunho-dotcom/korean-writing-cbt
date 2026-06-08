@@ -57,8 +57,10 @@ export default function ScheduleModal() {
     const today = todayKey()
     if (localStorage.getItem('kpt_schedule_hide') === today) return
     if (!sessionStorage.getItem('kpt_schedule_seen')) {
-      setOpen(true)
       sessionStorage.setItem('kpt_schedule_seen', '1')
+      // 동기 setState(cascading render) 회피 — 마운트 직후 한 프레임 뒤 노출
+      const id = requestAnimationFrame(() => setOpen(true))
+      return () => cancelAnimationFrame(id)
     }
   }, [])
 

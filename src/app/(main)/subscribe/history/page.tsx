@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, Receipt, CheckCircle2, XCircle, Clock } from 'lucide-react'
+import { isActivePass } from '@/lib/subscription'
 
 export const dynamic = 'force-dynamic'
 
@@ -17,7 +18,6 @@ export default async function PaymentHistoryPage() {
     .order('started_at', { ascending: false })
 
   const subs = rows ?? []
-  const now = Date.now()
 
   return (
     <div className="animate-fade-up max-w-2xl">
@@ -40,8 +40,8 @@ export default async function PaymentHistoryPage() {
       ) : (
         <div className="space-y-3">
           {subs.map(s => {
-            const active = s.status === 'active' && new Date(s.expires_at as string).getTime() >= now
-            const expired = s.status === 'active' && new Date(s.expires_at as string).getTime() < now
+            const active = isActivePass(s.status as string, s.expires_at as string)
+            const expired = s.status === 'active' && !active
             const cancelled = s.status === 'cancelled'
             const badge = active
               ? { icon: <CheckCircle2 className="h-3.5 w-3.5" />, text: '이용 중', cls: 'bg-emerald-100 text-emerald-700' }

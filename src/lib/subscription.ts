@@ -29,3 +29,8 @@ export function daysUntilExpiry(expiresAt: string): number {
   const diff = new Date(expiresAt).getTime() - Date.now()
   return Math.ceil(diff / (1000 * 60 * 60 * 24))
 }
+
+/** 결제 건이 현재 시점 기준 유효(이용 중)한지 — 서버 컴포넌트 렌더에서 Date.now() 직접 호출을 피하려고 lib에 캡슐화 */
+export function isActivePass(status: string, expiresAt: string): boolean {
+  return status === 'active' && new Date(expiresAt).getTime() >= Date.now()
+}

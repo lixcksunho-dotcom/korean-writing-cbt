@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { isActivePass } from '@/lib/subscription'
 import { BookOpen, Star, CreditCard, Wallet, FileCheck2, PenLine, ChevronRight, BadgeCheck, Users, Flag } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
@@ -24,8 +25,7 @@ export default async function AdminHome() {
   const reviewVisible = reviews.filter(r => r.is_visible !== false).length
 
   const subs = subRows.data ?? []
-  const now = Date.now()
-  const activePasses = subs.filter(s => s.status === 'active' && new Date(s.expires_at as string).getTime() >= now).length
+  const activePasses = subs.filter(s => isActivePass(s.status as string, s.expires_at as string)).length
   const totalOrders = subs.length
   const revenue = subs.reduce((sum, s) => sum + (Number(s.amount) || 0), 0)
 

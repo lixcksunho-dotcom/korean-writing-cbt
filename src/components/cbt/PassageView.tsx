@@ -15,7 +15,6 @@ type Block =
 
 type Section = { label?: string; subtitle?: string; blocks: Block[] }
 
-const isHeader = (t: string) => /^<[^>]+>/.test(t) || /^\([가-마]\)/.test(t)
 const isSubhead = (t: string) => /^\[[^\]]+\]$/.test(t)
 const isListItem = (t: string) => /^[-*•]\s+/.test(t)
 const isTableLine = (t: string) => t.includes(' / ')

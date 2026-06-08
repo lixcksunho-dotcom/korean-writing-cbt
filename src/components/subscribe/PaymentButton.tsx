@@ -69,8 +69,9 @@ export default function PaymentButton({
       }
 
       // 결제 성공 → 서버 검증 페이지로 이동(여기서 실제 구독 발급)
-      window.location.href =
+      window.location.assign(
         `/subscribe/success?paymentId=${encodeURIComponent(response!.paymentId)}`
+      )
     } catch (e: unknown) {
       const err = e as { message?: string }
       setError(err?.message ?? '결제 중 오류가 발생했습니다.')
