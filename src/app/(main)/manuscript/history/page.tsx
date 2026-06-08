@@ -4,6 +4,15 @@ import Link from 'next/link'
 import { PenLine, ChevronLeft, Trophy, Clock } from 'lucide-react'
 import type { GradeResult } from '@/app/(main)/manuscript/actions'
 
+// 신·구 채점 항목 키 라벨(과거 기록 호환)
+const BD_LABELS: Record<string, string> = {
+  manuscriptRules: '원고지',
+  examFit: '답안부합',
+  spellingGrammar: '맞춤법',
+  contentStructure: '내용구성',
+  expressionVocabulary: '표현·어휘',
+}
+
 export default async function ManuscriptHistoryPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -55,19 +64,18 @@ export default async function ManuscriptHistoryPage() {
                   </div>
                 </div>
 
-                {fb && (
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">
-                    {[
-                      { label: '원고지', score: fb.breakdown.manuscriptRules.score, max: 10 },
-                      { label: '맞춤법', score: fb.breakdown.spellingGrammar.score, max: 30 },
-                      { label: '내용구성', score: fb.breakdown.contentStructure.score, max: 30 },
-                      { label: '표현·어휘', score: fb.breakdown.expressionVocabulary.score, max: 30 },
-                    ].map(item => (
-                      <div key={item.label} className="bg-gray-50 rounded-lg px-3 py-2 text-center">
-                        <div className="text-xs text-gray-500 mb-0.5">{item.label}</div>
-                        <div className="text-sm font-bold text-gray-800">{item.score}<span className="text-xs font-normal text-gray-400">/{item.max}</span></div>
-                      </div>
-                    ))}
+                {fb?.breakdown && (
+                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 mb-3">
+                    {Object.entries(fb.breakdown).map(([k, v]) => {
+                      const item = v as { score: number; max: number }
+                      const label = BD_LABELS[k] ?? k
+                      return (
+                        <div key={k} className="bg-gray-50 rounded-lg px-3 py-2 text-center">
+                          <div className="text-xs text-gray-500 mb-0.5">{label}</div>
+                          <div className="text-sm font-bold text-gray-800">{item.score}<span className="text-xs font-normal text-gray-400">/{item.max}</span></div>
+                        </div>
+                      )
+                    })}
                   </div>
                 )}
 

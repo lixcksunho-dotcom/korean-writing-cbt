@@ -27,7 +27,7 @@ export default async function ManuscriptPage() {
             <h1 className="text-2xl font-black text-[#0f172a] tracking-tight">원고지 AI 채점</h1>
           </div>
           <p className="text-[#64748b] text-sm">
-            AI가 맞춤법·문법·내용 구성·표현력을 채점해드립니다.
+            AI가 원고지 규정·실용글쓰기 답안 기준·맞춤법을 채점하고, 틀린 부분을 짚어드립니다.
           </p>
         </div>
         <div className="flex items-center gap-3 shrink-0">
@@ -61,9 +61,9 @@ export default async function ManuscriptPage() {
             <div className="p-6">
               <div className="space-y-2.5 mb-6">
                 {[
-                  'AI 원고지 채점·첨삭 무제한',
-                  '4가지 항목 세부 점수 분석',
-                  '맞춤법·문법 교정 목록 제공',
+                  'AI 원고지 채점 무제한',
+                  '원고지 규정·실용글쓰기 답안 기준 부합 채점',
+                  '틀린 부분(맞춤법·어법) 교정 목록 제공',
                   '채점 기록 무제한 저장',
                 ].map(f => (
                   <div key={f} className="flex items-center gap-2.5 text-sm text-[#334155]">

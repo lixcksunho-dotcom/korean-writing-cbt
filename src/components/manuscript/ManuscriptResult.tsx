@@ -5,9 +5,8 @@ import type { GradeResult } from '@/app/(main)/manuscript/actions'
 
 const CATEGORIES = [
   { key: 'manuscriptRules', label: '원고지 사용법', color: 'bg-purple-500' },
+  { key: 'examFit', label: '실용글쓰기 답안 기준 부합', color: 'bg-emerald-500' },
   { key: 'spellingGrammar', label: '맞춤법·어법', color: 'bg-blue-500' },
-  { key: 'contentStructure', label: '내용 구성', color: 'bg-green-500' },
-  { key: 'expressionVocabulary', label: '표현·어휘', color: 'bg-amber-500' },
 ] as const
 
 export default function ManuscriptResult({

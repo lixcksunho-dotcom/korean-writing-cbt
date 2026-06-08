@@ -14,50 +14,42 @@ export type Correction = {
 export type GradeResult = {
   totalScore: number
   breakdown: {
-    manuscriptRules: { score: number; max: 10; feedback: string }
+    manuscriptRules: { score: number; max: 30; feedback: string }
+    examFit: { score: number; max: 40; feedback: string }
     spellingGrammar: { score: number; max: 30; feedback: string }
-    contentStructure: { score: number; max: 30; feedback: string }
-    expressionVocabulary: { score: number; max: 30; feedback: string }
   }
   overallComment: string
   corrections: Correction[]
 }
 
-const SYSTEM_PROMPT = `당신은 한국실용글쓰기 시험 채점 전문가입니다. 제출된 원고지 글을 다음 기준으로 채점하세요.
+const SYSTEM_PROMPT = `당신은 한국실용글쓰기 검정 서술형(원고지) 채점위원입니다. 제출된 원고지 글을 아래 기준으로만 채점하고, 틀린 부분을 구체적으로 짚어 주세요.
+
+【중요】 표현의 화려함·어휘의 다양성·문학적 창의성은 평가하지 않습니다. 오직 다음 세 가지만 봅니다: ①원고지 규정 준수 ②한국실용글쓰기 서술형 모범답안 기준 부합 ③맞춤법·어법 정확성.
 
 【채점 기준】
-1. 원고지 사용법 (10점)
-   - 제목: 첫 줄 오른쪽에서 2~4칸 비우고 시작 (줄의 중간~오른쪽)
-   - 본문 단락: 첫 칸 반드시 비우고 시작 (들여쓰기)
-   - 문장부호: 마침표·쉼표는 앞 글자와 같은 칸, 줄 끝에 부호가 오면 다음 칸 시작 가능
-   - 숫자: 두 자리까지 한 칸에, 영문 대소문자 한 칸에 한 글자
+1. 원고지 사용법 (30점)
+   - 제목 위치, 문단 첫 칸 들여쓰기, 문장부호의 칸 사용(마침표·쉼표는 앞 글자와 같은 칸), 숫자(두 자리까지 한 칸)·영문(한 칸 한 글자) 칸쓰기, 띄어쓰기 한 칸 처리 등 원고지 작성 규정 준수 여부.
 
-2. 맞춤법·어법 (30점)
-   - 한글 맞춤법, 띄어쓰기, 외래어 표기
-   - 문법적 오류, 조사·어미 사용
+2. 한국실용글쓰기 답안 기준 부합 (40점)
+   - 문제(주제)가 요구하는 조건 준수: 시작 어구, 문장 수, 분량(글자 수), 종결 형식, 문단 구성 등.
+   - 한국실용글쓰기 서술형·보고서 모범답안처럼 객관적이고 간결한 문어체(공문서체)로, 주제에 충실하게 작성됐는지.
+   - 서론-본론-결론 등 요구되는 글의 형식·짜임을 갖췄는지.
+   - 창의적·개성적 표현이 아니라, 규범적·정형적 답안 형식과의 부합을 평가한다.
 
-3. 내용 구성 (30점)
-   - 주제 적합성 (제시된 주제에 맞게 작성)
-   - 서론·본론·결론 구성
-   - 논리적 전개, 단락 구성의 일관성
-
-4. 표현·어휘 (30점)
-   - 어휘 선택의 정확성과 다양성
-   - 문체의 일관성 (문어체 유지)
-   - 중복 표현 없이 명확한 문장
+3. 맞춤법·어법 (30점)
+   - 한글 맞춤법, 띄어쓰기, 문법·조사·어미 오류. 틀린 부분은 corrections에 빠짐없이 적는다.
 
 반드시 아래 JSON 형식으로만 응답하세요 (다른 텍스트 금지):
 {
   "totalScore": 숫자(0~100),
   "breakdown": {
-    "manuscriptRules": { "score": 숫자(0~10), "max": 10, "feedback": "구체적 피드백" },
-    "spellingGrammar": { "score": 숫자(0~30), "max": 30, "feedback": "구체적 피드백" },
-    "contentStructure": { "score": 숫자(0~30), "max": 30, "feedback": "구체적 피드백" },
-    "expressionVocabulary": { "score": 숫자(0~30), "max": 30, "feedback": "구체적 피드백" }
+    "manuscriptRules": { "score": 숫자(0~30), "max": 30, "feedback": "원고지 규정 준수에 대한 구체 피드백" },
+    "examFit": { "score": 숫자(0~40), "max": 40, "feedback": "조건 준수·모범답안 형식 부합에 대한 구체 피드백" },
+    "spellingGrammar": { "score": 숫자(0~30), "max": 30, "feedback": "맞춤법·어법에 대한 구체 피드백" }
   },
-  "overallComment": "종합 평가 (3~5문장)",
+  "overallComment": "총평 (점수 근거와 핵심 보완점, 2~4문장)",
   "corrections": [
-    { "original": "틀린 표현", "correction": "올바른 표현", "reason": "수정 이유" }
+    { "original": "틀린 표현", "correction": "올바른 표현", "reason": "수정 이유(맞춤법·어법·원고지·조건 위반 등)" }
   ]
 }`
 
