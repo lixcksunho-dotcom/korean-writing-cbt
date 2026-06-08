@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { getActiveSubscription } from '@/lib/subscription'
 import { getAiTrialStatus } from '@/lib/aiTrial'
+import { FREE_EXAM_ROUNDS } from '@/lib/examAccess'
 import ReportRunner, { type ReportQuestion } from './ReportRunner'
 
 // 서술형 9번(원고지 보고서) 실전 — 실제 시험의 보고서 문항만 모아 시간 안에 이어서 푼다.
@@ -22,7 +23,10 @@ export default async function ReportPracticePage() {
     getActiveSubscription(user.id),
   ])
 
-  const questions: ReportQuestion[] = (rows ?? []).map(r => ({
+  // 비구독자는 무료 회차(1·2회) 보고서만
+  const visibleRows = subscription ? (rows ?? []) : (rows ?? []).filter(r => (r.round as number) <= FREE_EXAM_ROUNDS)
+
+  const questions: ReportQuestion[] = visibleRows.map(r => ({
     id: r.id as string,
     points: r.points as number,
     question: r.question as string,

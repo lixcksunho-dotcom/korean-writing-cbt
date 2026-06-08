@@ -1,9 +1,10 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, FileText, ChevronRight } from 'lucide-react'
+import { ArrowLeft, FileText, ChevronRight, Lock } from 'lucide-react'
 import { getActiveSubscription } from '@/lib/subscription'
 import { getAiTrialStatus } from '@/lib/aiTrial'
+import { isRoundLocked } from '@/lib/examAccess'
 import PracticeEssay, { type PracticeEssayQuestion } from './PracticeEssay'
 
 export default async function EssayPracticePage({
@@ -17,13 +18,17 @@ export default async function EssayPracticePage({
   if (!user) redirect('/login')
 
   if (!set) {
-    const { data: rows } = await supabase
-      .from('questions')
-      .select('year, round')
-      .eq('type', 'essay')
-      .lt('year', 9000)
-      .order('year', { ascending: true })
-      .order('round', { ascending: true })
+    const [{ data: rows }, subscription] = await Promise.all([
+      supabase
+        .from('questions')
+        .select('year, round')
+        .eq('type', 'essay')
+        .lt('year', 9000)
+        .order('year', { ascending: true })
+        .order('round', { ascending: true }),
+      getActiveSubscription(user.id),
+    ])
+    const hasSub = !!subscription
     const sets = rows
       ? [...new Map(rows.map(r => [`${r.year}-${r.round}`, r])).values()]
       : []
@@ -34,18 +39,23 @@ export default async function EssayPracticePage({
           <ArrowLeft className="h-4 w-4" /> 연습 메뉴
         </Link>
         <h1 className="text-2xl font-black text-[#0f172a] tracking-tight mb-1">서술형 연습</h1>
-        <p className="text-[#64748b] text-sm mb-6">회차를 고르면 원고지에 답을 쓰고 문항별로 AI 채점을 받을 수 있어요.</p>
+        <p className="text-[#64748b] text-sm mb-6">회차를 고르면 원고지에 답을 쓰고 문항별로 AI 채점을 받을 수 있어요. (모의고사 1·2회 무료)</p>
 
         <div className="space-y-3">
-          {sets.map(({ year, round }) => (
-            <Link key={`${year}-${round}`} href={`/practice/essay?set=${year}-${round}`} className="card-hover group flex items-center justify-between bg-white border border-[#e2e8f0] rounded-2xl p-5 shadow-[0_4px_16px_rgba(15,31,61,0.06)]">
+          {sets.map(({ year, round }) => {
+            const locked = isRoundLocked(round, hasSub)
+            return (
+            <Link key={`${year}-${round}`} href={locked ? '/subscribe' : `/practice/essay?set=${year}-${round}`} className="card-hover group flex items-center justify-between bg-white border border-[#e2e8f0] rounded-2xl p-5 shadow-[0_4px_16px_rgba(15,31,61,0.06)]">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center"><FileText className="h-5 w-5 text-amber-600" /></div>
-                <p className="font-bold text-[#0f172a]">모의고사 {round}회 서술형</p>
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${locked ? 'bg-[#f1f5f9]' : 'bg-amber-100'}`}>
+                  {locked ? <Lock className="h-5 w-5 text-[#94a3b8]" /> : <FileText className="h-5 w-5 text-amber-600" />}
+                </div>
+                <p className="font-bold text-[#0f172a]">모의고사 {round}회 서술형 {locked && <span className="text-xs font-semibold text-amber-600 ml-1">이용권</span>}</p>
               </div>
               <ChevronRight className="h-5 w-5 text-[#94a3b8] group-hover:translate-x-1 transition-transform" />
             </Link>
-          ))}
+            )
+          })}
           {sets.length === 0 && (
             <p className="text-sm text-[#94a3b8] bg-white border border-[#e2e8f0] rounded-2xl p-6 text-center">아직 등록된 서술형 문제가 없어요.</p>
           )}
@@ -57,16 +67,17 @@ export default async function EssayPracticePage({
   const [y, r] = set.split('-').map(Number)
   if (Number.isNaN(y) || Number.isNaN(r)) redirect('/practice/essay')
 
-  const [{ data: questions }, subscription] = await Promise.all([
-    supabase
-      .from('questions')
-      .select('id, number, points, question, passage, correct_answer')
-      .eq('type', 'essay')
-      .eq('year', y)
-      .eq('round', r)
-      .order('number'),
-    getActiveSubscription(user.id),
-  ])
+  const subscription = await getActiveSubscription(user.id)
+  // 3회분부터는 이용권 필요
+  if (y < 9000 && isRoundLocked(r, !!subscription)) redirect('/subscribe')
+
+  const { data: questions } = await supabase
+    .from('questions')
+    .select('id, number, points, question, passage, correct_answer')
+    .eq('type', 'essay')
+    .eq('year', y)
+    .eq('round', r)
+    .order('number')
   if (!questions?.length) redirect('/practice/essay')
 
   const trial = await getAiTrialStatus()

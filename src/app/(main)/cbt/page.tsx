@@ -1,7 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { BookOpen, ChevronRight, Clock, FileQuestion, Trophy } from 'lucide-react'
+import { BookOpen, ChevronRight, Clock, FileQuestion, Trophy, Lock } from 'lucide-react'
+import { getActiveSubscription } from '@/lib/subscription'
+import { isRoundLocked, FREE_EXAM_ROUNDS } from '@/lib/examAccess'
 
 export default async function CbtPage() {
   const supabase = await createClient()
@@ -46,11 +48,16 @@ export default async function CbtPage() {
     .not('saved_at', 'is', null)
   const resumable = new Set((inProgress ?? []).map(s => `${s.year}-${s.round}`))
 
+  const subscription = await getActiveSubscription(user.id)
+  const hasSub = !!subscription
+
   return (
     <div className="animate-fade-up">
       <div className="mb-8">
         <h1 className="text-2xl font-black text-[#0f172a] tracking-tight mb-1">CBT 문제풀기</h1>
-        <p className="text-[#64748b] text-sm">한국실용글쓰기 기출문제를 CBT 형식으로 풀어보세요.</p>
+        <p className="text-[#64748b] text-sm">
+          모의고사 <b className="text-[#1e3a5f]">{FREE_EXAM_ROUNDS}회까지 무료</b>, {FREE_EXAM_ROUNDS + 1}회부터는 이용권으로 풀 수 있어요.
+        </p>
       </div>
 
       {uniqueExams.length === 0 ? (
@@ -68,6 +75,7 @@ export default async function CbtPage() {
             const prev = sessionMap.get(key)
             const pct = prev ? Math.round(((prev.score ?? 0) / (prev.total ?? 1)) * 100) : null
             const pass = pct !== null && pct >= 80
+            const locked = isRoundLocked(round, hasSub)
 
             return (
               <div
@@ -118,17 +126,31 @@ export default async function CbtPage() {
                   )}
 
                   <div className="flex items-center gap-2">
-                    <span className="text-xs bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-full font-semibold">무료</span>
-                    {resumable.has(key) && (
-                      <span className="text-xs bg-amber-100 text-amber-700 px-2.5 py-1 rounded-full font-semibold">이어풀기 가능</span>
+                    {locked ? (
+                      <>
+                        <span className="text-xs bg-amber-100 text-amber-700 px-2.5 py-1 rounded-full font-semibold flex items-center gap-1"><Lock className="h-3 w-3" /> 이용권</span>
+                        <Link
+                          href="/subscribe"
+                          className="flex-1 flex items-center justify-center gap-1.5 font-semibold py-2.5 rounded-xl text-sm border-2 border-amber-300 text-amber-700 hover:bg-amber-50 transition-colors"
+                        >
+                          이용권으로 풀기 <ChevronRight className="h-4 w-4" />
+                        </Link>
+                      </>
+                    ) : (
+                      <>
+                        <span className="text-xs bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-full font-semibold">무료</span>
+                        {resumable.has(key) && (
+                          <span className="text-xs bg-amber-100 text-amber-700 px-2.5 py-1 rounded-full font-semibold">이어풀기 가능</span>
+                        )}
+                        <Link
+                          href={`/cbt/${key}`}
+                          className="flex-1 btn-primary flex items-center justify-center gap-1.5 text-white font-semibold py-2.5 rounded-xl text-sm"
+                        >
+                          {resumable.has(key) ? '이어풀기' : prev ? '다시 풀기' : '시작하기'}
+                          <ChevronRight className="h-4 w-4" />
+                        </Link>
+                      </>
                     )}
-                    <Link
-                      href={`/cbt/${key}`}
-                      className="flex-1 btn-primary flex items-center justify-center gap-1.5 text-white font-semibold py-2.5 rounded-xl text-sm"
-                    >
-                      {resumable.has(key) ? '이어풀기' : prev ? '다시 풀기' : '시작하기'}
-                      <ChevronRight className="h-4 w-4" />
-                    </Link>
                   </div>
                 </div>
               </div>

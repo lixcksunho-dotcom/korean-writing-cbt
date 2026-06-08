@@ -1,7 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, ListChecks, ChevronRight } from 'lucide-react'
+import { ArrowLeft, ListChecks, ChevronRight, Lock } from 'lucide-react'
+import { getActiveSubscription } from '@/lib/subscription'
+import { isRoundLocked, FREE_EXAM_ROUNDS } from '@/lib/examAccess'
 import PracticeMultiple, { type PracticeQuestion } from './PracticeMultiple'
 
 export default async function MultiplePracticePage({
@@ -22,6 +24,8 @@ export default async function MultiplePracticePage({
       .eq('type', 'multiple')
       .order('year', { ascending: true })
       .order('round', { ascending: true })
+    const subscription = await getActiveSubscription(user.id)
+    const hasSub = !!subscription
     const sets = rows
       ? [...new Map(rows.map(r => [`${r.year}-${r.round}`, r])).values()]
       : []
@@ -42,21 +46,26 @@ export default async function MultiplePracticePage({
                 <div className="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center"><ListChecks className="h-5 w-5" /></div>
                 <div>
                   <p className="font-bold">전체 객관식 모아 풀기</p>
-                  <p className="text-white/70 text-xs mt-0.5">모든 회차의 객관식 {total}문항</p>
+                  <p className="text-white/70 text-xs mt-0.5">{hasSub ? `모든 회차의 객관식 ${total}문항` : `무료 ${FREE_EXAM_ROUNDS}회 객관식 모아 풀기`}</p>
                 </div>
               </div>
               <ChevronRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
             </Link>
           )}
-          {sets.map(({ year, round }) => (
-            <Link key={`${year}-${round}`} href={`/practice/multiple?set=${year}-${round}`} className="card-hover group flex items-center justify-between bg-white border border-[#e2e8f0] rounded-2xl p-5 shadow-[0_4px_16px_rgba(15,31,61,0.06)]">
+          {sets.map(({ year, round }) => {
+            const locked = isRoundLocked(round, hasSub)
+            return (
+            <Link key={`${year}-${round}`} href={locked ? '/subscribe' : `/practice/multiple?set=${year}-${round}`} className="card-hover group flex items-center justify-between bg-white border border-[#e2e8f0] rounded-2xl p-5 shadow-[0_4px_16px_rgba(15,31,61,0.06)]">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-[#1e3a5f]/8 flex items-center justify-center"><ListChecks className="h-5 w-5 text-[#1e3a5f]" /></div>
-                <p className="font-bold text-[#0f172a]">모의고사 {round}회 객관식</p>
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${locked ? 'bg-[#f1f5f9]' : 'bg-[#1e3a5f]/8'}`}>
+                  {locked ? <Lock className="h-5 w-5 text-[#94a3b8]" /> : <ListChecks className="h-5 w-5 text-[#1e3a5f]" />}
+                </div>
+                <p className="font-bold text-[#0f172a]">모의고사 {round}회 객관식 {locked && <span className="text-xs font-semibold text-amber-600 ml-1">이용권</span>}</p>
               </div>
               <ChevronRight className="h-5 w-5 text-[#94a3b8] group-hover:translate-x-1 transition-transform" />
             </Link>
-          ))}
+            )
+          })}
           {sets.length === 0 && (
             <p className="text-sm text-[#94a3b8] bg-white border border-[#e2e8f0] rounded-2xl p-6 text-center">아직 등록된 객관식 문제가 없어요.</p>
           )}
@@ -65,21 +74,29 @@ export default async function MultiplePracticePage({
     )
   }
 
+  const subscription = await getActiveSubscription(user.id)
+  const hasSub = !!subscription
+
   // 문제 로드 (연습이므로 정답·해설 포함)
   let query = supabase
     .from('questions')
     .select('id, year, round, number, question, options, passage, correct_answer, explanation')
     .eq('type', 'multiple')
-    .order('year', { ascending: false })
-    .order('round', { ascending: false })
+    .order('year', { ascending: true })
+    .order('round', { ascending: true })
     .order('number')
 
   let title = '전체 객관식'
   if (set !== 'all') {
     const [y, r] = set.split('-').map(Number)
     if (Number.isNaN(y) || Number.isNaN(r)) redirect('/practice/multiple')
+    if (y < 9000 && isRoundLocked(r, hasSub)) redirect('/subscribe') // 3회분부터 이용권
     query = query.eq('year', y).eq('round', r)
     title = `모의고사 ${r}회 객관식`
+  } else if (!hasSub) {
+    // 비구독자의 '전체 모아풀기'는 무료 회차만
+    query = query.lte('round', FREE_EXAM_ROUNDS)
+    title = `무료 ${FREE_EXAM_ROUNDS}회 객관식`
   }
 
   const { data: questions } = await query
