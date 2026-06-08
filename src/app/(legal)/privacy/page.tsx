@@ -2,8 +2,8 @@ import type { Metadata } from 'next'
 import { BUSINESS, biz } from '@/lib/businessInfo'
 
 export const metadata: Metadata = {
-  title: '개인정보처리방침 · 한국실용글쓰기 CBT',
-  description: '한국실용글쓰기 CBT 개인정보처리방침',
+  title: '개인정보처리방침 · 실글패스',
+  description: '실글패스(한국실용글쓰기 자격 대비) 개인정보처리방침',
 }
 
 export default function PrivacyPage() {

@@ -87,7 +87,7 @@ export default function AdminLoginForm({ forbidden }: { forbidden: boolean }) {
           )}
         </div>
 
-        <p className="text-center text-xs text-gray-600 mt-6">한국실용글쓰기 CBT · 관리자 전용</p>
+        <p className="text-center text-xs text-gray-600 mt-6">실글패스 · 관리자 전용</p>
       </div>
     </div>
   )

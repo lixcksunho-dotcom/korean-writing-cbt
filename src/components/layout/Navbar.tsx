@@ -5,7 +5,8 @@ import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
-import { BookOpen, FileText, LayoutDashboard, Menu, X, LogOut, PenLine, Sparkles, ListChecks } from "lucide-react";
+import { BookOpen, LayoutDashboard, Menu, X, LogOut, PenLine, Sparkles, ListChecks } from "lucide-react";
+import LogoGlyph from "@/components/layout/LogoGlyph";
 
 const navItems = [
   { href: "/dashboard", label: "대시보드", icon: LayoutDashboard },
@@ -33,10 +34,10 @@ export default function Navbar({ userEmail = "" }: { userEmail?: string }) {
           {/* 로고 */}
           <Link href="/dashboard" className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#f59e0b] to-[#d97706] flex items-center justify-center shadow-lg shadow-[#d97706]/30">
-              <FileText className="h-4 w-4 text-white" />
+              <LogoGlyph className="h-5 w-5 text-white" />
             </div>
-            <span className="font-bold text-white hidden sm:block tracking-tight">한국실용글쓰기</span>
-            <span className="font-bold text-white sm:hidden tracking-tight">실용글쓰기</span>
+            <span className="font-bold text-white hidden sm:block tracking-tight">실글패스</span>
+            <span className="font-bold text-white sm:hidden tracking-tight">실글패스</span>
           </Link>
 
           {/* 데스크탑 메뉴 */}

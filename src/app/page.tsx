@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { FileText, BookOpen, PenLine, CheckCircle, ArrowRight, Sparkles, Star, Gift } from "lucide-react";
+import LogoGlyph from "@/components/layout/LogoGlyph";
 import ReviewMarquee from "@/components/landing/ReviewMarquee";
 import SiteFooter from "@/components/layout/SiteFooter";
 import ScheduleModal from "@/components/schedule/ScheduleModal";
@@ -69,9 +70,9 @@ export default async function HomePage() {
         <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#f59e0b] to-[#d97706] flex items-center justify-center">
-              <FileText className="h-4 w-4 text-white" />
+              <LogoGlyph className="h-5 w-5 text-white" />
             </div>
-            <span className="font-bold text-white text-lg tracking-tight">한국실용글쓰기</span>
+            <span className="font-bold text-white text-lg tracking-tight">실글패스</span>
           </div>
           <div className="flex items-center gap-2">
             <Link href="/login" className="text-sm text-white/70 hover:text-white transition-colors px-4 py-2 rounded-lg hover:bg-white/10">

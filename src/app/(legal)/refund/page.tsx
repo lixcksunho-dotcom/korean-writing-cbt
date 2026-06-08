@@ -2,8 +2,8 @@ import type { Metadata } from 'next'
 import { BUSINESS, biz } from '@/lib/businessInfo'
 
 export const metadata: Metadata = {
-  title: '취소·환불 정책 · 한국실용글쓰기 CBT',
-  description: '한국실용글쓰기 CBT 취소 및 환불 정책',
+  title: '취소·환불 정책 · 실글패스',
+  description: '실글패스(한국실용글쓰기 자격 대비) 취소 및 환불 정책',
 }
 
 export default function RefundPage() {

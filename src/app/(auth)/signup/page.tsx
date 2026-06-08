@@ -3,7 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
-import { FileText, CheckCircle, Eye, EyeOff } from "lucide-react";
+import { CheckCircle, Eye, EyeOff } from "lucide-react";
+import LogoGlyph from "@/components/layout/LogoGlyph";
 import GoogleButton from "@/components/ui/GoogleButton";
 // 카카오는 비즈 앱 전환 후 재활성화 예정 (KakaoButton 컴포넌트는 유지)
 // import KakaoButton from "@/components/ui/KakaoButton";
@@ -82,9 +83,9 @@ export default function SignupPage() {
         <div className="relative flex flex-col justify-between p-10 w-full">
           <Link href="/" className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#f59e0b] to-[#d97706] flex items-center justify-center shadow-lg shadow-[#d97706]/30">
-              <FileText className="h-5 w-5 text-white" />
+              <LogoGlyph className="h-5 w-5 text-white" />
             </div>
-            <span className="font-bold text-white text-lg">한국실용글쓰기</span>
+            <span className="font-bold text-white text-lg">실글패스</span>
           </Link>
           <div>
             <p className="text-white/40 text-sm mb-2">가입은 무료예요</p>
@@ -101,7 +102,7 @@ export default function SignupPage() {
               ))}
             </ul>
           </div>
-          <p className="text-white/30 text-xs">© 2024 한국실용글쓰기 CBT</p>
+          <p className="text-white/30 text-xs">© 실글패스</p>
         </div>
       </div>
 
@@ -110,9 +111,9 @@ export default function SignupPage() {
         <div className="w-full max-w-md">
           <Link href="/" className="flex items-center justify-center gap-2 mb-8 lg:hidden">
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#f59e0b] to-[#d97706] flex items-center justify-center">
-              <FileText className="h-5 w-5 text-white" />
+              <LogoGlyph className="h-5 w-5 text-white" />
             </div>
-            <span className="font-bold text-[#0f172a] text-lg">한국실용글쓰기</span>
+            <span className="font-bold text-[#0f172a] text-lg">실글패스</span>
           </Link>
 
           <div className="bg-white rounded-2xl shadow-[0_8px_40px_rgba(15,31,61,0.1)] border border-[#e2e8f0] p-8">

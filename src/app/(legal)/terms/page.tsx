@@ -2,8 +2,8 @@ import type { Metadata } from 'next'
 import { BUSINESS, biz } from '@/lib/businessInfo'
 
 export const metadata: Metadata = {
-  title: '이용약관 · 한국실용글쓰기 CBT',
-  description: '한국실용글쓰기 CBT 서비스 이용약관',
+  title: '이용약관 · 실글패스',
+  description: '실글패스(한국실용글쓰기 자격 대비) 서비스 이용약관',
 }
 
 export default function TermsPage() {
