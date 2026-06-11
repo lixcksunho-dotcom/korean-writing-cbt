@@ -27,9 +27,17 @@ export default function PaymentButton({
   const [loading, setLoading] = useState<Method | null>(null)
   const [error, setError] = useState('')
   const [agreed, setAgreed] = useState(false)
+  const [phone, setPhone] = useState('')
 
   async function handlePayment(method: Method) {
     if (!agreed) { setError('결제 전 이용약관·환불정책에 동의해 주세요.'); return }
+
+    // KG이니시스 V2 일반결제는 구매자 휴대폰 번호가 필수
+    const phoneDigits = phone.replace(/\D/g, '')
+    if (!/^01[0-9]\d{7,8}$/.test(phoneDigits)) {
+      setError('휴대폰 번호를 정확히 입력해 주세요. (예: 010-1234-5678)')
+      return
+    }
 
     // 포트원 키 미설정 가드: storeId/channelKey가 비면 SDK가 cryptic 에러를 내므로 먼저 차단
     const storeId = process.env.NEXT_PUBLIC_PORTONE_STORE_ID
@@ -55,6 +63,7 @@ export default function PaymentButton({
           customerId: userId,
           email: userEmail,
           fullName: userName,
+          phoneNumber: phone.replace(/\D/g, ''),
         },
         // 모바일 등 리다이렉트 결제는 이 주소로 paymentId를 달고 돌아온다.
         redirectUrl: `${window.location.origin}/subscribe/success`,
@@ -79,8 +88,30 @@ export default function PaymentButton({
     }
   }
 
+  // 휴대폰 번호 자동 하이픈 포맷 (010-1234-5678)
+  function onPhoneChange(v: string) {
+    const d = v.replace(/\D/g, '').slice(0, 11)
+    let out = d
+    if (d.length >= 4 && d.length < 8) out = `${d.slice(0, 3)}-${d.slice(3)}`
+    else if (d.length >= 8) out = `${d.slice(0, 3)}-${d.slice(3, 7)}-${d.slice(7)}`
+    setPhone(out)
+  }
+
   return (
     <div className="space-y-3">
+      {/* 휴대폰 번호 (KG이니시스 결제 필수) */}
+      <div>
+        <label className="block text-xs font-semibold text-[#475569] mb-1.5">휴대폰 번호 <span className="text-red-400">*</span></label>
+        <input
+          type="tel"
+          inputMode="numeric"
+          value={phone}
+          onChange={e => onPhoneChange(e.target.value)}
+          placeholder="010-1234-5678"
+          className="w-full rounded-xl border border-[#e2e8f0] px-3.5 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#1e3a5f]/30 focus:border-[#1e3a5f]"
+        />
+      </div>
+
       {/* 약관·환불정책 동의 (결제 필수) */}
       <label className="flex items-start gap-2 text-xs text-[#475569] bg-[#f8fafc] border border-[#e2e8f0] rounded-xl px-3.5 py-3 cursor-pointer">
         <input type="checkbox" checked={agreed} onChange={e => setAgreed(e.target.checked)} className="mt-0.5 h-4 w-4 accent-[#1e3a5f] shrink-0" />
