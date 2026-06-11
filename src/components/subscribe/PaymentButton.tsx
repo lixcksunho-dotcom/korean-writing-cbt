@@ -3,26 +3,16 @@
 import { useState } from 'react'
 import * as PortOne from '@portone/browser-sdk/v2'
 
-type Method = 'card' | 'kakaopay' | 'tosspay'
+type Method = 'card'
 
 const METHODS: { key: Method; label: string; emoji: string; color: string }[] = [
   { key: 'card', label: '카드 결제', emoji: '💳', color: 'border-[#1e3a5f] bg-[#1e3a5f] text-white' },
-  { key: 'kakaopay', label: '카카오페이', emoji: '💛', color: 'border-[#FEE500] bg-[#FEE500] text-[#3C1E1E]' },
-  { key: 'tosspay', label: '토스페이', emoji: '💙', color: 'border-[#0064FF] bg-[#0064FF] text-white' },
 ]
 
-// 포트원 V2 결제수단 매핑.
-// 카드: payMethod 'CARD'. 간편결제(카카오페이/토스페이)는 'EASY_PAY' + easyPayProvider 코드.
+// 포트원 V2 결제수단 매핑. 현재 카드결제만 사용(payMethod 'CARD').
 // as const 로 리터럴 타입을 확정해야 PaymentRequest 판별 유니온에 맞는다.
-function portoneMethodParams(method: Method) {
-  switch (method) {
-    case 'kakaopay':
-      return { payMethod: 'EASY_PAY', easyPay: { easyPayProvider: 'EASY_PAY_PROVIDER_KAKAOPAY' } } as const
-    case 'tosspay':
-      return { payMethod: 'EASY_PAY', easyPay: { easyPayProvider: 'EASY_PAY_PROVIDER_TOSSPAY' } } as const
-    default:
-      return { payMethod: 'CARD' } as const
-  }
+function portoneMethodParams(_method: Method) {
+  return { payMethod: 'CARD' } as const
 }
 
 export default function PaymentButton({
@@ -40,14 +30,23 @@ export default function PaymentButton({
 
   async function handlePayment(method: Method) {
     if (!agreed) { setError('결제 전 이용약관·환불정책에 동의해 주세요.'); return }
+
+    // 포트원 키 미설정 가드: storeId/channelKey가 비면 SDK가 cryptic 에러를 내므로 먼저 차단
+    const storeId = process.env.NEXT_PUBLIC_PORTONE_STORE_ID
+    const channelKey = process.env.NEXT_PUBLIC_PORTONE_CHANNEL_KEY
+    if (!storeId || !channelKey) {
+      setError('결제 설정이 준비 중입니다. 잠시 후 다시 시도하거나 고객센터로 문의해 주세요.')
+      return
+    }
+
     setError('')
     setLoading(method)
     try {
       const paymentId = `sub-${crypto.randomUUID()}`
 
       const response = await PortOne.requestPayment({
-        storeId: process.env.NEXT_PUBLIC_PORTONE_STORE_ID!,
-        channelKey: process.env.NEXT_PUBLIC_PORTONE_CHANNEL_KEY!,
+        storeId,
+        channelKey,
         paymentId,
         orderName: 'AI 원고지 채점 1개월',
         totalAmount: 5500,
