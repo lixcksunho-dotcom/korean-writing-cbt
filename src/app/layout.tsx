@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import Analytics from "@/components/analytics/Analytics";
+import TrafficTracker from "@/components/analytics/TrafficTracker";
 
 const SITE_URL = "https://kptest.cloud";
 
@@ -59,6 +60,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col">
         {children}
         <Analytics />
+        <TrafficTracker />
       </body>
     </html>
   );
