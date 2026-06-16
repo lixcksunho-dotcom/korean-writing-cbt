@@ -1,13 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
-import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { CheckCircle2, PenLine } from 'lucide-react'
 import PurchaseTracker from '@/components/analytics/PurchaseTracker'
-
-// 구독 1개월 가격(원). 클라이언트가 보내온 금액을 그대로 신뢰하지 않고
-// 이 값과 일치하는지 서버에서 반드시 검증한다.
-const PLAN_PRICE = 5500
+import { grantSubscriptionForPayment, PLAN_PRICE } from '@/lib/payment'
 
 export default async function SuccessPage({
   searchParams,
@@ -29,52 +25,24 @@ export default async function SuccessPage({
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  // 2. 포트원 서버에 결제 단건 조회로 실제 결제 사실을 검증
-  //    (브라우저에서 넘어온 정보는 신뢰하지 않는다)
-  const verifyRes = await fetch(
-    `https://api.portone.io/payments/${encodeURIComponent(paymentId)}`,
-    {
-      headers: { Authorization: `PortOne ${process.env.PORTONE_API_SECRET}` },
-      cache: 'no-store',
-    },
-  )
+  // 2. 검증 + 구독 발급은 공용 함수에 위임(웹훅·관리자 복구와 동일 로직).
+  //    expectedUserId로 결제 customerId와 로그인 사용자가 같은지 교차검증한다.
+  const result = await grantSubscriptionForPayment(paymentId, { expectedUserId: user.id })
 
-  if (!verifyRes.ok) redirect('/subscribe/fail?reason=confirm')
-
-  const payment = await verifyRes.json()
-
-  // 2-1. 결제 상태가 완료(PAID)인지 확인
-  if (payment?.status !== 'PAID') redirect('/subscribe/fail?reason=status')
-
-  // 2-2. 금액 위변조 방지: 실제 결제 금액이 정가와 다르면 거부
-  //      (클라이언트가 금액을 조작해 헐값에 구독하는 공격 차단)
-  if (Number(payment?.amount?.total) !== PLAN_PRICE) {
-    redirect('/subscribe/fail?reason=amount')
+  if (!result.ok) {
+    // reason → 기존 실패 페이지 매핑 유지
+    const reasonMap: Record<string, string> = {
+      not_found: 'confirm',
+      status: 'status',
+      amount: 'amount',
+      no_user: 'confirm',
+      user_mismatch: 'confirm',
+      save: 'save',
+    }
+    redirect(`/subscribe/fail?reason=${reasonMap[result.reason] ?? 'confirm'}`)
   }
 
-  // 3. 구독 발급 — Service Role로만 기록한다.
-  //    (RLS상 사용자 본인은 subscriptions에 직접 insert 할 수 없으므로
-  //     결제 없이 구독을 자가 발급하는 것이 불가능)
-  const admin = createAdminClient()
-
-  const expiresAt = new Date()
-  expiresAt.setDate(expiresAt.getDate() + 30)
-
-  // order_id(=paymentId)에 UNIQUE 제약이 걸려 있어, 새로고침 등으로 같은
-  // 주문이 중복 발급되는 것을 DB 레벨에서 막는다.
-  const { error: insertError } = await admin.from('subscriptions').insert({
-    user_id: user.id,
-    payment_key: payment?.pgTxId ?? paymentId,
-    order_id: paymentId,
-    amount: PLAN_PRICE,
-    status: 'active',
-    expires_at: expiresAt.toISOString(),
-  })
-
-  // 23505 = unique_violation: 이미 처리된 주문(새로고침 등)이므로 성공 화면을 그대로 보여줌
-  if (insertError && insertError.code !== '23505') {
-    redirect('/subscribe/fail?reason=save')
-  }
+  const expiresAt = new Date(result.expiresAt)
 
   return (
     <div className="max-w-md mx-auto py-16 text-center">
