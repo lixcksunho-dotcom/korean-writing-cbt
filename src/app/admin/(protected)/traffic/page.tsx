@@ -61,6 +61,13 @@ export default async function AdminTrafficPage() {
   }
 
   const rows = (data ?? []) as Row[]
+
+  // 전환 퍼널용: 최근 30일 구독 발급 수
+  const { count: subs30 } = await admin
+    .from('subscriptions')
+    .select('*', { count: 'exact', head: true })
+    .gte('created_at', since)
+
   const todayStart = startOfTodayKST().getTime()
   const d7 = Date.now() - 7 * 24 * 3600 * 1000
   const d30 = Date.now() - 30 * 24 * 3600 * 1000
@@ -83,6 +90,18 @@ export default async function AdminTrafficPage() {
   }
   const topPaths = [...pathCount.entries()].sort((a, b) => b[1] - a[1]).slice(0, 10)
   const topRefs = [...refCount.entries()].sort((a, b) => b[1] - a[1]).slice(0, 8)
+
+  // 전환 퍼널(30일): 전체 방문자 → 구독페이지(/subscribe) 방문자 → 결제 전환(구독 발급)
+  const subscribeUv = new Set(
+    rows.filter(r => r.path === '/subscribe').map(r => r.visitor_id ?? '?'),
+  ).size
+  const conversions = subs30 ?? 0
+  const pct = (n: number, d: number) => (d > 0 ? `${((n / d) * 100).toFixed(1)}%` : '—')
+  const funnel = [
+    { label: '전체 방문자', value: month.uv, sub: '최근 30일 순방문자' },
+    { label: '구독 페이지 방문', value: subscribeUv, sub: `방문자의 ${pct(subscribeUv, month.uv)}` },
+    { label: '결제 전환', value: conversions, sub: `구독페이지 방문의 ${pct(conversions, subscribeUv)}` },
+  ]
 
   // 최근 14일 일별 추이 (KST 날짜 기준)
   const days: { label: string; pv: number; uv: number }[] = []
@@ -113,6 +132,21 @@ export default async function AdminTrafficPage() {
         <StatCard label="오늘" pv={today.pv} uv={today.uv} />
         <StatCard label="최근 7일" pv={week.pv} uv={week.uv} />
         <StatCard label="최근 30일" pv={month.pv} uv={month.uv} />
+      </div>
+
+      {/* 전환 퍼널 */}
+      <div className="mb-8 rounded-xl border border-gray-200 bg-white p-5">
+        <h2 className="mb-1 text-sm font-bold text-gray-900">전환 퍼널 (30일)</h2>
+        <p className="mb-4 text-xs text-gray-500">방문 → 구독 페이지 → 결제까지 얼마나 이어지는지. 전체 전환율 {pct(conversions, month.uv)}.</p>
+        <div className="grid grid-cols-3 gap-3">
+          {funnel.map((f, i) => (
+            <div key={f.label} className={`rounded-lg p-4 text-center ${i === 2 ? 'bg-emerald-50' : 'bg-gray-50'}`}>
+              <p className="text-xs font-semibold text-gray-500">{f.label}</p>
+              <p className={`mt-1 text-2xl font-black ${i === 2 ? 'text-emerald-600' : 'text-gray-900'}`}>{f.value.toLocaleString()}</p>
+              <p className="mt-0.5 text-[11px] text-gray-400">{f.sub}</p>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* 일별 추이 */}

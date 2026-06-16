@@ -37,15 +37,20 @@ export async function POST(req: Request) {
         console.log(
           `[portone-webhook] 구독 발급 ${result.alreadyGranted ? '(이미존재)' : 'OK'} payment=${paymentId} user=${result.userId}`,
         )
-      } else {
-        console.error(`[portone-webhook] 발급 실패 payment=${paymentId} reason=${result.reason}`)
+        return new Response('ok', { status: 200 })
       }
+      console.error(`[portone-webhook] 발급 실패 payment=${paymentId} reason=${result.reason}`)
+      // 일시적 실패(API 지연으로 아직 조회 안 됨 / 아직 PAID 반영 전 / DB 일시오류)는
+      // 500을 반환해 포트원 재시도(0→1→4→16→256분, 최대 5회)로 자동 복구되게 한다.
+      // 영구 실패(금액 불일치·사용자 식별 불가)는 재시도해도 같으므로 200으로 종료.
+      const transient = result.reason === 'not_found' || result.reason === 'status' || result.reason === 'save'
+      return new Response(`unprocessed: ${result.reason}`, { status: transient ? 500 : 200 })
     } catch (e) {
       console.error(`[portone-webhook] 처리 예외 payment=${paymentId}:`, (e as Error).message)
+      return new Response('error', { status: 500 }) // 예외도 일시적으로 보고 재시도 유도
     }
   }
 
-  // 검증을 통과한 이벤트는 처리 결과(중복·무관 이벤트 포함)와 무관하게 200으로 응답해
-  // 포트원의 불필요한 재시도를 막는다. (서명 실패만 4xx)
+  // 결제완료 외 이벤트(취소·실패·가상계좌 등)는 처리 대상 아님 → 200으로 조용히 수신.
   return new Response('ok', { status: 200 })
 }
