@@ -40,13 +40,13 @@ async function loadRecentPayments(): Promise<{ rows: PaymentRow[]; listError: st
 
     const rows: PaymentRow[] = items.map(p => {
       const amount = p.amount as { total?: number } | undefined
-      const customer = p.customer as { customerId?: string } | undefined
+      const customer = p.customer as { id?: string; customerId?: string } | undefined
       const id = String(p.id ?? '')
       return {
         id,
         status: String(p.status ?? '-'),
         amount: typeof amount?.total === 'number' ? amount.total : null,
-        customerId: customer?.customerId ?? null,
+        customerId: customer?.id ?? customer?.customerId ?? null,
         orderName: (p.orderName as string) ?? null,
         paidAt: (p.paidAt as string) ?? (p.requestedAt as string) ?? null,
         granted: grantedSet.has(id),

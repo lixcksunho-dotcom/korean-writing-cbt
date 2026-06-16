@@ -9,7 +9,8 @@ export type PortonePayment = {
   status?: string
   amount?: { total?: number }
   pgTxId?: string
-  customer?: { customerId?: string }
+  // 결제 시 customer.customerId로 보낸 값을 포트원은 단건조회 응답에서 customer.id로 돌려준다.
+  customer?: { id?: string; customerId?: string }
 }
 
 export type GrantReason =
@@ -59,8 +60,9 @@ export async function grantSubscriptionForPayment(
     return { ok: false, reason: 'amount', amount }
   }
 
-  // 웹훅엔 세션이 없으므로 결제 시 실어보낸 customer.customerId(=userId)로 사용자를 해석한다.
-  const userId = payment.customer?.customerId
+  // 웹훅엔 세션이 없으므로 결제 시 실어보낸 customerId(=userId)로 사용자를 해석한다.
+  // 포트원 단건조회는 이 값을 customer.id로 반환한다(customerId는 폴백).
+  const userId = payment.customer?.id ?? payment.customer?.customerId
   if (!userId) return { ok: false, reason: 'no_user' }
   if (opts.expectedUserId && opts.expectedUserId !== userId) {
     return { ok: false, reason: 'user_mismatch' }
