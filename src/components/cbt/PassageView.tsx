@@ -11,6 +11,7 @@ type Block =
   | { kind: 'table'; rows: string[][] }
   | { kind: 'pre'; text: string }
   | { kind: 'list'; items: string[] }
+  | { kind: 'image'; url: string; alt: string }
   | { kind: 'para'; text: string }
 
 type Section = { label?: string; subtitle?: string; blocks: Block[] }
@@ -18,6 +19,7 @@ type Section = { label?: string; subtitle?: string; blocks: Block[] }
 const isSubhead = (t: string) => /^\[[^\]]+\]$/.test(t)
 const isListItem = (t: string) => /^[-*•]\s+/.test(t)
 const isTableLine = (t: string) => t.includes(' / ')
+const imageMatch = (t: string) => t.match(/^!\[([^\]]*)\]\((https?:\/\/[^)]+)\)$/)
 
 function parsePassage(raw: string): Section[] {
   const lines = raw.replace(/\r/g, '').split('\n')
@@ -41,6 +43,14 @@ function parsePassage(raw: string): Section[] {
         blocks: [],
       }
       sections.push(cur)
+      i++
+      continue
+    }
+
+    // 이미지(그래프 등): ![alt](https://...)
+    const im = imageMatch(t)
+    if (im) {
+      cur.blocks.push({ kind: 'image', alt: im[1], url: im[2] })
       i++
       continue
     }
@@ -94,6 +104,9 @@ function Blocks({ blocks }: { blocks: Block[] }) {
           return <p key={i} className="text-[14.5px] text-[#1f2937] leading-[1.85]">{b.text}</p>
         if (b.kind === 'pre')
           return <pre key={i} className="text-[13px] text-[#1f2937] font-mono whitespace-pre-wrap leading-relaxed">{b.text}</pre>
+        if (b.kind === 'image')
+          // eslint-disable-next-line @next/next/no-img-element
+          return <img key={i} src={b.url} alt={b.alt || '자료 그래프'} className="my-1 w-full max-w-md rounded-lg border border-[#e2e8f0]" />
         if (b.kind === 'list')
           return (
             <ul key={i} className="list-disc pl-5 space-y-0.5 text-[14px] text-[#334155] leading-relaxed">

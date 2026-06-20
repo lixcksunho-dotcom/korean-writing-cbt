@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { ArrowLeft, CheckCircle2, XCircle, ChevronRight, FileText, ChevronDown, RotateCcw } from 'lucide-react'
 import CopyGuard from '@/components/cbt/CopyGuard'
+import PassageView from '@/components/cbt/PassageView'
 
 export type PracticeQuestion = {
   id: string
@@ -79,7 +80,7 @@ export default function PracticeMultiple({
             <div className="flex items-center gap-2"><FileText className="h-4 w-4 text-[#1e3a5f]" /><span className="text-sm font-bold text-[#1e3a5f]">지 문</span></div>
             <ChevronDown className={`h-4 w-4 text-[#94a3b8] transition-transform ${passageOpen ? 'rotate-180' : ''}`} />
           </button>
-          {passageOpen && <div className="px-5 pb-5 pt-1 max-h-72 overflow-y-auto"><p className="text-sm text-[#334155] leading-relaxed whitespace-pre-wrap">{q.passage}</p></div>}
+          {passageOpen && <div className="px-5 pb-5 pt-1 max-h-96 overflow-y-auto"><PassageView text={q.passage} /></div>}
         </div>
       )}
 
