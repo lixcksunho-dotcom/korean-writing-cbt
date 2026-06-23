@@ -1,8 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
+import Link from 'next/link'
 import { getActiveSubscription, daysUntilExpiry } from '@/lib/subscription'
 import PaymentSection from '@/components/subscribe/PaymentSection'
-import { CheckCircle2, Sparkles, Shield, Zap } from 'lucide-react'
+import { CheckCircle2, Sparkles, Shield, Zap, LogIn } from 'lucide-react'
 
 const FEATURES = [
   'AI 예상 점수·합격 등급 판정 (지금 실력이면 몇 점?)',
@@ -12,15 +12,19 @@ const FEATURES = [
   '영역별 약점 분석 · 채점 기록 저장',
 ]
 
+// 비로그인 방문자도 상품·가격·환불정책을 볼 수 있어야 한다(간편결제 가맹 심사 요건).
+// 실제 결제(PaymentSection)만 로그인 뒤에 노출하고, 비로그인은 로그인 유도 버튼으로 대체한다.
 export default async function SubscribePage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
 
-  const sub = await getActiveSubscription(user.id)
-  const displayName = user.user_metadata?.name || user.email?.split('@')[0] || '회원'
+  const sub = user ? await getActiveSubscription(user.id) : null
+  const displayName = user
+    ? (user.user_metadata?.name || user.email?.split('@')[0] || '회원')
+    : ''
 
-  if (sub) {
+  // 이미 구독 중
+  if (user && sub) {
     const days = daysUntilExpiry(sub.expires_at)
     return (
       <div className="max-w-md mx-auto py-8">
@@ -77,6 +81,14 @@ export default async function SubscribePage() {
         </div>
 
         <div className="p-6">
+          {/* 상품 정보 */}
+          <div className="mb-5 rounded-xl bg-[#f8fafc] border border-[#e2e8f0] p-4 text-sm text-[#334155] space-y-1.5">
+            <div className="flex justify-between"><span className="text-[#64748b]">상품명</span><span className="font-semibold">AI 원고지·서술형 채점 이용권</span></div>
+            <div className="flex justify-between"><span className="text-[#64748b]">이용기간</span><span className="font-semibold">결제일로부터 30일</span></div>
+            <div className="flex justify-between"><span className="text-[#64748b]">결제금액</span><span className="font-semibold">5,500원 (부가세 포함)</span></div>
+            <div className="flex justify-between"><span className="text-[#64748b]">결제방식</span><span className="font-semibold">1회 결제 (자동결제 없음)</span></div>
+          </div>
+
           {/* 포함 기능 */}
           <div className="space-y-2.5 mb-6">
             {FEATURES.map(f => (
@@ -87,17 +99,41 @@ export default async function SubscribePage() {
             ))}
           </div>
 
-          {/* 결제 버튼 */}
-          <PaymentSection
-            userId={user.id}
-            userEmail={user.email ?? ''}
-            userName={displayName}
-          />
+          {/* 결제 영역: 로그인 상태면 결제 버튼, 비로그인이면 로그인 유도 */}
+          {user ? (
+            <PaymentSection
+              userId={user.id}
+              userEmail={user.email ?? ''}
+              userName={displayName}
+            />
+          ) : (
+            <div className="space-y-3">
+              <Link
+                href="/login?redirect=/subscribe"
+                className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-bold text-sm border-2 border-[#1e3a5f] bg-[#1e3a5f] text-white transition-all hover:-translate-y-0.5 hover:shadow-lg"
+              >
+                <LogIn className="h-4 w-4" />
+                로그인하고 결제하기
+              </Link>
+              <p className="text-center text-xs text-[#94a3b8]">
+                결제는 로그인 후 진행되며, 카드 · 카카오페이 등으로 결제할 수 있어요.
+              </p>
+            </div>
+          )}
 
           {/* 환불 보장 */}
           <div className="mt-4 flex items-center justify-center gap-2 bg-emerald-50 border border-emerald-100 rounded-xl px-4 py-2.5 text-xs text-emerald-700">
             <Shield className="h-4 w-4 shrink-0" />
             <span><b>7일 내 미사용 전액 환불</b> — AI 채점을 한 번도 쓰지 않았다면 100% 돌려드려요.</span>
+          </div>
+
+          {/* 약관·정책 링크 (심사·고지) */}
+          <div className="mt-3 flex items-center justify-center gap-3 text-xs text-[#64748b]">
+            <Link href="/terms" className="underline hover:text-[#1e3a5f]">이용약관</Link>
+            <span className="text-[#cbd5e1]">·</span>
+            <Link href="/refund" className="underline hover:text-[#1e3a5f]">취소·환불 정책</Link>
+            <span className="text-[#cbd5e1]">·</span>
+            <Link href="/privacy" className="underline hover:text-[#1e3a5f]">개인정보처리방침</Link>
           </div>
 
           {/* 안전 결제 배지 */}
