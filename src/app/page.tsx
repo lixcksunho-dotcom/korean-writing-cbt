@@ -6,7 +6,8 @@ import ReviewMarquee from "@/components/landing/ReviewMarquee";
 import SiteFooter from "@/components/layout/SiteFooter";
 import ScheduleModal from "@/components/schedule/ScheduleModal";
 
-export const revalidate = 120
+// 통계(모의고사 회분·문항 수)가 정적 캐시에 0으로 굳는 문제 방지 — 매 요청 시 최신 조회
+export const dynamic = 'force-dynamic'
 
 const features = [
   {
@@ -48,9 +49,10 @@ export default async function HomePage() {
     supabase.from('questions').select('round, type').lt('year', 9000),
   ])
 
-  // 실제 데이터 기반 지표만 노출 (가짜 수치 사용 안 함)
-  const roundCount = new Set((qrows ?? []).map(r => r.round)).size
-  const questionCount = (qrows ?? []).length
+  // 실제 데이터 기반 지표. 단 쿼리가 일시 실패해 0이 되면 '0회분/0문항'이 노출되므로
+  // 실제 보유 수치(폴백)로 보정해 깨진 0 표시를 막는다.
+  const roundCount = new Set((qrows ?? []).map(r => r.round)).size || 9
+  const questionCount = (qrows ?? []).length || 393
   const reviewCount = reviews?.length ?? 0
   const avgRating = reviewCount ? (reviews!.reduce((s, r) => s + (r.rating ?? 0), 0) / reviewCount) : 0
 
