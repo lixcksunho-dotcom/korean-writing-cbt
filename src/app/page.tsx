@@ -6,8 +6,9 @@ import ReviewMarquee from "@/components/landing/ReviewMarquee";
 import SiteFooter from "@/components/layout/SiteFooter";
 import ScheduleModal from "@/components/schedule/ScheduleModal";
 
-// 통계(모의고사 회분·문항 수)가 정적 캐시에 0으로 굳는 문제 방지 — 매 요청 시 최신 조회
-export const dynamic = 'force-dynamic'
+// ISR 캐시로 빠르게 응답(매 요청 SSR 시 Supabase 왕복으로 7초+ 느려지던 문제 해소).
+// 통계가 0으로 굳는 문제는 아래 roundCount/questionCount 폴백(|| 9, || 393)으로 방지.
+export const revalidate = 600
 
 const features = [
   {
