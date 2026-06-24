@@ -1,7 +1,7 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { NextRequest, NextResponse } from 'next/server'
-import { stripBom } from '@/lib/supabase/sanitize'
+import { stripBom, SB_URL, SB_ANON } from '@/lib/supabase/sanitize'
 
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url)
@@ -14,8 +14,8 @@ export async function GET(request: NextRequest) {
     //   (next/headers cookieStore.set만으론 리다이렉트 응답에 누락될 수 있어 로그인 후 /dashboard가 /login으로 튕김)
     const response = NextResponse.redirect(`${origin}${next}`)
     const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      SB_URL,
+      SB_ANON,
       {
         cookies: {
           getAll() {

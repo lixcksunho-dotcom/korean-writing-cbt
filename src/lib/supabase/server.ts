@@ -1,13 +1,13 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
-import { stripBom } from "./sanitize";
+import { stripBom, SB_URL, SB_ANON } from "./sanitize";
 
 export async function createClient() {
   const cookieStore = await cookies();
 
   return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    SB_URL,
+    SB_ANON,
     {
       cookies: {
         getAll() {

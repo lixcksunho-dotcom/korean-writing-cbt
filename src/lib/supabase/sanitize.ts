@@ -13,3 +13,8 @@ export function stripBom(s: string | undefined | null): string {
   }
   return out;
 }
+
+// Supabase 환경변수에 섞인 BOM/제어문자를 제거한 안전한 값.
+// 런타임 env(서버)나 인라인(클라)에 BOM이 있어도 ByteString 헤더 오류를 막는다.
+export const SB_URL = stripBom(process.env.NEXT_PUBLIC_SUPABASE_URL);
+export const SB_ANON = stripBom(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
