@@ -116,7 +116,7 @@ export default async function SubscribePage() {
                 로그인하고 결제하기
               </Link>
               <p className="text-center text-xs text-[#94a3b8]">
-                결제는 로그인 후 진행되며, 카드 · 카카오페이 등으로 결제할 수 있어요.
+                결제는 로그인 후 진행되며, 카드 · 간편결제로 결제할 수 있어요.
               </p>
             </div>
           )}

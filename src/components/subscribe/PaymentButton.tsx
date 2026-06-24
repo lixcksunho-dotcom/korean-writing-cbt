@@ -3,26 +3,19 @@
 import { useState } from 'react'
 import * as PortOne from '@portone/browser-sdk/v2'
 
-type Method = 'card' | 'kakaopay'
+type Method = 'card' | 'easypay'
 
-// 카카오페이 채널 설정(게이팅):
-// - 별도 카카오페이 채널을 쓰면 NEXT_PUBLIC_PORTONE_KAKAO_CHANNEL_KEY 에 그 채널키를 넣는다.
-// - 기존 채널(이니시스 등) 간편결제로 쓸 거면 NEXT_PUBLIC_ENABLE_KAKAOPAY=true 로 켠다.
-// - 둘 다 없으면 카카오페이 버튼을 숨긴다(미설정 상태로 배포해도 깨진 버튼 노출 없음).
-const KAKAO_CHANNEL_KEY = process.env.NEXT_PUBLIC_PORTONE_KAKAO_CHANNEL_KEY
-const KAKAO_ENABLED = !!KAKAO_CHANNEL_KEY || process.env.NEXT_PUBLIC_ENABLE_KAKAOPAY === 'true'
-
-const ALL_METHODS: { key: Method; label: string; emoji: string; color: string }[] = [
+const METHODS: { key: Method; label: string; emoji: string; color: string }[] = [
   { key: 'card', label: '카드 결제', emoji: '💳', color: 'border-[#1e3a5f] bg-[#1e3a5f] text-white' },
-  { key: 'kakaopay', label: '카카오페이', emoji: '💛', color: 'border-[#FEE500] bg-[#FEE500] text-[#3C1E1E]' },
+  { key: 'easypay', label: '간편결제', emoji: '⚡', color: 'border-[#1e3a5f] bg-white text-[#1e3a5f]' },
 ]
-const METHODS = ALL_METHODS.filter(m => m.key !== 'kakaopay' || KAKAO_ENABLED)
 
-// 포트원 V2 결제수단 매핑. 카드(CARD) + 카카오페이(EASY_PAY/KAKAOPAY 간편결제).
-// as const 로 리터럴 타입을 확정해야 PaymentRequest 판별 유니온에 맞는다.
+// 포트원 V2 결제수단 매핑. 카드(CARD) + 간편결제(EASY_PAY, provider 미지정).
+// EASY_PAY는 기존 PG(KG이니시스) 채널에 활성화된 간편결제(삼성페이·카카오페이 등)를 결제창에서 노출한다.
+// 별도 채널/계약 없이 기존 채널키로 동작 — provider를 지정하지 않으면 이니시스가 가능한 수단을 보여준다.
 function portoneMethodParams(method: Method) {
-  if (method === 'kakaopay') {
-    return { payMethod: 'EASY_PAY', easyPay: { easyPayProvider: 'KAKAOPAY' } } as const
+  if (method === 'easypay') {
+    return { payMethod: 'EASY_PAY' } as const
   }
   return { payMethod: 'CARD' } as const
 }
@@ -63,13 +56,10 @@ export default function PaymentButton({
     setLoading(method)
     try {
       const paymentId = `sub-${crypto.randomUUID()}`
-      // 카카오페이가 별도 채널이면 그 채널키로, 아니면 기본 채널키로 호출
-      const effectiveChannelKey =
-        method === 'kakaopay' && KAKAO_CHANNEL_KEY ? KAKAO_CHANNEL_KEY : channelKey
 
       const response = await PortOne.requestPayment({
         storeId,
-        channelKey: effectiveChannelKey,
+        channelKey,
         paymentId,
         orderName: 'AI 원고지 채점 1개월',
         totalAmount: 5500,
