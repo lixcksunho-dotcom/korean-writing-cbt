@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
+import { createClient as createPublicClient } from "@supabase/supabase-js";
 import { FileText, BookOpen, PenLine, CheckCircle, ArrowRight, Sparkles, Star, Gift } from "lucide-react";
 import LogoGlyph from "@/components/layout/LogoGlyph";
 import ReviewMarquee from "@/components/landing/ReviewMarquee";
@@ -39,7 +39,13 @@ const benefits = [
 ];
 
 export default async function HomePage() {
-  const supabase = await createClient()
+  // 쿠키 없는 anon 클라이언트 — 쿠키 의존이 없어야 ISR 정적 캐시가 적용돼 홈이 빠르다.
+  // (공개 데이터만 조회: 후기/문항 수). 쿠키 기반 createClient는 매 요청 동적 렌더라 7초+ 걸림.
+  const supabase = createPublicClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { auth: { persistSession: false } }
+  )
   const [{ data: reviews }, { data: qrows }] = await Promise.all([
     supabase
       .from('reviews')
