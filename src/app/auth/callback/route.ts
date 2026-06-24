@@ -9,6 +9,9 @@ export async function GET(request: NextRequest) {
 
   if (code) {
     const cookieStore = await cookies()
+    // ★ 세션 쿠키를 리다이렉트 '응답'에 직접 실어야 브라우저가 받는다.
+    //   (next/headers cookieStore.set만으론 리다이렉트 응답에 누락될 수 있어 로그인 후 /dashboard가 /login으로 튕김)
+    const response = NextResponse.redirect(`${origin}${next}`)
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -18,9 +21,10 @@ export async function GET(request: NextRequest) {
             return cookieStore.getAll()
           },
           setAll(cookiesToSet) {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
-            )
+            cookiesToSet.forEach(({ name, value, options }) => {
+              try { cookieStore.set(name, value, options) } catch {}
+              response.cookies.set(name, value, options)
+            })
           },
         },
       }
@@ -28,9 +32,10 @@ export async function GET(request: NextRequest) {
 
     const { error } = await supabase.auth.exchangeCodeForSession(code)
     if (!error) {
-      return NextResponse.redirect(`${origin}${next}`)
+      return response
     }
+    return NextResponse.redirect(`${origin}/login?error=auth&reason=${encodeURIComponent(error.message)}`)
   }
 
-  return NextResponse.redirect(`${origin}/login?error=auth`)
+  return NextResponse.redirect(`${origin}/login?error=auth&reason=no_code`)
 }
