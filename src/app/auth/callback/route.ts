@@ -1,6 +1,7 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { NextRequest, NextResponse } from 'next/server'
+import { stripBom } from '@/lib/supabase/sanitize'
 
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url)
@@ -18,12 +19,14 @@ export async function GET(request: NextRequest) {
       {
         cookies: {
           getAll() {
-            return cookieStore.getAll()
+            // 저장된 쿠키(PKCE 검증기 등)에 섞인 BOM/제어문자 제거 → 헤더 변환 오류 방지
+            return cookieStore.getAll().map((c) => ({ ...c, value: stripBom(c.value) }))
           },
           setAll(cookiesToSet) {
             cookiesToSet.forEach(({ name, value, options }) => {
-              try { cookieStore.set(name, value, options) } catch {}
-              response.cookies.set(name, value, options)
+              const v = stripBom(value)
+              try { cookieStore.set(name, v, options) } catch {}
+              response.cookies.set(name, v, options)
             })
           },
         },
