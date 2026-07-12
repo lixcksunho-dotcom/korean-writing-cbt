@@ -2,23 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { CalendarDays, X, ExternalLink, ArrowRight } from 'lucide-react'
-
-// 한국실용글쓰기 정기시험 일정 (출처: https://www.klata.or.kr/test/schedule)
-// ⚠️ 일정은 주관처 사정으로 변경될 수 있습니다. 새 회차 공지 시 이 배열을 갱신하세요.
-const APPLY_URL = 'https://www.klata.or.kr/testing_accept/'
-const SCHEDULE_URL = 'https://www.klata.or.kr/test/schedule'
-
-type Round = { round: string; applyStart: string; applyEnd: string; examDate: string; resultDate: string }
-
-const SCHEDULE: Round[] = [
-  { round: '제117회', applyStart: '2025-12-15', applyEnd: '2026-01-05', examDate: '2026-01-17', resultDate: '2026-02-17' },
-  { round: '제118회', applyStart: '2026-02-16', applyEnd: '2026-03-09', examDate: '2026-03-21', resultDate: '2026-04-21' },
-  { round: '제119회', applyStart: '2026-04-13', applyEnd: '2026-05-04', examDate: '2026-05-16', resultDate: '2026-06-16' },
-  { round: '제120회', applyStart: '2026-06-08', applyEnd: '2026-06-29', examDate: '2026-07-11', resultDate: '2026-08-11' },
-  { round: '제121회', applyStart: '2026-08-17', applyEnd: '2026-09-07', examDate: '2026-09-19', resultDate: '2026-10-20' },
-  { round: '제122회', applyStart: '2026-10-19', applyEnd: '2026-11-09', examDate: '2026-11-21', resultDate: '2026-12-22' },
-  { round: '제123회', applyStart: '2026-12-14', applyEnd: '2027-01-04', examDate: '2027-01-16', resultDate: '2027-02-16' },
-]
+import { SCHEDULE, APPLY_URL, SCHEDULE_URL, type Round } from '@/lib/examSchedule'
 
 const WD = ['일', '월', '화', '수', '목', '금', '토']
 function fmt(iso: string) {

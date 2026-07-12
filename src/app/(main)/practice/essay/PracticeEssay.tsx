@@ -1,14 +1,16 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useRef, useState, useTransition } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { ArrowLeft, ChevronRight, ChevronLeft, FileText, ChevronDown, Sparkles, Lock, Loader2, Save, Check } from 'lucide-react'
-import EditableManuscript from '@/components/manuscript/EditableManuscript'
+import EditableManuscript, { type EditableManuscriptHandle } from '@/components/manuscript/EditableManuscript'
 import PassageView from '@/components/cbt/PassageView'
 import CopyGuard from '@/components/cbt/CopyGuard'
+import SymbolPalette from '@/components/cbt/SymbolPalette'
 import { gradeEssayPractice, savePracticeProgress } from '../actions'
-import { parseCharLimit, manuscriptRows } from '@/lib/charLimit'
+import { parseCharLimit, manuscriptRows, clampToCharLimit } from '@/lib/charLimit'
+import { extractCircledLabels, insertAtTextareaCursor } from '@/lib/circledSymbols'
 import type { EssayGrade } from '@/app/(main)/cbt/actions'
 
 export type PracticeEssayQuestion = {
@@ -51,6 +53,9 @@ export default function PracticeEssay({
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState('')
   const resumed = !!initialAnswers && Object.keys(initialAnswers).length > 0
+  // 서술형 원문자(㉠㉡…) 삽입용 입력 ref (한 번에 한 문항만 렌더)
+  const essayTaRef = useRef<HTMLTextAreaElement>(null)
+  const essayEmRef = useRef<EditableManuscriptHandle>(null)
 
   // 구독자거나, 비구독자라도 무료 체험이 남아있으면 AI 분석 가능
   const trialLeft = Math.max(0, aiTrialRemaining - trialUsedLocal)
@@ -80,6 +85,19 @@ export default function PracticeEssay({
   const charLimit = parseCharLimit(q.question) // 문항별 제한 글자수(없으면 null)
   const overLimit = charLimit != null && charCount > charLimit
   const mRows = manuscriptRows(charLimit, COLS)
+  // 서술형 답안 저장 — 문제 제한 글자수로 하드 캡(쓸 수 있는 최대 = 문제 제한, 무조건 일치)
+  const setEssayAnswer = (v: string) => setAnswers(a => ({ ...a, [q.id]: clampToCharLimit(v, charLimit) }))
+  // 원문자 라벨(㉠㉡㉢…) 삽입 팔레트
+  const qLabels = extractCircledLabels(q.question, q.passage)
+  // 지문이 있으면 좌우 2단(지문 왼쪽·답안 오른쪽). 모의고사 ExamPlayer와 동일 방식.
+  const sideBySide = !!q.passage
+  const insertSymbol = (sym: string) => {
+    if (isManuscript) {
+      essayEmRef.current?.insertAtCursor(sym)
+    } else {
+      insertAtTextareaCursor(essayTaRef.current, answer, setEssayAnswer, sym)
+    }
+  }
 
   function go(n: number) {
     setIdx(n)
@@ -159,19 +177,21 @@ export default function PracticeEssay({
         </div>
       </div>
 
+      {/* 좌우 2단 래퍼(지문) — lg↑ 지문 왼쪽·답안 오른쪽, 모바일 세로 */}
+      <div className={sideBySide ? 'grid lg:grid-cols-2 gap-4 items-start' : ''}>
       {/* 지문 */}
       {q.passage && (
-        <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-2xl mb-4 overflow-hidden">
+        <div className={`bg-[#f8fafc] border border-[#e2e8f0] rounded-2xl mb-4 overflow-hidden ${sideBySide ? 'lg:mb-0 lg:sticky lg:top-24 lg:self-start' : ''}`}>
           <button onClick={() => setPassageOpen(v => !v)} className="w-full flex items-center justify-between px-5 py-3.5 text-left hover:bg-[#f1f5f9] transition-colors">
             <div className="flex items-center gap-2"><FileText className="h-4 w-4 text-[#1e3a5f]" /><span className="text-sm font-bold text-[#1e3a5f]">제시문 · 자료</span></div>
             <ChevronDown className={`h-4 w-4 text-[#94a3b8] transition-transform ${passageOpen ? 'rotate-180' : ''}`} />
           </button>
-          {passageOpen && <div className="px-4 sm:px-5 pb-5 pt-2 max-h-96 overflow-y-auto"><PassageView text={q.passage} /></div>}
+          {passageOpen && <div className={`px-4 sm:px-5 pb-5 pt-2 overflow-y-auto ${sideBySide ? 'max-h-96 lg:max-h-[calc(100vh-9rem)]' : 'max-h-96'}`}><PassageView text={q.passage} /></div>}
         </div>
       )}
 
       {/* 문제 + 작성 */}
-      <div className="bg-white rounded-2xl border border-[#e2e8f0] shadow-[0_4px_16px_rgba(15,31,61,0.06)] p-6 md:p-7">
+      <div className="bg-white rounded-2xl border border-[#e2e8f0] shadow-[0_4px_16px_rgba(15,31,61,0.06)] p-6 md:p-7 min-w-0">
         <div className="flex items-center gap-2 mb-5">
           <span className="text-xs font-bold text-amber-700 bg-amber-100 px-2.5 py-1 rounded-full">서술형 {idx + 1}</span>
           <span className="text-xs text-[#94a3b8]">{q.points}점</span>
@@ -187,13 +207,19 @@ export default function PracticeEssay({
             {charCount}{charLimit != null ? ` / ${charLimit}` : ''}자{overLimit ? ' 초과' : ''}
           </span>
         </div>
+        {qLabels.length > 0 && (
+          <div className="mb-2">
+            <SymbolPalette symbols={qLabels} onInsert={insertSymbol} />
+          </div>
+        )}
         {isManuscript ? (
-          <EditableManuscript value={answer} onChange={v => setAnswers(a => ({ ...a, [q.id]: v }))} cols={COLS} rows={mRows} cell={28} maxHeightVh={55} />
+          <EditableManuscript ref={essayEmRef} value={answer} onChange={setEssayAnswer} cols={COLS} rows={mRows} cell={28} maxHeightVh={55} />
         ) : (
           <textarea
+            ref={essayTaRef}
             value={answer}
-            onChange={e => setAnswers(a => ({ ...a, [q.id]: e.target.value }))}
-            placeholder="조건에 맞게 답안을 작성하세요. 기호(㉠, ㉡ 등)가 있으면 그대로 적어 구분하세요."
+            onChange={e => setEssayAnswer(e.target.value)}
+            placeholder="조건에 맞게 답안을 작성하세요. 기호(㉠, ㉡ 등)는 위의 '기호 삽입' 버튼으로 넣을 수 있어요."
             className="h-40 w-full border-2 border-[#e2e8f0] rounded-xl px-5 py-4 text-sm focus:outline-none focus:border-[#1e3a5f] transition-colors bg-[#f8fafc] focus:bg-white resize-none leading-relaxed font-mono"
             spellCheck={false}
           />
@@ -262,6 +288,7 @@ export default function PracticeEssay({
           <button onClick={() => go(Math.max(0, idx - 1))} disabled={idx === 0} className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-semibold text-[#64748b] hover:bg-[#f1f5f9] disabled:opacity-30 transition-colors"><ChevronLeft className="h-4 w-4" /> 이전</button>
           <button onClick={() => go(Math.min(questions.length - 1, idx + 1))} disabled={idx === questions.length - 1} className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-semibold text-[#64748b] hover:bg-[#f1f5f9] disabled:opacity-30 transition-colors">다음 <ChevronRight className="h-4 w-4" /></button>
         </div>
+      </div>
       </div>
       <CopyGuard />
     </div>

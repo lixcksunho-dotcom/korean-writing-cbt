@@ -50,6 +50,47 @@ export const metadata: Metadata = {
   },
 };
 
+// 검색 리치결과용 구조화데이터(JSON-LD) — 조직·사이트·강좌(가격) 노출.
+const JSON_LD = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": `${SITE_URL}/#org`,
+      name: "실글패스",
+      url: SITE_URL,
+      logo: `${SITE_URL}/icon.svg`,
+    },
+    {
+      "@type": "WebSite",
+      "@id": `${SITE_URL}/#website`,
+      url: SITE_URL,
+      name: "실글패스",
+      inLanguage: "ko-KR",
+      publisher: { "@id": `${SITE_URL}/#org` },
+    },
+    {
+      "@type": "Course",
+      name: "한국실용글쓰기 자격 대비 CBT",
+      description:
+        "한국실용글쓰기 자격증 대비 CBT. 기출 유형 모의고사, 서술형·원고지 AI 채점·첨삭, 맞춤법·외래어 유형별 집중 연습.",
+      provider: { "@id": `${SITE_URL}/#org` },
+      offers: {
+        "@type": "Offer",
+        price: "5500",
+        priceCurrency: "KRW",
+        category: "30일 무제한 이용권",
+        url: `${SITE_URL}/subscribe`,
+      },
+      hasCourseInstance: {
+        "@type": "CourseInstance",
+        courseMode: "online",
+        courseWorkload: "PT30D",
+      },
+    },
+  ],
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -58,6 +99,10 @@ export default function RootLayout({
   return (
     <html lang="ko" className="h-full">
       <body className="min-h-full flex flex-col">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD) }}
+        />
         {children}
         <Analytics />
         <TrafficTracker />

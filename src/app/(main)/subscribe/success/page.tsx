@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { CheckCircle2, PenLine } from 'lucide-react'
 import PurchaseTracker from '@/components/analytics/PurchaseTracker'
+import EventTracker from '@/components/analytics/EventTracker'
 import { grantSubscriptionForPayment, PLAN_PRICE } from '@/lib/payment'
 
 export default async function SuccessPage({
@@ -48,6 +49,8 @@ export default async function SuccessPage({
     <div className="max-w-md mx-auto py-16 text-center">
       {/* GA4 결제 전환 이벤트(설정 시에만 발생) */}
       <PurchaseTracker orderId={paymentId} amount={PLAN_PRICE} />
+      {/* 1차파티 전환 이벤트(GA4 없이도 측정) */}
+      <EventTracker event="purchase_success" meta={String(PLAN_PRICE)} />
       <div className="bg-white rounded-2xl border border-[#e2e8f0] shadow-[0_4px_20px_rgba(15,31,61,0.08)] p-10">
         <div className="w-20 h-20 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-5">
           <CheckCircle2 className="h-10 w-10 text-emerald-500" />

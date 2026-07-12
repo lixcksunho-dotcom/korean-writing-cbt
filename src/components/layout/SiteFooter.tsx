@@ -7,6 +7,19 @@ export default function SiteFooter() {
   return (
     <footer className="bg-[#080f1e] text-white/40 text-xs">
       <div className="max-w-6xl mx-auto px-4 py-7">
+        <div className="flex flex-wrap gap-x-4 gap-y-2 mb-3 font-semibold text-white/70">
+          <Link href="/exam-info" className="hover:text-white transition-colors">한국실용글쓰기 시험정보</Link>
+          <span className="text-white/20">·</span>
+          <Link href="/essay-guide" className="hover:text-white transition-colors">서술형 공략</Link>
+          <span className="text-white/20">·</span>
+          <Link href="/spelling" className="hover:text-white transition-colors">자주 틀리는 맞춤법</Link>
+          <span className="text-white/20">·</span>
+          <Link href="/business-writing" className="hover:text-white transition-colors">공문서·이메일 예시</Link>
+          <span className="text-white/20">·</span>
+          <Link href="/word-counter" className="hover:text-white transition-colors">글자수 세기</Link>
+          <span className="text-white/20">·</span>
+          <Link href="/cbt" className="hover:text-white transition-colors">무료 CBT 모의고사</Link>
+        </div>
         <div className="flex flex-wrap gap-x-4 gap-y-2 mb-4 font-semibold text-white/70">
           <Link href="/terms" className="hover:text-white transition-colors">이용약관</Link>
           <span className="text-white/20">·</span>

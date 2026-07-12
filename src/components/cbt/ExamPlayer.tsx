@@ -5,8 +5,10 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Clock, ChevronLeft, ChevronRight, Send, AlertCircle, CheckCircle2, FileText, Save, Lock } from 'lucide-react'
 import { submitSession, saveExamProgress } from '@/app/(main)/cbt/actions'
-import EditableManuscript from '@/components/manuscript/EditableManuscript'
-import { parseCharLimit, manuscriptRows } from '@/lib/charLimit'
+import EditableManuscript, { type EditableManuscriptHandle } from '@/components/manuscript/EditableManuscript'
+import { parseCharLimit, manuscriptRows, clampToCharLimit } from '@/lib/charLimit'
+import { extractCircledLabels, insertAtTextareaCursor } from '@/lib/circledSymbols'
+import SymbolPalette from '@/components/cbt/SymbolPalette'
 import PassageView from '@/components/cbt/PassageView'
 import CopyGuard from '@/components/cbt/CopyGuard'
 
@@ -57,6 +59,9 @@ export default function ExamPlayer({
 
   const answersRef = useRef(answers)
   useEffect(() => { answersRef.current = answers }, [answers])
+  // 서술형 원문자(㉠㉡…) 삽입용 입력 ref (한 번에 한 문항만 렌더되므로 단일 ref로 충분)
+  const essayTaRef = useRef<HTMLTextAreaElement>(null)
+  const essayEmRef = useRef<EditableManuscriptHandle>(null)
   const timeLeftRef = useRef(timeLeft)
   useEffect(() => { timeLeftRef.current = timeLeft }, [timeLeft])
 
@@ -95,6 +100,19 @@ export default function ExamPlayer({
   const qCharCount = Array.from(answers[q.id] ?? '').filter(c => c !== '\n').length
   const qOverLimit = qCharLimit != null && qCharCount > qCharLimit
   const qRows = manuscriptRows(qCharLimit, ESSAY_COLS)
+  // 서술형 답안 저장 — 문제 제한 글자수로 하드 캡(쓸 수 있는 최대 = 문제 제한, 무조건 일치)
+  const setEssayAnswer = (v: string) => handleAnswer(q.id, clampToCharLimit(v, qCharLimit))
+  // 문제/지문에 등장한 원문자 라벨(㉠㉡㉢…) — 있으면 답안칸 위에 삽입 팔레트 표시
+  const qLabels = q.type === 'essay' ? extractCircledLabels(q.question, q.passage) : []
+  // 서술형 + 지문이 있으면 좌우 2단(지문 왼쪽·답안 오른쪽). 그 외엔 기존 세로 배치.
+  const sideBySide = q.type === 'essay' && !!q.passage
+  const insertSymbol = (sym: string) => {
+    if (isManuscriptQ(q)) {
+      essayEmRef.current?.insertAtCursor(sym)
+    } else {
+      insertAtTextareaCursor(essayTaRef.current, answers[q.id] ?? '', setEssayAnswer, sym)
+    }
+  }
   // 서술형 표시 번호(1~9) — DB 내부 번호(31~39)와 무관하게 등장 순서로 매김
   const essayList = questions.filter(x => x.type === 'essay')
   const essayNo = (id: string) => essayList.findIndex(x => x.id === id) + 1
@@ -226,21 +244,23 @@ export default function ExamPlayer({
             </div>
           </div>
 
+          {/* 좌우 2단 래퍼(서술형+지문) — lg 이상에서 지문 왼쪽·답안 오른쪽, 모바일은 세로 */}
+          <div className={sideBySide ? 'grid lg:grid-cols-2 gap-4 items-start' : ''}>
           {/* 지문/자료 — 실제 시험지처럼 항상 펼쳐진 박스 */}
           {q.passage && (
-            <div className="bg-white border-2 border-[#1e3a5f]/20 rounded-xl mb-4">
+            <div className={`bg-white border-2 border-[#1e3a5f]/20 rounded-xl mb-4 ${sideBySide ? 'lg:mb-0 lg:sticky lg:top-24 lg:self-start' : ''}`}>
               <div className="px-5 py-2.5 border-b border-[#1e3a5f]/10 flex items-center gap-2 bg-[#f8fafc] rounded-t-xl">
                 <FileText className="h-4 w-4 text-[#1e3a5f]" />
                 <span className="text-sm font-bold text-[#1e3a5f]">[지문 · 자료]</span>
               </div>
-              <div className="px-4 sm:px-5 py-4 max-h-[30rem] overflow-y-auto">
+              <div className={`px-4 sm:px-5 py-4 overflow-y-auto ${sideBySide ? 'max-h-[30rem] lg:max-h-[calc(100vh-9rem)]' : 'max-h-[30rem]'}`}>
                 <PassageView text={q.passage} />
               </div>
             </div>
           )}
 
           {/* 문제 카드 */}
-          <div className="bg-white rounded-2xl border border-[#e2e8f0] shadow-[0_4px_16px_rgba(15,31,61,0.06)] p-6 md:p-7">
+          <div className="bg-white rounded-2xl border border-[#e2e8f0] shadow-[0_4px_16px_rgba(15,31,61,0.06)] p-6 md:p-7 min-w-0">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-2">
                 <span className="text-sm font-bold text-[#1e3a5f] bg-[#1e3a5f]/8 px-3.5 py-1.5 rounded-full">
@@ -314,10 +334,12 @@ export default function ExamPlayer({
                     {qCharCount}{qCharLimit != null ? ` / ${qCharLimit}` : ''}자{qOverLimit ? ' 초과' : ''}
                   </span>
                 </div>
+                {qLabels.length > 0 && <SymbolPalette symbols={qLabels} onInsert={insertSymbol} />}
                 {isManuscriptQ(q) ? (
                   <EditableManuscript
+                    ref={essayEmRef}
                     value={answers[q.id] ?? ''}
-                    onChange={v => handleAnswer(q.id, v)}
+                    onChange={setEssayAnswer}
                     cols={ESSAY_COLS}
                     rows={qRows}
                     cell={28}
@@ -325,9 +347,10 @@ export default function ExamPlayer({
                   />
                 ) : (
                   <textarea
+                    ref={essayTaRef}
                     value={answers[q.id] ?? ''}
-                    onChange={e => handleAnswer(q.id, e.target.value)}
-                    placeholder="조건에 맞게 답안을 작성하세요. 기호(㉠, ㉡ 등)가 있으면 그대로 적어 구분하세요."
+                    onChange={e => setEssayAnswer(e.target.value)}
+                    placeholder="조건에 맞게 답안을 작성하세요. 기호(㉠, ㉡ 등)는 위의 '기호 삽입' 버튼으로 넣을 수 있어요."
                     className="w-full border-2 border-[#e2e8f0] rounded-xl px-5 py-4 text-sm focus:outline-none focus:border-[#1e3a5f] transition-colors bg-[#f8fafc] focus:bg-white resize-none leading-relaxed font-mono h-32"
                     spellCheck={false}
                   />
@@ -362,6 +385,7 @@ export default function ExamPlayer({
                 <ChevronRight className="h-4 w-4" />
               </button>
             </div>
+          </div>
           </div>
         </div>
       </div>

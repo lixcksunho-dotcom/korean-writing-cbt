@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import * as PortOne from '@portone/browser-sdk/v2'
+import { trackEvent } from '@/lib/analytics/trackEvent'
 
 type Method = 'card' | 'easypay'
 
@@ -54,6 +55,7 @@ export default function PaymentButton({
 
     setError('')
     setLoading(method)
+    trackEvent('payment_started', method)  // 결제창 진입(체크아웃 인텐트) 전환 측정
     try {
       const paymentId = `sub-${crypto.randomUUID()}`
 

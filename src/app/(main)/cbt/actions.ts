@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 import { getActiveSubscription } from '@/lib/subscription'
 import { consumeAiTrial, FREE_AI_TRIAL } from '@/lib/aiTrial'
 import { enforcePaidUsage, recordPaidGrade } from '@/lib/antiSharing'
+import { trackServerEvent } from '@/lib/analytics/trackServerEvent'
 
 export type EssayGrade = {
   score: number
@@ -109,8 +110,12 @@ export async function gradeExamEssay(
     .eq('id', answerRow.id)
 
   // 새로 채점에 성공한 경우에만 무료 체험 1회 차감(구독자는 차감 안 함)
-  if (usingTrial) await consumeAiTrial(user.id, trialUsed)
-  else await recordPaidGrade(user.id) // 구독자 일일 사용량 기록
+  if (usingTrial) {
+    await consumeAiTrial(user.id, trialUsed)
+    await trackServerEvent('ai_trial_used', user.id, `used_${trialUsed + 1}/${FREE_AI_TRIAL}`)
+  } else {
+    await recordPaidGrade(user.id) // 구독자 일일 사용량 기록
+  }
   return result
 }
 
@@ -242,4 +247,7 @@ export async function submitSession(
     .from('quiz_sessions')
     .update({ completed_at: new Date().toISOString(), score, total: autoGradable.length })
     .eq('id', sessionId)
+
+  // 퍼널: 모의고사 완료(가입→첫시험→체험→구독 상단 퍼널 측정용)
+  await trackServerEvent('exam_completed', user.id, `${session.year}-${session.round}`)
 }

@@ -56,6 +56,31 @@ export default async function CbtPage() {
         </p>
       </div>
 
+      {!hasSub && uniqueExams.length > 0 && (
+        <div className="mb-6 rounded-2xl border border-amber-200 bg-gradient-to-br from-[#fffbeb] to-[#fff7ed] p-5 sm:p-6">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
+            <div className="flex-1">
+              <div className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-700 bg-amber-100 px-2.5 py-1 rounded-full mb-2">
+                <Trophy className="h-3.5 w-3.5" /> 이용권 안내
+              </div>
+              <h2 className="text-lg font-black text-[#0f172a] mb-1.5">{FREE_EXAM_ROUNDS}회 무료로 풀어보고, 마음에 들면 무제한으로</h2>
+              <p className="text-sm text-[#475569] leading-relaxed mb-2">
+                이용권을 열면 <b className="text-[#1e3a5f]">모든 회차 무제한 풀이</b>, <b className="text-[#1e3a5f]">서술형 AI 채점·첨삭</b>, <b className="text-[#1e3a5f]">AI 예상 점수·합격 등급 판정</b>, <b className="text-[#1e3a5f]">영역별 약점 분석</b>까지 이어집니다.
+              </p>
+              <p className="text-xs text-[#64748b]">
+                5,500원 · 30일 무제한 · <b>1회 결제(자동결제 없음)</b> · 7일 내 미사용 전액 환불
+              </p>
+            </div>
+            <Link
+              href="/subscribe"
+              className="btn-primary shrink-0 flex items-center justify-center gap-1.5 text-white font-bold py-3 px-6 rounded-xl text-sm"
+            >
+              이용권 보기 <ChevronRight className="h-4 w-4" />
+            </Link>
+          </div>
+        </div>
+      )}
+
       {uniqueExams.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 text-center bg-white rounded-2xl border border-[#e2e8f0]">
           <div className="bg-[#f1f5f9] p-5 rounded-2xl mb-4">

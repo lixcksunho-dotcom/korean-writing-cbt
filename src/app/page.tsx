@@ -39,6 +39,34 @@ const benefits = [
   "학습 기록 대시보드",
 ];
 
+// 구매 망설임을 줄이는 FAQ(전환↑) + FAQPage 구조화데이터(검색 리치결과)로 함께 사용.
+const FAQS = [
+  {
+    q: "한국실용글쓰기, 독학으로 합격할 수 있나요?",
+    a: "네. 유형별 집중 연습으로 약점을 잡고, 서술형은 AI 채점·첨삭으로 혼자서도 피드백을 받고, 실전 CBT 모의고사로 시험 감각까지 익히면 학원 없이도 충분히 합격할 수 있어요.",
+  },
+  {
+    q: "모의고사는 정말 무료인가요?",
+    a: "네. CBT 실전 모의고사 풀이는 무료이고, 서술형 AI 첨삭도 가입하면 무료로 체험할 수 있어요. 먼저 써보고 결정하세요.",
+  },
+  {
+    q: "결제는 어떻게 되나요? 자동결제인가요?",
+    a: "5,500원 1회 결제로 30일 무제한이에요. 매달 빠져나가는 정기 구독(자동결제)이 아니라, 필요할 때 한 번만 결제하는 방식입니다.",
+  },
+  {
+    q: "서술형은 혼자 채점하기 어려운데요?",
+    a: "AI가 조건 충족 여부, 맞춤법·문장, 논리 구성을 분석해 항목별 점수와 첨삭을 바로 제공해요. 채점해줄 사람이 없어도 고쳐 쓰며 실력을 올릴 수 있어요.",
+  },
+  {
+    q: "실제 시험과 똑같이 연습할 수 있나요?",
+    a: "실제 CBT 환경 그대로 원고지 입력, 서술형 작성, 시간 제한까지 시험장처럼 연습할 수 있어요. 종이로만 공부하다 화면이 낯설어 실수하는 걸 막아줘요.",
+  },
+  {
+    q: "환불이 되나요?",
+    a: "환불 정책에 따라 처리돼요. 자세한 내용은 하단의 환불 정책 페이지에서 확인하실 수 있어요.",
+  },
+];
+
 export default async function HomePage() {
   // 쿠키 없는 anon 클라이언트 — 쿠키 의존이 없어야 ISR 정적 캐시가 적용돼 홈이 빠르다.
   // (공개 데이터만 조회: 후기/문항 수). 쿠키 기반 createClient는 매 요청 동적 렌더라 7초+ 걸림.
@@ -287,6 +315,46 @@ export default async function HomePage() {
           <ReviewMarquee reviews={reviews!} />
         </section>
       )}
+
+      {/* 자주 묻는 질문 */}
+      <section className="py-20 px-4 bg-[#f8fafc]">
+        <div className="max-w-3xl mx-auto">
+          <div className="text-center mb-10">
+            <h2 className="text-3xl font-black text-[#0f172a] mb-3 tracking-tight">자주 묻는 질문</h2>
+            <p className="text-[#64748b]">궁금한 점을 빠르게 확인하세요</p>
+          </div>
+          <div className="space-y-3">
+            {FAQS.map((f) => (
+              <details
+                key={f.q}
+                className="group bg-white rounded-xl border border-[#e2e8f0] px-5 py-4 [&_summary::-webkit-details-marker]:hidden"
+              >
+                <summary className="flex items-center justify-between cursor-pointer list-none font-bold text-[#0f172a] text-base">
+                  <span>{f.q}</span>
+                  <span className="ml-3 text-[#94a3b8] text-2xl leading-none transition-transform group-open:rotate-45">+</span>
+                </summary>
+                <p className="mt-3 text-[#475569] text-sm leading-relaxed">{f.a}</p>
+              </details>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ 구조화데이터(검색 리치결과) */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            mainEntity: FAQS.map((f) => ({
+              "@type": "Question",
+              name: f.q,
+              acceptedAnswer: { "@type": "Answer", text: f.a },
+            })),
+          }),
+        }}
+      />
 
       {/* CTA */}
       <section className="py-20 px-4 relative overflow-hidden">

@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { XCircle } from 'lucide-react'
+import EventTracker from '@/components/analytics/EventTracker'
 
 export default async function FailPage({
   searchParams,
@@ -10,6 +11,7 @@ export default async function FailPage({
 
   return (
     <div className="max-w-md mx-auto py-16 text-center">
+      <EventTracker event="payment_fail" meta={code || undefined} />
       <div className="bg-white rounded-2xl border border-[#e2e8f0] shadow-[0_4px_20px_rgba(15,31,61,0.08)] p-10">
         <div className="w-20 h-20 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-5">
           <XCircle className="h-10 w-10 text-red-400" />

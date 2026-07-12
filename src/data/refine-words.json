@@ -1,1436 +1,1501 @@
 [
-{
-"category": "맞춤법/어휘",
-"wrong": "의심스런",
-"correct": "의심스러운"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "있읍니다",
-"correct": "있습니다"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "동·식물",
-"correct": "동식물"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "승·하차",
-"correct": "승하차"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "갯수",
-"correct": "개수"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "2000.9.7",
-"correct": "2000. 9. 7."
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "10. 28~29간",
-"correct": "10. 28.~29.에"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "2000.11.2",
-"correct": "2000. 11. 2."
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "2000.1.4",
-"correct": "2000. 1. 4."
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "향토 기업으로써",
-"correct": "향토 기업으로서",
-"note": "자격"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "신분으로써",
-"correct": "신분으로서",
-"note": "자격"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "삼가하여 주십시오",
-"correct": "삼가 주십시오"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "그리고,",
-"correct": "그리고"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "목표 년도",
-"correct": "목표 연도"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "년수",
-"correct": "연수"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "승인률",
-"correct": "승인율"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "실업율",
-"correct": "실업률"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "\"되었다\"고",
-"correct": "\"되었다\"라고"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "1/2 가량은",
-"correct": "1/2가량은"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "10. 25.(금) 까지",
-"correct": "10. 25.(금)까지"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "10월초",
-"correct": "10월 초"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "10천㎡미만",
-"correct": "1만㎡ 미만"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "10천㎡이상",
-"correct": "1만㎡ 이상"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "15세이상",
-"correct": "15세 이상"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "1년이상",
-"correct": "1년 이상"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "2000년말",
-"correct": "2000년 말"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "20일 경",
-"correct": "20일경"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "하순 경",
-"correct": "하순경"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "23만개",
-"correct": "23만 개"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "2개월 간",
-"correct": "2개월간"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "30%미만",
-"correct": "30% 미만"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "3년이하",
-"correct": "3년 이하"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "3일내",
-"correct": "3일 내"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "3일자로",
-"correct": "3일 자로"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "3천명",
-"correct": "3천 명"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "4개부처",
-"correct": "4개 부처"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "50%이상",
-"correct": "50% 이상"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "50만명",
-"correct": "50만 명"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "50여년간",
-"correct": "50여 년간"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "50여회",
-"correct": "50여 회"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "5천억원",
-"correct": "5천억 원"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "60여개국 3,000여명",
-"correct": "60여 개국 3,000여 명"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "6시30분",
-"correct": "6시 30분"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "각1부",
-"correct": "각 1부"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "간소화 하게",
-"correct": "간소화하게"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "개시 할",
-"correct": "개시할"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "경기전",
-"correct": "경기 전"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "경제팀내",
-"correct": "경제 팀 내"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "계약 체결후",
-"correct": "계약 체결 후"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "계약시",
-"correct": "계약 시"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "계획인 바",
-"correct": "계획인바"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "고용및",
-"correct": "고용 및"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "고용안내",
-"correct": "고용 안내"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "고용현황",
-"correct": "고용 현황"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "공모건",
-"correct": "공모 건"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "구비서류",
-"correct": "구비 서류"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "귀주재국",
-"correct": "귀 주재국"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "그 동안",
-"correct": "그동안"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "근거 : ○○○○부",
-"correct": "근거: ○○○○부"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "근무지역",
-"correct": "근무 지역"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "기업과 함께 하는",
-"correct": "기업과 함께하는"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "기재착오",
-"correct": "기재 착오"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "기한내",
-"correct": "기한 내"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "기호 순에 따라",
-"correct": "기호순에 따라"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "김처장",
-"correct": "김 처장"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "대통령간",
-"correct": "대통령 간"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "더이상은",
-"correct": "더 이상은"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "두가지",
-"correct": "두 가지"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "매세대",
-"correct": "매 세대"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "모집공고",
-"correct": "모집 공고"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "문서 입니다.",
-"correct": "문서입니다."
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "문어발 식",
-"correct": "문어발식"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "받지 못 하셨다면",
-"correct": "받지 못하셨다면"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "발사 될",
-"correct": "발사될"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "발생시",
-"correct": "발생 시"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "발전시키는데",
-"correct": "발전시키는 데"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "발전해 온 바",
-"correct": "발전해 온바"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "발행시간",
-"correct": "발행 시간"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "밤 부터",
-"correct": "밤부터"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "방과후",
-"correct": "방과 후"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "배치전",
-"correct": "배치 전"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "법적기준",
-"correct": "법적 기준"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "변동없음",
-"correct": "변동 없음"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "사용가능한",
-"correct": "사용 가능한, 사용할 수 있는"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "사용중인",
-"correct": "사용 중인"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "선양활동 뿐만아니라",
-"correct": "선양 활동뿐만 아니라"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "소득산정시",
-"correct": "소득 산정 시"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "소비자물가",
-"correct": "소비자 물가"
-},
-{
-"category": "최신 순화어",
-"wrong": "기보증 금액",
-"correct": "기존 보증 금액"
-},
-{
-"category": "최신 순화어",
-"wrong": "기여하는",
-"correct": "이바지하는"
-},
-{
-"category": "최신 순화어",
-"wrong": "기일을 엄수하여",
-"correct": "날짜를 지켜"
-},
-{
-"category": "맞춤법/어휘",
-"wrong": "꼼꼼이",
-"correct": "꼼꼼히"
-},
-{
-"category": "외래어",
-"wrong": "다운로드",
-"correct": "내려받기"
-},
-{
-"category": "한자어",
-"wrong": "당초",
-"correct": "기존"
-},
-{
-"category": "최신 순화어",
-"wrong": "대외언론",
-"correct": "대외 언론"
-},
-{
-"category": "한자어",
-"wrong": "도출",
-"correct": "이끌어 냄"
-},
-{
-"category": "한자어",
-"wrong": "동 건은",
-"correct": "이 건은"
-},
-{
-"category": "최신 순화어",
-"wrong": "동 사업의 일환으로",
-"correct": "이러한 사업의 하나로"
-},
-{
-"category": "한자어",
-"wrong": "동봉",
-"correct": "함께 보냄"
-},
-{
-"category": "외래어",
-"wrong": "랜섬웨어",
-"correct": "금품 요구 악성 프로그램"
-},
-{
-"category": "외래어",
-"wrong": "로그인",
-"correct": "회원 들어가기"
-},
-{
-"category": "외래어",
-"wrong": "로드맵",
-"correct": "이행안"
-},
-{
-"category": "외래어",
-"wrong": "리더십",
-"correct": "지도력, 통솔력"
-},
-{
-"category": "일본어 투 용어",
-"wrong": "마대",
-"correct": "포대, 자루"
-},
-{
-"category": "외래어",
-"wrong": "마스터플랜",
-"correct": "종합 계획, 기본 설계"
-},
-{
-"category": "외래어",
-"wrong": "마이스터",
-"correct": "전문가"
-},
-{
-"category": "외래어",
-"wrong": "매뉴얼",
-"correct": "설명서, 안내서, 지침"
-},
-{
-"category": "한자어",
-"wrong": "면밀히",
-"correct": "자세히"
-},
-{
-"category": "외래어",
-"wrong": "모니터링하고",
-"correct": "관찰하고, 지켜보고"
-},
-{
-"category": "외래어",
-"wrong": "모델",
-"correct": "본보기, 모형"
-},
-{
-"category": "한자어",
-"wrong": "무대에 반입",
-"correct": "무대에 들어오거나"
-},
-{
-"category": "한자어",
-"wrong": "반입되는",
-"correct": "들어오는"
-},
-{
-"category": "한자어",
-"wrong": "무대에서 반출하려면",
-"correct": "무대에서 내가려면"
-},
-{
-"category": "최신 순화어",
-"wrong": "배터리가 내장되어 있습니다.",
-"correct": "전지가 들어 있습니다."
-},
-{
-"category": "한자어",
-"wrong": "복무규정에 의거함",
-"correct": "복무규정에 따름"
-},
-{
-"category": "외래어",
-"wrong": "부스",
-"correct": "관, 공간"
-},
-{
-"category": "한자어",
-"wrong": "부합하는",
-"correct": "맞는, 들어맞는"
-},
-{
-"category": "한자어",
-"wrong": "부합하도록",
-"correct": "맞도록"
-},
-{
-"category": "외래어",
-"wrong": "브랜드 슬로건",
-"correct": "대표 구호, 홍보 문구"
-},
-{
-"category": "외래어",
-"wrong": "브레인스토밍",
-"correct": "난상 토론, 발상 모으기"
-},
-{
-"category": "외래어",
-"wrong": "브로슈어",
-"correct": "안내서, 소책자"
-},
-{
-"category": "외래어",
-"wrong": "비전",
-"correct": "전망"
-},
-{
-"category": "외래어",
-"wrong": "비즈니스",
-"correct": "사업"
-},
-{
-"category": "외래어",
-"wrong": "비즈니스벨트",
-"correct": "사업 지대"
-},
-{
-"category": "한자어",
-"wrong": "사료됨",
-"correct": "생각함"
-},
-{
-"category": "최신 순화어",
-"wrong": "산출 내역서",
-"correct": "산출 명세서"
-},
-{
-"category": "한자어",
-"wrong": "상기",
-"correct": "위의, 위에 적은"
-},
-{
-"category": "한자어",
-"wrong": "상이한",
-"correct": "서로 다른"
-},
-{
-"category": "한자어",
-"wrong": "소관",
-"correct": "담당"
-},
-{
-"category": "한자어",
-"wrong": "소명하고",
-"correct": "밝히고"
-},
-{
-"category": "최신 순화어",
-"wrong": "소정양식",
-"correct": "소정 양식, 정해진 양식"
-},
-{
-"category": "외래어",
-"wrong": "솔라시티",
-"correct": "햇살 도시, 태양 에너지 도시"
-},
-{
-"category": "한자어",
-"wrong": "송부했다고",
-"correct": "보냈다고"
-},
-{
-"category": "한자어",
-"wrong": "수납한 후",
-"correct": "받은 다음"
-},
-{
-"category": "한자어",
-"wrong": "수여하고자",
-"correct": "주고자"
-},
-{
-"category": "최신 순화어",
-"wrong": "대형 스크린을 통해",
-"correct": "대형 화면을 통해"
-},
-{
-"category": "외래어",
-"wrong": "거버넌스",
-"correct": "정책, 행정, 관리, 민관 협력, 협치"
-},
-{
-"category": "외래어",
-"wrong": "규제 프리존",
-"correct": "규제 청정 지역, 규제 자유 구역, 규제 완화 지역"
-},
-{
-"category": "외래어",
-"wrong": "규제 샌드박스",
-"correct": "규제 유예, 규제 유예 제도"
-},
-{
-"category": "외래어",
-"wrong": "니즈",
-"correct": "수요, 바람"
-},
-{
-"category": "외래어",
-"wrong": "데모데이",
-"correct": "시연회"
-},
-{
-"category": "외래어",
-"wrong": "드론",
-"correct": "무인기"
-},
-{
-"category": "외래어",
-"wrong": "라운드 테이블",
-"correct": "원탁회의"
-},
-{
-"category": "외래어",
-"wrong": "롤모델",
-"correct": "본보기, 본보기상"
-},
-{
-"category": "외래어",
-"wrong": "리스크",
-"correct": "손실 우려, 손실 위험, 악재"
-},
-{
-"category": "외래어",
-"wrong": "매칭",
-"correct": "연결, 맞춤, 연계, 대응"
-},
-{
-"category": "외래어",
-"wrong": "메가트렌드",
-"correct": "대세, 거대 물결"
-},
-{
-"category": "외래어",
-"wrong": "모멘텀",
-"correct": "전환 국면, 동력, 추동력"
-},
-{
-"category": "외래어",
-"wrong": "바우처",
-"correct": "이용권, 상품권"
-},
-{
-"category": "외래어",
-"wrong": "브라운 백 미팅",
-"correct": "도시락 토론회, 도시락 모임"
-},
-{
-"category": "외래어",
-"wrong": "브로슈어",
-"correct": "안내서, 소책자"
-},
-{
-"category": "외래어",
-"wrong": "세션",
-"correct": "부, 시간, 분과, 작업 시간"
-},
-{
-"category": "외래어",
-"wrong": "스크린 도어",
-"correct": "안전문"
-},
-{
-"category": "외래어",
-"wrong": "스타트업",
-"correct": "새싹 기업, 창업 초기 기업, 신생 기업"
-},
-{
-"category": "외래어",
-"wrong": "싱크 탱크",
-"correct": "두뇌 집단, 참모 집단"
-},
-{
-"category": "외래어",
-"wrong": "아웃리치",
-"correct": "현장 지원 활동, 현장 원조 활동"
-},
-{
-"category": "외래어",
-"wrong": "아카이브",
-"correct": "자료 보관소, 자료 저장소, 기록 보관소"
-},
-{
-"category": "외래어",
-"wrong": "액션 플랜",
-"correct": "실행 계획, 세부 계획"
-},
-{
-"category": "외래어",
-"wrong": "어젠다",
-"correct": "의제, 가치관"
-},
-{
-"category": "외래어",
-"wrong": "오피니언 리더",
-"correct": "여론 주도자, 여론 주도층"
-},
-{
-"category": "외래어",
-"wrong": "원 스트라이크 아웃",
-"correct": "즉시 퇴출, 즉시 퇴출제"
-},
-{
-"category": "외래어",
-"wrong": "이니셔티브",
-"correct": "주도권, 구상, 발의"
-},
-{
-"category": "외래어",
-"wrong": "제로화",
-"correct": "없애기, 줄이기, 예방"
-},
-{
-"category": "외래어",
-"wrong": "쿼터",
-"correct": "한도량, 수출입 한도량"
-},
-{
-"category": "외래어",
-"wrong": "클러스터",
-"correct": "산학 협력 지구, 연합 지구, 협력 단지"
-},
-{
-"category": "외래어",
-"wrong": "킥오프 회의",
-"correct": "첫 회의, 첫 기획 회의"
-},
-{
-"category": "외래어",
-"wrong": "태스크 포스",
-"correct": "특별팀, 전담팀, 전담 조직"
-},
-{
-"category": "외래어",
-"wrong": "테스트 베드",
-"correct": "가늠터, 시험장, 시험대"
-},
-{
-"category": "외래어",
-"wrong": "투 트랙",
-"correct": "양면, 두 갈래, 이원화"
-},
-{
-"category": "외래어",
-"wrong": "팸 투어",
-"correct": "사전 답사 여행, 홍보 여행"
-},
-{
-"category": "외래어",
-"wrong": "인력 풀",
-"correct": "인력 자원, 인력 은행"
-},
-{
-"category": "외래어",
-"wrong": "허브",
-"correct": "중심, 중심지, 거점"
-},
-{
-"category": "외래어",
-"wrong": "AI",
-"correct": "인공 지능, 조류 인플루엔자"
-},
-{
-"category": "외래어",
-"wrong": "B2B",
-"correct": "기업 간 거래"
-},
-{
-"category": "외래어",
-"wrong": "BI",
-"correct": "브랜드 정체성"
-},
-{
-"category": "외래어",
-"wrong": "G20",
-"correct": "주요 20개국"
-},
-{
-"category": "외래어",
-"wrong": "G2G",
-"correct": "정부 간 거래"
-},
-{
-"category": "외래어",
-"wrong": "ICT",
-"correct": "정보 통신 기술"
-},
-{
-"category": "외래어",
-"wrong": "IoT",
-"correct": "사물 인터넷"
-},
-{
-"category": "외래어",
-"wrong": "IR",
-"correct": "기업 설명회, 기업 투자 설명회"
-},
-{
-"category": "외래어",
-"wrong": "IT",
-"correct": "정보 기술"
-},
-{
-"category": "외래어",
-"wrong": "MOU",
-"correct": "업무 협정, 업무 협약, 양해 각서"
-},
-{
-"category": "외래어",
-"wrong": "O2O",
-"correct": "온오프라인 연계"
-},
-{
-"category": "외래어",
-"wrong": "ODA",
-"correct": "공적 개발 원조, 정부 개발 원조"
-},
-{
-"category": "외래어",
-"wrong": "R&D",
-"correct": "연구 개발"
-},
-{
-"category": "한자어",
-"wrong": "가료",
-"correct": "치료, 고침, 병 고침"
-},
-{
-"category": "한자어",
-"wrong": "가용",
-"correct": "쓸 수 있는"
-},
-{
-"category": "한자어",
-"wrong": "개산",
-"correct": "어림셈, 대략 계산"
-},
-{
-"category": "한자어",
-"wrong": "거양하다",
-"correct": "들다, 올리다, 높이다, 드높이다"
-},
-{
-"category": "한자어",
-"wrong": "계첩",
-"correct": "내붙임, 게시, 걸음, 내걸음"
-},
-{
-"category": "한자어",
-"wrong": "견양",
-"correct": "서식, 보기, 본보기"
-},
-{
-"category": "한자어",
-"wrong": "계류하다",
-"correct": "매어 두다, 붙들어 매다"
-},
-{
-"category": "한자어",
-"wrong": "계리",
-"correct": "회계 처리"
-},
-{
-"category": "한자어",
-"wrong": "금명간",
-"correct": "오늘내일 사이"
-},
-{
-"category": "한자어",
-"wrong": "금번",
-"correct": "이번"
-},
-{
-"category": "한자어",
-"wrong": "금회",
-"correct": "이번"
-},
-{
-"category": "한자어",
-"wrong": "내구 연한",
-"correct": "사용 가능 햇수, 견딜 햇수"
-},
-{
-"category": "한자어",
-"wrong": "내용 연수",
-"correct": "사용 연한, 사용 가능 연수"
-},
-{
-"category": "한자어",
-"wrong": "단차",
-"correct": "고저 차, 높이 차이"
-},
-{
-"category": "한자어",
-"wrong": "당해",
-"correct": "그"
-},
-{
-"category": "한자어",
-"wrong": "동년",
-"correct": "같은 해"
-},
-{
-"category": "한자어",
-"wrong": "동일",
-"correct": "같은 날, 그날"
-},
-{
-"category": "한자어",
-"wrong": "동법",
-"correct": "같은 법, 같은 방법"
-},
-{
-"category": "한자어",
-"wrong": "대장",
-"correct": "장부"
-},
-{
-"category": "한자어",
-"wrong": "별건",
-"correct": "다른 건, 딴 건"
-},
-{
-"category": "한자어",
-"wrong": "부락",
-"correct": "마을"
-},
-{
-"category": "한자어",
-"wrong": "불상",
-"correct": "알 수 없음"
-},
-{
-"category": "한자어",
-"wrong": "불시에",
-"correct": "갑자기, 예고 없이"
-},
-{
-"category": "한자어",
-"wrong": "불입하다",
-"correct": "내다, 납입하다"
-},
-{
-"category": "한자어",
-"wrong": "불출",
-"correct": "내줌"
-},
-{
-"category": "한자어",
-"wrong": "성료",
-"correct": "성공적으로 마침, 성공적으로 끝남"
-},
-{
-"category": "한자어",
-"wrong": "수범 사례",
-"correct": "모범 사례, 잘된 사례"
-},
-{
-"category": "한자어",
-"wrong": "수의 시담",
-"correct": "가격 협의"
-},
-{
-"category": "한자어",
-"wrong": "시간장치",
-"correct": "잠금장치, 자물쇠 장치"
-},
-{
-"category": "한자어",
-"wrong": "양도양수",
-"correct": "주고받음"
-},
-{
-"category": "한자어",
-"wrong": "양생",
-"correct": "굳히기"
-},
-{
-"category": "한자어",
-"wrong": "여입 결의",
-"correct": "회수 결정"
-},
-{
-"category": "한자어",
-"wrong": "예가",
-"correct": "예정 가격"
-},
-{
-"category": "한자어",
-"wrong": "예산 지변 과목",
-"correct": "예산 과목"
-},
-{
-"category": "한자어",
-"wrong": "예찰",
-"correct": "미리 살피기"
-},
-{
-"category": "한자어",
-"wrong": "이격",
-"correct": "어긋남, 벌림"
-},
-{
-"category": "한자어",
-"wrong": "익일",
-"correct": "이튿날, 다음 날"
-},
-{
-"category": "한자어",
-"wrong": "일부인",
-"correct": "날짜 도장"
-},
-{
-"category": "한자어",
-"wrong": "임석",
-"correct": "현장 참석"
-},
-{
-"category": "한자어",
-"wrong": "자동 제세동기",
-"correct": "자동 심장 충격기"
-},
-{
-"category": "한자어",
-"wrong": "적기",
-"correct": "알맞은 시기, 제때, 제철"
-},
-{
-"category": "한자어",
-"wrong": "적의 조치",
-"correct": "알맞게 처리, 적절한 조치"
-},
-{
-"category": "한자어",
-"wrong": "지득하다",
-"correct": "알게 되다, 알다"
-},
-{
-"category": "한자어",
-"wrong": "차년도",
-"correct": "다음 해, 다음 연도"
-},
-{
-"category": "한자어",
-"wrong": "채납",
-"correct": "받음, 기부받음"
-},
-{
-"category": "한자어",
-"wrong": "첨두시",
-"correct": "가장 붐빌 때"
-},
-{
-"category": "한자어",
-"wrong": "초도 순시",
-"correct": "첫 방문, 첫 둘러보기"
-},
-{
-"category": "한자어",
-"wrong": "취명하다",
-"correct": "울리다",
-"note": "경보, 사이렌 등"
-},
-{
-"category": "한자어",
-"wrong": "패용하다",
-"correct": "달다, 차다",
-"note": "출입증 등"
-},
-{
-"category": "한자어",
-"wrong": "하구언",
-"correct": "강어귀둑, 강어귀의 둑"
-},
-{
-"category": "한자어",
-"wrong": "행선지",
-"correct": "가는 곳"
-},
-{
-"category": "일본어 투 용어",
-"wrong": "망년회",
-"correct": "송년 모임, 송년회"
-},
-{
-"category": "일본어 투 용어",
-"wrong": "견습",
-"correct": "수습"
-},
-{
-"category": "일본어 투 용어",
-"wrong": "모포",
-"correct": "담요"
-},
-{
-"category": "일본어 투 용어",
-"wrong": "고수부지",
-"correct": "둔치"
-},
-{
-"category": "일본어 투 용어",
-"wrong": "구좌",
-"correct": "계좌"
-},
-{
-"category": "일본어 투 용어",
-"wrong": "노견",
-"correct": "갓길"
-},
-{
-"category": "일본어 투 용어",
-"wrong": "가불",
-"correct": "임시 지급"
-},
-{
-"category": "일본어 투 용어",
-"wrong": "가처분",
-"correct": "임시 처분"
-},
-{
-"category": "일본어 투 용어",
-"wrong": "마대",
-"correct": "포대, 자루"
-},
-{
-"category": "일본어 투 용어",
-"wrong": "익일",
-"correct": "다음 날, 이튿날"
-},
-{
-"category": "일본어 투 용어",
-"wrong": "거래선",
-"correct": "거래처"
-},
-{
-"category": "일본어 투 용어",
-"wrong": "종지부",
-"correct": "마침표"
-},
-{
-"category": "일본어 투 용어",
-"wrong": "대절",
-"correct": "전세"
-},
-{
-"category": "일본어 투 용어",
-"wrong": "도합",
-"correct": "모두, 합계"
-},
-{
-"category": "일본어 투 용어",
-"wrong": "보합세",
-"correct": "주춤세, 멈춤세"
-},
-{
-"category": "일본어 투 용어",
-"wrong": "불입",
-"correct": "납입"
-},
-{
-"category": "일본어 투 용어",
-"wrong": "고참",
-"correct": "선임, 선임자, 선참"
-},
-{
-"category": "일본어 투 용어",
-"wrong": "다반사",
-"correct": "예삿일, 흔한 일"
-},
-{
-"category": "일본어 투 용어",
-"wrong": "수취인",
-"correct": "받는 이, 받는 사람"
-},
-{
-"category": "일본어 투 용어",
-"wrong": "잔고",
-"correct": "잔액, 잔량"
-},
-{
-"category": "일본어 투 용어",
-"wrong": "모찌",
-"correct": "떡"
-},
-{
-"category": "일본어 투 용어",
-"wrong": "유도리",
-"correct": "여유, 여유분, 융통, 늘품"
-},
-{
-"category": "일본어 투 용어",
-"wrong": "나가리",
-"correct": "무산"
-},
-{
-"category": "일본어 투 용어",
-"wrong": "나와바리",
-"correct": "줄치기, 구획"
-},
-{
-"category": "일본어 투 용어",
-"wrong": "단도리",
-"correct": "채비, 단속"
-},
-{
-"category": "일본어 투 용어",
-"wrong": "땡땡이",
-"correct": "물방울, 물방울 무늬"
-},
-{
-"category": "일본어 투 용어",
-"wrong": "만땅",
-"correct": "가득, 가득 채움"
-},
-{
-"category": "일본어 투 용어",
-"wrong": "쇼부",
-"correct": "겨루기"
-},
-{
-"category": "일본어 투 용어",
-"wrong": "와사비",
-"correct": "고추냉이"
-},
-{
-"category": "일본어 투 용어",
-"wrong": "지라시",
-"correct": "선전지, 낱장 광고"
-},
-{
-"category": "일본어 투 용어",
-"wrong": "가오",
-"correct": "체면, 무게"
-},
-{
-"category": "일본어 투 용어",
-"wrong": "쿠사리",
-"correct": "핀잔"
-},
-{
-"category": "일본어 투 용어",
-"wrong": "노가다",
-"correct": "막노동, 막일"
-},
-{
-"category": "일본어 투 용어",
-"wrong": "대빵",
-"correct": "대장"
-},
-{
-"category": "일본어 투 용어",
-"wrong": "나시",
-"correct": "민소매"
-},
-{
-"category": "일본어 투 용어",
-"wrong": "쓰키다시",
-"correct": "곁들이찬"
-},
-{
-"category": "일본어 투 용어",
-"wrong": "아나고",
-"correct": "붕장어"
-},
-{
-"category": "일본어 투 용어",
-"wrong": "가라",
-"correct": "깃, 옷깃, 칼라"
-},
-{
-"category": "일본어 투 용어",
-"wrong": "간지",
-"correct": "느낌"
-},
-{
-"category": "일본어 투 용어",
-"wrong": "무데뽀",
-"correct": "막무가내"
-},
-{
-"category": "일본어 투 용어",
-"wrong": "잇파이",
-"correct": "가득, 한껏, 많이"
-},
-{
-"category": "일본어 투 용어",
-"wrong": "곤조",
-"correct": "고집, 근성"
-},
-{
-"category": "일본어 투 용어",
-"wrong": "기스",
-"correct": "흠, 흠집"
-},
-{
-"category": "일본어 투 용어",
-"wrong": "분빠이하다",
-"correct": "분배, 노느매기"
-},
-{
-"category": "일본어 투 용어",
-"wrong": "사시미",
-"correct": "생선회"
-},
-{
-"category": "일본어 투 용어",
-"wrong": "와꾸",
-"correct": "틀"
-},
-{
-"category": "일본어 투 용어",
-"wrong": "지리",
-"correct": "맑은탕, 싱건탕"
-},
-{
-"category": "일본어 투 용어",
-"wrong": "보로터지다",
-"correct": "드러나다, 들통나다"
-},
-{
-"category": "일본어 투 용어",
-"wrong": "비까번쩍하다",
-"correct": "번쩍번쩍하다"
-},
-{
-"category": "일본어 투 용어",
-"wrong": "빽사리",
-"correct": "실수, 음 이탈, 헛발질"
-}
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "의심스런",
+    "correct": "의심스러운"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "있읍니다",
+    "correct": "있습니다"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "동·식물",
+    "correct": "동식물"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "승·하차",
+    "correct": "승하차"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "갯수",
+    "correct": "개수"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "2000.9.7",
+    "correct": "2000. 9. 7."
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "10. 28~29간",
+    "correct": "10. 28.~29.에"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "2000.11.2",
+    "correct": "2000. 11. 2."
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "2000.1.4",
+    "correct": "2000. 1. 4."
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "향토 기업으로써",
+    "correct": "향토 기업으로서",
+    "note": "자격"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "신분으로써",
+    "correct": "신분으로서",
+    "note": "자격"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "삼가하여 주십시오",
+    "correct": "삼가 주십시오"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "그리고,",
+    "correct": "그리고"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "목표 년도",
+    "correct": "목표 연도"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "년수",
+    "correct": "연수"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "승인률",
+    "correct": "승인율"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "실업율",
+    "correct": "실업률"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "\"되었다\"고",
+    "correct": "\"되었다\"라고"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "1/2 가량은",
+    "correct": "1/2가량은"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "10. 25.(금) 까지",
+    "correct": "10. 25.(금)까지"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "10월초",
+    "correct": "10월 초"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "10천㎡미만",
+    "correct": "1만㎡ 미만"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "10천㎡이상",
+    "correct": "1만㎡ 이상"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "15세이상",
+    "correct": "15세 이상"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "1년이상",
+    "correct": "1년 이상"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "2000년말",
+    "correct": "2000년 말"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "20일 경",
+    "correct": "20일경"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "하순 경",
+    "correct": "하순경"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "23만개",
+    "correct": "23만 개"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "2개월 간",
+    "correct": "2개월간"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "30%미만",
+    "correct": "30% 미만"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "3년이하",
+    "correct": "3년 이하"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "3일내",
+    "correct": "3일 내"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "3일자로",
+    "correct": "3일 자로"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "3천명",
+    "correct": "3천 명"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "4개부처",
+    "correct": "4개 부처"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "50%이상",
+    "correct": "50% 이상"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "50만명",
+    "correct": "50만 명"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "50여년간",
+    "correct": "50여 년간"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "50여회",
+    "correct": "50여 회"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "5천억원",
+    "correct": "5천억 원"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "60여개국 3,000여명",
+    "correct": "60여 개국 3,000여 명"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "6시30분",
+    "correct": "6시 30분"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "각1부",
+    "correct": "각 1부"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "간소화 하게",
+    "correct": "간소화하게"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "개시 할",
+    "correct": "개시할"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "경기전",
+    "correct": "경기 전"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "경제팀내",
+    "correct": "경제 팀 내"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "계약 체결후",
+    "correct": "계약 체결 후"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "계약시",
+    "correct": "계약 시"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "계획인 바",
+    "correct": "계획인바"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "고용및",
+    "correct": "고용 및"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "고용안내",
+    "correct": "고용 안내"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "고용현황",
+    "correct": "고용 현황"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "공모건",
+    "correct": "공모 건"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "구비서류",
+    "correct": "구비 서류"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "귀주재국",
+    "correct": "귀 주재국"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "그 동안",
+    "correct": "그동안"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "근거 : ○○○○부",
+    "correct": "근거: ○○○○부"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "근무지역",
+    "correct": "근무 지역"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "기업과 함께 하는",
+    "correct": "기업과 함께하는"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "기재착오",
+    "correct": "기재 착오"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "기한내",
+    "correct": "기한 내"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "기호 순에 따라",
+    "correct": "기호순에 따라"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "김처장",
+    "correct": "김 처장"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "대통령간",
+    "correct": "대통령 간"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "더이상은",
+    "correct": "더 이상은"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "두가지",
+    "correct": "두 가지"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "매세대",
+    "correct": "매 세대"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "모집공고",
+    "correct": "모집 공고"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "문서 입니다.",
+    "correct": "문서입니다."
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "문어발 식",
+    "correct": "문어발식"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "받지 못 하셨다면",
+    "correct": "받지 못하셨다면"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "발사 될",
+    "correct": "발사될"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "발생시",
+    "correct": "발생 시"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "발전시키는데",
+    "correct": "발전시키는 데"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "발전해 온 바",
+    "correct": "발전해 온바"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "발행시간",
+    "correct": "발행 시간"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "밤 부터",
+    "correct": "밤부터"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "방과후",
+    "correct": "방과 후"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "배치전",
+    "correct": "배치 전"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "법적기준",
+    "correct": "법적 기준"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "변동없음",
+    "correct": "변동 없음"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "사용가능한",
+    "correct": "사용 가능한, 사용할 수 있는"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "사용중인",
+    "correct": "사용 중인"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "선양활동 뿐만아니라",
+    "correct": "선양 활동뿐만 아니라"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "소득산정시",
+    "correct": "소득 산정 시"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "소비자물가",
+    "correct": "소비자 물가"
+  },
+  {
+    "category": "최신 순화어",
+    "wrong": "기보증 금액",
+    "correct": "기존 보증 금액"
+  },
+  {
+    "category": "최신 순화어",
+    "wrong": "기여하는",
+    "correct": "이바지하는"
+  },
+  {
+    "category": "최신 순화어",
+    "wrong": "기일을 엄수하여",
+    "correct": "날짜를 지켜"
+  },
+  {
+    "category": "맞춤법/어휘",
+    "wrong": "꼼꼼이",
+    "correct": "꼼꼼히"
+  },
+  {
+    "category": "외래어",
+    "wrong": "다운로드",
+    "correct": "내려받기"
+  },
+  {
+    "category": "한자어",
+    "wrong": "당초",
+    "correct": "기존"
+  },
+  {
+    "category": "최신 순화어",
+    "wrong": "대외언론",
+    "correct": "대외 언론"
+  },
+  {
+    "category": "한자어",
+    "wrong": "도출",
+    "correct": "이끌어 냄"
+  },
+  {
+    "category": "한자어",
+    "wrong": "동 건은",
+    "correct": "이 건은"
+  },
+  {
+    "category": "최신 순화어",
+    "wrong": "동 사업의 일환으로",
+    "correct": "이러한 사업의 하나로"
+  },
+  {
+    "category": "한자어",
+    "wrong": "동봉",
+    "correct": "함께 보냄"
+  },
+  {
+    "category": "외래어",
+    "wrong": "랜섬웨어",
+    "correct": "금품 요구 악성 프로그램"
+  },
+  {
+    "category": "외래어",
+    "wrong": "로그인",
+    "correct": "회원 들어가기"
+  },
+  {
+    "category": "외래어",
+    "wrong": "로드맵",
+    "correct": "이행안"
+  },
+  {
+    "category": "외래어",
+    "wrong": "리더십",
+    "correct": "지도력, 통솔력"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "마대",
+    "correct": "포대, 자루"
+  },
+  {
+    "category": "외래어",
+    "wrong": "마스터플랜",
+    "correct": "종합 계획, 기본 설계"
+  },
+  {
+    "category": "외래어",
+    "wrong": "마이스터",
+    "correct": "전문가"
+  },
+  {
+    "category": "외래어",
+    "wrong": "매뉴얼",
+    "correct": "설명서, 안내서, 지침"
+  },
+  {
+    "category": "한자어",
+    "wrong": "면밀히",
+    "correct": "자세히"
+  },
+  {
+    "category": "외래어",
+    "wrong": "모니터링하고",
+    "correct": "관찰하고, 지켜보고"
+  },
+  {
+    "category": "외래어",
+    "wrong": "모델",
+    "correct": "본보기, 모형"
+  },
+  {
+    "category": "한자어",
+    "wrong": "무대에 반입",
+    "correct": "무대에 들어오거나"
+  },
+  {
+    "category": "한자어",
+    "wrong": "반입되는",
+    "correct": "들어오는"
+  },
+  {
+    "category": "한자어",
+    "wrong": "무대에서 반출하려면",
+    "correct": "무대에서 내가려면"
+  },
+  {
+    "category": "최신 순화어",
+    "wrong": "배터리가 내장되어 있습니다.",
+    "correct": "전지가 들어 있습니다."
+  },
+  {
+    "category": "한자어",
+    "wrong": "복무규정에 의거함",
+    "correct": "복무규정에 따름"
+  },
+  {
+    "category": "외래어",
+    "wrong": "부스",
+    "correct": "관, 공간"
+  },
+  {
+    "category": "한자어",
+    "wrong": "부합하는",
+    "correct": "맞는, 들어맞는"
+  },
+  {
+    "category": "한자어",
+    "wrong": "부합하도록",
+    "correct": "맞도록"
+  },
+  {
+    "category": "외래어",
+    "wrong": "브랜드 슬로건",
+    "correct": "대표 구호, 홍보 문구"
+  },
+  {
+    "category": "외래어",
+    "wrong": "브레인스토밍",
+    "correct": "난상 토론, 발상 모으기"
+  },
+  {
+    "category": "외래어",
+    "wrong": "브로슈어",
+    "correct": "안내서, 소책자"
+  },
+  {
+    "category": "외래어",
+    "wrong": "비전",
+    "correct": "전망"
+  },
+  {
+    "category": "외래어",
+    "wrong": "비즈니스",
+    "correct": "사업"
+  },
+  {
+    "category": "외래어",
+    "wrong": "비즈니스벨트",
+    "correct": "사업 지대"
+  },
+  {
+    "category": "한자어",
+    "wrong": "사료됨",
+    "correct": "생각함"
+  },
+  {
+    "category": "최신 순화어",
+    "wrong": "산출 내역서",
+    "correct": "산출 명세서"
+  },
+  {
+    "category": "한자어",
+    "wrong": "상기",
+    "correct": "위의, 위에 적은"
+  },
+  {
+    "category": "한자어",
+    "wrong": "상이한",
+    "correct": "서로 다른"
+  },
+  {
+    "category": "한자어",
+    "wrong": "소관",
+    "correct": "담당"
+  },
+  {
+    "category": "한자어",
+    "wrong": "소명하고",
+    "correct": "밝히고"
+  },
+  {
+    "category": "최신 순화어",
+    "wrong": "소정양식",
+    "correct": "소정 양식, 정해진 양식"
+  },
+  {
+    "category": "외래어",
+    "wrong": "솔라시티",
+    "correct": "햇살 도시, 태양 에너지 도시"
+  },
+  {
+    "category": "한자어",
+    "wrong": "송부했다고",
+    "correct": "보냈다고"
+  },
+  {
+    "category": "한자어",
+    "wrong": "수납한 후",
+    "correct": "받은 다음"
+  },
+  {
+    "category": "한자어",
+    "wrong": "수여하고자",
+    "correct": "주고자"
+  },
+  {
+    "category": "최신 순화어",
+    "wrong": "대형 스크린을 통해",
+    "correct": "대형 화면을 통해"
+  },
+  {
+    "category": "외래어",
+    "wrong": "거버넌스",
+    "correct": "정책, 행정, 관리, 민관 협력, 협치"
+  },
+  {
+    "category": "외래어",
+    "wrong": "규제 프리존",
+    "correct": "규제 청정 지역, 규제 자유 구역, 규제 완화 지역"
+  },
+  {
+    "category": "외래어",
+    "wrong": "규제 샌드박스",
+    "correct": "규제 유예, 규제 유예 제도"
+  },
+  {
+    "category": "외래어",
+    "wrong": "니즈",
+    "correct": "수요, 바람"
+  },
+  {
+    "category": "외래어",
+    "wrong": "데모데이",
+    "correct": "시연회"
+  },
+  {
+    "category": "외래어",
+    "wrong": "드론",
+    "correct": "무인기"
+  },
+  {
+    "category": "외래어",
+    "wrong": "라운드 테이블",
+    "correct": "원탁회의"
+  },
+  {
+    "category": "외래어",
+    "wrong": "롤모델",
+    "correct": "본보기, 본보기상"
+  },
+  {
+    "category": "외래어",
+    "wrong": "리스크",
+    "correct": "손실 우려, 손실 위험, 악재"
+  },
+  {
+    "category": "외래어",
+    "wrong": "매칭",
+    "correct": "연결, 맞춤, 연계, 대응"
+  },
+  {
+    "category": "외래어",
+    "wrong": "메가트렌드",
+    "correct": "대세, 거대 물결"
+  },
+  {
+    "category": "외래어",
+    "wrong": "모멘텀",
+    "correct": "전환 국면, 동력, 추동력"
+  },
+  {
+    "category": "외래어",
+    "wrong": "바우처",
+    "correct": "이용권, 상품권"
+  },
+  {
+    "category": "외래어",
+    "wrong": "브라운 백 미팅",
+    "correct": "도시락 토론회, 도시락 모임"
+  },
+  {
+    "category": "외래어",
+    "wrong": "세션",
+    "correct": "부, 시간, 분과, 작업 시간"
+  },
+  {
+    "category": "외래어",
+    "wrong": "스크린 도어",
+    "correct": "안전문"
+  },
+  {
+    "category": "외래어",
+    "wrong": "스타트업",
+    "correct": "새싹 기업, 창업 초기 기업, 신생 기업"
+  },
+  {
+    "category": "외래어",
+    "wrong": "싱크 탱크",
+    "correct": "두뇌 집단, 참모 집단"
+  },
+  {
+    "category": "외래어",
+    "wrong": "아웃리치",
+    "correct": "현장 지원 활동, 현장 원조 활동"
+  },
+  {
+    "category": "외래어",
+    "wrong": "아카이브",
+    "correct": "자료 보관소, 자료 저장소, 기록 보관소"
+  },
+  {
+    "category": "외래어",
+    "wrong": "액션 플랜",
+    "correct": "실행 계획, 세부 계획"
+  },
+  {
+    "category": "외래어",
+    "wrong": "어젠다",
+    "correct": "의제, 가치관"
+  },
+  {
+    "category": "외래어",
+    "wrong": "오피니언 리더",
+    "correct": "여론 주도자, 여론 주도층"
+  },
+  {
+    "category": "외래어",
+    "wrong": "원 스트라이크 아웃",
+    "correct": "즉시 퇴출, 즉시 퇴출제"
+  },
+  {
+    "category": "외래어",
+    "wrong": "이니셔티브",
+    "correct": "주도권, 구상, 발의"
+  },
+  {
+    "category": "외래어",
+    "wrong": "제로화",
+    "correct": "없애기, 줄이기, 예방"
+  },
+  {
+    "category": "외래어",
+    "wrong": "쿼터",
+    "correct": "한도량, 수출입 한도량"
+  },
+  {
+    "category": "외래어",
+    "wrong": "클러스터",
+    "correct": "산학 협력 지구, 연합 지구, 협력 단지"
+  },
+  {
+    "category": "외래어",
+    "wrong": "킥오프 회의",
+    "correct": "첫 회의, 첫 기획 회의"
+  },
+  {
+    "category": "외래어",
+    "wrong": "태스크 포스",
+    "correct": "특별팀, 전담팀, 전담 조직"
+  },
+  {
+    "category": "외래어",
+    "wrong": "테스트 베드",
+    "correct": "가늠터, 시험장, 시험대"
+  },
+  {
+    "category": "외래어",
+    "wrong": "투 트랙",
+    "correct": "양면, 두 갈래, 이원화"
+  },
+  {
+    "category": "외래어",
+    "wrong": "팸 투어",
+    "correct": "사전 답사 여행, 홍보 여행"
+  },
+  {
+    "category": "외래어",
+    "wrong": "인력 풀",
+    "correct": "인력 자원, 인력 은행"
+  },
+  {
+    "category": "외래어",
+    "wrong": "허브",
+    "correct": "중심, 중심지, 거점"
+  },
+  {
+    "category": "외래어",
+    "wrong": "AI",
+    "correct": "인공 지능, 조류 인플루엔자"
+  },
+  {
+    "category": "외래어",
+    "wrong": "B2B",
+    "correct": "기업 간 거래"
+  },
+  {
+    "category": "외래어",
+    "wrong": "BI",
+    "correct": "브랜드 정체성"
+  },
+  {
+    "category": "외래어",
+    "wrong": "G20",
+    "correct": "주요 20개국"
+  },
+  {
+    "category": "외래어",
+    "wrong": "G2G",
+    "correct": "정부 간 거래"
+  },
+  {
+    "category": "외래어",
+    "wrong": "ICT",
+    "correct": "정보 통신 기술"
+  },
+  {
+    "category": "외래어",
+    "wrong": "IoT",
+    "correct": "사물 인터넷"
+  },
+  {
+    "category": "외래어",
+    "wrong": "IR",
+    "correct": "기업 설명회, 기업 투자 설명회"
+  },
+  {
+    "category": "외래어",
+    "wrong": "IT",
+    "correct": "정보 기술"
+  },
+  {
+    "category": "외래어",
+    "wrong": "MOU",
+    "correct": "업무 협정, 업무 협약, 양해 각서"
+  },
+  {
+    "category": "외래어",
+    "wrong": "O2O",
+    "correct": "온오프라인 연계"
+  },
+  {
+    "category": "외래어",
+    "wrong": "ODA",
+    "correct": "공적 개발 원조, 정부 개발 원조"
+  },
+  {
+    "category": "외래어",
+    "wrong": "R&D",
+    "correct": "연구 개발"
+  },
+  {
+    "category": "한자어",
+    "wrong": "가료",
+    "correct": "치료, 고침, 병 고침"
+  },
+  {
+    "category": "한자어",
+    "wrong": "가용",
+    "correct": "쓸 수 있는"
+  },
+  {
+    "category": "한자어",
+    "wrong": "개산",
+    "correct": "어림셈, 대략 계산"
+  },
+  {
+    "category": "한자어",
+    "wrong": "거양하다",
+    "correct": "들다, 올리다, 높이다, 드높이다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "계첩",
+    "correct": "내붙임, 게시, 걸음, 내걸음"
+  },
+  {
+    "category": "한자어",
+    "wrong": "견양",
+    "correct": "서식, 보기, 본보기"
+  },
+  {
+    "category": "한자어",
+    "wrong": "계류하다",
+    "correct": "매어 두다, 붙들어 매다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "계리",
+    "correct": "회계 처리"
+  },
+  {
+    "category": "한자어",
+    "wrong": "금명간",
+    "correct": "오늘내일 사이"
+  },
+  {
+    "category": "한자어",
+    "wrong": "금번",
+    "correct": "이번"
+  },
+  {
+    "category": "한자어",
+    "wrong": "금회",
+    "correct": "이번"
+  },
+  {
+    "category": "한자어",
+    "wrong": "내구 연한",
+    "correct": "사용 가능 햇수, 견딜 햇수"
+  },
+  {
+    "category": "한자어",
+    "wrong": "내용 연수",
+    "correct": "사용 연한, 사용 가능 연수"
+  },
+  {
+    "category": "한자어",
+    "wrong": "단차",
+    "correct": "고저 차, 높이 차이"
+  },
+  {
+    "category": "한자어",
+    "wrong": "당해",
+    "correct": "그"
+  },
+  {
+    "category": "한자어",
+    "wrong": "동년",
+    "correct": "같은 해"
+  },
+  {
+    "category": "한자어",
+    "wrong": "동일",
+    "correct": "같은 날, 그날"
+  },
+  {
+    "category": "한자어",
+    "wrong": "동법",
+    "correct": "같은 법, 같은 방법"
+  },
+  {
+    "category": "한자어",
+    "wrong": "대장",
+    "correct": "장부"
+  },
+  {
+    "category": "한자어",
+    "wrong": "별건",
+    "correct": "다른 건, 딴 건"
+  },
+  {
+    "category": "한자어",
+    "wrong": "부락",
+    "correct": "마을"
+  },
+  {
+    "category": "한자어",
+    "wrong": "불상",
+    "correct": "알 수 없음"
+  },
+  {
+    "category": "한자어",
+    "wrong": "불시에",
+    "correct": "갑자기, 예고 없이"
+  },
+  {
+    "category": "한자어",
+    "wrong": "불입하다",
+    "correct": "내다, 납입하다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "불출",
+    "correct": "내줌"
+  },
+  {
+    "category": "한자어",
+    "wrong": "성료",
+    "correct": "성공적으로 마침, 성공적으로 끝남"
+  },
+  {
+    "category": "한자어",
+    "wrong": "수범 사례",
+    "correct": "모범 사례, 잘된 사례"
+  },
+  {
+    "category": "한자어",
+    "wrong": "수의 시담",
+    "correct": "가격 협의"
+  },
+  {
+    "category": "한자어",
+    "wrong": "시간장치",
+    "correct": "잠금장치, 자물쇠 장치"
+  },
+  {
+    "category": "한자어",
+    "wrong": "양도양수",
+    "correct": "주고받음"
+  },
+  {
+    "category": "한자어",
+    "wrong": "양생",
+    "correct": "굳히기"
+  },
+  {
+    "category": "한자어",
+    "wrong": "여입 결의",
+    "correct": "회수 결정"
+  },
+  {
+    "category": "한자어",
+    "wrong": "예가",
+    "correct": "예정 가격"
+  },
+  {
+    "category": "한자어",
+    "wrong": "예산 지변 과목",
+    "correct": "예산 과목"
+  },
+  {
+    "category": "한자어",
+    "wrong": "예찰",
+    "correct": "미리 살피기"
+  },
+  {
+    "category": "한자어",
+    "wrong": "이격",
+    "correct": "어긋남, 벌림"
+  },
+  {
+    "category": "한자어",
+    "wrong": "익일",
+    "correct": "이튿날, 다음 날"
+  },
+  {
+    "category": "한자어",
+    "wrong": "일부인",
+    "correct": "날짜 도장"
+  },
+  {
+    "category": "한자어",
+    "wrong": "임석",
+    "correct": "현장 참석"
+  },
+  {
+    "category": "한자어",
+    "wrong": "자동 제세동기",
+    "correct": "자동 심장 충격기"
+  },
+  {
+    "category": "한자어",
+    "wrong": "적기",
+    "correct": "알맞은 시기, 제때, 제철"
+  },
+  {
+    "category": "한자어",
+    "wrong": "적의 조치",
+    "correct": "알맞게 처리, 적절한 조치"
+  },
+  {
+    "category": "한자어",
+    "wrong": "지득하다",
+    "correct": "알게 되다, 알다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "차년도",
+    "correct": "다음 해, 다음 연도"
+  },
+  {
+    "category": "한자어",
+    "wrong": "채납",
+    "correct": "받음, 기부받음"
+  },
+  {
+    "category": "한자어",
+    "wrong": "첨두시",
+    "correct": "가장 붐빌 때"
+  },
+  {
+    "category": "한자어",
+    "wrong": "초도 순시",
+    "correct": "첫 방문, 첫 둘러보기"
+  },
+  {
+    "category": "한자어",
+    "wrong": "취명하다",
+    "correct": "울리다",
+    "note": "경보, 사이렌 등"
+  },
+  {
+    "category": "한자어",
+    "wrong": "패용하다",
+    "correct": "달다, 차다",
+    "note": "출입증 등"
+  },
+  {
+    "category": "한자어",
+    "wrong": "하구언",
+    "correct": "강어귀둑, 강어귀의 둑"
+  },
+  {
+    "category": "한자어",
+    "wrong": "행선지",
+    "correct": "가는 곳"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "망년회",
+    "correct": "송년 모임, 송년회"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "견습",
+    "correct": "수습"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "모포",
+    "correct": "담요"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "고수부지",
+    "correct": "둔치"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "구좌",
+    "correct": "계좌"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "노견",
+    "correct": "갓길"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "가불",
+    "correct": "임시 지급"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "가처분",
+    "correct": "임시 처분"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "익일",
+    "correct": "다음 날, 이튿날"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "거래선",
+    "correct": "거래처"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "종지부",
+    "correct": "마침표"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "대절",
+    "correct": "전세"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "도합",
+    "correct": "모두, 합계"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "보합세",
+    "correct": "주춤세, 멈춤세"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "불입",
+    "correct": "납입"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "고참",
+    "correct": "선임, 선임자, 선참"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "다반사",
+    "correct": "예삿일, 흔한 일"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "수취인",
+    "correct": "받는 이, 받는 사람"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "잔고",
+    "correct": "잔액, 잔량"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "모찌",
+    "correct": "떡"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "유도리",
+    "correct": "여유, 여유분, 융통, 늘품"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "나가리",
+    "correct": "무산"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "나와바리",
+    "correct": "줄치기, 구획"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "단도리",
+    "correct": "채비, 단속"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "땡땡이",
+    "correct": "물방울, 물방울 무늬"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "만땅",
+    "correct": "가득, 가득 채움"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "쇼부",
+    "correct": "겨루기"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "와사비",
+    "correct": "고추냉이"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "지라시",
+    "correct": "선전지, 낱장 광고"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "가오",
+    "correct": "체면, 무게"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "쿠사리",
+    "correct": "핀잔"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "노가다",
+    "correct": "막노동, 막일"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "대빵",
+    "correct": "대장"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "나시",
+    "correct": "민소매"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "쓰키다시",
+    "correct": "곁들이찬"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "아나고",
+    "correct": "붕장어"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "가라",
+    "correct": "깃, 옷깃, 칼라"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "간지",
+    "correct": "느낌"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "무데뽀",
+    "correct": "막무가내"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "잇파이",
+    "correct": "가득, 한껏, 많이"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "곤조",
+    "correct": "고집, 근성"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "기스",
+    "correct": "흠, 흠집"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "분빠이하다",
+    "correct": "분배, 노느매기"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "사시미",
+    "correct": "생선회"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "와꾸",
+    "correct": "틀"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "지리",
+    "correct": "맑은탕, 싱건탕"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "보로터지다",
+    "correct": "드러나다, 들통나다"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "비까번쩍하다",
+    "correct": "번쩍번쩍하다"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "빽사리",
+    "correct": "실수, 음 이탈, 헛발질"
+  },
+  {
+    "category": "외래어 표기",
+    "wrong": "로보트",
+    "correct": "로봇"
+  },
+  {
+    "category": "외래어 표기",
+    "wrong": "로케트",
+    "correct": "로켓"
+  },
+  {
+    "category": "외래어 표기",
+    "wrong": "도너츠",
+    "correct": "도넛"
+  },
+  {
+    "category": "외래어 표기",
+    "wrong": "케익",
+    "correct": "케이크"
+  },
+  {
+    "category": "외래어 표기",
+    "wrong": "스폰지",
+    "correct": "스펀지"
+  },
+  {
+    "category": "외래어 표기",
+    "wrong": "부페",
+    "correct": "뷔페"
+  },
+  {
+    "category": "외래어 표기",
+    "wrong": "컨셉",
+    "correct": "콘셉트"
+  },
+  {
+    "category": "외래어 표기",
+    "wrong": "레포트",
+    "correct": "리포트"
+  },
+  {
+    "category": "외래어 표기",
+    "wrong": "카라멜마끼아또",
+    "correct": "캐러멜라테"
+  },
+  {
+    "category": "외래어 표기",
+    "wrong": "아이섀도우",
+    "correct": "아이섀도"
+  },
+  {
+    "category": "외래어 표기",
+    "wrong": "윈도우",
+    "correct": "윈도"
+  },
+  {
+    "category": "외래어 표기",
+    "wrong": "옐로우",
+    "correct": "옐로"
+  },
+  {
+    "category": "외래어 표기",
+    "wrong": "뱃지",
+    "correct": "배지"
+  },
+  {
+    "category": "외래어 표기",
+    "wrong": "메니큐어",
+    "correct": "매니큐어"
+  },
+  {
+    "category": "외래어 표기",
+    "wrong": "리더쉽",
+    "correct": "리더십"
+  }
 ]

@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { getActiveSubscription, daysUntilExpiry } from '@/lib/subscription'
 import PaymentSection from '@/components/subscribe/PaymentSection'
+import EventTracker from '@/components/analytics/EventTracker'
 import { CheckCircle2, Sparkles, Shield, Zap, LogIn } from 'lucide-react'
 
 const FEATURES = [
@@ -55,6 +56,7 @@ export default async function SubscribePage() {
 
   return (
     <div className="max-w-md mx-auto py-8">
+      <EventTracker event="subscribe_view" />
       <div className="text-center mb-6">
         <div className="inline-flex items-center gap-1.5 bg-amber-50 border border-amber-100 text-amber-700 text-xs font-semibold px-3 py-1.5 rounded-full mb-3">
           <Sparkles className="h-3.5 w-3.5" />

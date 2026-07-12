@@ -1,6 +1,8 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react'
+
+export type EditableManuscriptHandle = { insertAtCursor: (text: string) => void }
 
 // 입력 가능한 원고지 — 글자를 '칸마다 직접' 그려 공백·숫자·영문까지 정확히 한 칸씩 들어간다.
 // 입력은 투명 textarea(한글 IME 정상 동작)가 받고, 화면 글자는 칸 단위로 렌더한다.
@@ -40,15 +42,7 @@ function caretRC(value: string, sel: number, cols: number) {
   return { r, c }
 }
 
-export default function EditableManuscript({
-  value,
-  onChange,
-  cols = 20,
-  rows = 20,
-  cell = 30,
-  placeholder,
-  maxHeightVh,
-}: {
+const EditableManuscript = forwardRef<EditableManuscriptHandle, {
   value: string
   onChange: (v: string) => void
   cols?: number
@@ -56,12 +50,37 @@ export default function EditableManuscript({
   cell?: number
   placeholder?: string
   maxHeightVh?: number
-}) {
+}>(function EditableManuscript({
+  value,
+  onChange,
+  cols = 20,
+  rows = 20,
+  cell = 30,
+  placeholder,
+  maxHeightVh,
+}, ref) {
   const boxRef = useRef<HTMLDivElement>(null)
   const taRef = useRef<HTMLTextAreaElement>(null)
   const [availW, setAvailW] = useState<number | null>(null)
   const [sel, setSel] = useState(0)
   const [focused, setFocused] = useState(false)
+
+  // 부모(팔레트)에서 커서 위치에 원문자(㉠㉡…)를 삽입할 수 있게 노출
+  useImperativeHandle(ref, () => ({
+    insertAtCursor: (text: string) => {
+      const ta = taRef.current
+      const start = ta?.selectionStart ?? value.length
+      const end = ta?.selectionEnd ?? value.length
+      const next = value.slice(0, start) + text + value.slice(end)
+      onChange(next)
+      requestAnimationFrame(() => {
+        const pos = start + text.length
+        ta?.focus()
+        try { ta?.setSelectionRange(pos, pos) } catch { /* noop */ }
+        setSel(pos)
+      })
+    },
+  }), [value, onChange])
 
   useEffect(() => {
     const el = boxRef.current
@@ -177,4 +196,6 @@ export default function EditableManuscript({
       <style>{`@keyframes kpt-caret-blink{0%,50%{opacity:1}50.01%,100%{opacity:0}}`}</style>
     </div>
   )
-}
+})
+
+export default EditableManuscript

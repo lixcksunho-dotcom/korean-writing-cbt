@@ -42,6 +42,19 @@ export default async function DashboardPage() {
   const trialUsed = Number(user.app_metadata?.ai_trial_used ?? 0);
   const aiTrial = { remaining: sub ? 0 : Math.max(0, FREE_AI_TRIAL - trialUsed) };
 
+  // 재구독 유도: 활성 구독이 없지만 과거 결제 이력(만료)이 있으면 '이어가기' 대상
+  let lapsedSub = false;
+  if (!sub) {
+    const { data: lastSub } = await supabase
+      .from("subscriptions")
+      .select("expires_at")
+      .eq("user_id", user.id)
+      .order("expires_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    lapsedSub = !!lastSub;
+  }
+
   const completedSessions = sessions ?? [];
   const totalAnswered = completedSessions.reduce((sum, s) => sum + (s.total ?? 0), 0);
   const totalCorrect = completedSessions.reduce((sum, s) => sum + (s.score ?? 0), 0);
@@ -155,8 +168,52 @@ export default async function DashboardPage() {
         </Link>
       )}
 
-      {/* 온보딩/전환 유도 — 비구독자 + 무료 체험 잔여 시 */}
-      {!sub && aiTrial.remaining > 0 && (
+      {/* 구독자 AI 채점 활용 유도 — 유료로 산 무제한 첨삭을 실제로 쓰게(미사용=이탈 위험). 만료임박이면 그 경고 우선 */}
+      {sub && !expiringSoon && (
+        <Link
+          href="/practice/essay"
+          className="group block relative overflow-hidden rounded-2xl mb-8 p-5 sm:p-6 border border-[#c7d2fe] bg-gradient-to-r from-[#eef2ff] to-[#e0e7ff] hover:shadow-[0_8px_24px_rgba(79,70,229,0.15)] transition-all"
+        >
+          <div className="absolute top-0 right-0 w-40 h-40 bg-indigo-300 rounded-full blur-3xl opacity-20 -translate-y-1/3 translate-x-1/3" />
+          <div className="relative flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-400 to-indigo-600 flex items-center justify-center shrink-0 shadow-lg shadow-indigo-500/30">
+              <Sparkles className="h-6 w-6 text-white" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-0.5">
+                <h2 className="text-base font-black text-indigo-900">무제한 AI 첨삭, 이용 중이에요</h2>
+                <span className="text-[10px] font-bold text-white bg-indigo-500 px-2 py-0.5 rounded-full">PRO</span>
+              </div>
+              <p className="text-sm text-indigo-800/80">
+                {manuscriptCount > 0
+                  ? <>지금까지 <b>{manuscriptCount}회</b> 채점받으셨어요. 서술형 답안을 더 채점받아 약점을 잡으세요.</>
+                  : <>아직 AI 채점을 안 받으셨어요. 서술형 답안을 AI가 <b>점수·첨삭</b>으로 분석해 드려요 — 무제한이니 지금 받아보세요.</>}
+              </p>
+            </div>
+            <ChevronRight className="h-5 w-5 text-indigo-600 shrink-0 group-hover:translate-x-1 transition-transform" />
+          </div>
+        </Link>
+      )}
+
+      {/* 재구독 유도 — 만료된 과거 구독자에게 '이어가기'(신규 이탈 방지) */}
+      {lapsedSub && (
+        <Link href="/subscribe" className="group block relative overflow-hidden rounded-2xl mb-8 p-5 sm:p-6 border border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50 hover:shadow-[0_8px_24px_rgba(217,119,6,0.15)] transition-all">
+          <div className="absolute top-0 right-0 w-40 h-40 bg-amber-300 rounded-full blur-3xl opacity-20 -translate-y-1/3 translate-x-1/3" />
+          <div className="relative flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-400 to-[#d97706] flex items-center justify-center shrink-0 shadow-lg shadow-amber-500/30">
+              <Sparkles className="h-6 w-6 text-white" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h2 className="text-base font-black text-amber-900 mb-0.5">이용권이 만료됐어요</h2>
+              <p className="text-sm text-amber-800/80">다시 시작하면 <b>그동안의 학습 기록 그대로</b>, 서술형 AI 첨삭을 <b>무제한</b>으로 이어서 받을 수 있어요. 5,500원 · 30일 · 자동결제 없음.</p>
+            </div>
+            <span className="shrink-0 btn-gold text-xs font-bold text-white px-4 py-2 rounded-xl">다시 시작하기</span>
+          </div>
+        </Link>
+      )}
+
+      {/* 온보딩/전환 유도 — 비구독자 + 무료 체험 잔여 시(만료 재구독 대상 제외) */}
+      {!sub && !lapsedSub && aiTrial.remaining > 0 && (
         completedSessions.length === 0 ? (
           // 신규 유저: 첫 시험 → 무료 첨삭 2단계 온보딩
           <div className="relative overflow-hidden rounded-2xl mb-8 p-6 border border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50">
