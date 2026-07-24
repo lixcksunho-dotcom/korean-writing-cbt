@@ -3,21 +3,61 @@ import Link from 'next/link'
 import { getActiveSubscription, daysUntilExpiry } from '@/lib/subscription'
 import PaymentSection from '@/components/subscribe/PaymentSection'
 import EventTracker from '@/components/analytics/EventTracker'
-import { CheckCircle2, Sparkles, Shield, Zap, LogIn } from 'lucide-react'
+import { getActiveProgram } from '@/lib/programContext'
+import { CheckCircle2, Sparkles, Shield, Zap, LogIn, Star } from 'lucide-react'
 
-const FEATURES = [
-  'AI 예상 점수·합격 등급 판정 (지금 실력이면 몇 점?)',
-  '모의고사 서술형 AI 분석·채점 무제한',
-  '원고지 AI 채점·첨삭 무제한',
-  '항목별 점수 + 잘한 점·보완점 첨삭',
-  '영역별 약점 분석 · 채점 기록 저장',
-]
+// 이용권으로 열리는 기능은 시험(모드)마다 다르다 — KBS는 원고지·서술형 채점이 없다.
+const FEATURES_BY_PROGRAM: Record<string, string[]> = {
+  silyong: [
+    'AI 예상 점수·합격 등급 판정 (지금 실력이면 몇 점?)',
+    '모의고사 서술형 AI 분석·채점 무제한',
+    '원고지 AI 채점·첨삭 무제한',
+    '항목별 점수 + 잘한 점·보완점 첨삭',
+    '잠긴 모의고사 전 회차 + 영역별·유형별 집중 연습',
+  ],
+  kbs: [
+    'AI 예상 점수·등급 판정 (지금 실력이면 몇 급?)',
+    '잠긴 모의고사 전 회차 100문항 무제한',
+    '7개 영역별 약점 분석 + 영역별 집중 연습',
+    '듣기 대본·해설 열람 · 틀린 문항 다시 풀기',
+    '시험 저장하고 이어풀기 · 학습 기록 보관',
+  ],
+}
 
 // 비로그인 방문자도 상품·가격·환불정책을 볼 수 있어야 한다(간편결제 가맹 심사 요건).
 // 실제 결제(PaymentSection)만 로그인 뒤에 노출하고, 비로그인은 로그인 유도 버튼으로 대체한다.
 export default async function SubscribePage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
+
+  const program = await getActiveProgram()
+  const FEATURES = FEATURES_BY_PROGRAM[program] ?? FEATURES_BY_PROGRAM.silyong
+
+  // 시험마다 다른 문구 — KBS는 AI 첨삭이 없고 응시료도 달라서 실글쓰기 카피를 그대로 쓰면 안 된다.
+  const copy =
+    program === 'kbs'
+      ? {
+          subtitle: '전 회차 무제한 풀이·영역별 분석까지, 5,500원 1회 결제로 30일 무제한',
+          valueProp: 'KBS한국어능력시험 응시료(약 3만원 초반)보다 훨씬 저렴하게, 시험 전까지 무제한 실전 연습',
+          refund: '결제 후 이용하지 않았다면 100% 돌려드려요.',
+        }
+      : {
+          subtitle: 'AI 채점·분석까지, 5,500원 1회 결제로 30일 무제한',
+          valueProp: '한국실용글쓰기 응시료(약 2~3만원)보다 훨씬 저렴하게, 합격 전까지 무제한 AI 첨삭',
+          refund: 'AI 채점을 한 번도 쓰지 않았다면 100% 돌려드려요.',
+        }
+
+  // 결제 직전이 사회적 증거가 가장 잘 먹히는 자리 — 공개된 실사용 후기를 함께 보여 준다.
+  const { data: reviews } = await supabase
+    .from('reviews')
+    .select('display_name, content, rating, exam_score')
+    .eq('is_visible', true)
+    .order('created_at', { ascending: false })
+    .limit(3)
+  const reviewCount = reviews?.length ?? 0
+  const avgRating = reviewCount
+    ? reviews!.reduce((s, r) => s + (r.rating ?? 0), 0) / reviewCount
+    : 0
 
   const sub = user ? await getActiveSubscription(user.id) : null
   const displayName = user
@@ -60,10 +100,10 @@ export default async function SubscribePage() {
       <div className="text-center mb-6">
         <div className="inline-flex items-center gap-1.5 bg-amber-50 border border-amber-100 text-amber-700 text-xs font-semibold px-3 py-1.5 rounded-full mb-3">
           <Sparkles className="h-3.5 w-3.5" />
-          AI 채점 구독
+          프리미엄 플랜
         </div>
-        <h1 className="text-2xl font-black text-[#0f172a] tracking-tight">AI 채점·분석 이용권</h1>
-        <p className="text-[#64748b] text-sm mt-1">서술형·원고지 모두, 5,500원 1회 결제로 30일 무제한</p>
+        <h1 className="text-2xl font-black text-[#0f172a] tracking-tight">프리미엄 플랜 이용권</h1>
+        <p className="text-[#64748b] text-sm mt-1">{copy.subtitle}</p>
       </div>
 
       <div className="bg-white rounded-2xl border border-[#e2e8f0] shadow-[0_4px_20px_rgba(15,31,61,0.08)] overflow-hidden">
@@ -79,13 +119,13 @@ export default async function SubscribePage() {
               ✓ 자동결제 없음
             </span>
           </div>
-          <p className="text-white/50 text-xs mt-3">한국실용글쓰기 응시료(약 2~3만원)보다 훨씬 저렴하게, 합격 전까지 무제한 AI 첨삭</p>
+          <p className="text-white/50 text-xs mt-3">{copy.valueProp}</p>
         </div>
 
         <div className="p-6">
           {/* 상품 정보 */}
           <div className="mb-5 rounded-xl bg-[#f8fafc] border border-[#e2e8f0] p-4 text-sm text-[#334155] space-y-1.5">
-            <div className="flex justify-between"><span className="text-[#64748b]">상품명</span><span className="font-semibold">AI 원고지·서술형 채점 이용권</span></div>
+            <div className="flex justify-between"><span className="text-[#64748b]">상품명</span><span className="font-semibold">프리미엄 플랜 (30일)</span></div>
             <div className="flex justify-between"><span className="text-[#64748b]">이용기간</span><span className="font-semibold">결제일로부터 30일</span></div>
             <div className="flex justify-between"><span className="text-[#64748b]">결제금액</span><span className="font-semibold">5,500원 (부가세 포함)</span></div>
             <div className="flex justify-between"><span className="text-[#64748b]">결제방식</span><span className="font-semibold">1회 결제 (자동결제 없음)</span></div>
@@ -94,12 +134,34 @@ export default async function SubscribePage() {
           {/* 포함 기능 */}
           <div className="space-y-2.5 mb-6">
             {FEATURES.map(f => (
-              <div key={f} className="flex items-center gap-2.5 text-sm text-[#334155]">
-                <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
+              <div key={f} className="flex items-start gap-2.5 text-sm text-[#334155]">
+                <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0 mt-0.5" />
                 {f}
               </div>
             ))}
           </div>
+
+          {/* 실사용 후기 — 표본이 너무 적으면 오히려 역효과라 3건 이상일 때만 */}
+          {reviewCount >= 3 && (
+            <div className="mb-6 rounded-xl border border-[#e2e8f0] bg-[#f8fafc] p-4">
+              <div className="flex items-center gap-1.5 mb-2.5">
+                <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
+                <span className="text-sm font-black text-[#0f172a]">{avgRating.toFixed(1)}</span>
+                <span className="text-xs text-[#94a3b8]">실사용 후기</span>
+              </div>
+              <div className="space-y-2">
+                {reviews!.map((r, i) => (
+                  <p key={i} className="text-xs text-[#475569] leading-relaxed line-clamp-2">
+                    “{r.content}”
+                    <span className="text-[#94a3b8]">
+                      {' — '}{r.display_name}
+                      {r.exam_score ? ` · ${r.exam_score}` : ''}
+                    </span>
+                  </p>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* 결제 영역: 로그인 상태면 결제 버튼, 비로그인이면 로그인 유도 */}
           {user ? (
@@ -126,7 +188,7 @@ export default async function SubscribePage() {
           {/* 환불 보장 */}
           <div className="mt-4 flex items-center justify-center gap-2 bg-emerald-50 border border-emerald-100 rounded-xl px-4 py-2.5 text-xs text-emerald-700">
             <Shield className="h-4 w-4 shrink-0" />
-            <span><b>7일 내 미사용 전액 환불</b> — AI 채점을 한 번도 쓰지 않았다면 100% 돌려드려요.</span>
+            <span><b>7일 내 미사용 전액 환불</b> — {copy.refund}</span>
           </div>
 
           {/* 약관·정책 링크 (심사·고지) */}

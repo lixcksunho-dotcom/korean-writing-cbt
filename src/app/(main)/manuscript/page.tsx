@@ -4,19 +4,25 @@ import ManuscriptEditor from '@/components/manuscript/ManuscriptEditor'
 import Link from 'next/link'
 import { PenLine, History, Lock, Sparkles, CheckCircle2 } from 'lucide-react'
 import { getActiveSubscription, daysUntilExpiry } from '@/lib/subscription'
+import { getAiTrialStatus } from '@/lib/aiTrial'
 
 export default async function ManuscriptPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const [sub, { count }] = await Promise.all([
+  const [sub, { count }, trial] = await Promise.all([
     getActiveSubscription(user.id),
     supabase
       .from('manuscript_submissions')
       .select('*', { count: 'exact', head: true })
       .eq('user_id', user.id),
+    getAiTrialStatus(),
   ])
+
+  // 랜딩·대시보드가 약속한 '가입하면 AI 첨삭 무료 체험'을 여기서도 지킨다.
+  // 체험이 남아 있으면 결제 없이 바로 채점해 보게 하고, 소진 후에만 페이월을 띄운다.
+  const canWrite = !!sub || trial.remaining > 0
 
   return (
     <div>
@@ -45,8 +51,28 @@ export default async function ManuscriptPage() {
         </div>
       </div>
 
-      {sub ? (
-        <ManuscriptEditor />
+      {canWrite ? (
+        <>
+          {!sub && (
+            <div className="mb-5 flex flex-col sm:flex-row sm:items-center gap-3 rounded-2xl border border-amber-200 bg-gradient-to-br from-[#fffbeb] to-[#fff7ed] px-5 py-4">
+              <div className="flex-1">
+                <p className="text-sm font-bold text-[#0f172a]">
+                  무료 체험 <span className="text-amber-600">{trial.remaining}회</span> 남았어요
+                </p>
+                <p className="text-xs text-[#64748b] mt-0.5">
+                  결제 없이 지금 바로 채점받아 보세요. 마음에 들면 5,500원으로 30일 무제한.
+                </p>
+              </div>
+              <Link
+                href="/subscribe"
+                className="shrink-0 text-xs font-bold text-[#1e3a5f] border border-[#1e3a5f]/20 bg-white px-4 py-2 rounded-xl hover:bg-[#1e3a5f]/5 transition-colors"
+              >
+                이용권 보기
+              </Link>
+            </div>
+          )}
+          <ManuscriptEditor hasSubscription={!!sub} trialRemaining={trial.remaining} />
+        </>
       ) : (
         /* 페이월 */
         <div className="max-w-md mx-auto py-4">
@@ -55,7 +81,7 @@ export default async function ManuscriptPage() {
               <div className="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center mx-auto mb-4">
                 <Lock className="h-7 w-7 text-white" />
               </div>
-              <h2 className="text-xl font-black mb-2">이용권 결제 후 이용 가능해요</h2>
+              <h2 className="text-xl font-black mb-2">무료 체험 {trial.used}회를 모두 썼어요</h2>
               <p className="text-white/60 text-sm">5,500원 1회 결제로 30일 무제한 (자동결제 없음)</p>
             </div>
             <div className="p-6">

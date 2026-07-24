@@ -10,6 +10,8 @@ export default function SiteFooter() {
         <div className="flex flex-wrap gap-x-4 gap-y-2 mb-3 font-semibold text-white/70">
           <Link href="/exam-info" className="hover:text-white transition-colors">한국실용글쓰기 시험정보</Link>
           <span className="text-white/20">·</span>
+          <Link href="/kbs-korean" className="hover:text-white transition-colors">KBS한국어능력시험 정보</Link>
+          <span className="text-white/20">·</span>
           <Link href="/essay-guide" className="hover:text-white transition-colors">서술형 공략</Link>
           <span className="text-white/20">·</span>
           <Link href="/spelling" className="hover:text-white transition-colors">자주 틀리는 맞춤법</Link>

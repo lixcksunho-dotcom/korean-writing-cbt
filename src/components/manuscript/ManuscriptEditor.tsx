@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import Link from 'next/link'
 import { Send } from 'lucide-react'
 import { gradeManuscript, type GradeResult } from '@/app/(main)/manuscript/actions'
 import ManuscriptResult from './ManuscriptResult'
@@ -14,13 +15,20 @@ const TOPICS = [
   '직접 입력',
 ]
 
-export default function ManuscriptEditor() {
+export default function ManuscriptEditor({
+  hasSubscription = true,
+  trialRemaining = 0,
+}: {
+  hasSubscription?: boolean
+  trialRemaining?: number
+}) {
   const [topicIdx, setTopicIdx] = useState(0)
   const [customTopic, setCustomTopic] = useState('')
   const [text, setText] = useState('')
   const [result, setResult] = useState<GradeResult | null>(null)
   const [error, setError] = useState('')
   const [isPending, startTransition] = useTransition()
+  const [remaining, setRemaining] = useState(trialRemaining)
 
   const topic = topicIdx === TOPICS.length - 1 ? customTopic : TOPICS[topicIdx]
   const charCount = Array.from(text).filter(c => c !== '\n').length
@@ -33,20 +41,42 @@ export default function ManuscriptEditor() {
       try {
         const data = await gradeManuscript(text, topic)
         setResult(data)
+        if (!hasSubscription) setRemaining(r => Math.max(0, r - 1))
         window.scrollTo({ top: 0, behavior: 'smooth' })
-      } catch {
-        setError('채점 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.')
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : ''
+        setError(
+          msg === 'SUBSCRIPTION_REQUIRED'
+            ? '무료 체험을 모두 사용했어요. 이용권을 열면 무제한으로 채점받을 수 있어요.'
+            : '채점 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.',
+        )
       }
     })
   }
 
   if (result) {
     return (
-      <ManuscriptResult
-        result={result}
-        topic={topic}
-        onReset={() => { setResult(null); setText(''); setError('') }}
-      />
+      <div>
+        <ManuscriptResult
+          result={result}
+          topic={topic}
+          onReset={() => { setResult(null); setText(''); setError('') }}
+        />
+        {/* 첨삭을 막 확인한 직후가 전환이 가장 잘 되는 순간 */}
+        {!hasSubscription && (
+          <Link
+            href="/subscribe"
+            className="mt-4 flex items-center justify-between gap-3 rounded-2xl border border-amber-200 bg-gradient-to-br from-[#fffbeb] to-[#fff7ed] px-5 py-4 hover:border-amber-300 transition-colors"
+          >
+            <span className="text-sm text-[#334155]">
+              {remaining > 0
+                ? <>무료 체험 <b className="text-amber-600">{remaining}회</b> 남았어요 · 이용권을 열면 <b>30일 무제한</b></>
+                : <>무료 체험을 모두 썼어요 · <b>30일 무제한</b>으로 계속 첨삭받기</>}
+            </span>
+            <span className="shrink-0 text-sm font-black text-[#1e3a5f] whitespace-nowrap">5,500원 →</span>
+          </Link>
+        )}
+      </div>
     )
   }
 
@@ -123,7 +153,7 @@ export default function ManuscriptEditor() {
         className="w-full flex items-center justify-center gap-2 bg-[#1e3a5f] hover:bg-[#2d5488] disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-3.5 rounded-xl transition-colors text-base"
       >
         <Send className="h-4 w-4" />
-        {isPending ? 'AI 채점 중...' : 'AI 채점하기'}
+        {isPending ? 'AI 채점 중...' : hasSubscription ? 'AI 채점하기' : `무료로 AI 채점받기 (${remaining}회 남음)`}
       </button>
 
       {charCount > 0 && charCount < 50 && (

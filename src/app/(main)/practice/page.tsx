@@ -1,15 +1,20 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { ListChecks, PenLine, FileText, ChevronRight, CircleDot, Target, RotateCcw, Bookmark } from 'lucide-react'
+import { ListChecks, PenLine, FileText, ChevronRight, CircleDot, Target, RotateCcw, Bookmark, Layers } from 'lucide-react'
+import { getActiveProgram } from '@/lib/programContext'
+import { getProgram } from '@/lib/programs'
 
 export default async function PracticePage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  // 유형별 보유 문항 수 (안내용) — 유형별 연습 전용(year>=9000)은 제외
-  const { data: rows } = await supabase.from('questions').select('type').lt('year', 9000)
+  const program = await getActiveProgram()
+  const cfg = getProgram(program)
+
+  // 유형별 보유 문항 수 (안내용) — 현재 모드의 실제 시험 문항(year<9000)만
+  const { data: rows } = await supabase.from('questions').select('type').eq('program', program).lt('year', 9000)
   const multipleCount = (rows ?? []).filter(r => r.type === 'multiple').length
   const essayCount = (rows ?? []).filter(r => r.type === 'essay').length
 
@@ -29,6 +34,14 @@ export default async function PracticePage() {
       desc: '바른 표현인지 O·X로 빠르게 판단하며 순화어를 익혀요.',
       meta: '맞춤법·외래어·한자어 등',
       grad: 'from-violet-500 to-purple-700',
+    },
+    {
+      href: '/practice/areas',
+      icon: Layers,
+      title: '영역별 집중 연습',
+      desc: '결과에서 점수가 낮았던 영역만 모아 다시 풀어요.',
+      meta: cfg.areas.map(x => x.name.split('·')[0]).join(' · '),
+      grad: 'from-sky-500 to-blue-700',
     },
     {
       href: '/practice/multiple',
@@ -72,15 +85,19 @@ export default async function PracticePage() {
     },
   ]
 
+  // 실용글쓰기 전용 연습(유형별 집중·순화어·서술형·원고지 보고서)은 그 모드에서만 노출.
+  const manuscriptOnly = new Set(['/practice/types', '/practice/refine', '/practice/essay', '/practice/report'])
+  const visibleCards = cfg.hasManuscript ? cards : cards.filter(c => !manuscriptOnly.has(c.href))
+
   return (
     <div className="animate-fade-up">
       <div className="mb-8">
         <h1 className="text-2xl font-black text-[#0f172a] tracking-tight mb-1">유형별 연습</h1>
-        <p className="text-[#64748b] text-sm">객관식·서술형·원고지를 따로 골라 연습할 수 있어요. 전체 모의고사는 <Link href="/cbt" className="text-[#1e3a5f] font-semibold underline">CBT 문제풀기</Link>에서 풀 수 있습니다.</p>
+        <p className="text-[#64748b] text-sm">{cfg.hasManuscript ? '객관식·서술형·원고지를' : '객관식 문제를'} 골라 연습할 수 있어요. 전체 모의고사는 <Link href="/cbt" className="text-[#1e3a5f] font-semibold underline">CBT 문제풀기</Link>에서 풀 수 있습니다.</p>
       </div>
 
       <div className="grid md:grid-cols-3 gap-5">
-        {cards.map(({ href, icon: Icon, title, desc, meta, grad }) => (
+        {visibleCards.map(({ href, icon: Icon, title, desc, meta, grad }) => (
           <Link
             key={href}
             href={href}

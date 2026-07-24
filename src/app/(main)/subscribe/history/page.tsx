@@ -20,7 +20,7 @@ export default async function PaymentHistoryPage() {
   const subs = rows ?? []
 
   return (
-    <div className="animate-fade-up max-w-2xl">
+    <div className="animate-fade-up max-w-2xl mx-auto">
       <Link href="/dashboard" className="inline-flex items-center gap-1.5 text-sm text-[#64748b] hover:text-[#1e3a5f] mb-5">
         <ArrowLeft className="h-4 w-4" /> 대시보드
       </Link>

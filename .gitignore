@@ -55,3 +55,6 @@ __pycache__/
 *.pyc
 
 .vercel
+
+# 스크립트가 생성하는 점검 결과물(커밋 대상 아님)
+scripts/_*.txt

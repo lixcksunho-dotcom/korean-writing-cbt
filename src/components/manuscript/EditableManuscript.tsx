@@ -105,10 +105,11 @@ const EditableManuscript = forwardRef<EditableManuscriptHandle, {
   const caretVisible = focused && caret.r < rows
 
   return (
+    // 바깥 div는 가용 너비 측정 전용. 테두리는 격자 실제 너비(w)에만 둘러 남는 공간이 빈 상자로 보이지 않게 한다.
+    <div ref={boxRef} className="w-full">
     <div
-      ref={boxRef}
-      className="overflow-auto rounded-lg border-2 border-[#1e3a5f]/40 bg-white overscroll-contain"
-      style={maxHeightVh ? { maxHeight: `${maxHeightVh}vh` } : undefined}
+      className="mx-auto overflow-auto rounded-lg border-2 border-[#1e3a5f]/40 bg-white overscroll-contain"
+      style={{ width: w, ...(maxHeightVh ? { maxHeight: `${maxHeightVh}vh` } : {}) }}
       onMouseDown={() => taRef.current?.focus()}
     >
       <div style={{ position: 'relative', width: w, height: h }}>
@@ -194,6 +195,7 @@ const EditableManuscript = forwardRef<EditableManuscriptHandle, {
         />
       </div>
       <style>{`@keyframes kpt-caret-blink{0%,50%{opacity:1}50.01%,100%{opacity:0}}`}</style>
+    </div>
     </div>
   )
 })

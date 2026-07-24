@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, ChevronRight, SpellCheck, Globe, Link2, FileText } from 'lucide-react'
 import { getActiveSubscription } from '@/lib/subscription'
+import { getActiveProgram } from '@/lib/programContext'
 import { getPracticeProgress } from '../actions'
 import PracticeEssay, { type PracticeEssayQuestion } from '../essay/PracticeEssay'
 
@@ -26,17 +27,20 @@ export default async function TypesPracticePage({
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
+  const program = await getActiveProgram()
+
   // 유형 선택 전 — 카테고리 목록
   if (!set) {
     const { data: rows } = await supabase
       .from('questions')
       .select('round')
+      .eq('program', program)
       .eq('year', PRACTICE_YEAR)
     const counts = new Map<number, number>()
     for (const r of rows ?? []) counts.set(r.round, (counts.get(r.round) ?? 0) + 1)
 
     return (
-      <div className="animate-fade-up max-w-2xl">
+      <div className="animate-fade-up max-w-2xl mx-auto">
         <Link href="/practice" className="inline-flex items-center gap-1.5 text-sm text-[#64748b] hover:text-[#1e3a5f] mb-5">
           <ArrowLeft className="h-4 w-4" /> 연습 메뉴
         </Link>
@@ -79,6 +83,7 @@ export default async function TypesPracticePage({
     supabase
       .from('questions')
       .select('id, number, points, question, passage, correct_answer')
+      .eq('program', program)
       .eq('type', 'essay')
       .eq('year', PRACTICE_YEAR)
       .eq('round', round)

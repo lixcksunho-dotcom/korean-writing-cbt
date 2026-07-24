@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { ArrowLeft, CheckCircle2, XCircle, ChevronRight, FileText, ChevronDown, RotateCcw } from 'lucide-react'
 import CopyGuard from '@/components/cbt/CopyGuard'
 import PassageView from '@/components/cbt/PassageView'
+import MarkedText from '@/components/cbt/MarkedText'
 
 export type PracticeQuestion = {
   id: string
@@ -16,6 +17,7 @@ export type PracticeQuestion = {
   passage: string | null
   correct_answer: string
   explanation: string | null
+  audio_url?: string | null
 }
 
 const CIRCLE = ['①', '②', '③', '④', '⑤']
@@ -23,9 +25,11 @@ const CIRCLE = ['①', '②', '③', '④', '⑤']
 export default function PracticeMultiple({
   questions,
   title,
+  backHref = '/practice/multiple',
 }: {
   questions: PracticeQuestion[]
   title: string
+  backHref?: string
 }) {
   const [idx, setIdx] = useState(0)
   const [picked, setPicked] = useState<Record<string, string>>({})
@@ -59,7 +63,7 @@ export default function PracticeMultiple({
   return (
     <div className="animate-fade-up">
       <div className="flex items-center justify-between mb-5">
-        <Link href="/practice/multiple" className="inline-flex items-center gap-1.5 text-sm text-[#64748b] hover:text-[#1e3a5f]">
+        <Link href={backHref} className="inline-flex items-center gap-1.5 text-sm text-[#64748b] hover:text-[#1e3a5f]">
           <ArrowLeft className="h-4 w-4" /> {title}
         </Link>
         <div className="flex items-center gap-3 text-sm">
@@ -89,7 +93,18 @@ export default function PracticeMultiple({
         <div className="flex items-center gap-2 mb-5">
           <span className="text-sm font-bold text-[#1e3a5f] bg-[#1e3a5f]/8 px-3.5 py-1.5 rounded-full">{q.year}-{q.round} · {q.number}번</span>
         </div>
-        <p className="text-[#0f172a] font-medium leading-relaxed mb-7 whitespace-pre-wrap text-base">{q.question}</p>
+        <p className="text-[#0f172a] font-medium leading-relaxed mb-7 whitespace-pre-wrap text-base"><MarkedText text={q.question} /></p>
+
+        {q.audio_url && (
+          <div className="mb-7 rounded-xl border border-[#e2e8f0] bg-[#f8fafc] p-4">
+            <div className="flex items-center gap-2 mb-2.5 text-xs font-bold text-[#1e3a5f]">
+              🎧 듣기 <span className="text-[#94a3b8] font-medium">음성을 듣고 답하세요</span>
+            </div>
+            <audio controls preload="none" src={q.audio_url} className="w-full">
+              브라우저가 오디오 재생을 지원하지 않습니다.
+            </audio>
+          </div>
+        )}
 
         <div className="space-y-2.5">
           {q.options.map((option, i) => {
@@ -110,7 +125,7 @@ export default function PracticeMultiple({
                 className={`w-full text-left px-5 py-3.5 rounded-xl border-2 transition-all text-sm font-medium flex items-center gap-2.5 ${cls} ${revealed ? 'cursor-default' : ''}`}
               >
                 <span className="font-bold">{CIRCLE[i]}</span>
-                <span className="flex-1">{option}</span>
+                <span className="flex-1"><MarkedText text={option} /></span>
                 {revealed && isAnswer && <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />}
                 {revealed && isPicked && !isAnswer && <XCircle className="h-4 w-4 text-red-400 shrink-0" />}
               </button>

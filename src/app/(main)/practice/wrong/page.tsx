@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, CheckCircle2 } from 'lucide-react'
 import PracticeMultiple, { type PracticeQuestion } from '../multiple/PracticeMultiple'
+import { getActiveProgram } from '@/lib/programContext'
 
 export const dynamic = 'force-dynamic'
 
@@ -12,10 +13,14 @@ export default async function WrongPracticePage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
+  // 현재 보고 있는 시험의 오답만 — 두 시험 문항이 한 묶음에 섞이지 않게.
+  const program = await getActiveProgram()
+
   const { data: sessions } = await supabase
     .from('quiz_sessions')
     .select('id, completed_at')
     .eq('user_id', user.id)
+    .eq('program', program)
     .not('completed_at', 'is', null)
 
   const sessionDate = new Map((sessions ?? []).map(s => [s.id as string, new Date(s.completed_at as string).getTime()]))
@@ -39,6 +44,7 @@ export default async function WrongPracticePage() {
         .from('questions')
         .select('id, year, round, number, question, options, passage, correct_answer, explanation')
         .in('id', wrongIds)
+        .eq('program', program)
         .eq('type', 'multiple')
         .order('round')
         .order('number')
@@ -48,7 +54,7 @@ export default async function WrongPracticePage() {
 
   if (questions.length === 0) {
     return (
-      <div className="animate-fade-up max-w-2xl">
+      <div className="animate-fade-up max-w-2xl mx-auto">
         <Link href="/insights" className="inline-flex items-center gap-1.5 text-sm text-[#64748b] hover:text-[#1e3a5f] mb-5">
           <ArrowLeft className="h-4 w-4" /> 학습 리포트
         </Link>

@@ -3,14 +3,16 @@
 import { useState, useEffect, useRef, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Clock, ChevronLeft, ChevronRight, Send, AlertCircle, CheckCircle2, FileText, Save, Lock } from 'lucide-react'
+import { Clock, ChevronLeft, ChevronRight, ChevronDown, Send, AlertCircle, CheckCircle2, FileText, Save, Lock } from 'lucide-react'
 import { submitSession, saveExamProgress } from '@/app/(main)/cbt/actions'
 import EditableManuscript, { type EditableManuscriptHandle } from '@/components/manuscript/EditableManuscript'
 import { parseCharLimit, manuscriptRows, clampToCharLimit } from '@/lib/charLimit'
 import { extractCircledLabels, insertAtTextareaCursor } from '@/lib/circledSymbols'
 import SymbolPalette from '@/components/cbt/SymbolPalette'
 import PassageView from '@/components/cbt/PassageView'
+import MarkedText from '@/components/cbt/MarkedText'
 import CopyGuard from '@/components/cbt/CopyGuard'
+import { getProgram, type ProgramId } from '@/lib/programs'
 
 export type Question = {
   id: string
@@ -20,22 +22,17 @@ export type Question = {
   question: string
   options: string[] | null
   passage?: string | null
+  audio_url?: string | null
 }
 
-const ESSAY_COLS = 20
-
 const CIRCLE_NUMS = ['①', '②', '③', '④', '⑤']
-const EXAM_MINUTES = 120 // 실제 시험 120분
-
-// 서술형 중 '원고지(작문지)'로 푸는 문항 = 보고서(장문). 배점이 큰 문항만 원고지 사용.
-// (실제 OMR: 서술형 1~8은 줄 답안칸, 9번 보고서만 대형 원고지)
-const MANUSCRIPT_MIN_POINTS = 200
-const isManuscriptQ = (q: Question) => q.type === 'essay' && (q.points ?? 0) >= MANUSCRIPT_MIN_POINTS
+// 시험시간·원고지 칸수·원고지 판정 기준은 시험별(programs.ts)로 다르므로 컴포넌트 내부에서 계산.
 
 export default function ExamPlayer({
   questions,
   examYear,
   examRound,
+  examProgram,
   sessionId,
   initialAnswers,
   initialTimeLeft,
@@ -44,15 +41,22 @@ export default function ExamPlayer({
   questions: Question[]
   examYear: number
   examRound: number
+  examProgram?: ProgramId
   sessionId: string
   initialAnswers?: Record<string, string>
   initialTimeLeft?: number | null
   hasSubscription: boolean
 }) {
   const router = useRouter()
+  // 시험별 설정 (실글=1000점·120분·원고지20칸, KBS=990점·90분 등)
+  const cfg = getProgram(examProgram)
+  const ESSAY_COLS = cfg.essayColumns
+  const EXAM_MINUTES = cfg.examMinutes
+  const isManuscriptQ = (q: Question) => q.type === 'essay' && (q.points ?? 0) >= cfg.manuscriptMinPoints
   const [currentIdx, setCurrentIdx] = useState(0)
   const [answers, setAnswers] = useState<Record<string, string>>(initialAnswers ?? {})
   const [showConfirm, setShowConfirm] = useState(false)
+  const [showGrid, setShowGrid] = useState(false)
   const [timeLeft, setTimeLeft] = useState(initialTimeLeft ?? EXAM_MINUTES * 60)
   const [isPending, startTransition] = useTransition()
   const [saving, setSaving] = useState(false)
@@ -127,16 +131,18 @@ export default function ExamPlayer({
   return (
     <div className="animate-fade-up">
       {/* 시험 헤더 */}
-      <div className="bg-white rounded-2xl border border-[#e2e8f0] shadow-[0_4px_16px_rgba(15,31,61,0.06)] px-5 py-4 mb-5">
-        <div className="flex items-center justify-between mb-3">
-          <div>
+      {/* 남은 시간·제출은 시험 내내 손에 닿아야 하므로 상단 고정 */}
+      <div className="sticky top-0 z-30 -mx-4 px-4 pt-2 pb-1 bg-[#f8fafc]/95 backdrop-blur sm:static sm:mx-0 sm:p-0 sm:bg-transparent sm:backdrop-blur-none">
+      <div className="bg-white rounded-2xl border border-[#e2e8f0] shadow-[0_4px_16px_rgba(15,31,61,0.06)] px-4 sm:px-5 py-3 sm:py-4 mb-3 sm:mb-5">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3 mb-3">
+          <div className="min-w-0">
             <span className="font-bold text-[#0f172a]">모의고사 {examRound}회</span>
             <span className="text-[#94a3b8] text-xs ml-2">
               객관식 {multipleCount}문 · 서술형 {essayCount}문
             </span>
-            <span className="text-[#94a3b8] text-sm ml-3">{answeredCount}/{questions.length}문항 완료</span>
+            <span className="text-[#94a3b8] text-sm ml-2 whitespace-nowrap">{answeredCount}/{questions.length} 완료</span>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             <div className={`flex items-center gap-1.5 font-mono font-bold text-sm px-3 py-1.5 rounded-xl ${
               timerWarning ? 'bg-red-50 text-red-500 animate-pulse' : 'bg-[#f1f5f9] text-[#334155]'
             }`}>
@@ -165,7 +171,7 @@ export default function ExamPlayer({
             )}
             <button
               onClick={() => setShowConfirm(true)}
-              className="btn-primary flex items-center gap-1.5 text-white px-4 py-2 rounded-xl text-sm font-semibold"
+              className="btn-primary flex shrink-0 items-center gap-1.5 text-white px-4 py-2 rounded-xl text-sm font-semibold whitespace-nowrap ml-auto sm:ml-0"
             >
               <Send className="h-3.5 w-3.5" />
               제출하기
@@ -178,6 +184,7 @@ export default function ExamPlayer({
             style={{ width: `${progress}%` }}
           />
         </div>
+      </div>
       </div>
 
       <div className="flex gap-5">
@@ -221,9 +228,21 @@ export default function ExamPlayer({
 
         {/* 문제 영역 */}
         <div className="flex-1 min-w-0">
-          {/* 모바일 번호 그리드 */}
+          {/* 모바일 번호 그리드 — 100문항이면 첫 문제가 화면 밖으로 밀려나므로 기본은 접어 둔다 */}
           <div className="lg:hidden bg-white rounded-2xl border border-[#e2e8f0] p-3 mb-4">
-            <div className="flex flex-wrap gap-1.5">
+            <button
+              type="button"
+              onClick={() => setShowGrid(v => !v)}
+              aria-expanded={showGrid}
+              className="flex w-full items-center justify-between text-xs font-bold text-[#1e3a5f]"
+            >
+              <span>문제 목록 {answeredCount}/{questions.length}</span>
+              <span className="flex items-center gap-1 text-[#94a3b8] font-semibold">
+                {showGrid ? '접기' : '펼치기'}
+                <ChevronDown className={`h-4 w-4 transition-transform ${showGrid ? 'rotate-180' : ''}`} />
+              </span>
+            </button>
+            <div className={`${showGrid ? 'flex' : 'hidden'} flex-wrap gap-1.5 mt-3`}>
               {questions.map((question, idx) => (
                 <button
                   key={question.id}
@@ -281,8 +300,21 @@ export default function ExamPlayer({
             </div>
 
             <p className="text-[#0f172a] font-medium leading-relaxed mb-8 whitespace-pre-wrap text-base">
-              {q.question}
+              <MarkedText text={q.question} />
             </p>
+
+            {/* 듣기 오디오 (audio_url이 있는 문항) */}
+            {q.audio_url && (
+              <div className="mb-8 rounded-xl border border-[#e2e8f0] bg-[#f8fafc] p-4">
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mb-2.5 text-xs font-bold text-[#1e3a5f]">
+                  <span className="whitespace-nowrap">🎧 듣기</span>
+                  <span className="text-[#94a3b8] font-medium">음성을 듣고 답하세요 (여러 번 들을 수 있어요)</span>
+                </div>
+                <audio controls preload="none" src={q.audio_url} className="w-full">
+                  브라우저가 오디오 재생을 지원하지 않습니다.
+                </audio>
+              </div>
+            )}
 
             {/* 객관식 */}
             {q.type === 'multiple' && q.options && (
@@ -304,7 +336,7 @@ export default function ExamPlayer({
                       <span className={`mr-2.5 font-bold ${selected ? 'text-[#1e3a5f]' : 'text-[#94a3b8]'}`}>
                         {CIRCLE_NUMS[i]}
                       </span>
-                      {option}
+                      <MarkedText text={option} />
                     </button>
                   )
                 })}

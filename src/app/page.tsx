@@ -23,8 +23,8 @@ const features = [
   {
     icon: PenLine,
     title: "AI 원고지 채점·첨삭",
-    desc: "AI가 원고지 사용법, 맞춤법, 문법, 논리 구성을 분석하고 100점 만점으로 채점·첨삭해드립니다. 가입하면 무료 체험을 제공합니다.",
-    badge: "무료 체험",
+    desc: "AI가 원고지 사용법, 맞춤법, 문법, 논리 구성을 분석하고 100점 만점으로 채점·첨삭해드립니다. 가입만 하면 결제 없이 3회 체험할 수 있어요.",
+    badge: "3회 무료 체험",
     badgeStyle: "bg-amber-100 text-amber-700",
     gradient: "from-amber-500 to-orange-600",
   },
@@ -82,13 +82,14 @@ export default async function HomePage() {
       .eq('is_visible', true)
       .order('created_at', { ascending: false })
       .limit(20),
-    supabase.from('questions').select('round, type').lt('year', 9000),
+    // 이 랜딩은 실용글쓰기(실글패스) 소개 — KBS 문항이 지표에 섞이지 않게 program을 좁힌다.
+    supabase.from('questions').select('round, type').eq('program', 'silyong').lt('year', 9000),
   ])
 
   // 실제 데이터 기반 지표. 단 쿼리가 일시 실패해 0이 되면 '0회분/0문항'이 노출되므로
   // 실제 보유 수치(폴백)로 보정해 깨진 0 표시를 막는다.
   const roundCount = new Set((qrows ?? []).map(r => r.round)).size || 9
-  const questionCount = (qrows ?? []).length || 393
+  const questionCount = (qrows ?? []).length || 351
   const reviewCount = reviews?.length ?? 0
   const avgRating = reviewCount ? (reviews!.reduce((s, r) => s + (r.rating ?? 0), 0) / reviewCount) : 0
 
@@ -245,7 +246,7 @@ export default async function HomePage() {
                   '객관식 정답·해설 전체 공개',
                   '서술형 모범답안 열람',
                   '맞춤법·외래어·문장호응 유형별 연습',
-                  '서술형 AI 첨삭 3회 무료 체험',
+                  '서술형·원고지 AI 첨삭 3회 무료 체험',
                 ].map(t => (
                   <li key={t} className="flex items-start gap-2.5 text-sm text-[#334155]">
                     <CheckCircle className="h-4 w-4 text-emerald-500 shrink-0 mt-0.5" />{t}
@@ -315,6 +316,28 @@ export default async function HomePage() {
           <ReviewMarquee reviews={reviews!} />
         </section>
       )}
+
+      {/* 두 번째 시험(KBS) 안내 — 검색으로 들어온 KBS 준비생이 바로 갈 곳을 준다 */}
+      <section className="py-14 px-4 bg-white">
+        <div className="max-w-3xl mx-auto rounded-2xl border border-emerald-200 bg-gradient-to-br from-[#ecfdf5] to-[#f0fdfa] p-6 sm:p-7 flex flex-col sm:flex-row sm:items-center gap-5">
+          <div className="flex-1">
+            <div className="inline-flex items-center gap-1.5 text-[11px] font-black text-emerald-700 bg-white/70 border border-emerald-200 px-2.5 py-1 rounded-full mb-2">
+              NEW
+            </div>
+            <h2 className="text-xl font-black text-[#0f172a] mb-1.5">KBS한국어능력시험도 같은 계정으로</h2>
+            <p className="text-sm text-[#475569] leading-relaxed">
+              국가공인 KBS한국어능력시험(990점·100문항·120분)까지 한 곳에서 준비하세요.
+              듣기 음성이 들어간 실전 CBT와 7개 영역별 약점 분석을 제공합니다.
+            </p>
+          </div>
+          <Link
+            href="/kbs-korean"
+            className="shrink-0 inline-flex items-center justify-center gap-1.5 bg-[#0f766e] hover:bg-[#115e59] text-white font-bold px-6 py-3 rounded-xl text-sm transition-colors"
+          >
+            시험 정보 보기 <ArrowRight className="h-4 w-4" />
+          </Link>
+        </div>
+      </section>
 
       {/* 자주 묻는 질문 */}
       <section className="py-20 px-4 bg-[#f8fafc]">

@@ -5,6 +5,7 @@ import { ArrowLeft, FileText, ChevronRight, Lock } from 'lucide-react'
 import { getActiveSubscription } from '@/lib/subscription'
 import { FREE_AI_TRIAL } from '@/lib/aiTrial'
 import { isRoundLocked } from '@/lib/examAccess'
+import { getActiveProgram } from '@/lib/programContext'
 import PracticeEssay, { type PracticeEssayQuestion } from './PracticeEssay'
 
 export default async function EssayPracticePage({
@@ -17,11 +18,14 @@ export default async function EssayPracticePage({
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
+  const program = await getActiveProgram()
+
   if (!set) {
     const [{ data: rows }, subscription] = await Promise.all([
       supabase
         .from('questions')
         .select('year, round')
+        .eq('program', program)
         .eq('type', 'essay')
         .lt('year', 9000)
         .order('year', { ascending: true })
@@ -34,7 +38,7 @@ export default async function EssayPracticePage({
       : []
 
     return (
-      <div className="animate-fade-up max-w-2xl">
+      <div className="animate-fade-up max-w-2xl mx-auto">
         <Link href="/practice" className="inline-flex items-center gap-1.5 text-sm text-[#64748b] hover:text-[#1e3a5f] mb-5">
           <ArrowLeft className="h-4 w-4" /> 연습 메뉴
         </Link>
@@ -43,7 +47,7 @@ export default async function EssayPracticePage({
 
         <div className="space-y-3">
           {sets.map(({ year, round }) => {
-            const locked = isRoundLocked(round, hasSub)
+            const locked = isRoundLocked(round, hasSub, program)
             return (
             <Link key={`${year}-${round}`} href={locked ? '/subscribe' : `/practice/essay?set=${year}-${round}`} className="card-hover group flex items-center justify-between bg-white border border-[#e2e8f0] rounded-2xl p-5 shadow-[0_4px_16px_rgba(15,31,61,0.06)]">
               <div className="flex items-center gap-3">
@@ -69,11 +73,12 @@ export default async function EssayPracticePage({
 
   const subscription = await getActiveSubscription(user.id)
   // 3회분부터는 이용권 필요
-  if (y < 9000 && isRoundLocked(r, !!subscription)) redirect('/subscribe')
+  if (y < 9000 && isRoundLocked(r, !!subscription, program)) redirect('/subscribe')
 
   const { data: questions } = await supabase
     .from('questions')
     .select('id, number, points, question, passage, correct_answer')
+    .eq('program', program)
     .eq('type', 'essay')
     .eq('year', y)
     .eq('round', r)

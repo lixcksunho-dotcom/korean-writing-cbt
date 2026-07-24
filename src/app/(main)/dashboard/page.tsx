@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { BookOpen, PenLine, Trophy, Clock, ChevronRight, ArrowUpRight, Sparkles, CheckCircle2, Gift, TrendingUp, Lock, Gauge } from "lucide-react";
@@ -6,6 +7,10 @@ import ReviewWriteModal from "@/components/review/ReviewWriteModal";
 import { getActiveSubscription, daysUntilExpiry } from "@/lib/subscription";
 import { FREE_AI_TRIAL } from "@/lib/aiTrial";
 import { tierFor } from "@/lib/grade";
+import { getActiveProgram } from "@/lib/programContext";
+import { getProgram, type GradeCut } from "@/lib/programs";
+import { formatExamId } from "@/lib/examId";
+import ModeIntroModal from "@/components/mode/ModeIntroModal";
 
 function getGreeting() {
   const h = new Date().getHours();
@@ -23,11 +28,18 @@ export default async function DashboardPage() {
 
   const displayName = user.user_metadata?.name || user.email?.split("@")[0] || "회원";
 
+  // 활성 시험 모드(실글/KBS) — 이 대시보드의 통계·예상점수는 모두 이 모드 기준.
+  const program = await getActiveProgram();
+  const cfg = getProgram(program);
+
   const [{ data: sessions }, { data: manuscripts }, sub] = await Promise.all([
     supabase
       .from("quiz_sessions")
       .select("id, year, round, score, total, started_at, completed_at")
       .eq("user_id", user.id)
+      .eq("program", program)
+      // 연습 전용 센티넬(year>=9000) 기록이 모의고사 성적·예상 점수에 섞이지 않게 제외
+      .lt("year", 9000)
       .not("completed_at", "is", null)
       .order("completed_at", { ascending: false }),
     supabase
@@ -53,6 +65,30 @@ export default async function DashboardPage() {
       .limit(1)
       .maybeSingle();
     lapsedSub = !!lastSub;
+  }
+
+  // 결제중단(abandoned cart) 유도: 구독 이력이 아예 없는데 결제창은 열었던(payment_started)
+  // 흔적이 있으면 — 10분~14일 사이(방금 이탈은 제외, 너무 오래된 건 노출 안 함) '이어서 결제' 넛지.
+  // ⚠️page_views는 RLS만 켜져 있고 정책이 없어 service_role(admin 클라이언트)로만 조회 가능.
+  let abandonedCart = false;
+  if (!sub && !lapsedSub) {
+    try {
+      const admin = createAdminClient();
+      const { data: started } = await admin
+        .from("page_views")
+        .select("created_at")
+        .eq("path", "#event/payment_started")
+        .eq("visitor_id", `u:${user.id}`)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (started?.created_at) {
+        const ageMs = Date.now() - new Date(started.created_at).getTime();
+        abandonedCart = ageMs > 10 * 60_000 && ageMs < 14 * 24 * 60 * 60_000;
+      }
+    } catch {
+      // 조용히 실패 — 대시보드 렌더링을 막지 않음
+    }
   }
 
   const completedSessions = sessions ?? [];
@@ -102,11 +138,17 @@ export default async function DashboardPage() {
     }
   }
   const objRate = totalAnswered > 0 ? totalCorrect / totalAnswered : null;
+  // 시험별 배점 가중치(실용글쓰기 객300/서700, KBS는 다름)로 만점 환산
+  const wObj = cfg.weight.objective;
+  const wEssay = cfg.weight.essay;
   // 서술형 미채점 시 객관식률로 잠정 추정
-  const predicted = objRate == null ? null : Math.round(objRate * 300 + (essayRate ?? objRate) * 700);
-  const predictedTier = predicted != null ? tierFor(predicted) : null;
-  const objPart = objRate != null ? Math.round(objRate * 300) : null;
-  const essayPart = essayRate != null ? Math.round(essayRate * 700) : null;
+  const predicted = objRate == null ? null : Math.round(objRate * wObj + (essayRate ?? objRate) * wEssay);
+  const predictedTier = predicted != null ? tierFor(predicted, program) : null;
+  const objPart = objRate != null ? Math.round(objRate * wObj) : null;
+  const essayPart = essayRate != null ? Math.round(essayRate * wEssay) : null;
+  // 비구독자 미리보기용 샘플(블러 처리되는 마케팅 값)
+  const sampleScore = Math.round(cfg.maxScore * 0.74);
+  const sampleTier = tierFor(sampleScore, program);
 
   const stats = [
     {
@@ -126,28 +168,35 @@ export default async function DashboardPage() {
       from: "from-purple-400", to: "to-purple-600", shadow: "shadow-purple-500/20",
     },
   ];
+  // 원고지 채점이 없는 모드(KBS)에선 '원고지 제출' 통계 제외
+  const visibleStats = cfg.hasManuscript ? stats : stats.filter(s => s.label !== "원고지 제출");
 
   return (
     <div className="animate-fade-up">
+      {/* 첫 방문 모드 안내 팝업 */}
+      <ModeIntroModal current={program} />
+
       {/* 웰컴 배너 */}
       <div className="relative overflow-hidden rounded-2xl mb-8 bg-gradient-to-br from-[#0f1f3d] to-[#1e3a5f] p-7 shadow-[0_8px_32px_rgba(15,31,61,0.2)]">
         <div className="absolute top-0 right-0 w-64 h-64 bg-[#d97706] rounded-full blur-3xl opacity-10 -translate-y-1/2 translate-x-1/2" />
         <div className="absolute bottom-0 left-1/3 w-48 h-48 bg-[#3d6aa0] rounded-full blur-3xl opacity-20 translate-y-1/2" />
-        <div className="relative flex items-start justify-between gap-4">
-          <div>
-            <p className="text-white/50 text-sm mb-1">{getGreeting()}, 반갑습니다</p>
-            <h1 className="text-2xl md:text-3xl font-black text-white tracking-tight">
-              {displayName}님 <span className="text-gradient-gold">오늘도 파이팅!</span>
-            </h1>
-            <p className="text-white/50 mt-2 text-sm">실용글쓰기 합격을 향해 꾸준히 나아가고 있어요.</p>
-            {streak > 0 && (
-              <span className="inline-flex items-center gap-1.5 mt-3 bg-white/10 border border-white/15 text-white text-xs font-bold px-3 py-1.5 rounded-full">
-                🔥 {streak}일 연속 학습 중
-              </span>
-            )}
-          </div>
-          <div className="shrink-0 pt-1">
-            <ReviewWriteModal defaultName={displayName} />
+        <div className="relative">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-white/50 text-sm mb-1">{getGreeting()}, 반갑습니다 · <b className="text-white/70">{cfg.examName}</b></p>
+              <h1 className="text-2xl md:text-3xl font-black text-white tracking-tight">
+                {displayName}님 <span className="text-gradient-gold">오늘도 파이팅!</span>
+              </h1>
+              <p className="text-white/50 mt-2 text-sm">{cfg.examName} 합격을 향해 꾸준히 나아가고 있어요.</p>
+              {streak > 0 && (
+                <span className="inline-flex items-center gap-1.5 mt-3 bg-white/10 border border-white/15 text-white text-xs font-bold px-3 py-1.5 rounded-full">
+                  🔥 {streak}일 연속 학습 중
+                </span>
+              )}
+            </div>
+            <div className="shrink-0 pt-1">
+              <ReviewWriteModal defaultName={displayName} />
+            </div>
           </div>
         </div>
       </div>
@@ -169,7 +218,7 @@ export default async function DashboardPage() {
       )}
 
       {/* 구독자 AI 채점 활용 유도 — 유료로 산 무제한 첨삭을 실제로 쓰게(미사용=이탈 위험). 만료임박이면 그 경고 우선 */}
-      {sub && !expiringSoon && (
+      {sub && !expiringSoon && cfg.hasManuscript && (
         <Link
           href="/practice/essay"
           className="group block relative overflow-hidden rounded-2xl mb-8 p-5 sm:p-6 border border-[#c7d2fe] bg-gradient-to-r from-[#eef2ff] to-[#e0e7ff] hover:shadow-[0_8px_24px_rgba(79,70,229,0.15)] transition-all"
@@ -212,8 +261,25 @@ export default async function DashboardPage() {
         </Link>
       )}
 
-      {/* 온보딩/전환 유도 — 비구독자 + 무료 체험 잔여 시(만료 재구독 대상 제외) */}
-      {!sub && !lapsedSub && aiTrial.remaining > 0 && (
+      {/* 결제중단 유도 — 결제창은 열었지만 완료 안 한 유저(진성 구매의도가 있었던 대상) */}
+      {abandonedCart && (
+        <Link href="/subscribe" className="group block relative overflow-hidden rounded-2xl mb-8 p-5 sm:p-6 border border-indigo-200 bg-gradient-to-r from-indigo-50 to-blue-50 hover:shadow-[0_8px_24px_rgba(79,70,229,0.15)] transition-all">
+          <div className="absolute top-0 right-0 w-40 h-40 bg-indigo-300 rounded-full blur-3xl opacity-20 -translate-y-1/3 translate-x-1/3" />
+          <div className="relative flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-400 to-indigo-600 flex items-center justify-center shrink-0 shadow-lg shadow-indigo-500/30">
+              <Sparkles className="h-6 w-6 text-white" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h2 className="text-base font-black text-indigo-900 mb-0.5">결제가 완료되지 않았어요</h2>
+              <p className="text-sm text-indigo-800/80">이용권 결제를 시작하셨는데 마무리가 안 됐네요. <b>5,500원 · 30일 · 자동결제 없음</b>으로 지금 바로 이어서 결제하실 수 있어요.</p>
+            </div>
+            <span className="shrink-0 btn-gold text-xs font-bold text-white px-4 py-2 rounded-xl">이어서 결제하기</span>
+          </div>
+        </Link>
+      )}
+
+      {/* 온보딩/전환 유도 — 비구독자 + 무료 체험 잔여 시(만료 재구독·결제중단 대상 제외) */}
+      {!sub && !lapsedSub && !abandonedCart && aiTrial.remaining > 0 && (
         completedSessions.length === 0 ? (
           // 신규 유저: 첫 시험 → 무료 첨삭 2단계 온보딩
           <div className="relative overflow-hidden rounded-2xl mb-8 p-6 border border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50">
@@ -264,7 +330,7 @@ export default async function DashboardPage() {
 
       {/* 통계 카드 */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        {stats.map(({ label, value, icon: Icon, from, to, shadow }) => (
+        {visibleStats.map(({ label, value, icon: Icon, from, to, shadow }) => (
           <div
             key={label}
             className={`bg-white rounded-2xl p-5 border border-[#e2e8f0] shadow-[0_4px_16px_rgba(15,31,61,0.06)] hover:shadow-[0_8px_24px_rgba(15,31,61,0.1)] transition-all`}
@@ -287,7 +353,7 @@ export default async function DashboardPage() {
               <h2 className="text-base font-bold text-[#0f172a]">AI 예상 점수</h2>
               <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">AI 추정</span>
             </div>
-            <p className="text-xs text-[#94a3b8] mb-4">객관식 정답률과 서술형 AI 채점 평균을 1000점으로 환산한 추정치예요.</p>
+            <p className="text-xs text-[#94a3b8] mb-4">객관식 정답률과 서술형 AI 채점 평균을 {cfg.maxScore}점으로 환산한 추정치예요.{cfg.id === 'kbs' && ' (KBS는 상대평가라 실제 등급과 다를 수 있어요.)'}</p>
 
             <div className="flex items-end gap-3 mb-4">
               <span className="text-4xl font-black text-[#0f172a] tracking-tight">{predicted}<span className="text-lg text-[#94a3b8]">점</span></span>
@@ -297,17 +363,17 @@ export default async function DashboardPage() {
                   : predictedTier.color === 'blue' ? 'bg-blue-100 text-blue-700'
                   : predictedTier.color === 'amber' ? 'bg-amber-100 text-amber-700'
                   : 'bg-slate-100 text-slate-600'}`}>
-                  {predictedTier.name === '미달' ? '등급 미달' : `${predictedTier.name} 예상`}
+                  {predictedTier.name === cfg.belowLabel ? `${cfg.belowLabel}` : `${predictedTier.name} 예상`}
                 </span>
               )}
             </div>
 
             {/* 등급 게이지 */}
-            <ScoreGauge predicted={predicted ?? 0} />
+            <ScoreGauge predicted={predicted ?? 0} cuts={cfg.cuts} maxScore={cfg.maxScore} />
 
             <div className="flex items-center gap-4 mt-4 text-xs">
-              <span className="text-[#64748b]">객관식 <b className="text-[#0f172a]">{objPart}</b>/300</span>
-              <span className="text-[#64748b]">서술형 <b className="text-[#0f172a]">{essayPart ?? '미채점'}</b>/700</span>
+              <span className="text-[#64748b]">객관식 <b className="text-[#0f172a]">{objPart}</b>/{wObj}</span>
+              <span className="text-[#64748b]">서술형 <b className="text-[#0f172a]">{essayPart ?? '미채점'}</b>/{wEssay}</span>
             </div>
             {essayPart == null && (
               <Link href="/cbt" className="mt-3 inline-flex items-center gap-1 text-xs font-bold text-amber-700 hover:underline">
@@ -325,8 +391,8 @@ export default async function DashboardPage() {
             <p className="text-xs text-[#94a3b8] mb-4">서술형까지 AI가 채점해, 지금 실력이면 <b className="text-[#1e3a5f]">실제 시험에서 몇 점·몇 등급</b>일지 알려줘요.</p>
             <div className="relative">
               <div className="blur-[5px] select-none pointer-events-none" aria-hidden>
-                <div className="text-4xl font-black text-[#0f172a] mb-3">7●● <span className="text-lg text-[#94a3b8]">점 · 준2급 예상</span></div>
-                <ScoreGauge predicted={735} />
+                <div className="text-4xl font-black text-[#0f172a] mb-3">{Math.floor(sampleScore / 100)}●● <span className="text-lg text-[#94a3b8]">점 · {sampleTier.name} 예상</span></div>
+                <ScoreGauge predicted={sampleScore} cuts={cfg.cuts} maxScore={cfg.maxScore} />
               </div>
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
                 <span className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-amber-100"><Lock className="h-4 w-4 text-amber-600" /></span>
@@ -352,7 +418,7 @@ export default async function DashboardPage() {
       )}
 
       {/* 바로가기 카드 */}
-      <div className="grid md:grid-cols-2 gap-4 mb-8">
+      <div className={`grid ${cfg.hasManuscript ? 'md:grid-cols-2' : 'grid-cols-1'} gap-4 mb-8`}>
         <Link href="/cbt" className="group card-hover bg-white rounded-2xl p-6 border border-[#e2e8f0] shadow-[0_4px_16px_rgba(15,31,61,0.06)] block">
           <div className="flex items-start gap-4">
             <div className="bg-gradient-to-br from-blue-500 to-[#1e3a5f] p-3.5 rounded-2xl shadow-lg shadow-blue-500/20 group-hover:shadow-xl group-hover:shadow-blue-500/30 transition-all">
@@ -369,6 +435,7 @@ export default async function DashboardPage() {
           </div>
         </Link>
 
+        {cfg.hasManuscript && (
         <Link href="/manuscript" className="group card-hover bg-white rounded-2xl p-6 border border-[#e2e8f0] shadow-[0_4px_16px_rgba(15,31,61,0.06)] block">
           <div className="flex items-start gap-4">
             <div className="bg-gradient-to-br from-amber-400 to-amber-600 p-3.5 rounded-2xl shadow-lg shadow-amber-500/20 group-hover:shadow-xl group-hover:shadow-amber-500/30 transition-all">
@@ -384,6 +451,7 @@ export default async function DashboardPage() {
             </div>
           </div>
         </Link>
+        )}
       </div>
 
       {/* 구독 상태 */}
@@ -394,7 +462,7 @@ export default async function DashboardPage() {
               <CheckCircle2 className="h-5 w-5 text-white" />
             </div>
             <div>
-              <p className="font-bold text-emerald-900 text-sm">AI 채점 구독 중</p>
+              <p className="font-bold text-emerald-900 text-sm">프리미엄 플랜 구독 중</p>
               <p className="text-emerald-700 text-xs">
                 {new Date(sub.expires_at).toLocaleDateString('ko-KR')} 만료 · {daysUntilExpiry(sub.expires_at)}일 남음
               </p>
@@ -442,7 +510,7 @@ export default async function DashboardPage() {
               return (
                 <Link
                   key={s.id}
-                  href={`/cbt/${s.year}-${s.round}`}
+                  href={`/cbt/${formatExamId(program, s.year, s.round)}`}
                   className="flex items-center gap-4 px-6 py-4 hover:bg-[#f8fafc] transition-colors"
                 >
                   <div className="w-9 h-9 rounded-xl bg-[#f1f5f9] flex items-center justify-center shrink-0">
@@ -468,39 +536,27 @@ export default async function DashboardPage() {
   );
 }
 
-// 등급 구간 게이지 — 예상 점수 위치를 색 구간 위에 마커로 표시
-function ScoreGauge({ predicted }: { predicted: number }) {
-  const segs = [
-    { w: 550, c: "bg-slate-200" },
-    { w: 80, c: "bg-amber-200" },
-    { w: 80, c: "bg-amber-400" },
-    { w: 80, c: "bg-sky-300" },
-    { w: 80, c: "bg-blue-500" },
-    { w: 130, c: "bg-emerald-500" },
-  ];
-  const pos = Math.max(0, Math.min(100, predicted / 10));
-  const marks = [
-    { at: 550, label: "준3급" },
-    { at: 630, label: "3급" },
-    { at: 710, label: "준2급" },
-    { at: 790, label: "2급" },
-    { at: 870, label: "1급" },
-  ];
+// 등급 구간 게이지 — 예상 점수 위치와 시험별 등급컷 마커를 표시(모드 무관 동적 렌더)
+function ScoreGauge({ predicted, cuts, maxScore }: { predicted: number; cuts: GradeCut[]; maxScore: number }) {
+  const pct = (v: number) => Math.max(0, Math.min(100, (v / maxScore) * 100));
+  const pos = pct(predicted);
+  const marks = [...cuts].sort((a, b) => a.min - b.min);
   return (
     <div className="relative pt-5">
       <div className="absolute top-0" style={{ left: `${pos}%`, transform: "translateX(-50%)" }}>
         <div className="text-[10px] font-black text-[#1e3a5f] whitespace-nowrap text-center">{predicted}</div>
         <div className="w-0.5 h-2 bg-[#1e3a5f] mx-auto" />
       </div>
-      <div className="flex h-3 rounded-full overflow-hidden">
-        {segs.map((s, i) => (
-          <div key={i} className={s.c} style={{ width: `${s.w / 10}%` }} />
-        ))}
+      <div className="relative h-3 rounded-full overflow-hidden bg-slate-200">
+        <div
+          className="absolute inset-y-0 left-0 bg-gradient-to-r from-sky-300 via-blue-500 to-emerald-500"
+          style={{ width: `${pos}%` }}
+        />
       </div>
       <div className="relative h-4 mt-1">
         {marks.map(m => (
-          <span key={m.label} className="absolute text-[9px] text-[#94a3b8]" style={{ left: `${m.at / 10}%`, transform: "translateX(-50%)" }}>
-            {m.label}
+          <span key={m.name} className="absolute text-[9px] text-[#94a3b8] whitespace-nowrap" style={{ left: `${pct(m.min)}%`, transform: "translateX(-50%)" }}>
+            {m.name}
           </span>
         ))}
       </div>

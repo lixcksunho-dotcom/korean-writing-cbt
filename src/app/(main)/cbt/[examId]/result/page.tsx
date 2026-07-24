@@ -4,7 +4,8 @@ import Link from 'next/link'
 import { CheckCircle2, XCircle, Trophy, RotateCcw, LayoutDashboard, Star, Target, Sparkles, ChevronRight, Lock } from 'lucide-react'
 import { getActiveSubscription } from '@/lib/subscription'
 import { FREE_AI_TRIAL } from '@/lib/aiTrial'
-import { scaleTo1000, tierFor } from '@/lib/grade'
+import { scaleToMax, tierFor } from '@/lib/grade'
+import { getProgram, type ProgramId } from '@/lib/programs'
 import ManuscriptGrid from '@/components/manuscript/ManuscriptGrid'
 import EssayGrader from '@/components/cbt/EssayGrader'
 import { AiTrialProvider } from '@/components/cbt/AiTrialContext'
@@ -12,6 +13,7 @@ import BookmarkButton from '@/components/study/BookmarkButton'
 import ReportButton from '@/components/study/ReportButton'
 import PaperShareButton from '@/components/result/PaperShareButton'
 import CopyGuard from '@/components/cbt/CopyGuard'
+import MarkedText from '@/components/cbt/MarkedText'
 import type { EssayGrade } from '@/app/(main)/cbt/actions'
 
 export default async function ResultPage({
@@ -31,19 +33,29 @@ export default async function ResultPage({
 
   const { data: session } = await supabase
     .from('quiz_sessions')
-    .select('id, year, round, score, total, started_at, completed_at')
+    .select('id, program, year, round, score, total, started_at, completed_at')
     .eq('id', sessionId)
     .eq('user_id', user.id)
     .single()
 
   if (!session?.completed_at) redirect('/cbt')
 
-  const [{ data: answers }, { data: questions }, subscription, { data: bookmarkRows }] = await Promise.all([
+  // 이 세션이 어떤 시험(실글/KBS)인지 → 채점 만점·등급·영역을 그에 맞게.
+  const program = (session.program as ProgramId) ?? 'silyong'
+  const cfg = getProgram(program)
+
+  const [{ data: answers }, { data: questions }, subscription, { data: bookmarkRows }, { data: allRounds }] = await Promise.all([
     supabase.from('quiz_answers').select('question_id, user_answer, is_correct, ai_score, ai_feedback').eq('session_id', sessionId),
-    supabase.from('questions').select('id, number, type, points, question, options, correct_answer, explanation').eq('year', session.year).eq('round', session.round).order('number'),
+    supabase.from('questions').select('id, number, type, points, question, options, correct_answer, explanation').eq('program', program).eq('year', session.year).eq('round', session.round).order('number'),
     getActiveSubscription(user.id),
     supabase.from('bookmarks').select('question_id').eq('user_id', user.id),
+    // 업셀 문구의 '몇 회분이 열리는지'를 실제 보유 회차에서 뽑는다(하드코딩 수치가 낡는 것 방지)
+    supabase.from('questions').select('round').eq('program', program).lt('year', 9000),
   ])
+  const lockedRoundCount = Math.max(
+    0,
+    new Set((allRounds ?? []).map(r => r.round)).size - cfg.freeRounds,
+  )
   const bookmarkSet = new Set((bookmarkRows ?? []).map(b => b.question_id as string))
 
   const answerMap = new Map((answers ?? []).map(a => [a.question_id, a]))
@@ -62,20 +74,17 @@ export default async function ResultPage({
   }
   const essaysGraded = essayQuestions.every(q => answerMap.get(q.id)?.ai_score != null)
 
-  const scaled = scaleTo1000(earnedPoints, totalPoints)
-  const tier = tierFor(scaled)
-  const isPass = tier.name !== '미달'
+  const scaled = scaleToMax(earnedPoints, totalPoints, program)
+  const tier = tierFor(scaled, program)
+  const isPass = tier.name !== cfg.belowLabel
 
   // 비구독자 무료 AI 체험 잔여 — 이미 받은 user에서 계산(추가 getUser 왕복 제거)
   const trialUsed = Number(user.app_metadata?.ai_trial_used ?? 0)
   const aiTrial = { remaining: subscription ? 0 : Math.max(0, FREE_AI_TRIAL - trialUsed) }
 
-  // 영역별 약점 분석(객관식 번호 구간 기준)
-  const BANDS = [
-    { label: '어휘·어법·어문 규정', lo: 1, hi: 10, href: '/practice/types' },
-    { label: '글쓰기 계획·조직·고쳐쓰기', lo: 11, hi: 20, href: '/practice/types?set=3' },
-    { label: '독해·자료 해석', lo: 21, hi: 30, href: '/practice/essay' },
-  ]
+  // 영역별 약점 분석(객관식 번호 구간 기준) — 시험별 영역 정의(programs.ts)
+  // 약한 영역을 곧바로 이어 풀 수 있게, 영역별 연습으로 연결한다.
+  const BANDS = cfg.areas.map((a, i) => ({ label: a.name, lo: a.from, hi: a.to, href: `/practice/areas?a=${i}` }))
   const bandStats = BANDS.map(b => {
     const qs = autoQuestions.filter(q => (q.number ?? 0) >= b.lo && (q.number ?? 0) <= b.hi)
     const correct = qs.filter(q => answerMap.get(q.id)?.is_correct).length
@@ -107,11 +116,17 @@ export default async function ResultPage({
             <Trophy className="h-10 w-10" />
           </div>
           <div className="text-4xl sm:text-5xl md:text-6xl font-black mb-1 tracking-tight">{scaled}<span className="text-2xl">점</span></div>
-          <div className="text-white/70 text-sm mb-4">획득 {earnedPoints} / {totalPoints}점 · 1000점 환산</div>
+          <div className="text-white/70 text-sm mb-4">획득 {earnedPoints} / {totalPoints}점 · {cfg.maxScore}점 환산</div>
           <div className="inline-flex items-center gap-1.5 px-5 py-2 rounded-full text-sm font-bold bg-white/20">
             {isPass ? <Star className="h-4 w-4 fill-current" /> : null}
-            {isPass ? `${tier.name} 합격권` : '등급 미달 — 다시 도전하세요'}
+            {isPass ? `${tier.name}${program === 'silyong' ? ' 합격권' : ' 예상'}` : `${cfg.belowLabel} — 다시 도전하세요`}
           </div>
+          {/* KBS는 주관처가 절대 등급컷을 공개하지 않는다 — 참고용임을 분명히 알린다 */}
+          {program === 'kbs' && (
+            <p className="text-white/50 text-xs mt-3">
+              ※ KBS한국어능력시험은 공식 등급컷을 공개하지 않아, 학습 참고용 근사 기준으로 계산한 예상 등급입니다.
+            </p>
+          )}
           {!essaysGraded && essayQuestions.length > 0 && (
             <p className="text-white/50 text-xs mt-4">
               ※ 서술형 AI 채점 전 점수입니다. 아래에서 채점하면 점수에 반영됩니다.
@@ -123,7 +138,7 @@ export default async function ResultPage({
             </p>
           )}
           <div className="flex justify-center mt-5">
-            <PaperShareButton round={session.round as number} scaled={scaled} tier={tier.name} />
+            <PaperShareButton round={session.round as number} scaled={scaled} tier={tier.name} examName={cfg.examName} maxScore={cfg.maxScore} below={cfg.belowLabel} />
           </div>
         </div>
       </div>
@@ -214,9 +229,13 @@ export default async function ResultPage({
             <p className="text-xs font-bold text-amber-300 mb-1">합격까지 더 빠르게</p>
             <h3 className="text-lg font-black mb-3">구독하면 이런 게 열려요</h3>
             <ul className="space-y-1.5 text-sm text-white/90 mb-5">
-              <li className="flex items-center gap-2"><Sparkles className="h-4 w-4 text-amber-300 shrink-0" /> 서술형 9문항 <b>AI 첨삭·점수 무제한</b></li>
-              <li className="flex items-center gap-2"><Sparkles className="h-4 w-4 text-amber-300 shrink-0" /> 시험·연습 <b>저장하고 이어풀기</b></li>
-              <li className="flex items-center gap-2"><Sparkles className="h-4 w-4 text-amber-300 shrink-0" /> <b>모의고사 6회분</b> 전체 + 유형별 집중 연습</li>
+              {essayQuestions.length > 0 && (
+                <li className="flex items-center gap-2"><Sparkles className="h-4 w-4 text-amber-300 shrink-0" /> 서술형 {essayQuestions.length}문항 <b>AI 첨삭·점수 무제한</b></li>
+              )}
+              <li className="flex items-center gap-2"><Sparkles className="h-4 w-4 text-amber-300 shrink-0" /> 영역별 <b>약점 분석</b> · 시험 <b>저장하고 이어풀기</b></li>
+              {lockedRoundCount > 0 && (
+                <li className="flex items-center gap-2"><Sparkles className="h-4 w-4 text-amber-300 shrink-0" /> 잠긴 <b>모의고사 {lockedRoundCount}회분</b> 전체 + 유형별 집중 연습</li>
+              )}
             </ul>
             <Link href="/subscribe" className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-amber-400 text-[#1e3a5f] font-black text-sm hover:bg-amber-300 transition-colors">
               5,500원으로 30일 무제한 <ChevronRight className="h-4 w-4" />
@@ -247,7 +266,7 @@ export default async function ResultPage({
           <div className="space-y-4">
             {essayQuestions.map((q, ei) => {
               const a = answerMap.get(q.id)
-              const isManuscript = (q.points ?? 0) >= 200
+              const isManuscript = (q.points ?? 0) >= cfg.manuscriptMinPoints
               return (
                 <div key={q.id} className="bg-white rounded-2xl border-2 border-amber-100 p-5">
                   <div className="flex items-center gap-2 mb-3">
@@ -326,7 +345,7 @@ export default async function ResultPage({
                         {q.number}번 {isCorrect ? '정답' : '오답'}
                       </span>
                       <span className="text-xs text-[#94a3b8]">{q.points}점</span>
-                      <p className="text-[#334155] font-medium text-sm mt-2 leading-relaxed whitespace-pre-wrap">{q.question}</p>
+                      <p className="text-[#334155] font-medium text-sm mt-2 leading-relaxed whitespace-pre-wrap"><MarkedText text={q.question} /></p>
                     </div>
                   </div>
                   {!isCorrect && (
@@ -342,7 +361,7 @@ export default async function ResultPage({
                     </div>
                   )}
                   {q.explanation && (
-                    <div className="ml-10 mt-3 bg-[#f0f7ff] border border-blue-100 rounded-xl px-4 py-3 text-xs text-[#1e4a8f] leading-relaxed">
+                    <div className="ml-10 mt-3 bg-[#f0f7ff] border border-blue-100 rounded-xl px-4 py-3 text-xs text-[#1e4a8f] leading-relaxed whitespace-pre-wrap">
                       💡 <span className="font-semibold">해설</span> {q.explanation}
                     </div>
                   )}

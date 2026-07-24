@@ -2,25 +2,28 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, TrendingUp, TrendingDown, Minus, Target, NotebookPen, ChevronRight, CheckCircle2, XCircle, BarChart3 } from 'lucide-react'
+import { getActiveProgram } from '@/lib/programContext'
+import { getProgram } from '@/lib/programs'
 
 export const dynamic = 'force-dynamic'
-
-// 번호 구간 → 영역 (결과화면과 동일 기준)
-const BANDS = [
-  { label: '어휘·어법·어문 규정', lo: 1, hi: 10, href: '/practice/types' },
-  { label: '글쓰기 계획·조직·고쳐쓰기', lo: 11, hi: 20, href: '/practice/types?set=3' },
-  { label: '독해·자료 해석', lo: 21, hi: 30, href: '/practice/essay' },
-]
 
 export default async function InsightsPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
+  // 리포트는 현재 보고 있는 시험 기준 — 두 시험의 기록이 한 그래프에 섞이면 추이가 무의미해진다.
+  const program = await getActiveProgram()
+  const cfg = getProgram(program)
+  const BANDS = cfg.areas.map((a, i) => ({ label: a.name, lo: a.from, hi: a.to, href: `/practice/areas?a=${i}` }))
+
   const { data: sessions } = await supabase
     .from('quiz_sessions')
     .select('id, year, round, score, total, completed_at')
     .eq('user_id', user.id)
+    .eq('program', program)
+    // 연습 전용 센티넬(year>=9000) 기록은 성적 추이에서 제외
+    .lt('year', 9000)
     .not('completed_at', 'is', null)
     .order('completed_at', { ascending: true })
 
@@ -29,7 +32,7 @@ export default async function InsightsPage() {
   // 데이터 없을 때
   if (completed.length === 0) {
     return (
-      <div className="animate-fade-up max-w-2xl">
+      <div className="animate-fade-up max-w-2xl mx-auto">
         <BackLink />
         <div className="flex flex-col items-center justify-center py-20 text-center bg-white rounded-2xl border border-[#e2e8f0]">
           <div className="bg-[#f1f5f9] p-5 rounded-2xl mb-4"><BarChart3 className="h-10 w-10 text-[#94a3b8]" /></div>
