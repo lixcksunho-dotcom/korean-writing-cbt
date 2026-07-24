@@ -4,9 +4,12 @@ import { useState } from 'react'
 import { Share2, Check } from 'lucide-react'
 
 // 성적 공유 — Web Share API 지원 시 공유 시트, 아니면 클립보드 복사.
-export default function PaperShareButton({ round, scaled, tier }: { round: number; scaled: number; tier: string }) {
+export default function PaperShareButton({
+  round, scaled, tier,
+  examName = '한국실용글쓰기', maxScore = 1000, below = '미달',
+}: { round: number; scaled: number; tier: string; examName?: string; maxScore?: number; below?: string }) {
   const [copied, setCopied] = useState(false)
-  const text = `[실글패스] 한국실용글쓰기 모의고사 ${round}회 — 1000점 환산 ${scaled}점${tier !== '미달' ? ` (${tier} 합격권)` : ''}! 나도 무료로 풀어보기 👉`
+  const text = `[실글패스] ${examName} 모의고사 ${round}회 — ${maxScore}점 환산 ${scaled}점${tier !== below ? ` (${tier})` : ''}! 나도 무료로 풀어보기 👉`
   const url = 'https://kptest.cloud'
 
   async function share() {

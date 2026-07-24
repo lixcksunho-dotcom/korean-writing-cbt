@@ -7,6 +7,8 @@ import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import { BookOpen, LayoutDashboard, Menu, X, LogOut, PenLine, Sparkles, ListChecks } from "lucide-react";
 import LogoGlyph from "@/components/layout/LogoGlyph";
+import ModeSwitcher from "@/components/mode/ModeSwitcher";
+import type { ProgramId } from "@/lib/programs";
 
 const navItems = [
   { href: "/dashboard", label: "대시보드", icon: LayoutDashboard },
@@ -15,10 +17,18 @@ const navItems = [
   { href: "/manuscript", label: "원고지 채점", icon: PenLine },
 ];
 
-export default function Navbar({ userEmail = "" }: { userEmail?: string }) {
+export default function Navbar({
+  userEmail = "",
+  program = "silyong",
+  brandName = "실글패스",
+  brandGradient = "from-[#f59e0b] to-[#d97706]",
+  showManuscript = true,
+}: { userEmail?: string; program?: ProgramId; brandName?: string; brandGradient?: string; showManuscript?: boolean }) {
   const pathname = usePathname();
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
+  // KBS 등 원고지 채점이 없는 시험 모드에선 원고지 메뉴 숨김
+  const items = showManuscript ? navItems : navItems.filter(i => i.href !== "/manuscript");
 
   async function handleLogout() {
     const supabase = createClient();
@@ -31,25 +41,27 @@ export default function Navbar({ userEmail = "" }: { userEmail?: string }) {
     <nav className="bg-[#0f1f3d]/95 backdrop-blur-md text-white shadow-[0_1px_0_rgba(255,255,255,0.08)] sticky top-0 z-50">
       <div className="max-w-6xl mx-auto px-4">
         <div className="flex items-center justify-between h-16">
-          {/* 로고 */}
-          <Link href="/dashboard" className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#f59e0b] to-[#d97706] flex items-center justify-center shadow-lg shadow-[#d97706]/30">
-              <LogoGlyph className="h-5 w-5 text-white" />
-            </div>
-            <span className="font-bold text-white hidden sm:block tracking-tight">실글패스</span>
-            <span className="font-bold text-white sm:hidden tracking-tight">실글패스</span>
-          </Link>
+          {/* 로고 + 모드 스위처 (현재 모드가 한눈에) */}
+          <div className="flex items-center gap-3 min-w-0">
+            <Link href="/dashboard" className="flex items-center gap-2.5 shrink-0">
+              <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${brandGradient} flex items-center justify-center shadow-lg shadow-black/20`}>
+                <LogoGlyph className="h-5 w-5 text-white" />
+              </div>
+              <span className="font-bold text-white tracking-tight hidden lg:block whitespace-nowrap">{brandName}</span>
+            </Link>
+            <ModeSwitcher current={program} />
+          </div>
 
           {/* 데스크탑 메뉴 */}
           <div className="hidden md:flex items-center gap-1">
-            {navItems.map(({ href, label, icon: Icon }) => {
+            {items.map(({ href, label, icon: Icon }) => {
               const active = pathname.startsWith(href);
               return (
                 <Link
                   key={href}
                   href={href}
                   className={cn(
-                    "relative flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all",
+                    "relative flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap",
                     active
                       ? "text-white bg-white/12"
                       : "text-white/60 hover:text-white hover:bg-white/8"
@@ -100,7 +112,7 @@ export default function Navbar({ userEmail = "" }: { userEmail?: string }) {
       {menuOpen && (
         <div className="md:hidden border-t border-white/10 bg-[#0f1f3d]">
           <div className="px-4 py-3 space-y-1">
-            {navItems.map(({ href, label, icon: Icon }) => (
+            {items.map(({ href, label, icon: Icon }) => (
               <Link
                 key={href}
                 href={href}
