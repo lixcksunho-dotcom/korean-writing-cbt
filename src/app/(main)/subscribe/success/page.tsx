@@ -60,14 +60,14 @@ export default async function SuccessPage({
           <span className="font-semibold text-[#0f172a]">5,500원</span> 결제가 완료되었습니다.
         </p>
         <p className="text-[#94a3b8] text-xs mb-8">
-          {expiresAt.toLocaleDateString('ko-KR')} 까지 AI 원고지 채점을 이용할 수 있어요.
+          {expiresAt.toLocaleDateString('ko-KR')} 까지 프리미엄 플랜을 이용할 수 있어요.
         </p>
         <Link
-          href="/manuscript"
+          href="/dashboard"
           className="w-full btn-gold flex items-center justify-center gap-2 text-white font-bold py-3.5 rounded-xl text-sm"
         >
           <PenLine className="h-4 w-4" />
-          AI 채점 바로 시작하기
+          바로 시작하기
         </Link>
         <Link href="/dashboard" className="block mt-3 text-sm text-[#64748b] hover:text-[#334155] transition-colors">
           대시보드로 이동

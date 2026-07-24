@@ -6,6 +6,8 @@ import { getActiveSubscription } from '@/lib/subscription'
 import { consumeAiTrial, FREE_AI_TRIAL } from '@/lib/aiTrial'
 import { enforcePaidUsage, recordPaidGrade } from '@/lib/antiSharing'
 import { trackServerEvent } from '@/lib/analytics/trackServerEvent'
+import { formatExamId } from '@/lib/examId'
+import { type ProgramId } from '@/lib/programs'
 
 export type EssayGrade = {
   score: number
@@ -119,14 +121,18 @@ export async function gradeExamEssay(
   return result
 }
 
-export async function createSession(year: number, round: number): Promise<{ sessionId: string }> {
+export async function createSession(
+  year: number,
+  round: number,
+  program: ProgramId = 'silyong',
+): Promise<{ sessionId: string }> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Unauthorized')
 
   const { data, error } = await supabase
     .from('quiz_sessions')
-    .insert({ user_id: user.id, year, round })
+    .insert({ user_id: user.id, year, round, program })
     .select('id')
     .single()
 
@@ -136,7 +142,11 @@ export async function createSession(year: number, round: number): Promise<{ sess
 
 // 진행중(미완료) 세션을 찾아 이어풀기 상태를 돌려주고, 없으면 새로 만든다.
 // (시험 페이지가 서버에서 호출 → ExamPlayer에 sessionId·저장답안·남은시간 전달)
-export async function getOrCreateExamSession(year: number, round: number): Promise<{
+export async function getOrCreateExamSession(
+  year: number,
+  round: number,
+  program: ProgramId = 'silyong',
+): Promise<{
   sessionId: string
   savedAnswers: Record<string, string>
   timeLeft: number | null
@@ -150,6 +160,7 @@ export async function getOrCreateExamSession(year: number, round: number): Promi
     .from('quiz_sessions')
     .select('id, saved_answers, time_left, saved_at')
     .eq('user_id', user.id)
+    .eq('program', program)
     .eq('year', year)
     .eq('round', round)
     .is('completed_at', null)
@@ -168,7 +179,7 @@ export async function getOrCreateExamSession(year: number, round: number): Promi
 
   const { data: created, error } = await supabase
     .from('quiz_sessions')
-    .insert({ user_id: user.id, year, round })
+    .insert({ user_id: user.id, year, round, program })
     .select('id')
     .single()
   if (error) throw error
@@ -213,7 +224,7 @@ export async function submitSession(
 
   const { data: session } = await supabase
     .from('quiz_sessions')
-    .select('id, year, round')
+    .select('id, program, year, round')
     .eq('id', sessionId)
     .eq('user_id', user.id)
     .single()
@@ -223,6 +234,7 @@ export async function submitSession(
   const { data: questions } = await supabase
     .from('questions')
     .select('id, type, correct_answer')
+    .eq('program', session.program)
     .eq('year', session.year)
     .eq('round', session.round)
 
@@ -249,5 +261,10 @@ export async function submitSession(
     .eq('id', sessionId)
 
   // 퍼널: 모의고사 완료(가입→첫시험→체험→구독 상단 퍼널 측정용)
-  await trackServerEvent('exam_completed', user.id, `${session.year}-${session.round}`)
+  // 이벤트 키는 formatExamId로 — 실용글쓰기는 기존 "year-round" 유지, KBS는 "kbs-year-round".
+  await trackServerEvent(
+    'exam_completed',
+    user.id,
+    formatExamId(session.program as ProgramId, session.year, session.round),
+  )
 }

@@ -2,6 +2,7 @@ import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { NextRequest, NextResponse } from 'next/server'
 import { stripBom, SB_URL, SB_ANON } from '@/lib/supabase/sanitize'
+import { trackServerEvent } from '@/lib/analytics/trackServerEvent'
 
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url)
@@ -33,8 +34,18 @@ export async function GET(request: NextRequest) {
       }
     )
 
-    const { error } = await supabase.auth.exchangeCodeForSession(code)
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code)
     if (!error) {
+      // 신규가입 판별: 계정 생성시각이 방금(2분 이내)이면 이 OAuth 콜백이 최초 가입 흐름 —
+      // signup 이벤트로 기록해 상단 퍼널(가입→구독) 완성. 실패해도 로그인 자체는 막지 않음.
+      const user = data.session?.user
+      if (user?.created_at) {
+        const ageMs = Date.now() - new Date(user.created_at).getTime()
+        if (ageMs >= 0 && ageMs < 120_000) {
+          const provider = user.app_metadata?.provider ?? 'unknown'
+          void trackServerEvent('signup', user.id, provider)
+        }
+      }
       return response
     }
     return NextResponse.redirect(`${origin}/login?error=auth&reason=${encodeURIComponent(error.message)}`)

@@ -3,18 +3,26 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { BookOpen, ChevronRight, Clock, FileQuestion, Trophy, Lock } from 'lucide-react'
 import { getActiveSubscription } from '@/lib/subscription'
-import { isRoundLocked, FREE_EXAM_ROUNDS } from '@/lib/examAccess'
+import { isRoundLocked } from '@/lib/examAccess'
+import { getActiveProgram } from '@/lib/programContext'
+import { getProgram } from '@/lib/programs'
+import { formatExamId } from '@/lib/examId'
 
 export default async function CbtPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
+  // 활성 시험 모드 — 이 목록은 해당 모드의 시험만 보여준다.
+  const program = await getActiveProgram()
+  const cfg = getProgram(program)
+
   // 독립적인 4개 조회를 병렬로 — 순차 왕복(4회) → 한 번에
   const [{ data: exams }, { data: sessions }, { data: inProgress }, subscription] = await Promise.all([
     supabase
       .from('questions')
       .select('year, round, type')
+      .eq('program', program)
       .lt('year', 9000)
       .order('year', { ascending: true })
       .order('round', { ascending: true }),
@@ -22,12 +30,14 @@ export default async function CbtPage() {
       .from('quiz_sessions')
       .select('year, round, score, total, completed_at')
       .eq('user_id', user.id)
+      .eq('program', program)
       .not('completed_at', 'is', null)
       .order('completed_at', { ascending: false }),
     supabase
       .from('quiz_sessions')
       .select('year, round')
       .eq('user_id', user.id)
+      .eq('program', program)
       .is('completed_at', null)
       .not('saved_at', 'is', null),
     getActiveSubscription(user.id),
@@ -52,7 +62,7 @@ export default async function CbtPage() {
       <div className="mb-8">
         <h1 className="text-2xl font-black text-[#0f172a] tracking-tight mb-1">CBT 문제풀기</h1>
         <p className="text-[#64748b] text-sm">
-          모의고사 <b className="text-[#1e3a5f]">{FREE_EXAM_ROUNDS}회까지 무료</b>, {FREE_EXAM_ROUNDS + 1}회부터는 이용권으로 풀 수 있어요.
+          <b className="text-[#1e3a5f]">{cfg.examName}</b> · 모의고사 <b className="text-[#1e3a5f]">{cfg.freeRounds}회까지 무료</b>, {cfg.freeRounds + 1}회부터는 이용권으로 풀 수 있어요.
         </p>
       </div>
 
@@ -63,7 +73,7 @@ export default async function CbtPage() {
               <div className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-700 bg-amber-100 px-2.5 py-1 rounded-full mb-2">
                 <Trophy className="h-3.5 w-3.5" /> 이용권 안내
               </div>
-              <h2 className="text-lg font-black text-[#0f172a] mb-1.5">{FREE_EXAM_ROUNDS}회 무료로 풀어보고, 마음에 들면 무제한으로</h2>
+              <h2 className="text-lg font-black text-[#0f172a] mb-1.5">{cfg.freeRounds}회 무료로 풀어보고, 마음에 들면 무제한으로</h2>
               <p className="text-sm text-[#475569] leading-relaxed mb-2">
                 이용권을 열면 <b className="text-[#1e3a5f]">모든 회차 무제한 풀이</b>, <b className="text-[#1e3a5f]">서술형 AI 채점·첨삭</b>, <b className="text-[#1e3a5f]">AI 예상 점수·합격 등급 판정</b>, <b className="text-[#1e3a5f]">영역별 약점 분석</b>까지 이어집니다.
               </p>
@@ -96,7 +106,7 @@ export default async function CbtPage() {
             const prev = sessionMap.get(key)
             const pct = prev ? Math.round(((prev.score ?? 0) / (prev.total ?? 1)) * 100) : null
             const pass = pct !== null && pct >= 80
-            const locked = isRoundLocked(round, hasSub)
+            const locked = isRoundLocked(round, hasSub, program)
 
             return (
               <div
@@ -117,7 +127,7 @@ export default async function CbtPage() {
                           <h2 className="font-bold text-[#0f172a] text-lg leading-tight">모의고사 {round}회</h2>
                           <div className="flex items-center gap-2 text-xs text-[#94a3b8] mt-0.5">
                             <Clock className="h-3 w-3" />
-                            <span>120분</span>
+                            <span>{cfg.examMinutes}분</span>
                             <span>·</span>
                             <span>{countMap.get(`${year}-${round}`) ?? 0}문항</span>
                           </div>
@@ -164,7 +174,7 @@ export default async function CbtPage() {
                           <span className="text-xs bg-amber-100 text-amber-700 px-2.5 py-1 rounded-full font-semibold">이어풀기 가능</span>
                         )}
                         <Link
-                          href={`/cbt/${key}`}
+                          href={`/cbt/${formatExamId(program, year, round)}`}
                           className="flex-1 btn-primary flex items-center justify-center gap-1.5 text-white font-semibold py-2.5 rounded-xl text-sm"
                         >
                           {resumable.has(key) ? '이어풀기' : prev ? '다시 풀기' : '시작하기'}
