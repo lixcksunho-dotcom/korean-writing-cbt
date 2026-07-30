@@ -45,7 +45,7 @@ export default function RefineQuiz({ items }: { items: RefineItem[] }) {
     })
     setQuiz(qs)
     setIdx(0)
-    setPicked(new Array(qs.length).fill(null))
+    setPicked(Array.from({ length: qs.length }, () => null))
   }
 
   // 설정 화면

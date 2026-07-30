@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import LogoGlyph from "@/components/layout/LogoGlyph";
 import SiteFooter from "@/components/layout/SiteFooter";
+import BreadcrumbLd from "@/components/seo/BreadcrumbLd";
+import StickyMobileCTA from "@/components/landing/StickyMobileCTA";
 import { SCHEDULE, SCHEDULE_URL, APPLY_URL } from "@/lib/examSchedule";
 import { TIER_TABLE } from "@/lib/grade";
 
@@ -228,14 +230,20 @@ export default function ExamInfoPage() {
             </div>
           </section>
 
-          {/* 관련 도구 */}
+          {/* 관련 */}
           <section className="mt-10 text-sm text-[#64748b]">
-            관련 도구:{" "}
+            관련:{" "}
             <Link href="/word-counter" className="underline hover:text-[#1e3a5f]">글자수 세기(원고지 칸수 계산)</Link>
+            {" · "}
+            <Link href="/kbs-korean" className="underline hover:text-[#1e3a5f]">KBS한국어능력시험 정보</Link>
+            {" · "}
+            <Link href="/exam-compare" className="underline hover:text-[#1e3a5f]">실용글쓰기·KBS 비교</Link>
           </section>
         </div>
       </main>
 
+      <StickyMobileCTA />
+      <BreadcrumbLd name="시험 정보" path="/exam-info" />
       <SiteFooter />
 
       <script

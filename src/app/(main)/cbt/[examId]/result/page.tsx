@@ -62,6 +62,8 @@ export default async function ResultPage({
   const allQuestions = questions ?? []
   const autoQuestions = allQuestions.filter(q => q.type !== 'essay')
   const essayQuestions = allQuestions.filter(q => q.type === 'essay')
+  // 이번 시험에서 틀린 객관식 수 — 결과 화면에서 곧바로 '틀린 것만' 다시 풀게 한다.
+  const wrongCount = autoQuestions.filter(q => answerMap.get(q.id)?.is_correct === false).length
 
   // 배점 기반 점수 계산
   const totalPoints = allQuestions.reduce((s, q) => s + (q.points ?? 0), 0)
@@ -142,6 +144,15 @@ export default async function ResultPage({
           </div>
         </div>
       </div>
+
+      {/* 오답 즉시 재도전 — '틀린 것만 반복'이 자격증 CBT 학습의 핵심 루프 */}
+      {wrongCount > 0 && (
+        <Link href="/practice/wrong" className="flex items-center justify-center gap-2 w-full py-3.5 rounded-xl mb-3 bg-amber-400 text-[#1e3a5f] font-black text-sm hover:bg-amber-300 transition-colors">
+          <XCircle className="h-4 w-4" />
+          틀린 {wrongCount}문항 바로 다시 풀기
+          <ChevronRight className="h-4 w-4" />
+        </Link>
+      )}
 
       {/* 버튼 */}
       <div className="flex gap-3 mb-8">

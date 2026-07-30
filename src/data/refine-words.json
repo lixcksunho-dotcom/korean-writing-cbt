@@ -1220,11 +1220,6 @@
   },
   {
     "category": "일본어 투 용어",
-    "wrong": "익일",
-    "correct": "다음 날, 이튿날"
-  },
-  {
-    "category": "일본어 투 용어",
     "wrong": "거래선",
     "correct": "거래처"
   },
@@ -1497,5 +1492,2470 @@
     "category": "외래어 표기",
     "wrong": "리더쉽",
     "correct": "리더십"
+  },
+  {
+    "category": "외래어",
+    "wrong": "스크린도어",
+    "correct": "안전문"
+  },
+  {
+    "category": "외래어",
+    "wrong": "키오스크",
+    "correct": "무인 안내기, 무인 단말기"
+  },
+  {
+    "category": "외래어",
+    "wrong": "팩트체크",
+    "correct": "사실 확인"
+  },
+  {
+    "category": "외래어",
+    "wrong": "인프라",
+    "correct": "기반 시설"
+  },
+  {
+    "category": "외래어",
+    "wrong": "워라밸",
+    "correct": "일과 삶의 균형"
+  },
+  {
+    "category": "외래어",
+    "wrong": "테이크아웃",
+    "correct": "포장, 포장 구매"
+  },
+  {
+    "category": "외래어",
+    "wrong": "리모델링",
+    "correct": "새 단장"
+  },
+  {
+    "category": "외래어",
+    "wrong": "큐레이션",
+    "correct": "선별, 골라 주기"
+  },
+  {
+    "category": "외래어",
+    "wrong": "얼리어답터",
+    "correct": "앞선 사용자"
+  },
+  {
+    "category": "외래어",
+    "wrong": "블랙컨슈머",
+    "correct": "악덕 소비자"
+  },
+  {
+    "category": "외래어",
+    "wrong": "노키즈존",
+    "correct": "어린이 제한 공간"
+  },
+  {
+    "category": "외래어",
+    "wrong": "다크서클",
+    "correct": "눈 그늘"
+  },
+  {
+    "category": "외래어",
+    "wrong": "언박싱",
+    "correct": "개봉, 뜯어보기"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "소데나시",
+    "correct": "민소매"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "삐끼",
+    "correct": "호객꾼"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "우와기",
+    "correct": "윗옷, 상의"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "나라비",
+    "correct": "줄서기"
+  },
+  {
+    "category": "한자어",
+    "wrong": "명일",
+    "correct": "내일"
+  },
+  {
+    "category": "한자어",
+    "wrong": "금일",
+    "correct": "오늘"
+  },
+  {
+    "category": "한자어",
+    "wrong": "작일",
+    "correct": "어제"
+  },
+  {
+    "category": "한자어",
+    "wrong": "익월",
+    "correct": "다음 달"
+  },
+  {
+    "category": "한자어",
+    "wrong": "하기",
+    "correct": "아래, 다음"
+  },
+  {
+    "category": "외래어",
+    "wrong": "언택트",
+    "correct": "비대면"
+  },
+  {
+    "category": "외래어",
+    "wrong": "워크숍",
+    "correct": "연수회, 수련회"
+  },
+  {
+    "category": "외래어",
+    "wrong": "콘텐츠",
+    "correct": "내용물"
+  },
+  {
+    "category": "외래어",
+    "wrong": "인센티브",
+    "correct": "성과급, 유인책"
+  },
+  {
+    "category": "외래어",
+    "wrong": "데드라인",
+    "correct": "마감 시한"
+  },
+  {
+    "category": "외래어",
+    "wrong": "이슈",
+    "correct": "쟁점, 문제"
+  },
+  {
+    "category": "외래어",
+    "wrong": "프로세스",
+    "correct": "과정, 절차"
+  },
+  {
+    "category": "외래어",
+    "wrong": "벤치마킹",
+    "correct": "본따르기"
+  },
+  {
+    "category": "외래어",
+    "wrong": "멘토",
+    "correct": "조언자"
+  },
+  {
+    "category": "외래어",
+    "wrong": "스펙",
+    "correct": "자격 요건"
+  },
+  {
+    "category": "외래어",
+    "wrong": "팝업 스토어",
+    "correct": "반짝 매장"
+  },
+  {
+    "category": "외래어",
+    "wrong": "서포터즈",
+    "correct": "응원단, 후원자"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "오뎅",
+    "correct": "어묵"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "벤또",
+    "correct": "도시락"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "와리바시",
+    "correct": "나무젓가락"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "다마네기",
+    "correct": "양파"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "쓰메끼리",
+    "correct": "손톱깎이"
+  },
+  {
+    "category": "한자어",
+    "wrong": "시건장치",
+    "correct": "잠금장치"
+  },
+  {
+    "category": "한자어",
+    "wrong": "노임",
+    "correct": "품삯"
+  },
+  {
+    "category": "외래어",
+    "wrong": "스킬",
+    "correct": "기술, 솜씨"
+  },
+  {
+    "category": "외래어",
+    "wrong": "시스템",
+    "correct": "체계"
+  },
+  {
+    "category": "외래어",
+    "wrong": "로열티",
+    "correct": "사용료"
+  },
+  {
+    "category": "외래어",
+    "wrong": "디폴트",
+    "correct": "기본값"
+  },
+  {
+    "category": "외래어",
+    "wrong": "헤게모니",
+    "correct": "주도권"
+  },
+  {
+    "category": "외래어",
+    "wrong": "패러다임",
+    "correct": "인식 틀, 사고 틀"
+  },
+  {
+    "category": "외래어",
+    "wrong": "컨트롤타워",
+    "correct": "지휘 본부, 통제탑"
+  },
+  {
+    "category": "외래어",
+    "wrong": "브리핑",
+    "correct": "상황 설명, 요약 보고"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "소보로빵",
+    "correct": "곰보빵"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "겐세이",
+    "correct": "견제, 방해"
+  },
+  {
+    "category": "외래어",
+    "wrong": "팁",
+    "correct": "도움말, 봉사료"
+  },
+  {
+    "category": "외래어",
+    "wrong": "디테일",
+    "correct": "세부, 세부 사항"
+  },
+  {
+    "category": "외래어",
+    "wrong": "인사이트",
+    "correct": "통찰"
+  },
+  {
+    "category": "외래어",
+    "wrong": "밸런스",
+    "correct": "균형"
+  },
+  {
+    "category": "외래어",
+    "wrong": "리뷰",
+    "correct": "후기, 평가"
+  },
+  {
+    "category": "외래어",
+    "wrong": "스케줄",
+    "correct": "일정"
+  },
+  {
+    "category": "외래어",
+    "wrong": "카테고리",
+    "correct": "갈래, 분류"
+  },
+  {
+    "category": "외래어",
+    "wrong": "프로모션",
+    "correct": "판촉, 홍보"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "뗑깡",
+    "correct": "생떼"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "후앙",
+    "correct": "환풍기"
+  },
+  {
+    "category": "외래어",
+    "wrong": "어카운트",
+    "correct": "계정"
+  },
+  {
+    "category": "외래어",
+    "wrong": "리스트",
+    "correct": "목록"
+  },
+  {
+    "category": "외래어",
+    "wrong": "케어",
+    "correct": "돌봄"
+  },
+  {
+    "category": "외래어",
+    "wrong": "팩트",
+    "correct": "사실"
+  },
+  {
+    "category": "외래어",
+    "wrong": "포인트",
+    "correct": "요점, 핵심"
+  },
+  {
+    "category": "외래어",
+    "wrong": "아이템",
+    "correct": "물품, 항목"
+  },
+  {
+    "category": "외래어",
+    "wrong": "코멘트",
+    "correct": "논평, 짧은 평"
+  },
+  {
+    "category": "외래어",
+    "wrong": "미션",
+    "correct": "임무, 과제"
+  },
+  {
+    "category": "외래어",
+    "wrong": "이미지",
+    "correct": "인상, 심상"
+  },
+  {
+    "category": "외래어",
+    "wrong": "트렌드",
+    "correct": "흐름, 유행"
+  },
+  {
+    "category": "외래어",
+    "wrong": "글로벌",
+    "correct": "국제적, 세계적"
+  },
+  {
+    "category": "외래어",
+    "wrong": "플랫폼",
+    "correct": "기반, 무대"
+  },
+  {
+    "category": "외래어",
+    "wrong": "콜라보",
+    "correct": "협업, 합작"
+  },
+  {
+    "category": "외래어",
+    "wrong": "프리미엄",
+    "correct": "고급, 상급"
+  },
+  {
+    "category": "외래어",
+    "wrong": "마일리지",
+    "correct": "적립금"
+  },
+  {
+    "category": "외래어",
+    "wrong": "이벤트",
+    "correct": "행사"
+  },
+  {
+    "category": "외래어",
+    "wrong": "프로필",
+    "correct": "인물 정보"
+  },
+  {
+    "category": "외래어",
+    "wrong": "레거시",
+    "correct": "유산"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "잉꼬부부",
+    "correct": "원앙 부부"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "가라오케",
+    "correct": "노래방"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "십팔번",
+    "correct": "애창곡"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "마호병",
+    "correct": "보온병"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "몸뻬",
+    "correct": "일 바지"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "시다바리",
+    "correct": "보조, 뒤치다꺼리"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "기라성",
+    "correct": "쟁쟁한 사람들"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "앗사리",
+    "correct": "산뜻하게, 깨끗이"
+  },
+  {
+    "category": "한자어",
+    "wrong": "감안하다",
+    "correct": "고려하다, 참작하다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "필히",
+    "correct": "반드시"
+  },
+  {
+    "category": "한자어",
+    "wrong": "익년",
+    "correct": "다음 해"
+  },
+  {
+    "category": "한자어",
+    "wrong": "잔여",
+    "correct": "나머지"
+  },
+  {
+    "category": "한자어",
+    "wrong": "소정",
+    "correct": "정해진"
+  },
+  {
+    "category": "한자어",
+    "wrong": "상회하다",
+    "correct": "웃돌다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "하회하다",
+    "correct": "밑돌다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "봉착하다",
+    "correct": "부딪치다"
+  },
+  {
+    "category": "외래어",
+    "wrong": "프레젠테이션",
+    "correct": "발표"
+  },
+  {
+    "category": "외래어",
+    "wrong": "세미나",
+    "correct": "발표회, 연구회"
+  },
+  {
+    "category": "외래어",
+    "wrong": "커리큘럼",
+    "correct": "교육 과정"
+  },
+  {
+    "category": "외래어",
+    "wrong": "리서치",
+    "correct": "조사, 연구"
+  },
+  {
+    "category": "외래어",
+    "wrong": "데이터",
+    "correct": "자료"
+  },
+  {
+    "category": "외래어",
+    "wrong": "샘플",
+    "correct": "표본, 견본"
+  },
+  {
+    "category": "외래어",
+    "wrong": "프로토타입",
+    "correct": "원형, 시제품"
+  },
+  {
+    "category": "외래어",
+    "wrong": "오리엔테이션",
+    "correct": "예비 교육, 안내"
+  },
+  {
+    "category": "한자어",
+    "wrong": "식별하다",
+    "correct": "알아보다, 가려내다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "조우하다",
+    "correct": "만나다, 맞닥뜨리다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "산재하다",
+    "correct": "흩어져 있다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "도래하다",
+    "correct": "오다, 닥치다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "매진하다",
+    "correct": "힘쓰다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "상충하다",
+    "correct": "서로 어긋나다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "간주하다",
+    "correct": "여기다, 보다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "표명하다",
+    "correct": "밝히다"
+  },
+  {
+    "category": "최신 순화어",
+    "wrong": "키워드",
+    "correct": "핵심어, 열쇠말"
+  },
+  {
+    "category": "최신 순화어",
+    "wrong": "팔로워",
+    "correct": "구독자"
+  },
+  {
+    "category": "최신 순화어",
+    "wrong": "인플루언서",
+    "correct": "영향력자"
+  },
+  {
+    "category": "최신 순화어",
+    "wrong": "스트리밍",
+    "correct": "실시간 재생"
+  },
+  {
+    "category": "최신 순화어",
+    "wrong": "업로드",
+    "correct": "올리기"
+  },
+  {
+    "category": "최신 순화어",
+    "wrong": "핫플레이스",
+    "correct": "명소, 뜨는 곳"
+  },
+  {
+    "category": "최신 순화어",
+    "wrong": "굿즈",
+    "correct": "팬 상품"
+  },
+  {
+    "category": "최신 순화어",
+    "wrong": "리셀",
+    "correct": "되팔기"
+  },
+  {
+    "category": "외래어",
+    "wrong": "리모컨",
+    "correct": "원격 조종기"
+  },
+  {
+    "category": "외래어",
+    "wrong": "셀카",
+    "correct": "자가 촬영"
+  },
+  {
+    "category": "외래어",
+    "wrong": "스크린샷",
+    "correct": "화면 갈무리"
+  },
+  {
+    "category": "외래어",
+    "wrong": "캡처",
+    "correct": "갈무리"
+  },
+  {
+    "category": "외래어",
+    "wrong": "팝업",
+    "correct": "알림창"
+  },
+  {
+    "category": "외래어",
+    "wrong": "배너",
+    "correct": "광고 띠, 현수막"
+  },
+  {
+    "category": "외래어",
+    "wrong": "아이콘",
+    "correct": "그림 단추"
+  },
+  {
+    "category": "외래어",
+    "wrong": "커서",
+    "correct": "깜박이"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "곤색",
+    "correct": "감색, 진남색"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "다대기",
+    "correct": "다진 양념"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "소라색",
+    "correct": "하늘색"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "우동",
+    "correct": "가락국수"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "히야시",
+    "correct": "차게 함"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "다꽝",
+    "correct": "단무지"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "겟또",
+    "correct": "획득, 얻음"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "사라",
+    "correct": "접시"
+  },
+  {
+    "category": "한자어",
+    "wrong": "지참하다",
+    "correct": "가지고 오다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "부재중",
+    "correct": "자리 비움"
+  },
+  {
+    "category": "한자어",
+    "wrong": "통보하다",
+    "correct": "알리다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "제반",
+    "correct": "여러, 모든"
+  },
+  {
+    "category": "한자어",
+    "wrong": "상기하다",
+    "correct": "떠올리다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "소요되다",
+    "correct": "걸리다, 들다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "여하한",
+    "correct": "어떠한"
+  },
+  {
+    "category": "한자어",
+    "wrong": "편취하다",
+    "correct": "속여 빼앗다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "삭제하다",
+    "correct": "지우다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "첨부하다",
+    "correct": "붙이다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "누락되다",
+    "correct": "빠지다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "근절하다",
+    "correct": "뿌리 뽑다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "은닉하다",
+    "correct": "숨기다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "봉쇄하다",
+    "correct": "막다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "착수하다",
+    "correct": "시작하다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "완료하다",
+    "correct": "마치다"
+  },
+  {
+    "category": "외래어",
+    "wrong": "옵션",
+    "correct": "선택 사항"
+  },
+  {
+    "category": "외래어",
+    "wrong": "딜레마",
+    "correct": "진퇴양난, 궁지"
+  },
+  {
+    "category": "외래어",
+    "wrong": "노하우",
+    "correct": "비법, 기술"
+  },
+  {
+    "category": "외래어",
+    "wrong": "라이벌",
+    "correct": "맞수, 경쟁자"
+  },
+  {
+    "category": "외래어",
+    "wrong": "하이라이트",
+    "correct": "강조, 볼거리"
+  },
+  {
+    "category": "외래어",
+    "wrong": "스토리",
+    "correct": "이야기"
+  },
+  {
+    "category": "외래어",
+    "wrong": "오너",
+    "correct": "소유주, 주인"
+  },
+  {
+    "category": "외래어",
+    "wrong": "마인드",
+    "correct": "자세, 마음가짐"
+  },
+  {
+    "category": "한자어",
+    "wrong": "조속히",
+    "correct": "빨리, 되도록 빨리"
+  },
+  {
+    "category": "한자어",
+    "wrong": "만전을 기하다",
+    "correct": "빈틈없이 하다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "촉수엄금",
+    "correct": "손대지 마시오"
+  },
+  {
+    "category": "한자어",
+    "wrong": "요망",
+    "correct": "바람"
+  },
+  {
+    "category": "한자어",
+    "wrong": "하시라도",
+    "correct": "언제라도"
+  },
+  {
+    "category": "한자어",
+    "wrong": "필증",
+    "correct": "확인증"
+  },
+  {
+    "category": "한자어",
+    "wrong": "게재하다",
+    "correct": "싣다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "수취하다",
+    "correct": "받다"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "다스",
+    "correct": "열두 개, 타"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "삐라",
+    "correct": "전단"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "하코",
+    "correct": "상자"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "나라시",
+    "correct": "고르기"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "시마이",
+    "correct": "끝, 마감"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "삥땅",
+    "correct": "가로채기"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "야매",
+    "correct": "뒷거래, 엉터리"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "후카시",
+    "correct": "허세"
+  },
+  {
+    "category": "외래어",
+    "wrong": "캠페인",
+    "correct": "홍보 운동, 계몽 운동"
+  },
+  {
+    "category": "외래어",
+    "wrong": "페스티벌",
+    "correct": "축제"
+  },
+  {
+    "category": "외래어",
+    "wrong": "스폰서",
+    "correct": "후원자, 광고주"
+  },
+  {
+    "category": "외래어",
+    "wrong": "파트너",
+    "correct": "협력자, 동반자"
+  },
+  {
+    "category": "외래어",
+    "wrong": "프로젝트",
+    "correct": "과제, 기획"
+  },
+  {
+    "category": "외래어",
+    "wrong": "미디어",
+    "correct": "매체"
+  },
+  {
+    "category": "외래어",
+    "wrong": "포맷",
+    "correct": "형식, 양식"
+  },
+  {
+    "category": "외래어",
+    "wrong": "시나리오",
+    "correct": "각본, 계획"
+  },
+  {
+    "category": "한자어",
+    "wrong": "상정하다",
+    "correct": "안건으로 올리다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "존치하다",
+    "correct": "그대로 두다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "폐기하다",
+    "correct": "없애다, 버리다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "개진하다",
+    "correct": "밝히다, 말하다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "촉구하다",
+    "correct": "재촉하다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "강구하다",
+    "correct": "마련하다, 찾다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "배부하다",
+    "correct": "나누어 주다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "부의하다",
+    "correct": "회의에 부치다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "명료하다",
+    "correct": "뚜렷하다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "판별하다",
+    "correct": "가려내다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "도모하다",
+    "correct": "꾀하다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "소지하다",
+    "correct": "지니다, 가지다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "상응하다",
+    "correct": "걸맞다, 어울리다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "관장하다",
+    "correct": "맡다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "유의하다",
+    "correct": "주의하다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "응하다",
+    "correct": "따르다"
+  },
+  {
+    "category": "외래어",
+    "wrong": "리플",
+    "correct": "댓글"
+  },
+  {
+    "category": "외래어",
+    "wrong": "이모티콘",
+    "correct": "그림말"
+  },
+  {
+    "category": "외래어",
+    "wrong": "셀프",
+    "correct": "스스로"
+  },
+  {
+    "category": "외래어",
+    "wrong": "심플하다",
+    "correct": "간결하다"
+  },
+  {
+    "category": "외래어",
+    "wrong": "클래식",
+    "correct": "고전"
+  },
+  {
+    "category": "외래어",
+    "wrong": "빈티지",
+    "correct": "복고풍"
+  },
+  {
+    "category": "외래어",
+    "wrong": "프리랜서",
+    "correct": "자유 계약자"
+  },
+  {
+    "category": "외래어",
+    "wrong": "오픈하다",
+    "correct": "열다, 개장하다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "상신하다",
+    "correct": "보고하다, 아뢰다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "하달하다",
+    "correct": "내려보내다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "회부하다",
+    "correct": "넘기다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "계도하다",
+    "correct": "일깨우다, 이끌다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "반포하다",
+    "correct": "널리 펴다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "진력하다",
+    "correct": "힘을 다하다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "개편하다",
+    "correct": "다시 짜다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "봉행하다",
+    "correct": "받들어 행하다"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "시보리",
+    "correct": "물수건"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "다마",
+    "correct": "알, 구슬"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "하리핀",
+    "correct": "머리핀"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "즈봉",
+    "correct": "양복바지"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "와리깡",
+    "correct": "각자 내기"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "노가리",
+    "correct": "수다"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "후로꾸",
+    "correct": "요행"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "사바사바",
+    "correct": "뒷거래, 아부"
+  },
+  {
+    "category": "외래어",
+    "wrong": "매니저",
+    "correct": "관리자"
+  },
+  {
+    "category": "외래어",
+    "wrong": "클라이언트",
+    "correct": "고객, 의뢰인"
+  },
+  {
+    "category": "외래어",
+    "wrong": "유저",
+    "correct": "사용자"
+  },
+  {
+    "category": "외래어",
+    "wrong": "패스워드",
+    "correct": "비밀번호"
+  },
+  {
+    "category": "외래어",
+    "wrong": "링크",
+    "correct": "연결, 연결 고리"
+  },
+  {
+    "category": "외래어",
+    "wrong": "메뉴",
+    "correct": "차림표"
+  },
+  {
+    "category": "외래어",
+    "wrong": "카운터",
+    "correct": "계산대"
+  },
+  {
+    "category": "외래어",
+    "wrong": "사인",
+    "correct": "서명"
+  },
+  {
+    "category": "한자어",
+    "wrong": "별첨",
+    "correct": "따로 붙임"
+  },
+  {
+    "category": "한자어",
+    "wrong": "재고하다",
+    "correct": "다시 생각하다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "참작하다",
+    "correct": "헤아리다, 고려하다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "첨언하다",
+    "correct": "덧붙여 말하다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "명기하다",
+    "correct": "분명히 적다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "수반하다",
+    "correct": "뒤따르다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "유보하다",
+    "correct": "미루다, 보류하다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "계상하다",
+    "correct": "계산에 넣다"
+  },
+  {
+    "category": "외래어",
+    "wrong": "셔틀",
+    "correct": "순환, 왕복"
+  },
+  {
+    "category": "외래어",
+    "wrong": "파일럿(방송)",
+    "correct": "시험판"
+  },
+  {
+    "category": "외래어",
+    "wrong": "오디션",
+    "correct": "실기 심사"
+  },
+  {
+    "category": "외래어",
+    "wrong": "챔피언",
+    "correct": "우승자"
+  },
+  {
+    "category": "외래어",
+    "wrong": "트로피",
+    "correct": "우승컵"
+  },
+  {
+    "category": "외래어",
+    "wrong": "유니폼",
+    "correct": "제복, 단체복"
+  },
+  {
+    "category": "외래어",
+    "wrong": "스코어",
+    "correct": "점수"
+  },
+  {
+    "category": "외래어",
+    "wrong": "캐치프레이즈",
+    "correct": "선전 문구"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "오봉",
+    "correct": "쟁반"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "곤로",
+    "correct": "화로, 풍로"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "다라이",
+    "correct": "함지, 대야"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "미싱",
+    "correct": "재봉틀"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "리어카",
+    "correct": "손수레"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "시아게",
+    "correct": "마무리"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "다이",
+    "correct": "받침대"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "우라",
+    "correct": "안, 안감"
+  },
+  {
+    "category": "한자어",
+    "wrong": "산입하다",
+    "correct": "포함하여 계산하다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "공람",
+    "correct": "돌려 봄"
+  },
+  {
+    "category": "한자어",
+    "wrong": "잔여분",
+    "correct": "남은 것"
+  },
+  {
+    "category": "한자어",
+    "wrong": "개봉하다",
+    "correct": "뜯다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "반려하다",
+    "correct": "되돌려 보내다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "취합하다",
+    "correct": "모으다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "통람하다",
+    "correct": "죽 훑어보다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "봉인하다",
+    "correct": "봉하다"
+  },
+  {
+    "category": "외래어",
+    "wrong": "가이드",
+    "correct": "안내, 길잡이"
+  },
+  {
+    "category": "외래어",
+    "wrong": "가이드라인",
+    "correct": "지침"
+  },
+  {
+    "category": "외래어",
+    "wrong": "콜센터",
+    "correct": "전화 상담실"
+  },
+  {
+    "category": "외래어",
+    "wrong": "리콜",
+    "correct": "결함 보상"
+  },
+  {
+    "category": "외래어",
+    "wrong": "업그레이드",
+    "correct": "향상, 상향"
+  },
+  {
+    "category": "외래어",
+    "wrong": "세팅",
+    "correct": "설정, 설치"
+  },
+  {
+    "category": "외래어",
+    "wrong": "리셋",
+    "correct": "초기화"
+  },
+  {
+    "category": "외래어",
+    "wrong": "셋업",
+    "correct": "설치"
+  },
+  {
+    "category": "한자어",
+    "wrong": "응당",
+    "correct": "마땅히"
+  },
+  {
+    "category": "한자어",
+    "wrong": "필경",
+    "correct": "마침내, 결국"
+  },
+  {
+    "category": "한자어",
+    "wrong": "하등",
+    "correct": "아무런"
+  },
+  {
+    "category": "한자어",
+    "wrong": "여실히",
+    "correct": "사실 그대로"
+  },
+  {
+    "category": "한자어",
+    "wrong": "십분",
+    "correct": "충분히"
+  },
+  {
+    "category": "한자어",
+    "wrong": "근자에",
+    "correct": "요즈음"
+  },
+  {
+    "category": "한자어",
+    "wrong": "불문하고",
+    "correct": "가리지 않고"
+  },
+  {
+    "category": "한자어",
+    "wrong": "여하",
+    "correct": "어떠함"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "뽀록나다",
+    "correct": "들통나다"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "사시코미",
+    "correct": "콘센트"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "빠꾸",
+    "correct": "후진, 물러남"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "겐뻬이",
+    "correct": "편 가르기"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "아다리",
+    "correct": "적중, 들어맞음"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "노리마키",
+    "correct": "김초밥"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "렌찌",
+    "correct": "렌치"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "야키만두",
+    "correct": "군만두"
+  },
+  {
+    "category": "외래어",
+    "wrong": "스크린",
+    "correct": "화면, 영사막"
+  },
+  {
+    "category": "외래어",
+    "wrong": "프린트",
+    "correct": "인쇄물"
+  },
+  {
+    "category": "외래어",
+    "wrong": "카피",
+    "correct": "복사, 광고 문구"
+  },
+  {
+    "category": "외래어",
+    "wrong": "포스터",
+    "correct": "벽보"
+  },
+  {
+    "category": "외래어",
+    "wrong": "뉴스레터",
+    "correct": "소식지"
+  },
+  {
+    "category": "외래어",
+    "wrong": "템플릿",
+    "correct": "서식, 형판"
+  },
+  {
+    "category": "외래어",
+    "wrong": "라벨",
+    "correct": "상표, 꼬리표"
+  },
+  {
+    "category": "외래어",
+    "wrong": "태그",
+    "correct": "꼬리표, 이름표"
+  },
+  {
+    "category": "한자어",
+    "wrong": "부기하다",
+    "correct": "덧붙여 적다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "정정하다",
+    "correct": "바로잡다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "삭감하다",
+    "correct": "줄이다, 깎다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "반환하다",
+    "correct": "돌려주다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "교부하다",
+    "correct": "내주다, 발급하다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "상환하다",
+    "correct": "갚다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "예치하다",
+    "correct": "맡기다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "인출하다",
+    "correct": "찾다, 빼다"
+  },
+  {
+    "category": "외래어",
+    "wrong": "앱",
+    "correct": "응용 프로그램"
+  },
+  {
+    "category": "외래어",
+    "wrong": "사이트",
+    "correct": "누리집"
+  },
+  {
+    "category": "외래어",
+    "wrong": "홈페이지",
+    "correct": "누리집"
+  },
+  {
+    "category": "외래어",
+    "wrong": "블로그",
+    "correct": "누리사랑방"
+  },
+  {
+    "category": "외래어",
+    "wrong": "이메일",
+    "correct": "전자 우편"
+  },
+  {
+    "category": "외래어",
+    "wrong": "스팸",
+    "correct": "쓰레기 편지"
+  },
+  {
+    "category": "외래어",
+    "wrong": "알람",
+    "correct": "알림"
+  },
+  {
+    "category": "외래어",
+    "wrong": "캘린더",
+    "correct": "달력"
+  },
+  {
+    "category": "한자어",
+    "wrong": "이첩하다",
+    "correct": "넘겨 보내다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "회람하다",
+    "correct": "돌려 보다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "발췌하다",
+    "correct": "뽑아내다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "등재하다",
+    "correct": "올리다, 싣다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "열람하다",
+    "correct": "찾아보다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "소급하다",
+    "correct": "거슬러 적용하다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "준용하다",
+    "correct": "그대로 따라 적용하다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "재차",
+    "correct": "다시, 두 번째"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "야끼",
+    "correct": "구이"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "사라다",
+    "correct": "샐러드"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "뎃빵",
+    "correct": "우두머리"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "소바",
+    "correct": "메밀국수"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "노리",
+    "correct": "김"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "하꼬방",
+    "correct": "판잣집"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "스시",
+    "correct": "초밥"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "낑깡",
+    "correct": "금귤"
+  },
+  {
+    "category": "외래어",
+    "wrong": "모니터",
+    "correct": "화면"
+  },
+  {
+    "category": "외래어",
+    "wrong": "키보드",
+    "correct": "자판"
+  },
+  {
+    "category": "외래어",
+    "wrong": "프로그램(방송)",
+    "correct": "차례, 계획"
+  },
+  {
+    "category": "외래어",
+    "wrong": "폴더",
+    "correct": "서류철"
+  },
+  {
+    "category": "외래어",
+    "wrong": "텍스트",
+    "correct": "글, 본문"
+  },
+  {
+    "category": "외래어",
+    "wrong": "스크롤",
+    "correct": "밀기"
+  },
+  {
+    "category": "외래어",
+    "wrong": "툴",
+    "correct": "도구"
+  },
+  {
+    "category": "외래어",
+    "wrong": "버전",
+    "correct": "판"
+  },
+  {
+    "category": "한자어",
+    "wrong": "소재하다",
+    "correct": "있다, 자리하다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "존속하다",
+    "correct": "계속 있다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "저촉되다",
+    "correct": "어긋나다, 걸리다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "결부하다",
+    "correct": "연결하다, 묶다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "부수하다",
+    "correct": "딸리다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "위배되다",
+    "correct": "어긋나다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "도과하다",
+    "correct": "(기한이) 지나다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "해태하다",
+    "correct": "게을리하다"
+  },
+  {
+    "category": "외래어",
+    "wrong": "인트로",
+    "correct": "도입부"
+  },
+  {
+    "category": "외래어",
+    "wrong": "엔딩",
+    "correct": "끝, 결말"
+  },
+  {
+    "category": "외래어",
+    "wrong": "클라이맥스",
+    "correct": "절정"
+  },
+  {
+    "category": "외래어",
+    "wrong": "프롤로그",
+    "correct": "머리말"
+  },
+  {
+    "category": "외래어",
+    "wrong": "에필로그",
+    "correct": "맺음말"
+  },
+  {
+    "category": "외래어",
+    "wrong": "캐스팅",
+    "correct": "배역 정하기"
+  },
+  {
+    "category": "외래어",
+    "wrong": "오프닝",
+    "correct": "시작, 개막"
+  },
+  {
+    "category": "외래어",
+    "wrong": "리허설",
+    "correct": "예행연습"
+  },
+  {
+    "category": "한자어",
+    "wrong": "유예하다",
+    "correct": "미루다, 늦추다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "경감하다",
+    "correct": "덜어 주다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "가중하다",
+    "correct": "무겁게 하다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "산정하다",
+    "correct": "셈하여 정하다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "책정하다",
+    "correct": "정하다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "배정하다",
+    "correct": "나누어 정하다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "상계하다",
+    "correct": "맞비기다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "정산하다",
+    "correct": "셈을 마무리하다"
+  },
+  {
+    "category": "외래어",
+    "wrong": "랭킹",
+    "correct": "순위"
+  },
+  {
+    "category": "외래어",
+    "wrong": "챌린지",
+    "correct": "도전"
+  },
+  {
+    "category": "외래어",
+    "wrong": "커뮤니티",
+    "correct": "공동체, 모임"
+  },
+  {
+    "category": "외래어",
+    "wrong": "네트워크",
+    "correct": "관계망, 연결망"
+  },
+  {
+    "category": "외래어",
+    "wrong": "콘퍼런스",
+    "correct": "회의, 학술회의"
+  },
+  {
+    "category": "외래어",
+    "wrong": "프리뷰",
+    "correct": "미리 보기"
+  },
+  {
+    "category": "외래어",
+    "wrong": "피드백",
+    "correct": "반응, 의견"
+  },
+  {
+    "category": "외래어",
+    "wrong": "트렌디하다",
+    "correct": "유행하는"
+  },
+  {
+    "category": "한자어",
+    "wrong": "게시하다",
+    "correct": "붙이다, 알리다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "명시하다",
+    "correct": "분명히 밝히다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "예시하다",
+    "correct": "예를 들다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "열거하다",
+    "correct": "늘어놓다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "병기하다",
+    "correct": "함께 적다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "상술하다",
+    "correct": "자세히 말하다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "약술하다",
+    "correct": "간략히 말하다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "특기하다",
+    "correct": "특별히 적다"
+  },
+  {
+    "category": "외래어",
+    "wrong": "페이",
+    "correct": "지불, 급여"
+  },
+  {
+    "category": "외래어",
+    "wrong": "쿠폰",
+    "correct": "교환권"
+  },
+  {
+    "category": "외래어",
+    "wrong": "세일",
+    "correct": "할인"
+  },
+  {
+    "category": "외래어",
+    "wrong": "딜리버리",
+    "correct": "배달"
+  },
+  {
+    "category": "외래어",
+    "wrong": "픽업",
+    "correct": "찾아가기"
+  },
+  {
+    "category": "외래어",
+    "wrong": "바코드",
+    "correct": "막대 표시"
+  },
+  {
+    "category": "외래어",
+    "wrong": "오더",
+    "correct": "주문"
+  },
+  {
+    "category": "외래어",
+    "wrong": "리필",
+    "correct": "다시 채움"
+  },
+  {
+    "category": "한자어",
+    "wrong": "종용하다",
+    "correct": "권하다, 부추기다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "감수하다",
+    "correct": "달게 받다, 견디다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "향유하다",
+    "correct": "누리다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "구비하다",
+    "correct": "갖추다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "소진하다",
+    "correct": "다 써 버리다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "완비하다",
+    "correct": "완전히 갖추다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "비치하다",
+    "correct": "갖추어 두다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "유념하다",
+    "correct": "마음에 두다"
+  },
+  {
+    "category": "외래어",
+    "wrong": "스타트",
+    "correct": "시작, 출발"
+  },
+  {
+    "category": "외래어",
+    "wrong": "스톱",
+    "correct": "멈춤, 정지"
+  },
+  {
+    "category": "외래어",
+    "wrong": "컷",
+    "correct": "잘라내기, 장면"
+  },
+  {
+    "category": "외래어",
+    "wrong": "테마",
+    "correct": "주제, 제재"
+  },
+  {
+    "category": "외래어",
+    "wrong": "로고",
+    "correct": "상징 표시"
+  },
+  {
+    "category": "외래어",
+    "wrong": "마스코트",
+    "correct": "상징물"
+  },
+  {
+    "category": "외래어",
+    "wrong": "캐릭터",
+    "correct": "등장인물, 개성"
+  },
+  {
+    "category": "외래어",
+    "wrong": "카피라이터",
+    "correct": "광고 문안가"
+  },
+  {
+    "category": "한자어",
+    "wrong": "각별히",
+    "correct": "특별히"
+  },
+  {
+    "category": "한자어",
+    "wrong": "필시",
+    "correct": "아마, 틀림없이"
+  },
+  {
+    "category": "한자어",
+    "wrong": "여차하면",
+    "correct": "자칫하면"
+  },
+  {
+    "category": "한자어",
+    "wrong": "응분의",
+    "correct": "알맞은"
+  },
+  {
+    "category": "한자어",
+    "wrong": "만연하다",
+    "correct": "널리 퍼지다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "상존하다",
+    "correct": "늘 있다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "편재하다",
+    "correct": "널리 퍼져 있다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "상통하다",
+    "correct": "서로 통하다"
+  },
+  {
+    "category": "외래어",
+    "wrong": "브랜드",
+    "correct": "상표"
+  },
+  {
+    "category": "외래어",
+    "wrong": "마케팅",
+    "correct": "판매 전략, 시장 관리"
+  },
+  {
+    "category": "외래어",
+    "wrong": "세일즈",
+    "correct": "판매"
+  },
+  {
+    "category": "외래어",
+    "wrong": "바이어",
+    "correct": "구매자"
+  },
+  {
+    "category": "외래어",
+    "wrong": "딜러",
+    "correct": "판매 대리인"
+  },
+  {
+    "category": "외래어",
+    "wrong": "에이전시",
+    "correct": "대행사"
+  },
+  {
+    "category": "외래어",
+    "wrong": "코디",
+    "correct": "옷차림 연출"
+  },
+  {
+    "category": "외래어",
+    "wrong": "트렌드세터",
+    "correct": "유행 선도자"
+  },
+  {
+    "category": "한자어",
+    "wrong": "봉합하다",
+    "correct": "꿰매다, 마무리하다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "결원",
+    "correct": "빈자리"
+  },
+  {
+    "category": "한자어",
+    "wrong": "충원하다",
+    "correct": "채우다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "소환하다",
+    "correct": "불러들이다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "소집하다",
+    "correct": "불러 모으다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "파견하다",
+    "correct": "보내다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "부착하다",
+    "correct": "붙이다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "탈착하다",
+    "correct": "떼었다 붙였다 하다"
+  },
+  {
+    "category": "외래어",
+    "wrong": "그래프",
+    "correct": "도표"
+  },
+  {
+    "category": "외래어",
+    "wrong": "차트",
+    "correct": "도표, 표"
+  },
+  {
+    "category": "외래어",
+    "wrong": "다이어그램",
+    "correct": "도해"
+  },
+  {
+    "category": "외래어",
+    "wrong": "인덱스",
+    "correct": "색인, 찾아보기"
+  },
+  {
+    "category": "외래어",
+    "wrong": "뉴스",
+    "correct": "소식"
+  },
+  {
+    "category": "외래어",
+    "wrong": "헤드라인",
+    "correct": "표제"
+  },
+  {
+    "category": "외래어",
+    "wrong": "서머리",
+    "correct": "요약"
+  },
+  {
+    "category": "외래어",
+    "wrong": "옵서버",
+    "correct": "참관인"
+  },
+  {
+    "category": "한자어",
+    "wrong": "규명하다",
+    "correct": "밝히다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "해명하다",
+    "correct": "밝혀 말하다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "천명하다",
+    "correct": "분명히 밝히다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "표방하다",
+    "correct": "내세우다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "표출하다",
+    "correct": "드러내다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "발현하다",
+    "correct": "나타내다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "발로하다",
+    "correct": "나타나다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "촉발하다",
+    "correct": "불러일으키다"
+  },
+  {
+    "category": "외래어",
+    "wrong": "홀",
+    "correct": "큰방, 회관"
+  },
+  {
+    "category": "외래어",
+    "wrong": "로비",
+    "correct": "휴게실, 막후 교섭"
+  },
+  {
+    "category": "외래어",
+    "wrong": "라운지",
+    "correct": "휴게실"
+  },
+  {
+    "category": "외래어",
+    "wrong": "스위트룸",
+    "correct": "특실"
+  },
+  {
+    "category": "외래어",
+    "wrong": "체크인",
+    "correct": "투숙 절차"
+  },
+  {
+    "category": "외래어",
+    "wrong": "체크아웃",
+    "correct": "퇴실"
+  },
+  {
+    "category": "외래어",
+    "wrong": "발레파킹",
+    "correct": "대리 주차"
+  },
+  {
+    "category": "외래어",
+    "wrong": "룸서비스",
+    "correct": "객실 시중"
+  },
+  {
+    "category": "한자어",
+    "wrong": "잔존하다",
+    "correct": "남아 있다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "개재하다",
+    "correct": "끼어 있다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "산적하다",
+    "correct": "잔뜩 쌓이다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "누증하다",
+    "correct": "자꾸 늘다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "격증하다",
+    "correct": "갑자기 늘다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "격감하다",
+    "correct": "갑자기 줄다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "불식하다",
+    "correct": "없애다, 떨쳐 버리다"
+  },
+  {
+    "category": "한자어",
+    "wrong": "잠식하다",
+    "correct": "조금씩 먹어 들어가다"
+  },
+  {
+    "category": "외래어",
+    "wrong": "스낵바",
+    "correct": "간이 식당"
+  },
+  {
+    "category": "외래어",
+    "wrong": "셰프",
+    "correct": "요리사, 주방장"
+  },
+  {
+    "category": "외래어",
+    "wrong": "레시피",
+    "correct": "조리법"
+  },
+  {
+    "category": "외래어",
+    "wrong": "디저트",
+    "correct": "후식"
+  },
+  {
+    "category": "외래어",
+    "wrong": "애피타이저",
+    "correct": "전채"
+  },
+  {
+    "category": "외래어",
+    "wrong": "사이드",
+    "correct": "곁들이"
+  },
+  {
+    "category": "외래어",
+    "wrong": "케이터링",
+    "correct": "출장 요리"
+  },
+  {
+    "category": "외래어",
+    "wrong": "브런치",
+    "correct": "늦은 아침"
+  },
+  {
+    "category": "한자어",
+    "wrong": "소기의",
+    "correct": "바라던"
+  },
+  {
+    "category": "한자어",
+    "wrong": "지난한",
+    "correct": "매우 어려운"
+  },
+  {
+    "category": "한자어",
+    "wrong": "근소한",
+    "correct": "아주 적은"
+  },
+  {
+    "category": "한자어",
+    "wrong": "미미한",
+    "correct": "아주 작은"
+  },
+  {
+    "category": "한자어",
+    "wrong": "다대한",
+    "correct": "많은"
+  },
+  {
+    "category": "한자어",
+    "wrong": "지대한",
+    "correct": "매우 큰"
+  },
+  {
+    "category": "한자어",
+    "wrong": "심대한",
+    "correct": "매우 큰"
+  },
+  {
+    "category": "한자어",
+    "wrong": "광범위한",
+    "correct": "넓은"
+  },
+  {
+    "category": "외래어",
+    "wrong": "팀워크",
+    "correct": "협동"
+  },
+  {
+    "category": "외래어",
+    "wrong": "컨디션",
+    "correct": "상태, 몸 상태"
+  },
+  {
+    "category": "외래어",
+    "wrong": "페이스",
+    "correct": "속도"
+  },
+  {
+    "category": "외래어",
+    "wrong": "모티브",
+    "correct": "동기"
+  },
+  {
+    "category": "외래어",
+    "wrong": "어필",
+    "correct": "호소"
+  },
+  {
+    "category": "외래어",
+    "wrong": "멘탈",
+    "correct": "정신력"
+  },
+  {
+    "category": "외래어",
+    "wrong": "포지션",
+    "correct": "위치, 자리"
+  },
+  {
+    "category": "외래어",
+    "wrong": "롤",
+    "correct": "역할"
+  },
+  {
+    "category": "일본어 투 용어",
+    "wrong": "와쿠",
+    "correct": "틀, 테두리"
+  },
+  {
+    "category": "최신 순화어",
+    "wrong": "워킹그룹",
+    "correct": "실무단"
+  },
+  {
+    "category": "최신 순화어",
+    "wrong": "태스크포스",
+    "correct": "전담팀"
+  },
+  {
+    "category": "한자어",
+    "wrong": "작금",
+    "correct": "요즘, 요사이"
+  },
+  {
+    "category": "한자어",
+    "wrong": "하등의",
+    "correct": "아무런"
+  },
+  {
+    "category": "한자어",
+    "wrong": "소정의",
+    "correct": "정해진"
+  },
+  {
+    "category": "최신 순화어",
+    "wrong": "팝업스토어",
+    "correct": "반짝 매장"
+  },
+  {
+    "category": "최신 순화어",
+    "wrong": "인증샷",
+    "correct": "인증 사진"
+  },
+  {
+    "category": "최신 순화어",
+    "wrong": "플렉스",
+    "correct": "과시"
+  },
+  {
+    "category": "한자어",
+    "wrong": "비치",
+    "correct": "갖추어 둠"
+  },
+  {
+    "category": "한자어",
+    "wrong": "부득이",
+    "correct": "어쩔 수 없이"
+  },
+  {
+    "category": "한자어",
+    "wrong": "상존",
+    "correct": "늘 있음"
+  },
+  {
+    "category": "한자어",
+    "wrong": "통상",
+    "correct": "보통, 일반적으로"
+  },
+  {
+    "category": "외래어",
+    "wrong": "솔루션",
+    "correct": "해결책"
   }
 ]

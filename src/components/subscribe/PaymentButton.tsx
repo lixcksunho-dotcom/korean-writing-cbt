@@ -63,7 +63,8 @@ export default function PaymentButton({
         storeId,
         channelKey,
         paymentId,
-        orderName: 'AI 원고지 채점 1개월',
+        // 구독은 시험(모드)과 무관하게 모든 기능을 여는 단일 상품이라 결제창·영수증엔 시험 중립적 이름을 쓴다.
+        orderName: '프리미엄 플랜 30일 이용권',
         totalAmount: 5500,
         currency: 'CURRENCY_KRW',
         customer: {

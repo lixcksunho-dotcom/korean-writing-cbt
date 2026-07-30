@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import LogoGlyph from "@/components/layout/LogoGlyph";
 import SiteFooter from "@/components/layout/SiteFooter";
+import BreadcrumbLd from "@/components/seo/BreadcrumbLd";
+import StickyMobileCTA from "@/components/landing/StickyMobileCTA";
 import WordCounter from "./WordCounter";
 
 export const metadata: Metadata = {
@@ -96,6 +98,8 @@ export default function WordCountPage() {
         </div>
       </main>
 
+      <StickyMobileCTA />
+      <BreadcrumbLd name="글자 수 세기" path="/word-counter" />
       <SiteFooter />
 
       <script

@@ -74,6 +74,17 @@ export default function ExamPlayer({
     return () => clearInterval(timer)
   }, [])
 
+  // 시간 종료 시 자동 제출 — 실제 CBT처럼 제한 시간을 강제한다(한 번만).
+  const autoSubmittedRef = useRef(false)
+  useEffect(() => {
+    if (timeLeft > 0 || autoSubmittedRef.current) return
+    autoSubmittedRef.current = true
+    startTransition(async () => {
+      await submitSession(sessionId, answersRef.current)
+      router.push(`/cbt/${examYear}-${examRound}/result?session=${sessionId}`)
+    })
+  }, [timeLeft, sessionId, examYear, examRound, router])
+
   function handleAnswer(questionId: string, value: string) {
     setAnswers(prev => ({ ...prev, [questionId]: value }))
   }

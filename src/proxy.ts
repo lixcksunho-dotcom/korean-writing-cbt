@@ -42,8 +42,14 @@ export async function proxy(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
-  const protectedRoutes = ["/dashboard", "/cbt", "/manuscript", "/subscribe"];
-  const isProtected = protectedRoutes.some((r) => pathname.startsWith(r));
+  // /subscribe(상품·가격·환불 안내)는 비로그인도 볼 수 있어야 한다(간편결제 가맹 심사 요건 + 전환).
+  //   → 미들웨어로 막지 않고, 실제 결제·발급이 필요한 하위 페이지(success·history)는 페이지에서 자체 인증한다.
+  const protectedRoutes = ["/dashboard", "/cbt", "/manuscript"];
+  // 정확한 경로 세그먼트로만 매칭한다. startsWith만 쓰면 /manuscript-guide(공개 안내글) 같은
+  // 접두사가 겹치는 공개 페이지까지 로그인으로 튕겨 버린다.
+  const isProtected = protectedRoutes.some(
+    (r) => pathname === r || pathname.startsWith(r + "/")
+  );
 
   if (isProtected && !user) {
     return NextResponse.redirect(new URL("/login", request.url));

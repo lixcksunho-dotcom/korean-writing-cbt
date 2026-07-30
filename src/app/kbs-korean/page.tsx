@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import LogoGlyph from "@/components/layout/LogoGlyph";
 import SiteFooter from "@/components/layout/SiteFooter";
+import BreadcrumbLd from "@/components/seo/BreadcrumbLd";
+import StickyMobileCTA from "@/components/landing/StickyMobileCTA";
 import { KBS_SCHEDULE, KBS_APPLY_URL, KBS_SCHEDULE_URL } from "@/lib/examSchedule";
 import { PROGRAMS } from "@/lib/programs";
 
@@ -251,6 +253,8 @@ export default function KbsKoreanPage() {
             {" · "}
             <Link href="/exam-info" className="underline hover:text-[#1e3a5f]">한국실용글쓰기 시험 정보</Link>
             {" · "}
+            <Link href="/exam-compare" className="underline hover:text-[#1e3a5f]">실용글쓰기·KBS 비교</Link>
+            {" · "}
             <a href={KBS_SCHEDULE_URL} target="_blank" rel="noopener noreferrer" className="underline hover:text-[#1e3a5f]">
               공식 접수 페이지
             </a>
@@ -258,6 +262,8 @@ export default function KbsKoreanPage() {
         </div>
       </main>
 
+      <StickyMobileCTA />
+      <BreadcrumbLd name="KBS한국어능력시험" path="/kbs-korean" />
       <SiteFooter />
 
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }} />

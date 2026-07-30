@@ -224,12 +224,17 @@ export async function submitSession(
 
   const { data: session } = await supabase
     .from('quiz_sessions')
-    .select('id, program, year, round')
+    .select('id, program, year, round, completed_at')
     .eq('id', sessionId)
     .eq('user_id', user.id)
     .single()
 
   if (!session) throw new Error('Session not found')
+
+  // 이미 제출된 세션이면 중복 채점하지 않는다(더블클릭·뒤로가기 재제출).
+  // quiz_answers엔 (session_id, question_id) 유니크가 없어 재삽입 시 답안이 중복 적재되고,
+  // 그러면 서술형 AI 채점의 .single() 조회가 깨지고 영역별·예상점수 집계가 이중 계산된다.
+  if (session.completed_at) return
 
   const { data: questions } = await supabase
     .from('questions')

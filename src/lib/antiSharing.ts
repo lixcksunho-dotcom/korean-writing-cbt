@@ -7,6 +7,10 @@ import { createAdminClient } from '@/lib/supabase/admin'
 // 위반 시 사람이 읽을 수 있는 한국어 메시지를 throw → UI가 그대로 노출.
 export const DEVICE_LIMIT = 3
 export const DAILY_GRADE_LIMIT = 30
+// 기기 한도 계산 시 '최근 활동'만 센다(일수). 쿠키를 지워 생긴 옛 기기ID는 이 기간이 지나면
+// 한도에서 빠져, 정상 이용자가 오래전 기기 때문에 잠기는 오탐을 막는다.
+// (계정 공유는 여러 기기가 '동시에' 최근 활동하므로 이 필터로도 여전히 걸린다.)
+const DEVICE_ACTIVE_DAYS = 90
 
 const DEVICE_COOKIE = 'kpt_did'
 
@@ -39,11 +43,13 @@ export async function enforcePaidUsage(userId: string): Promise<void> {
   const admin = createAdminClient()
   const deviceId = await getDeviceId()
 
-  // 1) 기기 수 제한
+  // 1) 기기 수 제한 — 최근 활동한 기기만 센다(오래된 옛 기기ID는 제외).
+  const activeSince = new Date(Date.now() - DEVICE_ACTIVE_DAYS * 86400_000).toISOString()
   const { data: devices } = await admin
     .from('device_usage')
     .select('device_id')
     .eq('user_id', userId)
+    .gte('last_seen', activeSince)
   const ids = new Set((devices ?? []).map(d => d.device_id as string))
   if (!ids.has(deviceId) && ids.size >= DEVICE_LIMIT) {
     throw new Error(

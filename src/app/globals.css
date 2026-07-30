@@ -127,3 +127,47 @@ body {
   -moz-user-select: text;
   user-select: text;
 }
+
+/* ── 블로그 본문(dangerouslySetInnerHTML로 넣는 기사 HTML) ──
+   Tailwind preflight가 h2/p/ul/table 기본 스타일을 지워서, 여기서 되살린다.
+   목표: 잡지처럼 편하게 읽히는 타이포. 본문 HTML은 인라인 스타일 강조박스(table)를 포함한다. */
+.blog-body { color: #2b3648; font-size: 1.09rem; line-height: 1.92; letter-spacing: -0.003em; word-break: keep-all; }
+.blog-body > p { margin: 1.15em 0; }
+/* 리드(첫 문단) = 잡지 standfirst: 크고 진하게, 아래 살짝 구분 */
+.blog-body > p:first-of-type {
+  font-size: 1.28rem; line-height: 1.75; color: #0f172a; font-weight: 500;
+  margin: 0 0 1.4em; padding-bottom: 1.2em; border-bottom: 1px solid #eef2f7;
+}
+/* 빈 문단은 흔적만 있어도 큰 공백을 만든다 — 지운다(마진으로 간격 처리) */
+.blog-body p:empty { display: none; }
+.blog-body h2 {
+  font-size: 1.55rem; font-weight: 800; color: #0f172a;
+  margin: 2.2em 0 0.8em; line-height: 1.35; scroll-margin-top: 5rem;
+  padding-left: 0.7rem; border-left: 4px solid var(--cat, #1e3a5f);
+}
+.blog-body h3 { font-size: 1.22rem; font-weight: 700; color: #1e3a5f; margin: 1.6em 0 0.5em; }
+.blog-body strong, .blog-body b { color: #0f172a; font-weight: 700; }
+.blog-body em { font-style: normal; background: linear-gradient(transparent 60%, #fef3c7 60%); padding: 0 1px; }
+.blog-body a { color: #b45309; font-weight: 600; text-decoration: underline; text-underline-offset: 2px; }
+.blog-body a:hover { color: #d97706; }
+.blog-body ul, .blog-body ol { margin: 1.1em 0; padding-left: 1.4em; }
+.blog-body li { margin: 0.45em 0; }
+.blog-body ul { list-style: disc; }
+.blog-body ol { list-style: decimal; }
+.blog-body li::marker { color: var(--cat, #94a3b8); }
+/* 표 — 라운드·그림자로 카드처럼. 가로 스크롤은 컨테이너 안에서만 */
+.blog-body table {
+  width: 100%; border-collapse: separate; border-spacing: 0; margin: 1.6em 0;
+  font-size: 0.98rem; border-radius: 0.75rem; overflow: hidden;
+  box-shadow: 0 2px 12px rgba(15,31,61,0.06); border: 1px solid #e8edf3;
+}
+.blog-body table caption { font-weight: 700; color: #334155; text-align: left; margin-bottom: 0.5em; }
+.blog-body th, .blog-body td { padding: 0.7em 0.9em; text-align: left; vertical-align: top; border-bottom: 1px solid #eef2f7; }
+.blog-body tr:last-child th, .blog-body tr:last-child td { border-bottom: none; }
+/* 데이터 표(테두리형) 헤더 강조 */
+.blog-body table[border] th { background: var(--cat, #1e3a5f); color: #fff; font-weight: 700; border-bottom: none; }
+.blog-body table[border] tr:nth-child(even) td { background: #f8fafc; }
+.blog-body img { max-width: 100%; height: auto; border-radius: 0.75rem; margin: 1.4em 0; }
+.blog-body-scroll { overflow-x: auto; }
+/* 강조박스(인라인 style table) 모서리 둥글게 — 인라인 배경색은 유지 */
+.blog-body td[style*="background-color"] { border-radius: 0.5rem; }

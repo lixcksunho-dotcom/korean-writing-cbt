@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { sendQuestionReportAlert } from '@/lib/questionReportAlert'
 
 /** 즐겨찾기 토글 — 새 상태(true=등록됨)를 반환 */
 export async function toggleBookmark(questionId: string): Promise<boolean> {
@@ -37,4 +38,21 @@ export async function submitQuestionReport(questionId: string, reason: string): 
     .from('question_reports')
     .insert({ user_id: user.id, question_id: questionId, reason: trimmed.slice(0, 500) })
   if (error) throw new Error(error.message)
+
+  // 신고 저장 후 관리자에게 텔레그램 알림(설정된 경우). 알림 실패는 신고 접수에 영향 주지 않음.
+  const { data: q } = await supabase
+    .from('questions')
+    .select('program, year, round, number')
+    .eq('id', questionId)
+    .single()
+  if (q) {
+    await sendQuestionReportAlert({
+      reason: trimmed.slice(0, 500),
+      program: q.program,
+      year: q.year,
+      round: q.round,
+      number: q.number,
+      reporter: user.email ?? user.id,
+    })
+  }
 }

@@ -211,7 +211,11 @@ export default async function DashboardPage() {
             <p className="font-bold text-amber-900 text-sm">
               이용권이 {expiryDays === 0 ? '오늘' : `${expiryDays}일 뒤`} 만료돼요
             </p>
-            <p className="text-xs text-amber-700">지금 연장하면 AI 첨삭을 끊김 없이 계속 받을 수 있어요.</p>
+            <p className="text-xs text-amber-700">
+              {cfg.hasManuscript
+                ? '지금 연장하면 AI 첨삭을 끊김 없이 계속 받을 수 있어요.'
+                : '지금 연장하면 전 회차 무제한 풀이와 영역별 분석을 끊김 없이 이어갈 수 있어요.'}
+            </p>
           </div>
           <span className="shrink-0 btn-gold text-xs font-bold text-white px-4 py-2 rounded-xl">연장하기</span>
         </Link>
@@ -254,7 +258,11 @@ export default async function DashboardPage() {
             </div>
             <div className="flex-1 min-w-0">
               <h2 className="text-base font-black text-amber-900 mb-0.5">이용권이 만료됐어요</h2>
-              <p className="text-sm text-amber-800/80">다시 시작하면 <b>그동안의 학습 기록 그대로</b>, 서술형 AI 첨삭을 <b>무제한</b>으로 이어서 받을 수 있어요. 5,500원 · 30일 · 자동결제 없음.</p>
+              <p className="text-sm text-amber-800/80">
+                다시 시작하면 <b>그동안의 학습 기록 그대로</b>,{' '}
+                {cfg.hasManuscript ? <>서술형 AI 첨삭을 <b>무제한</b>으로 이어서 받을 수 있어요.</> : <>전 회차 무제한 풀이·영역별 분석을 이어서 이용할 수 있어요.</>}{' '}
+                5,500원 · 30일 · 자동결제 없음.
+              </p>
             </div>
             <span className="shrink-0 btn-gold text-xs font-bold text-white px-4 py-2 rounded-xl">다시 시작하기</span>
           </div>
@@ -278,10 +286,11 @@ export default async function DashboardPage() {
         </Link>
       )}
 
-      {/* 온보딩/전환 유도 — 비구독자 + 무료 체험 잔여 시(만료 재구독·결제중단 대상 제외) */}
-      {!sub && !lapsedSub && !abandonedCart && aiTrial.remaining > 0 && (
+      {/* 온보딩/전환 유도 — 비구독자(만료 재구독·결제중단 대상 제외).
+          silyong: 무료 AI 첨삭이 핵심 훅. KBS: AI 첨삭이 없으므로 영역별 약점 분석으로 유도. */}
+      {!sub && !lapsedSub && !abandonedCart && (cfg.hasManuscript ? aiTrial.remaining > 0 : true) && (
         completedSessions.length === 0 ? (
-          // 신규 유저: 첫 시험 → 무료 첨삭 2단계 온보딩
+          // 신규 유저: 첫 시험 2단계 온보딩 (2단계 문구는 시험별로 다름)
           <div className="relative overflow-hidden rounded-2xl mb-8 p-6 border border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50">
             <div className="absolute top-0 right-0 w-40 h-40 bg-amber-300 rounded-full blur-3xl opacity-20 -translate-y-1/3 translate-x-1/3" />
             <div className="relative">
@@ -296,7 +305,9 @@ export default async function DashboardPage() {
                 </div>
                 <div className="flex items-center gap-2.5 bg-white/70 rounded-xl px-3.5 py-2.5">
                   <span className="w-6 h-6 rounded-full bg-amber-500 text-white text-xs font-black flex items-center justify-center shrink-0">2</span>
-                  <span className="text-sm font-semibold text-amber-900">내 답안 <b>무료 AI 첨삭</b> 받기</span>
+                  <span className="text-sm font-semibold text-amber-900">
+                    {cfg.hasManuscript ? <>내 답안 <b>무료 AI 첨삭</b> 받기</> : <>내 <b>영역별 약점</b> 확인하기</>}
+                  </span>
                 </div>
               </div>
               <Link href="/cbt" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-[#d97706] text-white text-sm font-black hover:opacity-90 transition-opacity">
@@ -304,8 +315,8 @@ export default async function DashboardPage() {
               </Link>
             </div>
           </div>
-        ) : (
-          // 시험 경험 있는 유저: 무료 AI 첨삭으로 유도
+        ) : cfg.hasManuscript ? (
+          // silyong 시험 경험자: 무료 AI 첨삭으로 유도
           <Link
             href="/practice/essay"
             className="group block relative overflow-hidden rounded-2xl mb-8 p-5 sm:p-6 border border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50 hover:shadow-[0_8px_24px_rgba(217,119,6,0.15)] transition-all"
@@ -323,6 +334,24 @@ export default async function DashboardPage() {
                 <p className="text-sm text-amber-800/80">내가 쓴 답안을 AI가 모범답안과 비교해 <b>점수·첨삭</b>으로 분석해 드려요. 지금 바로 무료로 받아보세요.</p>
               </div>
               <ChevronRight className="h-5 w-5 text-amber-600 shrink-0 group-hover:translate-x-1 transition-transform" />
+            </div>
+          </Link>
+        ) : (
+          // KBS 시험 경험자: 유형별 집중 연습으로 약점 공략 유도
+          <Link
+            href="/practice/kbs-types"
+            className="group block relative overflow-hidden rounded-2xl mb-8 p-5 sm:p-6 border border-emerald-200 bg-gradient-to-r from-emerald-50 to-teal-50 hover:shadow-[0_8px_24px_rgba(13,148,136,0.15)] transition-all"
+          >
+            <div className="absolute top-0 right-0 w-40 h-40 bg-emerald-300 rounded-full blur-3xl opacity-20 -translate-y-1/3 translate-x-1/3" />
+            <div className="relative flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center shrink-0 shadow-lg shadow-emerald-500/30">
+                <Sparkles className="h-6 w-6 text-white" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h2 className="text-base font-black text-emerald-900 mb-0.5">유형별 집중 연습으로 약점 공략</h2>
+                <p className="text-sm text-emerald-800/80">고유어·한자성어·표준발음·맞춤법 등 <b>기출유형별</b>로 골라 풀며 자주 틀리는 유형을 잡으세요.</p>
+              </div>
+              <ChevronRight className="h-5 w-5 text-emerald-600 shrink-0 group-hover:translate-x-1 transition-transform" />
             </div>
           </Link>
         )
@@ -472,8 +501,9 @@ export default async function DashboardPage() {
             <Link href="/subscribe/history" className="text-xs font-semibold text-emerald-700/80 hover:text-emerald-800 hover:underline">
               결제 내역
             </Link>
-            <Link href="/manuscript" className="text-xs font-bold text-emerald-700 bg-white border border-emerald-200 px-4 py-2 rounded-xl hover:bg-emerald-50 transition-colors">
-              채점하기 →
+            {/* 원고지 채점이 없는 KBS는 학습 이어가기로 연결 */}
+            <Link href={cfg.hasManuscript ? '/manuscript' : '/cbt'} className="text-xs font-bold text-emerald-700 bg-white border border-emerald-200 px-4 py-2 rounded-xl hover:bg-emerald-50 transition-colors">
+              {cfg.hasManuscript ? '채점하기 →' : '이어서 풀기 →'}
             </Link>
           </div>
         </div>
@@ -484,8 +514,10 @@ export default async function DashboardPage() {
               <Sparkles className="h-5 w-5 text-white" />
             </div>
             <div>
-              <p className="font-bold text-amber-900 text-sm">AI 원고지 채점 이용권</p>
-              <p className="text-amber-700 text-xs">5,500원 1회 결제로 30일 무제한</p>
+              <p className="font-bold text-amber-900 text-sm">{cfg.hasManuscript ? 'AI 원고지 채점 이용권' : '프리미엄 플랜 이용권'}</p>
+              <p className="text-amber-700 text-xs">
+                {cfg.hasManuscript ? '5,500원 1회 결제로 30일 무제한' : '5,500원 1회 결제 · 전 회차 무제한 + 영역별 분석'}
+              </p>
             </div>
           </div>
           <Link href="/subscribe" className="shrink-0 btn-gold text-xs font-bold text-white px-4 py-2 rounded-xl">

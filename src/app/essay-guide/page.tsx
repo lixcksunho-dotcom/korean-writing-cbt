@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import LogoGlyph from "@/components/layout/LogoGlyph";
 import SiteFooter from "@/components/layout/SiteFooter";
+import BreadcrumbLd from "@/components/seo/BreadcrumbLd";
+import StickyMobileCTA from "@/components/landing/StickyMobileCTA";
 
 export const metadata: Metadata = {
   title: "한국실용글쓰기 서술형 유형별 공략 (배점 700점 완벽 정리)",
@@ -28,6 +30,18 @@ const TYPES = [
   { name: "원고지 보고서 (9번·300점)", how: "주어진 자료를 근거로 주장·방향을 제시하는 장문. 배점이 커서 시간 배분 필수.", tip: "서론(목적)–본론(근거 2가지)–결론(제언) 뼈대를 먼저 잡고 칸을 채우기." },
 ];
 
+// 내용이 좋아도 놓치기 쉬운 감점 요인 — 유형과 무관하게 공통으로 적용된다.
+const MISTAKES = [
+  { bad: "조건 누락", fix: "시작 어구·문장 수·어절 수·형식 조건을 하나라도 빠뜨리면 내용이 좋아도 감점. 답안 쓰기 전 조건을 번호로 적어두고 하나씩 지워가며 확인한다." },
+  { bad: "글자 수 초과·미달", fix: "제한 글자 수를 크게 벗어나면 감점. 원고지 칸을 미리 세어 목표 분량을 표시하고, 마지막에 한 번 더 센다." },
+  { bad: "구어체·반말 섞임", fix: "‘~같아요, ~거든요, ~죠’ 같은 구어체나 반말은 감점. ‘~이다/~한다’ 문어체로 처음부터 끝까지 일관되게 쓴다." },
+  { bad: "개조식 남발", fix: "‘-함, -임, -할 것’ 식 개조식은 완결된 문장으로 풀어 쓴다. 개조식이 요구되는 형식(일부 안내문 등)일 때만 예외." },
+  { bad: "논제 이탈·서론 장황", fix: "배경 설명이 길어 정작 묻는 것에 답하지 못하면 감점. 첫 문장부터 논제에 답하고, 근거로 뒷받침한다." },
+  { bad: "문체 혼용", fix: "‘~다’체와 ‘~습니다’체를 한 답안에서 섞어 쓰면 감점. 종결 어미를 하나로 통일한다." },
+  { bad: "주술 호응 불일치", fix: "주어와 서술어가 맞지 않는 비문은 감점. ‘내가 강조하고 싶은 것은 ~해야 한다(X)→~라는 점이다(O)’처럼 성분을 맞춘다." },
+  { bad: "겹말·중복 표현", fix: "‘역전 앞·미리 예약·처갓집’처럼 같은 뜻을 겹쳐 쓰면 감점. 한쪽을 덜어 낸다." },
+];
+
 const FAQ = [
   {
     q: "서술형은 모범답안과 똑같이 써야 정답인가요?",
@@ -40,6 +54,10 @@ const FAQ = [
   {
     q: "서술형을 혼자 채점하기 어려운데 어떻게 하나요?",
     a: "독학의 가장 큰 벽이 바로 서술형 자가 채점이에요. 실글패스(kptest.cloud) 같은 실전 CBT에서 서술형 답안을 AI로 채점·첨삭받으면 ‘어디서 감점되는지’를 문장 단위로 확인할 수 있어요. 모의고사 2회분은 무료라 수준 점검용으로 먼저 써봐도 됩니다.",
+  },
+  {
+    q: "서술형 시간이 늘 부족한데 어떻게 배분하나요?",
+    a: "배점이 큰 원고지 장문(9번)에 시간을 넉넉히 확보하는 게 핵심이에요. 객관식·단답형을 먼저 빠르게 끝내 서술형 시간을 벌고, 원고지 답안은 ‘뼈대(서론·근거·결론)를 먼저 잡고 칸을 채우는’ 순서로 쓰면 중간에 막히지 않아요. 실글패스 CBT는 실제 제한 시간이 있어 시간 감각을 기르기 좋습니다.",
   },
 ];
 
@@ -99,6 +117,18 @@ export default function EssayGuidePage() {
           </section>
 
           <section className="mb-10">
+            <h2 className="text-2xl font-black text-[#0f172a] mb-4">감점을 부르는 흔한 실수</h2>
+            <div className="space-y-2.5">
+              {MISTAKES.map((m) => (
+                <div key={m.bad} className="rounded-xl border border-[#e2e8f0] bg-white p-4">
+                  <p className="font-black text-red-500 text-sm">✕ {m.bad}</p>
+                  <p className="mt-1 text-sm text-[#475569] leading-relaxed">{m.fix}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section className="mb-10">
             <div className="rounded-2xl border border-[#e2e8f0] bg-gradient-to-br from-[#0f1f3d] to-[#1e3a5f] p-6 text-center text-white">
               <p className="text-lg font-black mb-1">서술형은 ‘써보고 채점받아야’ 늘어요</p>
               <p className="text-white/70 text-sm mb-5">실전 CBT로 유형별 서술형을 풀고, AI 채점·첨삭으로 감점 포인트를 문장 단위로 확인하세요. 모의고사 2회분은 무료예요.</p>
@@ -132,6 +162,8 @@ export default function EssayGuidePage() {
             관련:{" "}
             <Link href="/exam-info" className="underline hover:text-[#1e3a5f]">시험정보</Link>
             {" · "}
+            <Link href="/manuscript-guide" className="underline hover:text-[#1e3a5f]">원고지 작성법</Link>
+            {" · "}
             <Link href="/business-writing" className="underline hover:text-[#1e3a5f]">공문서·이메일 예시</Link>
             {" · "}
             <Link href="/spelling" className="underline hover:text-[#1e3a5f]">자주 틀리는 맞춤법</Link>
@@ -141,6 +173,8 @@ export default function EssayGuidePage() {
         </div>
       </main>
 
+      <StickyMobileCTA />
+      <BreadcrumbLd name="서술형 작성법" path="/essay-guide" />
       <SiteFooter />
 
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }} />

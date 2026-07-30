@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { createClient as createPublicClient } from "@supabase/supabase-js";
 import { SB_URL, SB_ANON } from "@/lib/supabase/sanitize";
-import { FileText, BookOpen, PenLine, CheckCircle, ArrowRight, Sparkles, Star, Gift } from "lucide-react";
+import { FileText, BookOpen, PenLine, CheckCircle, ArrowRight, Sparkles, Star, Gift, RotateCcw, Wallet } from "lucide-react";
 import LogoGlyph from "@/components/layout/LogoGlyph";
 import ReviewMarquee from "@/components/landing/ReviewMarquee";
+import StickyMobileCTA from "@/components/landing/StickyMobileCTA";
 import SiteFooter from "@/components/layout/SiteFooter";
 import ScheduleModal from "@/components/schedule/ScheduleModal";
 
@@ -28,6 +29,13 @@ const features = [
     badgeStyle: "bg-amber-100 text-amber-700",
     gradient: "from-amber-500 to-orange-600",
   },
+];
+
+// 진입 마찰을 줄이는 3단계 흐름(전환↑) — "복잡하지 않고 바로 시작된다"는 인식을 준다.
+const steps = [
+  { n: "1", title: "무료 가입", desc: "이메일로 30초면 가입 완료. 카드 등록도, 자동결제도 없어요." },
+  { n: "2", title: "CBT 무료 풀이", desc: "기출 기반 실전 모의고사를 바로 풀고, 즉시 채점·해설을 확인하세요." },
+  { n: "3", title: "AI 첨삭 체험", desc: "서술형·원고지 답안을 AI가 항목별로 채점·첨삭. 3회 무료로 먼저 써보세요." },
 ];
 
 const benefits = [
@@ -225,6 +233,61 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {/* 서술형 차별화 — 합격의 70%가 서술형(700점), 그걸 AI가 채점·첨삭 (무료 CBT엔 없는 강점) */}
+      <section className="py-16 px-4 bg-gradient-to-br from-[#0f1f3d] to-[#1e3a5f]">
+        <div className="max-w-3xl mx-auto text-center text-white">
+          <div className="inline-flex items-center gap-1.5 bg-white/10 border border-white/20 text-amber-300 text-xs font-bold px-3 py-1.5 rounded-full mb-4">
+            <PenLine className="h-3.5 w-3.5" /> 실글패스만의 강점
+          </div>
+          <h2 className="text-3xl font-black tracking-tight mb-3">합격은 서술형에서 갈립니다</h2>
+          <p className="text-white/70 leading-relaxed mb-8 max-w-xl mx-auto">
+            한국실용글쓰기는 1,000점 중 <b className="text-white">서술형이 700점</b>. 객관식은 어디서나 풀 수 있지만,
+            <b className="text-white"> 서술형·원고지 답안을 채점·첨삭</b>해 주는 곳은 드뭅니다.
+          </p>
+          <div className="flex items-center justify-center gap-3 mb-8">
+            <div className="flex-1 max-w-[9rem] rounded-xl bg-white/5 border border-white/10 p-4">
+              <div className="text-2xl font-black text-white/50">300<span className="text-sm">점</span></div>
+              <div className="text-xs text-white/50 mt-0.5">객관식</div>
+            </div>
+            <div className="flex-1 max-w-[9rem] rounded-xl bg-amber-400/15 border border-amber-300/40 p-4">
+              <div className="text-2xl font-black text-amber-300">700<span className="text-sm">점</span></div>
+              <div className="text-xs text-amber-200/80 mt-0.5">서술형 · AI 첨삭</div>
+            </div>
+          </div>
+          <p className="text-white/70 leading-relaxed mb-7 max-w-xl mx-auto">
+            실글패스는 AI가 <b className="text-white">조건 충족·맞춤법·논리 구성</b>을 항목별로 채점하고 첨삭까지 해 줘요.
+            채점해 줄 사람이 없어도 혼자서 고쳐 쓰며 실력을 올릴 수 있어요.
+          </p>
+          <Link href="/signup" className="btn-gold inline-flex items-center gap-2 text-white font-bold px-8 py-3.5 rounded-xl text-sm">
+            서술형 AI 첨삭 무료로 체험 <ArrowRight className="h-4 w-4" />
+          </Link>
+        </div>
+      </section>
+
+      {/* 이용 3단계 */}
+      <section className="pb-4 px-4">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-10">
+            <h2 className="text-3xl font-black text-[#0f172a] mb-3 tracking-tight">3단계로 바로 시작</h2>
+            <p className="text-[#64748b] text-base">복잡한 설정 없이, 가입하고 바로 풀어보세요</p>
+          </div>
+          <div className="grid sm:grid-cols-3 gap-5">
+            {steps.map(({ n, title, desc }, i) => (
+              <div key={n} className="relative bg-white rounded-2xl p-6 border border-[#e2e8f0] shadow-[0_4px_20px_rgba(15,31,61,0.06)]">
+                <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-[#1e3a5f] to-[#0f1f3d] text-white font-black text-lg mb-4">
+                  {n}
+                </div>
+                <h3 className="font-bold text-[#0f172a] text-lg mb-1.5">{title}</h3>
+                <p className="text-[#64748b] text-sm leading-relaxed">{desc}</p>
+                {i < steps.length - 1 && (
+                  <ArrowRight className="hidden sm:block absolute top-1/2 -right-3.5 h-5 w-5 text-[#cbd5e1] -translate-y-1/2" />
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* 무료 / 유료 비교 */}
       <section className="py-16 px-4 bg-white">
         <div className="max-w-4xl mx-auto">
@@ -282,6 +345,39 @@ export default async function HomePage() {
               </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* 가치 앵커링 — 응시료 대비 프레이밍(전환↑). 특정 학원가를 지어내지 않고 사실만 사용. */}
+      <section className="py-16 px-4 bg-[#f8fafc]">
+        <div className="max-w-3xl mx-auto">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-black text-[#0f172a] mb-3 tracking-tight">떨어지면 응시료가 더 듭니다</h2>
+            <p className="text-[#64748b] text-base">한 번에 붙는 게 가장 아끼는 길이에요</p>
+          </div>
+          <div className="grid sm:grid-cols-3 gap-4">
+            <div className="rounded-2xl border border-[#e2e8f0] bg-white p-5 text-center">
+              <div className="inline-flex p-2.5 rounded-xl bg-[#f1f5f9] mb-3"><Wallet className="h-5 w-5 text-[#64748b]" /></div>
+              <p className="text-sm font-bold text-[#334155] mb-1">시험 응시료</p>
+              <p className="text-2xl font-black text-[#0f172a]">약 2~3만 원</p>
+              <p className="text-xs text-[#94a3b8] mt-1">1회 응시 기준</p>
+            </div>
+            <div className="rounded-2xl border border-[#e2e8f0] bg-white p-5 text-center">
+              <div className="inline-flex p-2.5 rounded-xl bg-red-50 mb-3"><RotateCcw className="h-5 w-5 text-red-500" /></div>
+              <p className="text-sm font-bold text-[#334155] mb-1">불합격 후 재응시</p>
+              <p className="text-2xl font-black text-red-500">+2~3만 원</p>
+              <p className="text-xs text-[#94a3b8] mt-1">떨어질 때마다 반복</p>
+            </div>
+            <div className="rounded-2xl border-2 border-amber-300 bg-gradient-to-br from-amber-50 to-white p-5 text-center shadow-[0_4px_20px_rgba(217,119,6,0.10)]">
+              <div className="inline-flex p-2.5 rounded-xl bg-amber-100 mb-3"><Sparkles className="h-5 w-5 text-amber-600" /></div>
+              <p className="text-sm font-bold text-[#334155] mb-1">실글패스 이용권</p>
+              <p className="text-2xl font-black text-[#0f172a]">5,500원</p>
+              <p className="text-xs text-[#d97706] font-semibold mt-1">합격 전까지 무제한 연습</p>
+            </div>
+          </div>
+          <p className="text-center text-sm text-[#64748b] mt-6">
+            응시료 <b className="text-[#334155]">한 번</b> 값이면, 실글패스로 <b className="text-[#334155]">30일 무제한</b> 실전 연습이 됩니다.
+          </p>
         </div>
       </section>
 
@@ -394,6 +490,7 @@ export default async function HomePage() {
 
       <SiteFooter />
       <ScheduleModal />
+      <StickyMobileCTA />
     </div>
   );
 }

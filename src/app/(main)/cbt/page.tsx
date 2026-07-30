@@ -75,7 +75,12 @@ export default async function CbtPage() {
               </div>
               <h2 className="text-lg font-black text-[#0f172a] mb-1.5">{cfg.freeRounds}회 무료로 풀어보고, 마음에 들면 무제한으로</h2>
               <p className="text-sm text-[#475569] leading-relaxed mb-2">
-                이용권을 열면 <b className="text-[#1e3a5f]">모든 회차 무제한 풀이</b>, <b className="text-[#1e3a5f]">서술형 AI 채점·첨삭</b>, <b className="text-[#1e3a5f]">AI 예상 점수·합격 등급 판정</b>, <b className="text-[#1e3a5f]">영역별 약점 분석</b>까지 이어집니다.
+                {/* KBS는 서술형 AI 채점이 없고 급수제라, 열리는 기능 문구를 시험별로 다르게 안내 */}
+                {cfg.hasManuscript ? (
+                  <>이용권을 열면 <b className="text-[#1e3a5f]">모든 회차 무제한 풀이</b>, <b className="text-[#1e3a5f]">서술형 AI 채점·첨삭</b>, <b className="text-[#1e3a5f]">AI 예상 점수·합격 등급 판정</b>, <b className="text-[#1e3a5f]">영역별 약점 분석</b>까지 이어집니다.</>
+                ) : (
+                  <>이용권을 열면 <b className="text-[#1e3a5f]">모든 회차 무제한 풀이</b>, <b className="text-[#1e3a5f]">AI 예상 점수·등급 판정</b>, <b className="text-[#1e3a5f]">7개 영역별 약점 분석</b>, <b className="text-[#1e3a5f]">유형별 집중 연습</b>까지 이어집니다.</>
+                )}
               </p>
               <p className="text-xs text-[#64748b]">
                 5,500원 · 30일 무제한 · <b>1회 결제(자동결제 없음)</b> · 7일 내 미사용 전액 환불

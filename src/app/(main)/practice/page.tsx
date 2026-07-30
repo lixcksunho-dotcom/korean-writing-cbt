@@ -28,6 +28,15 @@ export default async function PracticePage() {
       grad: 'from-rose-500 to-pink-600',
     },
     {
+      // KBS 전용 — 어휘·어법을 기출유형별로 세분해 정밀 연습(발문 기반 분류)
+      href: '/practice/kbs-types',
+      icon: Target,
+      title: '유형별 집중 연습',
+      desc: '고유어·한자성어·속담·표준발음·맞춤법 등 어휘·어법을 유형별로 골라 풀어요.',
+      meta: '어휘 · 어법 세부 유형',
+      grad: 'from-rose-500 to-pink-600',
+    },
+    {
       href: '/practice/refine',
       icon: CircleDot,
       title: '순화어 O/X 퀴즈',
@@ -40,7 +49,8 @@ export default async function PracticePage() {
       icon: Layers,
       title: '영역별 집중 연습',
       desc: '결과에서 점수가 낮았던 영역만 모아 다시 풀어요.',
-      meta: cfg.areas.map(x => x.name.split('·')[0]).join(' · '),
+      // 영역이 많으면(KBS 7개) 카드 메타가 길어져 줄바꿈이 깨지므로 개수로 요약
+      meta: cfg.areas.length > 4 ? `${cfg.areas.length}개 영역` : cfg.areas.map(x => x.name.split('·')[0]).join(' · '),
       grad: 'from-sky-500 to-blue-700',
     },
     {
@@ -85,9 +95,14 @@ export default async function PracticePage() {
     },
   ]
 
-  // 실용글쓰기 전용 연습(유형별 집중·순화어·서술형·원고지 보고서)은 그 모드에서만 노출.
-  const manuscriptOnly = new Set(['/practice/types', '/practice/refine', '/practice/essay', '/practice/report'])
-  const visibleCards = cfg.hasManuscript ? cards : cards.filter(c => !manuscriptOnly.has(c.href))
+  // 실용글쓰기 전용 연습(유형별 집중·서술형·원고지 보고서)은 그 모드에서만 노출.
+  // 순화어 O/X(refine)는 순화어·외래어·한자어를 다뤄 KBS에도 유효하므로 두 모드 모두 노출.
+  const silyongOnly = new Set(['/practice/types', '/practice/essay', '/practice/report'])
+  // KBS 유형별은 KBS 모드에서만 노출.
+  const kbsOnly = new Set(['/practice/kbs-types'])
+  const visibleCards = cards.filter(c =>
+    cfg.hasManuscript ? !kbsOnly.has(c.href) : !silyongOnly.has(c.href),
+  )
 
   return (
     <div className="animate-fade-up">

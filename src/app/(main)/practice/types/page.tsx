@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, ChevronRight, SpellCheck, Globe, Link2, FileText } from 'lucide-react'
+import { ArrowLeft, ChevronRight, SpellCheck, Globe, Link2, FileText, MessageCircle, BadgeCheck, AlignLeft } from 'lucide-react'
 import { getActiveSubscription } from '@/lib/subscription'
 import { getActiveProgram } from '@/lib/programContext'
 import { getPracticeProgress } from '../actions'
@@ -15,6 +15,9 @@ const CATEGORIES = [
   { round: 2, title: '외래어 표기', desc: '헷갈리는 외래어 표기를 바르게 고치며 익혀요.', icon: Globe, grad: 'from-sky-500 to-blue-600' },
   { round: 3, title: '문장 호응·고쳐쓰기', desc: '주술 호응·중복·시제 오류를 바로잡아요.', icon: Link2, grad: 'from-violet-500 to-purple-600' },
   { round: 4, title: '공문서 수정', desc: '공문서의 띄어쓰기·표기·종결을 다듬어요.', icon: FileText, grad: 'from-amber-500 to-[#d97706]' },
+  { round: 5, title: '높임 표현 바로잡기', desc: '사물 존대·간접 높임·높임 어휘 오류를 바로잡아요.', icon: MessageCircle, grad: 'from-emerald-500 to-teal-600' },
+  { round: 6, title: '표준어 바로 알기', desc: '헷갈리는 비표준어를 표준어로 바르게 고쳐요.', icon: BadgeCheck, grad: 'from-indigo-500 to-blue-600' },
+  { round: 7, title: '띄어쓰기 다지기', desc: '의존 명사·단위 명사·조사의 띄어쓰기를 바로잡아요.', icon: AlignLeft, grad: 'from-teal-500 to-cyan-600' },
 ] as const
 
 export default async function TypesPracticePage({

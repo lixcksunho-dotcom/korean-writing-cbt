@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import LogoGlyph from "@/components/layout/LogoGlyph";
 import SiteFooter from "@/components/layout/SiteFooter";
+import BreadcrumbLd from "@/components/seo/BreadcrumbLd";
+import StickyMobileCTA from "@/components/landing/StickyMobileCTA";
 
 export const metadata: Metadata = {
   title: "공문서·비즈니스 이메일 쓰는 법과 예시 (기안문·안내문 양식)",
@@ -35,6 +37,35 @@ const POLITE = [
   { plain: "알려 드립니다", polite: "아래와 같이 안내드립니다" },
   { plain: "물어보고 싶습니다", polite: "문의드립니다" },
   { plain: "빨리 답장 주세요", polite: "회신 부탁드립니다" },
+  { plain: "파일 첨부했어요", polite: "붙임과 같이 송부드립니다" },
+  { plain: "참석 못 해요", polite: "부득이한 사정으로 참석이 어렵습니다" },
+  { plain: "검토해 주세요", polite: "검토 후 회신하여 주시기 바랍니다" },
+  { plain: "급하게 처리해 주세요", polite: "조속히 처리해 주시면 감사하겠습니다" },
+  { plain: "잘 받았어요", polite: "보내 주신 자료 잘 수령하였습니다" },
+  { plain: "알겠습니다", polite: "말씀하신 내용 확인하였습니다" },
+  { plain: "답장 기다릴게요", polite: "회신을 기다리겠습니다" },
+  { plain: "미리 고마워요", polite: "협조에 미리 감사드립니다" },
+  { plain: "만나서 얘기해요", polite: "자리를 마련하여 논의드리고자 합니다" },
+  { plain: "다시 보내 주세요", polite: "재송부하여 주시기 바랍니다" },
+  { plain: "늦어서 죄송해요", polite: "회신이 늦어져 죄송합니다" },
+  { plain: "수정해 주세요", polite: "수정하여 주시면 감사하겠습니다" },
+  { plain: "그렇게 할게요", polite: "말씀하신 대로 진행하겠습니다" },
+  { plain: "문제 있으면 연락 주세요", polite: "문의 사항이 있으시면 연락 주시기 바랍니다" },
+  { plain: "회의 잡을게요", polite: "회의 일정을 잡아 공유드리겠습니다" },
+  { plain: "확인 후 연락드릴게요", polite: "확인 후 회신드리겠습니다" },
+  { plain: "도와주셔서 고마워요", polite: "협조해 주셔서 감사합니다" },
+  { plain: "참고해 주세요", polite: "참고하여 주시기 바랍니다" },
+  { plain: "마감 지켜 주세요", polite: "기한 내 제출하여 주시기 바랍니다" },
+  { plain: "결정되면 알려 주세요", polite: "결정되는 대로 회신하여 주시기 바랍니다" },
+  { plain: "시간 괜찮으세요?", polite: "시간이 괜찮으신지 여쭙습니다" },
+  { plain: "부탁이 있어요", polite: "한 가지 부탁 말씀 드립니다" },
+  { plain: "첨부 확인해 주세요", polite: "붙임 자료를 확인하여 주시기 바랍니다" },
+  { plain: "죄송하지만 부탁해요", polite: "번거로우시겠지만 부탁드립니다" },
+  { plain: "답변 주셔서 고마워요", polite: "답변해 주셔서 감사합니다" },
+  { plain: "잘 부탁드립니다", polite: "아무쪼록 잘 부탁드립니다" },
+  { plain: "빨리 회신 주세요", polite: "바쁘시겠지만 회신해 주시면 감사하겠습니다" },
+  { plain: "참고하세요", polite: "업무에 참고하시기 바랍니다" },
+  { plain: "첨부합니다", polite: "관련 자료를 첨부하오니 확인 부탁드립니다" },
 ];
 
 const FAQ = [
@@ -226,6 +257,8 @@ export default function BusinessWritingPage() {
         </div>
       </main>
 
+      <StickyMobileCTA />
+      <BreadcrumbLd name="공문서·비즈니스 이메일" path="/business-writing" />
       <SiteFooter />
 
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }} />
