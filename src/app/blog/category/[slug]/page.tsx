@@ -22,7 +22,10 @@ export async function generateMetadata({
   return {
     title: `${cat.label} — 한국실용글쓰기 블로그`,
     description: `${cat.label}: ${cat.blurb}. 한국실용글쓰기 독학에 필요한 글을 모았어요.`,
-    alternates: { canonical: `/blog/category/${cat.slug}` },
+    alternates: {
+      canonical: `/blog/category/${cat.slug}`,
+      types: { 'application/rss+xml': 'https://kptest.cloud/rss.xml' },
+    },
     openGraph: {
       title: `${cat.label} — 한국실용글쓰기 블로그`,
       description: cat.blurb,

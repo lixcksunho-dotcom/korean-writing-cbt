@@ -20,7 +20,11 @@ export const metadata: Metadata = {
     "KBS한국어능력시험", "국어능력시험 모의고사", "국어 자격증 CBT",
   ],
   applicationName: "실글패스",
-  alternates: { canonical: "/" },
+  // RSS 자동발견(rel=alternate) — 리더·수집기가 /rss.xml 을 스스로 찾는다.
+  alternates: {
+    canonical: "/",
+    types: { "application/rss+xml": `${SITE_URL}/rss.xml` },
+  },
   openGraph: {
     type: "website",
     locale: "ko_KR",

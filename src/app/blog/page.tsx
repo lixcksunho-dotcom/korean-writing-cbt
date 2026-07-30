@@ -14,7 +14,11 @@ export const metadata: Metadata = {
     '한국실용글쓰기', '실용글쓰기 독학', '실용글쓰기 공부법', '실용글쓰기 시험일정',
     '실용글쓰기 등급', '맞춤법 정리', '서술형 공략', '원고지 작성법',
   ],
-  alternates: { canonical: '/blog' },
+  // 페이지에서 alternates를 지정하면 루트 레이아웃 것을 통째로 덮으므로 RSS 자동발견을 여기서도 준다.
+  alternates: {
+    canonical: '/blog',
+    types: { 'application/rss+xml': 'https://kptest.cloud/rss.xml' },
+  },
   openGraph: {
     title: '한국실용글쓰기 독학 블로그',
     description: '시험 정보·공부법·맞춤법·서술형 공략을 정확하게 정리한 독학 블로그.',
