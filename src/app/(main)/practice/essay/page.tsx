@@ -7,6 +7,7 @@ import { FREE_AI_TRIAL } from '@/lib/aiTrial'
 import { isRoundLocked } from '@/lib/examAccess'
 import { getActiveProgram } from '@/lib/programContext'
 import PracticeEssay, { type PracticeEssayQuestion } from './PracticeEssay'
+import { questionBank } from '@/lib/questionBank'
 
 export default async function EssayPracticePage({
   searchParams,
@@ -22,7 +23,7 @@ export default async function EssayPracticePage({
 
   if (!set) {
     const [{ data: rows }, subscription] = await Promise.all([
-      supabase
+      questionBank()
         .from('questions')
         .select('year, round')
         .eq('program', program)
@@ -75,7 +76,7 @@ export default async function EssayPracticePage({
   // 3회분부터는 이용권 필요
   if (y < 9000 && isRoundLocked(r, !!subscription, program)) redirect('/subscribe')
 
-  const { data: questions } = await supabase
+  const { data: questions } = await questionBank()
     .from('questions')
     .select('id, number, points, question, passage, correct_answer')
     .eq('program', program)

@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { ArrowLeft, TrendingUp, TrendingDown, Minus, Target, NotebookPen, ChevronRight, CheckCircle2, XCircle, BarChart3 } from 'lucide-react'
 import { getActiveProgram } from '@/lib/programContext'
 import { getProgram } from '@/lib/programs'
+import { questionBank } from '@/lib/questionBank'
 
 export const dynamic = 'force-dynamic'
 
@@ -67,7 +68,7 @@ export default async function InsightsPage() {
   const latest = [...latestByQ.values()]
 
   const qids = [...new Set(latest.map(a => a.question_id as string))]
-  const { data: qrows } = await supabase
+  const { data: qrows } = await questionBank()
     .from('questions')
     .select('id, year, round, number, question, options, correct_answer, explanation')
     .in('id', qids)

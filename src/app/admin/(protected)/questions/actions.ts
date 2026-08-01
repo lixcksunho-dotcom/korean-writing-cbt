@@ -20,8 +20,10 @@ async function requireAdmin() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
-  const adminEmails = (process.env.ADMIN_EMAILS ?? '').split(',').map(e => e.trim())
-  if (!adminEmails.includes(user.email ?? '')) redirect('/dashboard')
+  // filter(Boolean) 필수 — ADMIN_EMAILS가 비었거나 끝에 쉼표가 있으면 목록에 ''가 남고,
+  // 이메일 없는 계정(user.email undefined → '')이 관리자로 통과해 버린다.
+  const adminEmails = (process.env.ADMIN_EMAILS ?? '').split(',').map(e => e.trim()).filter(Boolean)
+  if (!user.email || !adminEmails.includes(user.email)) redirect('/dashboard')
   return supabase
 }
 

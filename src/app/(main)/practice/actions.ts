@@ -5,7 +5,9 @@ import { createClient } from '@/lib/supabase/server'
 import { getActiveSubscription } from '@/lib/subscription'
 import { consumeAiTrial, FREE_AI_TRIAL } from '@/lib/aiTrial'
 import { enforcePaidUsage, recordPaidGrade } from '@/lib/antiSharing'
+import { assertWithinGradingLimit, MAX_ANSWER_CHARS } from '@/lib/aiGradingLimits'
 import type { EssayGrade } from '@/app/(main)/cbt/actions'
+import { questionBank } from '@/lib/questionBank'
 
 // 서술형 '연습' 채점: 정식 시험 세션과 무관하게 단일 문항을 즉시 채점한다.
 // (시험 세션 기반 채점은 cbt/actions.ts 의 gradeExamEssay 사용)
@@ -44,6 +46,9 @@ export async function gradeEssayPractice(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Unauthorized')
 
+  // 이 액션은 브라우저에서 직접 호출 가능하고 userAnswer가 그대로 유료 API로 들어간다 → 길이 상한 필수.
+  assertWithinGradingLimit(userAnswer, MAX_ANSWER_CHARS, '답안')
+
   // 서술형 AI 채점은 유료 기능. 단, 비구독자는 평생 1회 무료 체험 허용.
   const subscription = await getActiveSubscription(user.id)
   const trialUsed = Number(user.app_metadata?.ai_trial_used ?? 0)
@@ -53,7 +58,15 @@ export async function gradeEssayPractice(
   // 유료(구독) 사용 시 계정 공유 방지: 기기 수·일일 한도 검사
   if (subscription) await enforcePaidUsage(user.id)
 
-  const { data: question } = await supabase
+  // 사용량 차감은 API 호출 '전'에 한다. 성공 후에 차감하면 응답 파싱이 실패하는 입력을
+  // 골라 무한 재시도할 수 있고, 그때마다 요금은 실제로 발생한다.
+  if (usingTrial) {
+    if (!(await consumeAiTrial(user.id, trialUsed))) throw new Error('SUBSCRIPTION_REQUIRED')
+  } else {
+    await recordPaidGrade(user.id)
+  }
+
+  const { data: question } = await questionBank()
     .from('questions')
     .select('points, question, correct_answer')
     .eq('id', questionId)
@@ -85,10 +98,6 @@ export async function gradeEssayPractice(
   }
   result.maxScore = question.points
   result.score = Math.max(0, Math.min(question.points, Math.round(result.score)))
-
-  // 성공한 경우에만 무료 체험 1회 차감(구독자는 차감 안 함)
-  if (usingTrial) await consumeAiTrial(user.id, trialUsed)
-  else await recordPaidGrade(user.id) // 구독자 일일 사용량 기록
   return result
 }
 

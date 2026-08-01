@@ -5,6 +5,7 @@ import { FREE_AI_TRIAL } from '@/lib/aiTrial'
 import { getActiveProgram } from '@/lib/programContext'
 import { getProgram } from '@/lib/programs'
 import ReportRunner, { type ReportQuestion } from './ReportRunner'
+import { questionBank } from '@/lib/questionBank'
 
 // 서술형 9번(원고지 보고서) 실전 — 실제 시험의 보고서 문항만 모아 시간 안에 이어서 푼다.
 export default async function ReportPracticePage() {
@@ -16,7 +17,7 @@ export default async function ReportPracticePage() {
   const cfg = getProgram(program)
 
   const [{ data: rows }, subscription] = await Promise.all([
-    supabase
+    questionBank()
       .from('questions')
       .select('id, year, round, points, question, passage, correct_answer')
       .eq('program', program)

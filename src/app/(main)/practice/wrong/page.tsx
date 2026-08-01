@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { ArrowLeft, CheckCircle2 } from 'lucide-react'
 import PracticeMultiple, { type PracticeQuestion } from '../multiple/PracticeMultiple'
 import { getActiveProgram } from '@/lib/programContext'
+import { questionBank } from '@/lib/questionBank'
 
 export const dynamic = 'force-dynamic'
 
@@ -40,7 +41,7 @@ export default async function WrongPracticePage() {
   }
 
   const { data: rows } = wrongIds.length
-    ? await supabase
+    ? await questionBank()
         .from('questions')
         .select('id, year, round, number, question, options, passage, correct_answer, explanation')
         .in('id', wrongIds)

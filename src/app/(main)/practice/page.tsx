@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { ListChecks, PenLine, FileText, ChevronRight, CircleDot, Target, RotateCcw, Bookmark, Layers } from 'lucide-react'
 import { getActiveProgram } from '@/lib/programContext'
 import { getProgram } from '@/lib/programs'
+import { questionBank } from '@/lib/questionBank'
 
 export default async function PracticePage() {
   const supabase = await createClient()
@@ -14,7 +15,7 @@ export default async function PracticePage() {
   const cfg = getProgram(program)
 
   // 유형별 보유 문항 수 (안내용) — 현재 모드의 실제 시험 문항(year<9000)만
-  const { data: rows } = await supabase.from('questions').select('type').eq('program', program).lt('year', 9000)
+  const { data: rows } = await questionBank().from('questions').select('type').eq('program', program).lt('year', 9000)
   const multipleCount = (rows ?? []).filter(r => r.type === 'multiple').length
   const essayCount = (rows ?? []).filter(r => r.type === 'essay').length
 

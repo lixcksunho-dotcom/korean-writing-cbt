@@ -5,6 +5,7 @@ import { getOrCreateExamSession } from '@/app/(main)/cbt/actions'
 import { getActiveSubscription } from '@/lib/subscription'
 import { isRoundLocked } from '@/lib/examAccess'
 import { parseExamId } from '@/lib/examId'
+import { questionBank } from '@/lib/questionBank'
 
 export default async function ExamPage({
   params,
@@ -24,7 +25,7 @@ export default async function ExamPage({
   const subscription = await getActiveSubscription(user.id)
   if (year < 9000 && isRoundLocked(round, !!subscription, program)) redirect('/subscribe')
 
-  const { data: questions } = await supabase
+  const { data: questions } = await questionBank()
     .from('questions')
     .select('id, number, type, points, question, options, passage, audio_url')
     .eq('program', program)

@@ -15,6 +15,7 @@ import PaperShareButton from '@/components/result/PaperShareButton'
 import CopyGuard from '@/components/cbt/CopyGuard'
 import MarkedText from '@/components/cbt/MarkedText'
 import type { EssayGrade } from '@/app/(main)/cbt/actions'
+import { questionBank } from '@/lib/questionBank'
 
 export default async function ResultPage({
   params,
@@ -46,11 +47,11 @@ export default async function ResultPage({
 
   const [{ data: answers }, { data: questions }, subscription, { data: bookmarkRows }, { data: allRounds }] = await Promise.all([
     supabase.from('quiz_answers').select('question_id, user_answer, is_correct, ai_score, ai_feedback').eq('session_id', sessionId),
-    supabase.from('questions').select('id, number, type, points, question, options, correct_answer, explanation').eq('program', program).eq('year', session.year).eq('round', session.round).order('number'),
+    questionBank().from('questions').select('id, number, type, points, question, options, correct_answer, explanation').eq('program', program).eq('year', session.year).eq('round', session.round).order('number'),
     getActiveSubscription(user.id),
     supabase.from('bookmarks').select('question_id').eq('user_id', user.id),
     // 업셀 문구의 '몇 회분이 열리는지'를 실제 보유 회차에서 뽑는다(하드코딩 수치가 낡는 것 방지)
-    supabase.from('questions').select('round').eq('program', program).lt('year', 9000),
+    questionBank().from('questions').select('round').eq('program', program).lt('year', 9000),
   ])
   const lockedRoundCount = Math.max(
     0,

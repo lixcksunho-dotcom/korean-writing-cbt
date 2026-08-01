@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { ArrowLeft, Bookmark } from 'lucide-react'
 import PracticeMultiple, { type PracticeQuestion } from '../multiple/PracticeMultiple'
 import { getActiveProgram } from '@/lib/programContext'
+import { questionBank } from '@/lib/questionBank'
 
 export const dynamic = 'force-dynamic'
 
@@ -22,7 +23,7 @@ export default async function BookmarksPracticePage() {
   const ids = (marks ?? []).map(m => m.question_id as string)
 
   const { data: rows } = ids.length
-    ? await supabase
+    ? await questionBank()
         .from('questions')
         .select('id, year, round, number, question, options, passage, correct_answer, explanation')
         .in('id', ids)

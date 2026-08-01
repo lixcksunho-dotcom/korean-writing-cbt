@@ -7,6 +7,7 @@ import ReviewMarquee from "@/components/landing/ReviewMarquee";
 import StickyMobileCTA from "@/components/landing/StickyMobileCTA";
 import SiteFooter from "@/components/layout/SiteFooter";
 import ScheduleModal from "@/components/schedule/ScheduleModal";
+import { questionBank } from '@/lib/questionBank'
 
 // ISR 캐시로 빠르게 응답(매 요청 SSR 시 Supabase 왕복으로 7초+ 느려지던 문제 해소).
 // 통계가 0으로 굳는 문제는 아래 roundCount/questionCount 폴백(|| 9, || 393)으로 방지.
@@ -91,7 +92,7 @@ export default async function HomePage() {
       .order('created_at', { ascending: false })
       .limit(20),
     // 이 랜딩은 실용글쓰기(실글패스) 소개 — KBS 문항이 지표에 섞이지 않게 program을 좁힌다.
-    supabase.from('questions').select('round, type').eq('program', 'silyong').lt('year', 9000),
+    questionBank().from('questions').select('round, type').eq('program', 'silyong').lt('year', 9000),
   ])
 
   // 실제 데이터 기반 지표. 단 쿼리가 일시 실패해 0이 되면 '0회분/0문항'이 노출되므로

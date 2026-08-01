@@ -7,6 +7,7 @@ import { isRoundLocked } from '@/lib/examAccess'
 import { getActiveProgram } from '@/lib/programContext'
 import { getProgram } from '@/lib/programs'
 import PracticeMultiple, { type PracticeQuestion } from './PracticeMultiple'
+import { questionBank } from '@/lib/questionBank'
 
 export default async function MultiplePracticePage({
   searchParams,
@@ -23,7 +24,7 @@ export default async function MultiplePracticePage({
 
   // 세트 선택 전 — 객관식이 있는 회차 목록 + 전체 옵션
   if (!set) {
-    const { data: rows } = await supabase
+    const { data: rows } = await questionBank()
       .from('questions')
       .select('year, round')
       .eq('program', program)
@@ -84,7 +85,7 @@ export default async function MultiplePracticePage({
   const hasSub = !!subscription
 
   // 문제 로드 (연습이므로 정답·해설 포함)
-  let query = supabase
+  let query = questionBank()
     .from('questions')
     .select('id, year, round, number, question, options, passage, correct_answer, explanation, audio_url')
     .eq('program', program)

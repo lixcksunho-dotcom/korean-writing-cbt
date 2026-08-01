@@ -6,6 +6,7 @@ import { getActiveSubscription } from '@/lib/subscription'
 import { getActiveProgram } from '@/lib/programContext'
 import { getPracticeProgress } from '../actions'
 import PracticeEssay, { type PracticeEssayQuestion } from '../essay/PracticeEssay'
+import { questionBank } from '@/lib/questionBank'
 
 // 유형별 집중 연습 — 연습 전용 센티넬(year=9001), round=유형.
 const PRACTICE_YEAR = 9001
@@ -34,7 +35,7 @@ export default async function TypesPracticePage({
 
   // 유형 선택 전 — 카테고리 목록
   if (!set) {
-    const { data: rows } = await supabase
+    const { data: rows } = await questionBank()
       .from('questions')
       .select('round')
       .eq('program', program)
@@ -83,7 +84,7 @@ export default async function TypesPracticePage({
   if (!cat) redirect('/practice/types')
 
   const [{ data: questions }, subscription] = await Promise.all([
-    supabase
+    questionBank()
       .from('questions')
       .select('id, number, points, question, passage, correct_answer')
       .eq('program', program)

@@ -5,9 +5,12 @@ import { createClient } from '@/lib/supabase/server'
 import { getActiveSubscription } from '@/lib/subscription'
 import { consumeAiTrial, FREE_AI_TRIAL } from '@/lib/aiTrial'
 import { enforcePaidUsage, recordPaidGrade } from '@/lib/antiSharing'
+import { assertWithinGradingLimit, MAX_ANSWER_CHARS } from '@/lib/aiGradingLimits'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { trackServerEvent } from '@/lib/analytics/trackServerEvent'
 import { formatExamId } from '@/lib/examId'
 import { type ProgramId } from '@/lib/programs'
+import { questionBank } from '@/lib/questionBank'
 
 export type EssayGrade = {
   score: number
@@ -61,7 +64,7 @@ export async function gradeExamEssay(
     .single()
   if (!session) throw new Error('Session not found')
 
-  const { data: question } = await supabase
+  const { data: question } = await questionBank()
     .from('questions')
     .select('id, points, question, correct_answer')
     .eq('id', questionId)
@@ -78,6 +81,18 @@ export async function gradeExamEssay(
 
   // 이미 채점된 경우 재사용 (중복 과금 방지)
   if (answerRow.ai_feedback) return answerRow.ai_feedback as EssayGrade
+
+  // 답안은 사용자가 넣은 값이라 그대로 유료 API로 보내면 길이가 곧 비용이 된다.
+  assertWithinGradingLimit(answerRow.user_answer ?? '', MAX_ANSWER_CHARS, '답안')
+
+  // 사용량 차감은 API 호출 '전'에. 성공 후에 차감하면 파싱이 실패하는 입력으로
+  // 무한 재시도가 가능하고, 실패해도 요금은 이미 발생한 뒤다.
+  if (usingTrial) {
+    if (!(await consumeAiTrial(user.id, trialUsed))) throw new Error('SUBSCRIPTION_REQUIRED')
+    await trackServerEvent('ai_trial_used', user.id, `used_${trialUsed + 1}/${FREE_AI_TRIAL}`)
+  } else {
+    await recordPaidGrade(user.id) // 구독자 일일 사용량 기록
+  }
 
   const client = new Anthropic()
   const response = await client.messages.create({
@@ -106,18 +121,15 @@ export async function gradeExamEssay(
   result.maxScore = question.points
   result.score = Math.max(0, Math.min(question.points, Math.round(result.score)))
 
-  await supabase
+  // 채점 결과 저장은 service_role로 한다. quiz_answers엔 사용자 UPDATE 정책이 없어
+  // (그리고 없어야 한다 — 있으면 본인 ai_score를 고쳐 쓸 수 있다) 사용자 클라이언트로는
+  // 이 쓰기가 조용히 실패하고, 그러면 캐시가 안 남아 볼 때마다 재채점·재과금된다.
+  const { error: cacheError } = await createAdminClient()
     .from('quiz_answers')
     .update({ ai_score: result.score, ai_feedback: result })
     .eq('id', answerRow.id)
+  if (cacheError) console.error('[gradeExamEssay] 채점 결과 저장 실패:', cacheError.message)
 
-  // 새로 채점에 성공한 경우에만 무료 체험 1회 차감(구독자는 차감 안 함)
-  if (usingTrial) {
-    await consumeAiTrial(user.id, trialUsed)
-    await trackServerEvent('ai_trial_used', user.id, `used_${trialUsed + 1}/${FREE_AI_TRIAL}`)
-  } else {
-    await recordPaidGrade(user.id) // 구독자 일일 사용량 기록
-  }
   return result
 }
 
@@ -236,7 +248,7 @@ export async function submitSession(
   // 그러면 서술형 AI 채점의 .single() 조회가 깨지고 영역별·예상점수 집계가 이중 계산된다.
   if (session.completed_at) return
 
-  const { data: questions } = await supabase
+  const { data: questions } = await questionBank()
     .from('questions')
     .select('id, type, correct_answer')
     .eq('program', session.program)

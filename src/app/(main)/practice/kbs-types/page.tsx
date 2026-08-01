@@ -7,6 +7,7 @@ import { getActiveProgram } from '@/lib/programContext'
 import { getProgram } from '@/lib/programs'
 import { KBS_TYPES, classifyKbsType } from '@/lib/kbsQuestionType'
 import PracticeMultiple, { type PracticeQuestion } from '../multiple/PracticeMultiple'
+import { questionBank } from '@/lib/questionBank'
 
 // KBS 어휘·어법 기출유형별 집중 연습. 유형은 발문으로 분류(kbsQuestionType).
 // 영역별(어휘 15문항 통째)보다 잘게(고유어·한자성어·속담…) 파고들어 약점을 정밀 공략한다.
@@ -30,7 +31,7 @@ export default async function KbsTypesPracticePage({
   const roundLimit = hasSub ? 9999 : cfg.freeRounds
 
   // 어휘(16~30)·어법(31~45) 문항만 불러와 발문으로 유형 분류
-  const { data: rows } = await supabase
+  const { data: rows } = await questionBank()
     .from('questions')
     .select('id, year, round, number, question, options, passage, correct_answer, explanation, audio_url')
     .eq('program', program)

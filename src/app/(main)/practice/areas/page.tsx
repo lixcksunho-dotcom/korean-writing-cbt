@@ -6,6 +6,7 @@ import { getActiveSubscription } from '@/lib/subscription'
 import { getActiveProgram } from '@/lib/programContext'
 import { getProgram } from '@/lib/programs'
 import PracticeMultiple, { type PracticeQuestion } from '../multiple/PracticeMultiple'
+import { questionBank } from '@/lib/questionBank'
 
 // 영역별 집중 연습 — 결과 화면의 '약점 영역'을 곧바로 이어서 풀 수 있게 하는 연습.
 // 영역은 시험별 문항 번호 구간(programs.ts areas)으로 정의되므로 두 시험 모두에서 동작한다.
@@ -28,7 +29,7 @@ export default async function AreaPracticePage({
   const roundLimit = hasSub ? 9999 : cfg.freeRounds
 
   if (a == null) {
-    const { data: rows } = await supabase
+    const { data: rows } = await questionBank()
       .from('questions')
       .select('number')
       .eq('program', program)
@@ -92,7 +93,7 @@ export default async function AreaPracticePage({
   const area = cfg.areas[idx]
   if (!area) redirect('/practice/areas')
 
-  const { data: questions } = await supabase
+  const { data: questions } = await questionBank()
     .from('questions')
     .select('id, year, round, number, question, options, passage, correct_answer, explanation, audio_url')
     .eq('program', program)

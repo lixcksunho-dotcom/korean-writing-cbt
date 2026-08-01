@@ -7,6 +7,7 @@ import { isRoundLocked } from '@/lib/examAccess'
 import { getActiveProgram } from '@/lib/programContext'
 import { getProgram } from '@/lib/programs'
 import { formatExamId } from '@/lib/examId'
+import { questionBank } from '@/lib/questionBank'
 
 export default async function CbtPage() {
   const supabase = await createClient()
@@ -19,7 +20,7 @@ export default async function CbtPage() {
 
   // 독립적인 4개 조회를 병렬로 — 순차 왕복(4회) → 한 번에
   const [{ data: exams }, { data: sessions }, { data: inProgress }, subscription] = await Promise.all([
-    supabase
+    questionBank()
       .from('questions')
       .select('year, round, type')
       .eq('program', program)
