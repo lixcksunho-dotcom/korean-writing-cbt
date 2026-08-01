@@ -1,0 +1,81 @@
+import { test, expect } from '@playwright/test'
+
+// 검색 노출을 떠받치는 공개 표면이 배포로 깨지지 않는지 지킨다.
+// 로그인이 필요 없는 것만 다뤄 자격증명 없이 어디서나 돌릴 수 있게 한다.
+// 대상 지정: PLAYWRIGHT_BASE_URL=http://localhost:3000 npx playwright test
+
+const BASE = process.env.PLAYWRIGHT_BASE_URL ?? 'https://kptest.cloud'
+
+// 푸터·가이드 허브에서 링크되는 학습자료 페이지들(검색 유입의 주력).
+const CONTENT_PAGES = [
+  '/spelling', '/idioms', '/proverbs', '/expressions', '/refined-words',
+  '/honorifics', '/standard-words', '/loanword-spelling',
+  '/manuscript-guide', '/essay-guide', '/business-writing', '/word-counter',
+  '/exam-info', '/kbs-korean', '/exam-compare', '/guides',
+]
+
+test('공개 페이지가 전부 200으로 뜬다', async ({ request }) => {
+  for (const path of ['/', '/blog', '/subscribe', ...CONTENT_PAGES]) {
+    const res = await request.get(`${BASE}${path}`)
+    expect(res.status(), `${path} 응답 코드`).toBe(200)
+  }
+})
+
+test('sitemap에 학습자료·블로그가 모두 들어 있다', async ({ request }) => {
+  const xml = await (await request.get(`${BASE}/sitemap.xml`)).text()
+  for (const path of CONTENT_PAGES) {
+    expect(xml, `sitemap에 ${path}`).toContain(`<loc>https://kptest.cloud${path}</loc>`)
+  }
+  // 블로그 글은 파일이 늘면 자동으로 늘어난다 — 최소선만 확인한다.
+  expect(xml.match(/<loc>[^<]*\/blog\/[^<]*<\/loc>/g)?.length ?? 0).toBeGreaterThanOrEqual(30)
+
+  // 정적 페이지에 lastmod를 넣으면 빌드마다 '오늘 바뀜'이 되어 신호가 무시된다.
+  // (반대로 /blog·카테고리·글은 실제 발행일이 있으므로 lastmod가 있어야 한다)
+  const urlBlock = (loc: string) => {
+    const at = xml.indexOf(`<loc>https://kptest.cloud${loc}</loc>`)
+    expect(at, `sitemap에 ${loc} 항목`).toBeGreaterThan(-1)
+    return xml.slice(xml.lastIndexOf('<url>', at), xml.indexOf('</url>', at))
+  }
+  for (const path of ['/spelling', '/terms', '/word-counter']) {
+    expect(urlBlock(path), `${path}에 lastmod 없음`).not.toContain('<lastmod>')
+  }
+  expect(urlBlock('/blog'), '/blog에 lastmod 있음').toContain('<lastmod>')
+})
+
+test('RSS가 유효하고 글이 담겨 있다', async ({ request }) => {
+  const res = await request.get(`${BASE}/rss.xml`)
+  expect(res.headers()['content-type']).toContain('application/rss+xml')
+  const xml = await res.text()
+  expect(xml).toContain('<atom:link')
+  expect(xml.match(/<item>/g)?.length ?? 0).toBeGreaterThanOrEqual(30)
+  // 한글 슬러그가 인코딩돼야 리더가 링크를 깨뜨리지 않는다.
+  expect(xml).not.toMatch(/<link>https:\/\/kptest\.cloud\/blog\/[^<]*[가-힣]/)
+})
+
+test('robots가 공개 안내는 열고 결제 이후 경로만 막는다', async ({ request }) => {
+  const txt = await (await request.get(`${BASE}/robots.txt`)).text()
+  expect(txt).toContain('Allow: /manuscript-guide')   // /manuscript 접두사에 걸리면 안 된다
+  expect(txt).toContain('Disallow: /subscribe/success')
+  expect(txt).not.toMatch(/Disallow: \/subscribe$/m)  // 가격 안내는 색인 대상
+  expect(txt).toContain('Sitemap:')
+})
+
+test('학습자료 페이지에 구조화데이터와 블로그 연결이 붙어 있다', async ({ page }) => {
+  for (const path of ['/spelling', '/manuscript-guide', '/exam-info']) {
+    await page.goto(`${BASE}${path}`, { waitUntil: 'domcontentloaded' })
+    const html = await page.content()
+    expect(html, `${path} BreadcrumbList`).toContain('"BreadcrumbList"')
+    expect(html, `${path} FAQPage`).toContain('"FAQPage"')
+    // 블로그가 크롤 섬이 되지 않게 주제별 글로 내려가는 링크를 유지한다.
+    const blogLinks = await page.locator('a[href^="/blog/"]:not([href^="/blog/category"])').count()
+    expect(blogLinks, `${path} → 블로그 글 링크`).toBeGreaterThan(0)
+  }
+})
+
+test('시험 중 화면에 정답이 실려 나가지 않는다', async ({ request }) => {
+  // 로그인 없이도 확인 가능한 회귀 방지선 — 공개 HTML 어디에도 정답 필드가 없어야 한다.
+  for (const path of ['/', '/blog', '/spelling']) {
+    const html = await (await request.get(`${BASE}${path}`)).text()
+    expect(html, `${path}에 correct_answer 노출`).not.toContain('correct_answer')
+  }
+})
