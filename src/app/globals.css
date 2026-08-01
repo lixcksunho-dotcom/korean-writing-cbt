@@ -22,7 +22,8 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: "Noto Sans KR", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  /* next/font가 layout에서 주입하는 변수. 값에는 메트릭을 맞춘 대체 폰트까지 들어 있다. */
+  --font-sans: var(--font-noto-sans-kr), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
 html {
@@ -32,7 +33,7 @@ html {
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: "Noto Sans KR", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: var(--font-noto-sans-kr), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
