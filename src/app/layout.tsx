@@ -103,6 +103,18 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko" className="h-full">
+      <head>
+        {/* 폰트는 globals.css의 @import가 아니라 여기서 받는다.
+            @import는 CSS를 받아 파싱한 뒤에야 폰트 CSS를 다시 받으러 가는 직렬 체인이라
+            렌더 시작이 그만큼 늦는다. preconnect로 두 호스트 연결을 미리 열어 둔다.
+            굵기는 실제로 쓰는 것만(300은 사용처 0) — 한글은 굵기마다 청크를 따로 받는다. */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;900&display=swap"
+        />
+      </head>
       <body className="min-h-full flex flex-col">
         <script
           type="application/ld+json"
