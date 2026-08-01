@@ -11,7 +11,13 @@ export default function robots(): MetadataRoute.Robots {
       //   disallow의 '/manuscript'는 접두사 매칭이라 그냥 두면 안내글까지 색인에서 빠진다.
       //   크롤러는 더 긴(구체적인) 규칙을 우선하므로 이 allow가 disallow를 이긴다.
       allow: ['/', '/manuscript-guide'],
-      disallow: ['/dashboard', '/cbt', '/practice', '/manuscript', '/subscribe', '/admin', '/auth'],
+      // '/subscribe'(상품·가격·환불 안내)는 비로그인 공개 페이지이자 고의도 검색 유입처라 색인시킨다.
+      //   대신 결제 이후·인증 필요한 하위 경로만 개별로 막는다(접두사로 통째로 막으면 안내까지 빠진다).
+      disallow: [
+        '/dashboard', '/cbt', '/practice', '/manuscript',
+        '/subscribe/success', '/subscribe/history', '/subscribe/fail',
+        '/admin', '/auth',
+      ],
     },
     sitemap: `${SITE_URL}/sitemap.xml`,
   }
