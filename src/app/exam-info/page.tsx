@@ -6,6 +6,7 @@ import BreadcrumbLd from "@/components/seo/BreadcrumbLd";
 import StickyMobileCTA from "@/components/landing/StickyMobileCTA";
 import { SCHEDULE, SCHEDULE_URL, APPLY_URL } from "@/lib/examSchedule";
 import { TIER_TABLE } from "@/lib/grade";
+import RelatedBlogPosts from '@/components/blog/RelatedBlogPosts'
 
 export const metadata: Metadata = {
   title: "한국실용글쓰기 시험일정·등급·점수 총정리 (2026)",
@@ -239,6 +240,7 @@ export default function ExamInfoPage() {
             {" · "}
             <Link href="/exam-compare" className="underline hover:text-[#1e3a5f]">실용글쓰기·KBS 비교</Link>
           </section>
+          <RelatedBlogPosts category="exam-info" />
         </div>
       </main>
 

@@ -4,6 +4,7 @@ import LogoGlyph from "@/components/layout/LogoGlyph";
 import SiteFooter from "@/components/layout/SiteFooter";
 import BreadcrumbLd from "@/components/seo/BreadcrumbLd";
 import StickyMobileCTA from "@/components/landing/StickyMobileCTA";
+import RelatedBlogPosts from '@/components/blog/RelatedBlogPosts'
 
 export const metadata: Metadata = {
   title: "한국실용글쓰기 서술형 유형별 공략 (배점 700점 완벽 정리)",
@@ -170,6 +171,7 @@ export default function EssayGuidePage() {
             {" · "}
             <Link href="/word-counter" className="underline hover:text-[#1e3a5f]">글자수 세기</Link>
           </section>
+          <RelatedBlogPosts category="writing" />
         </div>
       </main>
 

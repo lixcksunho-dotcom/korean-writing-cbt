@@ -5,6 +5,7 @@ import SiteFooter from "@/components/layout/SiteFooter";
 import BreadcrumbLd from "@/components/seo/BreadcrumbLd";
 import StickyMobileCTA from "@/components/landing/StickyMobileCTA";
 import refineWords from "@/data/refine-words.json";
+import RelatedBlogPosts from '@/components/blog/RelatedBlogPosts'
 
 export const metadata: Metadata = {
   title: "순화어(다듬은 말) 모음 — 외래어·일본어 투·어려운 한자어 쉬운 말로",
@@ -152,6 +153,7 @@ export default function RefinedWordsPage() {
             {" · "}
             <Link href="/exam-info" className="underline hover:text-[#1e3a5f]">시험정보</Link>
           </section>
+          <RelatedBlogPosts category="grammar" />
         </div>
       </main>
 

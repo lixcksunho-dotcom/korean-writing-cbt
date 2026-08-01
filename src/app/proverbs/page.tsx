@@ -4,6 +4,7 @@ import LogoGlyph from "@/components/layout/LogoGlyph";
 import SiteFooter from "@/components/layout/SiteFooter";
 import BreadcrumbLd from "@/components/seo/BreadcrumbLd";
 import StickyMobileCTA from "@/components/landing/StickyMobileCTA";
+import RelatedBlogPosts from '@/components/blog/RelatedBlogPosts'
 
 export const metadata: Metadata = {
   title: "시험에 자주 나오는 속담 모음 (뜻·풀이 정리)",
@@ -238,6 +239,7 @@ export default function ProverbsPage() {
             {" · "}
             <Link href="/exam-info" className="underline hover:text-[#1e3a5f]">실용글쓰기 시험정보</Link>
           </section>
+          <RelatedBlogPosts category="grammar" />
         </div>
       </main>
 

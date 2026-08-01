@@ -4,6 +4,7 @@ import LogoGlyph from "@/components/layout/LogoGlyph";
 import SiteFooter from "@/components/layout/SiteFooter";
 import BreadcrumbLd from "@/components/seo/BreadcrumbLd";
 import StickyMobileCTA from "@/components/landing/StickyMobileCTA";
+import RelatedBlogPosts from '@/components/blog/RelatedBlogPosts'
 
 export const metadata: Metadata = {
   title: "외래어 표기법 — 자주 틀리는 외래어 표기 총정리 (초콜릿·리모컨)",
@@ -210,6 +211,7 @@ export default function LoanwordSpellingPage() {
             {" · "}
             <Link href="/kbs-korean" className="underline hover:text-[#1e3a5f]">KBS한국어 시험정보</Link>
           </section>
+          <RelatedBlogPosts category="grammar" />
         </div>
       </main>
 

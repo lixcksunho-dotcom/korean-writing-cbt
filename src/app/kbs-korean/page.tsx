@@ -6,6 +6,7 @@ import BreadcrumbLd from "@/components/seo/BreadcrumbLd";
 import StickyMobileCTA from "@/components/landing/StickyMobileCTA";
 import { KBS_SCHEDULE, KBS_APPLY_URL, KBS_SCHEDULE_URL } from "@/lib/examSchedule";
 import { PROGRAMS } from "@/lib/programs";
+import RelatedBlogPosts from '@/components/blog/RelatedBlogPosts'
 
 export const metadata: Metadata = {
   title: "KBS한국어능력시험 시험일정·등급·영역 총정리 (2026)",
@@ -259,6 +260,7 @@ export default function KbsKoreanPage() {
               공식 접수 페이지
             </a>
           </section>
+          <RelatedBlogPosts category="exam-info" />
         </div>
       </main>
 

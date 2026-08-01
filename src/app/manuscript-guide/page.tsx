@@ -4,6 +4,7 @@ import LogoGlyph from "@/components/layout/LogoGlyph";
 import SiteFooter from "@/components/layout/SiteFooter";
 import BreadcrumbLd from "@/components/seo/BreadcrumbLd";
 import StickyMobileCTA from "@/components/landing/StickyMobileCTA";
+import RelatedBlogPosts from '@/components/blog/RelatedBlogPosts'
 
 export const metadata: Metadata = {
   title: "원고지 작성법 — 칸 쓰는 법·문장부호·띄어쓰기 총정리",
@@ -264,6 +265,7 @@ export default function ManuscriptGuidePage() {
             {" · "}
             <Link href="/exam-info" className="underline hover:text-[#1e3a5f]">시험정보</Link>
           </section>
+          <RelatedBlogPosts category="writing" />
         </div>
       </main>
 

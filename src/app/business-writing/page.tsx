@@ -4,6 +4,7 @@ import LogoGlyph from "@/components/layout/LogoGlyph";
 import SiteFooter from "@/components/layout/SiteFooter";
 import BreadcrumbLd from "@/components/seo/BreadcrumbLd";
 import StickyMobileCTA from "@/components/landing/StickyMobileCTA";
+import RelatedBlogPosts from '@/components/blog/RelatedBlogPosts'
 
 export const metadata: Metadata = {
   title: "공문서·비즈니스 이메일 쓰는 법과 예시 (기안문·안내문 양식)",
@@ -254,6 +255,7 @@ export default function BusinessWritingPage() {
             {" · "}
             <Link href="/word-counter" className="underline hover:text-[#1e3a5f]">글자수 세기</Link>
           </section>
+          <RelatedBlogPosts category="writing" />
         </div>
       </main>
 

@@ -5,6 +5,7 @@ import SiteFooter from "@/components/layout/SiteFooter";
 import BreadcrumbLd from "@/components/seo/BreadcrumbLd";
 import StickyMobileCTA from "@/components/landing/StickyMobileCTA";
 import WordCounter from "./WordCounter";
+import RelatedBlogPosts from '@/components/blog/RelatedBlogPosts'
 
 export const metadata: Metadata = {
   title: "글자수 세기 — 공백 포함·제외, 원고지 칸수까지 무료 계산",
@@ -95,6 +96,7 @@ export default function WordCountPage() {
               ))}
             </div>
           </section>
+          <RelatedBlogPosts category="writing" />
         </div>
       </main>
 
