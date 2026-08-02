@@ -211,7 +211,7 @@ export default function ExamComparePage() {
             {" · "}
             <Link href="/manuscript-guide" className="underline hover:text-[#1e3a5f]">원고지 작성법</Link>
           </section>
-          <RelatedBlogPosts category="exam-info" />
+          <RelatedBlogPosts category="exam-info" seed="exam-compare" />
         </div>
       </main>
 

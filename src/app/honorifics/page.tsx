@@ -221,7 +221,7 @@ export default function HonorificsPage() {
             {" · "}
             <Link href="/refined-words" className="underline hover:text-[#1e3a5f]">순화어 모음</Link>
           </section>
-          <RelatedBlogPosts category="grammar" />
+          <RelatedBlogPosts category="grammar" seed="honorifics" />
         </div>
       </main>
 

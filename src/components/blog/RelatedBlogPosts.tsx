@@ -7,11 +7,21 @@ import { getPostsByCategory, catTheme, formatDate } from '@/lib/blog'
 export default function RelatedBlogPosts({
   category,
   limit = 4,
+  seed,
 }: {
   category: string
   limit?: number
+  /** 페이지마다 다른 글이 걸리게 하는 고정 씨앗(보통 페이지 이름). 없으면 최신순 그대로. */
+  seed?: string
 }) {
-  const posts = getPostsByCategory(category).slice(0, limit)
+  // 앞에서 4개를 그냥 자르면(최신순) 같은 카테고리의 학습자료 여러 면이 전부 같은 글을
+  // 건다. 나머지 글은 여기서 들어오는 링크가 없어 크롤이 잘 닿지 않고, 여러 면을 둘러보는
+  // 사람에게도 매번 같은 목록이 뜬다. 페이지마다 시작 지점을 옮겨 고르게 퍼뜨린다.
+  // 무작위가 아니라 seed 기반이라 같은 페이지는 늘 같은 글을 보여 준다(정적 산출물 안정).
+  const all = getPostsByCategory(category)
+  let offset = 0
+  if (seed) for (const ch of seed) offset = (offset + ch.codePointAt(0)!) % 100000
+  const posts = Array.from({ length: Math.min(limit, all.length) }, (_, i) => all[(offset + i) % all.length])
   if (posts.length === 0) return null
 
   const t = catTheme(category)

@@ -97,7 +97,7 @@ export default function WordCountPage() {
               ))}
             </div>
           </section>
-          <RelatedBlogPosts category="writing" />
+          <RelatedBlogPosts category="writing" seed="word-counter" />
         </div>
       </main>
 

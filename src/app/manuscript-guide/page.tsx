@@ -270,7 +270,7 @@ export default function ManuscriptGuidePage() {
             {" · "}
             <Link href="/exam-info" className="underline hover:text-[#1e3a5f]">시험정보</Link>
           </section>
-          <RelatedBlogPosts category="writing" />
+          <RelatedBlogPosts category="writing" seed="manuscript-guide" />
         </div>
       </main>
 

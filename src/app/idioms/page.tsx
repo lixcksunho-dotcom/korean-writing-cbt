@@ -273,7 +273,7 @@ export default function IdiomsPage() {
             {" · "}
             <Link href="/exam-compare" className="underline hover:text-[#1e3a5f]">실용글쓰기·KBS 비교</Link>
           </section>
-          <RelatedBlogPosts category="grammar" />
+          <RelatedBlogPosts category="grammar" seed="idioms" />
         </div>
       </main>
 

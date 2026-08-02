@@ -217,7 +217,7 @@ export default function StandardWordsPage() {
             {" · "}
             <Link href="/kbs-korean" className="underline hover:text-[#1e3a5f]">KBS한국어 시험정보</Link>
           </section>
-          <RelatedBlogPosts category="grammar" />
+          <RelatedBlogPosts category="grammar" seed="standard-words" />
         </div>
       </main>
 

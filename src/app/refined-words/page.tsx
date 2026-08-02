@@ -154,7 +154,7 @@ export default function RefinedWordsPage() {
             {" · "}
             <Link href="/exam-info" className="underline hover:text-[#1e3a5f]">시험정보</Link>
           </section>
-          <RelatedBlogPosts category="grammar" />
+          <RelatedBlogPosts category="grammar" seed="refined-words" />
         </div>
       </main>
 

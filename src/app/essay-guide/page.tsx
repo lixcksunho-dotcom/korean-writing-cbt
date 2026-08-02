@@ -176,7 +176,7 @@ export default function EssayGuidePage() {
             {" · "}
             <Link href="/word-counter" className="underline hover:text-[#1e3a5f]">글자수 세기</Link>
           </section>
-          <RelatedBlogPosts category="writing" />
+          <RelatedBlogPosts category="writing" seed="essay-guide" />
         </div>
       </main>
 

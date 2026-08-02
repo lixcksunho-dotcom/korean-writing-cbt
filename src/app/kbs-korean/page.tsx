@@ -265,7 +265,7 @@ export default function KbsKoreanPage() {
               공식 접수 페이지
             </a>
           </section>
-          <RelatedBlogPosts category="exam-info" />
+          <RelatedBlogPosts category="exam-info" seed="kbs-korean" />
         </div>
       </main>
 
