@@ -83,6 +83,30 @@ test('블로그 글에서 학습자료로 돌아가는 길이 있다', async ({ 
   expect(await page.locator(selector).count(), '글 → 학습자료 링크').toBeGreaterThan(0)
 })
 
+test('학습자료의 맛보기 문제가 풀리고 실전으로 이어진다', async ({ page }) => {
+  // 읽고 떠나는 걸 붙잡는 유일한 장치라, 조용히 사라지면 안 된다.
+  await page.goto(`${BASE}/spelling`, { waitUntil: 'domcontentloaded' })
+  const quiz = page.locator('section').filter({ hasText: '읽었으면 풀어볼까요?' })
+  await expect(quiz).toBeVisible()
+
+  const options = quiz.locator('button:not([disabled])')
+  const before = await options.count()
+  expect(before, '선택지가 있어야 한다').toBeGreaterThan(0)
+
+  // 한 문항을 고르면 그 문항 선택지는 잠기고 해설이 나온다.
+  await options.first().click()
+  await expect(quiz.locator('button:not([disabled])')).toHaveCount(before - 4)
+
+  // 남은 문항까지 다 풀면 결과와 실전 유도가 뜬다.
+  for (let i = 0; i < 6; i++) {
+    const left = quiz.locator('button:not([disabled])')
+    if (await left.count() === 0) break
+    await left.first().click()
+  }
+  await expect(quiz.getByText(/문제 중 \d+문제 정답/)).toBeVisible()
+  await expect(quiz.getByRole('link', { name: /무료 모의고사/ })).toBeVisible()
+})
+
 test('시험 중 화면에 정답이 실려 나가지 않는다', async ({ request }) => {
   // 로그인 없이도 확인 가능한 회귀 방지선 — 공개 HTML 어디에도 정답 필드가 없어야 한다.
   for (const path of ['/', '/blog', '/spelling']) {
