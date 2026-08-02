@@ -13,7 +13,8 @@
     "check:duplicates": "python scripts/question_overlap_check.py 0.35",
     "check:pages": "node scripts/authed_page_sweep.mjs",
     "check:blog": "python scripts/blog_keyword_overlap.py 0.35",
-    "funnel": "python scripts/funnel_report.py"
+    "funnel": "python scripts/funnel_report.py",
+    "cleanup:test": "node scripts/cleanup_test_accounts.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.100.1",
