@@ -7,6 +7,7 @@ import StickyMobileCTA from "@/components/landing/StickyMobileCTA";
 import { SCHEDULE, SCHEDULE_URL, APPLY_URL } from "@/lib/examSchedule";
 import { TIER_TABLE } from "@/lib/grade";
 import RelatedBlogPosts from '@/components/blog/RelatedBlogPosts'
+import TopicQuiz from '@/components/study/TopicQuiz'
 
 export const metadata: Metadata = {
   title: "한국실용글쓰기 시험일정·등급·점수 총정리 (2026)",
@@ -241,6 +242,9 @@ export default function ExamInfoPage() {
             {" · "}
             <Link href="/exam-compare" className="underline hover:text-[#1e3a5f]">실용글쓰기·KBS 비교</Link>
           </section>
+          {/* 읽고 끝나지 않게 — 읽은 자리에서 바로 풀어보고 실전으로 잇는다 */}
+          <TopicQuiz topic="exam-info" />
+
           <RelatedBlogPosts category="exam-info" />
         </div>
       </main>
