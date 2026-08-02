@@ -1,0 +1,117 @@
+# -*- coding: utf-8 -*-
+"""전환 퍼널을 실제 DB 상태로 다시 계산한다.
+
+관리자 화면(/admin/traffic)은 이벤트만 집계하는데, 이벤트는 두 가지 이유로 실제보다
+적게 잡힌다: (1) 트래킹은 2026-07-12부터 있고 (2) 앞단 가드에 막힌 시도는 최근에야
+기록하기 시작했다. 그래서 '누가 실제로 무엇을 했는지'는 계정·세션·구독 테이블을
+직접 세는 쪽이 정확하다. 여기서는 둘 다 보여 준다.
+
+사용: python scripts/funnel_report.py
+"""
+import sys
+from collections import Counter
+from pathlib import Path
+
+sys.stdout.reconfigure(encoding="utf-8")
+HERE = Path(__file__).resolve().parent
+sys.path.insert(0, str(HERE))
+from supabase_rest import env, get  # noqa: E402
+
+import urllib.request  # noqa: E402
+import json  # noqa: E402
+
+# 내가 검증용으로 만들고 지우는 계정들 — 통계에서 뺀다.
+TEST_EMAIL_MARKS = ("uicheck+", "kbscheck+")
+
+
+def admin_users():
+    e = env()
+    base = e["NEXT_PUBLIC_SUPABASE_URL"].rstrip("/")
+    key = e["SUPABASE_SERVICE_ROLE_KEY"]
+    req = urllib.request.Request(
+        f"{base}/auth/v1/admin/users?per_page=500",
+        headers={"apikey": key, "Authorization": "Bearer " + key},
+    )
+    users = json.loads(urllib.request.urlopen(req, timeout=60).read()).get("users", [])
+    return [u for u in users if not any(m in (u.get("email") or "") for m in TEST_EMAIL_MARKS)]
+
+
+def page_all(path):
+    """PostgREST는 한 번에 1000행까지만 준다 — 다 받을 때까지 넘긴다."""
+    e = env()
+    base = e["NEXT_PUBLIC_SUPABASE_URL"].rstrip("/")
+    key = e["SUPABASE_SERVICE_ROLE_KEY"]
+    out, start = [], 0
+    while True:
+        req = urllib.request.Request(
+            f"{base}/rest/v1/{path}",
+            headers={
+                "apikey": key,
+                "Authorization": "Bearer " + key,
+                "Range": f"{start}-{start + 999}",
+            },
+        )
+        batch = json.loads(urllib.request.urlopen(req, timeout=60).read())
+        out += batch
+        if len(batch) < 1000:
+            return out
+        start += 1000
+
+
+def pct(n, d):
+    return f"{n / d * 100:4.0f}%" if d else "   -"
+
+
+def main():
+    users = admin_users()
+    ids = {u["id"] for u in users}
+
+    sessions = [s for s in get("quiz_sessions?select=id,user_id,completed_at,year,round,program&limit=1000")
+                if s["user_id"] in ids and (s.get("year") or 0) < 9000]
+    subs = [s for s in get("subscriptions?select=user_id,status,amount") if s["user_id"] in ids]
+
+    started = {s["user_id"] for s in sessions}
+    finished = {s["user_id"] for s in sessions if s["completed_at"]}
+    trial = {u["id"] for u in users if int((u.get("app_metadata") or {}).get("ai_trial_used") or 0) > 0}
+    paid = {s["user_id"] for s in subs if (s.get("amount") or 0) > 0}
+
+    n = len(users)
+    print("실제 DB 상태 (테스트 계정 제외)")
+    print("─" * 52)
+    for label, group in [
+        ("가입 계정", ids), ("시험 시작", started), ("시험 완료", finished),
+        ("AI 첨삭 체험", trial), ("유료 결제", paid),
+    ]:
+        print(f"  {label:<14}{len(group):>4}   {pct(len(group), n)}")
+
+    print(f"\n  시험완료 → AI체험   {pct(len(finished & trial), len(finished))}")
+    print(f"  AI체험  → 결제      {pct(len(trial & paid), len(trial))}")
+    print(f"  체험 없이 결제      {len(paid - trial)}명 / {len(paid)}명")
+
+    # 이벤트 쪽(사람 수 기준). 결제창 앞단에서 막힌 시도는 payment_blocked로 남는다.
+    rows = page_all("page_views?select=path,visitor_id,created_at&order=created_at.asc")
+    events = [r for r in rows if r["path"].startswith("#event/")]
+    views = [r for r in rows if not r["path"].startswith("#event/")]
+    uniq = Counter()
+    for r in events:
+        uniq[r["path"].replace("#event/", "")] = 0
+    for name in list(uniq):
+        uniq[name] = len({r["visitor_id"] for r in events if r["path"] == f"#event/{name}"})
+
+    print(f"\n이벤트 (사람 수) — 페이지뷰 {len(views)} · 순방문자 {len({r['visitor_id'] for r in views})}")
+    print("─" * 52)
+    for name in ["signup", "exam_completed", "ai_trial_used", "subscribe_view",
+                 "payment_blocked", "payment_started", "purchase_success", "payment_fail"]:
+        if name in uniq:
+            print(f"  {name:<18}{uniq[name]:>4}")
+    for name in sorted(set(uniq) - {"signup", "exam_completed", "ai_trial_used", "subscribe_view",
+                                    "payment_blocked", "payment_started", "purchase_success", "payment_fail"}):
+        print(f"  {name:<18}{uniq[name]:>4}")
+
+    if events:
+        print(f"\n  기간: {events[0]['created_at'][:10]} ~ {events[-1]['created_at'][:10]}")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
