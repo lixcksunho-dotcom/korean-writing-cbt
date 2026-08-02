@@ -5,6 +5,7 @@ import SiteFooter from "@/components/layout/SiteFooter";
 import BreadcrumbLd from "@/components/seo/BreadcrumbLd";
 import StickyMobileCTA from "@/components/landing/StickyMobileCTA";
 import RelatedBlogPosts from '@/components/blog/RelatedBlogPosts'
+import TopicQuiz from '@/components/study/TopicQuiz'
 
 export const metadata: Metadata = {
   title: "표준어 바로 알기 — 헷갈리는 비표준어·웃/윗 구분 정리",
@@ -213,6 +214,9 @@ export default function StandardWordsPage() {
             {" · "}
             <Link href="/kbs-korean" className="underline hover:text-[#1e3a5f]">KBS한국어 시험정보</Link>
           </section>
+          {/* 읽고 끝나지 않게 — 읽은 자리에서 바로 풀어보고 실전으로 잇는다 */}
+          <TopicQuiz topic="standard-words" />
+
           <RelatedBlogPosts category="grammar" />
         </div>
       </main>

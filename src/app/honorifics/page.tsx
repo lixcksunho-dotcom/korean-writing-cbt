@@ -5,6 +5,7 @@ import SiteFooter from "@/components/layout/SiteFooter";
 import BreadcrumbLd from "@/components/seo/BreadcrumbLd";
 import StickyMobileCTA from "@/components/landing/StickyMobileCTA";
 import RelatedBlogPosts from '@/components/blog/RelatedBlogPosts'
+import TopicQuiz from '@/components/study/TopicQuiz'
 
 export const metadata: Metadata = {
   title: "높임법 바로 쓰기 — 높임 어휘·사물 존대(과잉 높임) 오류 정리",
@@ -217,6 +218,9 @@ export default function HonorificsPage() {
             {" · "}
             <Link href="/refined-words" className="underline hover:text-[#1e3a5f]">순화어 모음</Link>
           </section>
+          {/* 읽고 끝나지 않게 — 읽은 자리에서 바로 풀어보고 실전으로 잇는다 */}
+          <TopicQuiz topic="honorifics" />
+
           <RelatedBlogPosts category="grammar" />
         </div>
       </main>

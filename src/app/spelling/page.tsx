@@ -5,6 +5,7 @@ import SiteFooter from "@/components/layout/SiteFooter";
 import BreadcrumbLd from "@/components/seo/BreadcrumbLd";
 import StickyMobileCTA from "@/components/landing/StickyMobileCTA";
 import RelatedBlogPosts from '@/components/blog/RelatedBlogPosts'
+import TopicQuiz from '@/components/study/TopicQuiz'
 
 export const metadata: Metadata = {
   title: "자주 틀리는 맞춤법·띄어쓰기 모음 — 헷갈리는 표기 총정리",
@@ -371,6 +372,9 @@ export default function SpellingPage() {
             {" · "}
             <Link href="/word-counter" className="underline hover:text-[#1e3a5f]">글자수 세기</Link>
           </section>
+          {/* 읽고 끝나지 않게 — 읽은 자리에서 바로 풀어보고 실전으로 잇는다 */}
+          <TopicQuiz topic="spelling" />
+
           <RelatedBlogPosts category="grammar" />
         </div>
       </main>
