@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "eslint",
     "test": "playwright test",
-    "check:schema": "python scripts/schema_drift_check.py"
+    "check:schema": "python scripts/schema_drift_check.py",
+    "check:questions": "python scripts/audit_questions.py",
+    "check:duplicates": "python scripts/question_overlap_check.py 0.35"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.100.1",
