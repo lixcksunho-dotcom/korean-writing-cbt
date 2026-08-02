@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import ManuscriptEditor from '@/components/manuscript/ManuscriptEditor'
+import GradingSample from '@/components/manuscript/GradingSample'
 import Link from 'next/link'
 import { PenLine, History, Lock, Sparkles, CheckCircle2 } from 'lucide-react'
 import { getActiveSubscription, daysUntilExpiry } from '@/lib/subscription'
@@ -71,6 +72,8 @@ export default async function ManuscriptPage() {
               </Link>
             </div>
           )}
+          {/* 쓰기 전에 결과물을 먼저 보여준다 — 무엇을 받는지 모르면 400칸을 채울 이유가 없다 */}
+          <GradingSample />
           <ManuscriptEditor hasSubscription={!!sub} trialRemaining={trial.remaining} />
         </>
       ) : (

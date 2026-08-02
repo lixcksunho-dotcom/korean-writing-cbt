@@ -115,7 +115,9 @@ export default function ManuscriptEditor({
       {/* 원고지 입력 (칸에 바로 작성) */}
       <div className="mb-5">
         <div className="flex items-center justify-between mb-2">
-          <p className="text-sm font-semibold text-gray-700">원고지 (400자) — 칸에 바로 입력하세요</p>
+          {/* 400자만 보이면 그만큼 써야 하는 줄 안다. 실제 하한은 50자인데 그 안내가
+              뭔가 입력한 뒤에야 떠서, 빈 화면에서는 400자짜리 과제로만 보였다. */}
+          <p className="text-sm font-semibold text-gray-700">원고지 — 50자부터 채점돼요</p>
           <span className={[
             'text-xs font-medium tabular-nums',
             charCount > 380 ? 'text-red-500' : charCount > 300 ? 'text-amber-500' : 'text-gray-400',
