@@ -67,6 +67,35 @@ TELEGRAM_CHAT_ID     그 봇과 대화를 시작한 뒤
                      https://api.telegram.org/bot<토큰>/getUpdates 에서 chat.id 확인
 ```
 
+## 알려진 문제
+
+**느린 회선에서 CLS 0.1** — 빠른 회선에서는 0.000인데 3G로 조이면 `/spelling` 0.100,
+`/blog` 0.069가 나온다. 'good' 기준(0.1) 경계다.
+
+원인: 한글 서브셋(621개 @font-face 중 9번째쯤)이 8초쯤 도착해 적용되면서 `h1`이
+2줄에서 1줄로 줄고(72px → 36px) 아래 내용이 통째로 36px 올라간다. `display: optional`
+인데도 unicode-range 서브셋마다 블록 구간 타이밍이 달라 중간에 적용된다.
+
+`adjustFontFallback: true`는 답이 아니다. 그 보정 대체 폰트는 `src: local(Arial)`이라
+한글 글리프가 없고, 한글은 그다음 시스템 글꼴로 넘어가 override가 닿지 않는다.
+프로덕션에서 켜고 재도 0.1003으로 동일했다.
+
+해결하려면 한글 시스템 글꼴(윈도우 맑은 고딕 / iOS Apple SD Gothic Neo /
+안드로이드 Noto Sans CJK KR)에 맞춘 metric override를 직접 만들어야 하는데, 셋의
+자폭이 달라 하나의 값으로는 맞지 않는다. 제목 높이를 예약하는 방법도 있으나 폰트가
+제때 오면 빈 공간이 남는다.
+
+재현(빠른 회선에서 재면 문제가 안 보인다):
+
+```js
+await cdp.send('Network.emulateNetworkConditions',
+  { offline: false, downloadThroughput: 780 * 1024 / 8, uploadThroughput: 330 * 1024 / 8, latency: 300 })
+```
+
+> 폰트 관련 측정 전에 **빌드에 폰트가 들어 있는지 먼저 확인할 것**
+> (`.next/static/media/*.woff2`). 폰트가 빠진 빌드로 재면 교체가 없어 CLS가 0으로
+> 나오는데, 이걸 개선으로 착각하기 쉽다(실제로 한 번 그렇게 잘못 결론 냈다).
+
 ## 문항 데이터
 
 `questions` 테이블은 **서버 전용**이다. 공개 SELECT 정책을 없애고 `src/lib/questionBank.ts`
