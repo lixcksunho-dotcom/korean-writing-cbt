@@ -85,6 +85,19 @@ test('블로그 글에서 학습자료로 돌아가는 길이 있다', async ({ 
   await expect(page.getByText('읽었으면 풀어볼까요?')).toBeVisible()
 })
 
+test('없는 글·카테고리는 500이 아니라 404를 준다', async ({ request }) => {
+  // 글 슬러그가 전부 한글이라, 오타·오래된 링크가 여기로 온다. 한때 한글만 500이 났다
+  // (ASCII는 404) — 500은 검색엔진에 '서버 고장, 다시 오라'로 읽혀 색인에서 정리되지 않는다.
+  for (const [path, label] of [
+    [`/blog/${encodeURIComponent('없는글-slug')}`, '한글 글'],
+    ['/blog/nonexistent-slug', 'ASCII 글'],
+    [`/blog/category/${encodeURIComponent('없는카테고리')}`, '한글 카테고리'],
+    ['/blog/category/nope', 'ASCII 카테고리'],
+  ] as const) {
+    expect((await request.get(`${BASE}${path}`)).status(), `${label} 없는 경로`).toBe(404)
+  }
+})
+
 test('학습자료의 맛보기 문제가 풀리고 실전으로 이어진다', async ({ page }) => {
   // 읽고 떠나는 걸 붙잡는 유일한 장치라, 조용히 사라지면 안 된다.
   await page.goto(`${BASE}/spelling`, { waitUntil: 'domcontentloaded' })
