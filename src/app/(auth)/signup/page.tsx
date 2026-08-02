@@ -153,7 +153,8 @@ export default function SignupPage() {
                   <input type={showPw ? "text" : "password"} value={password} onChange={e => setPassword(e.target.value)}
                     placeholder="6자리 이상" required autoComplete="new-password" className={`${inputCls} pr-11`} />
                   <button type="button" onClick={() => setShowPw(v => !v)}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#64748b] hover:text-[#64748b] transition-colors">
+                    aria-label={showPw ? "비밀번호 숨기기" : "비밀번호 보기"}
+                    className="absolute right-1.5 top-1/2 -translate-y-1/2 p-2 rounded-lg text-[#64748b] hover:text-[#334155] transition-colors">
                     {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>

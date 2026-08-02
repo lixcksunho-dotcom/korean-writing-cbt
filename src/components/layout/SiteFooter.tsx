@@ -8,50 +8,50 @@ export default function SiteFooter() {
     <footer className="bg-[#080f1e] text-white/40 text-xs">
       <div className="max-w-6xl mx-auto px-4 py-7">
         <div className="flex flex-wrap gap-x-4 gap-y-2 mb-3 font-semibold text-white/70">
-          <Link href="/guides" className="hover:text-white transition-colors">학습 자료 모음</Link>
-          <span className="text-white/20">·</span>
-          <Link href="/exam-info" className="hover:text-white transition-colors">한국실용글쓰기 시험정보</Link>
-          <span className="text-white/20">·</span>
-          <Link href="/kbs-korean" className="hover:text-white transition-colors">KBS한국어능력시험 정보</Link>
-          <span className="text-white/20">·</span>
-          <Link href="/exam-compare" className="hover:text-white transition-colors">실용글쓰기·KBS 비교</Link>
-          <span className="text-white/20">·</span>
-          <Link href="/essay-guide" className="hover:text-white transition-colors">서술형 공략</Link>
-          <span className="text-white/20">·</span>
-          <Link href="/manuscript-guide" className="hover:text-white transition-colors">원고지 작성법</Link>
-          <span className="text-white/20">·</span>
-          <Link href="/spelling" className="hover:text-white transition-colors">자주 틀리는 맞춤법</Link>
-          <span className="text-white/20">·</span>
-          <Link href="/idioms" className="hover:text-white transition-colors">사자성어 모음</Link>
-          <span className="text-white/20">·</span>
-          <Link href="/proverbs" className="hover:text-white transition-colors">속담 모음</Link>
-          <span className="text-white/20">·</span>
-          <Link href="/expressions" className="hover:text-white transition-colors">관용구 모음</Link>
-          <span className="text-white/20">·</span>
-          <Link href="/refined-words" className="hover:text-white transition-colors">순화어 모음</Link>
-          <span className="text-white/20">·</span>
-          <Link href="/honorifics" className="hover:text-white transition-colors">높임법</Link>
-          <span className="text-white/20">·</span>
-          <Link href="/standard-words" className="hover:text-white transition-colors">표준어</Link>
-          <span className="text-white/20">·</span>
-          <Link href="/loanword-spelling" className="hover:text-white transition-colors">외래어 표기법</Link>
-          <span className="text-white/20">·</span>
-          <Link href="/business-writing" className="hover:text-white transition-colors">공문서·이메일 예시</Link>
-          <span className="text-white/20">·</span>
-          <Link href="/word-counter" className="hover:text-white transition-colors">글자수 세기</Link>
-          <span className="text-white/20">·</span>
-          <Link href="/blog" className="hover:text-white transition-colors">독학 블로그</Link>
-          <span className="text-white/20">·</span>
-          <Link href="/cbt" className="hover:text-white transition-colors">무료 CBT 모의고사</Link>
+          <Link href="/guides" className="inline-block py-1.5 hover:text-white transition-colors">학습 자료 모음</Link>
+          <span className="py-1.5 text-white/20">·</span>
+          <Link href="/exam-info" className="inline-block py-1.5 hover:text-white transition-colors">한국실용글쓰기 시험정보</Link>
+          <span className="py-1.5 text-white/20">·</span>
+          <Link href="/kbs-korean" className="inline-block py-1.5 hover:text-white transition-colors">KBS한국어능력시험 정보</Link>
+          <span className="py-1.5 text-white/20">·</span>
+          <Link href="/exam-compare" className="inline-block py-1.5 hover:text-white transition-colors">실용글쓰기·KBS 비교</Link>
+          <span className="py-1.5 text-white/20">·</span>
+          <Link href="/essay-guide" className="inline-block py-1.5 hover:text-white transition-colors">서술형 공략</Link>
+          <span className="py-1.5 text-white/20">·</span>
+          <Link href="/manuscript-guide" className="inline-block py-1.5 hover:text-white transition-colors">원고지 작성법</Link>
+          <span className="py-1.5 text-white/20">·</span>
+          <Link href="/spelling" className="inline-block py-1.5 hover:text-white transition-colors">자주 틀리는 맞춤법</Link>
+          <span className="py-1.5 text-white/20">·</span>
+          <Link href="/idioms" className="inline-block py-1.5 hover:text-white transition-colors">사자성어 모음</Link>
+          <span className="py-1.5 text-white/20">·</span>
+          <Link href="/proverbs" className="inline-block py-1.5 hover:text-white transition-colors">속담 모음</Link>
+          <span className="py-1.5 text-white/20">·</span>
+          <Link href="/expressions" className="inline-block py-1.5 hover:text-white transition-colors">관용구 모음</Link>
+          <span className="py-1.5 text-white/20">·</span>
+          <Link href="/refined-words" className="inline-block py-1.5 hover:text-white transition-colors">순화어 모음</Link>
+          <span className="py-1.5 text-white/20">·</span>
+          <Link href="/honorifics" className="inline-block py-1.5 hover:text-white transition-colors">높임법</Link>
+          <span className="py-1.5 text-white/20">·</span>
+          <Link href="/standard-words" className="inline-block py-1.5 hover:text-white transition-colors">표준어</Link>
+          <span className="py-1.5 text-white/20">·</span>
+          <Link href="/loanword-spelling" className="inline-block py-1.5 hover:text-white transition-colors">외래어 표기법</Link>
+          <span className="py-1.5 text-white/20">·</span>
+          <Link href="/business-writing" className="inline-block py-1.5 hover:text-white transition-colors">공문서·이메일 예시</Link>
+          <span className="py-1.5 text-white/20">·</span>
+          <Link href="/word-counter" className="inline-block py-1.5 hover:text-white transition-colors">글자수 세기</Link>
+          <span className="py-1.5 text-white/20">·</span>
+          <Link href="/blog" className="inline-block py-1.5 hover:text-white transition-colors">독학 블로그</Link>
+          <span className="py-1.5 text-white/20">·</span>
+          <Link href="/cbt" className="inline-block py-1.5 hover:text-white transition-colors">무료 CBT 모의고사</Link>
         </div>
         <div className="flex flex-wrap gap-x-4 gap-y-2 mb-4 font-semibold text-white/70">
-          <Link href="/terms" className="hover:text-white transition-colors">이용약관</Link>
-          <span className="text-white/20">·</span>
-          <Link href="/privacy" className="hover:text-white transition-colors">개인정보처리방침</Link>
-          <span className="text-white/20">·</span>
-          <Link href="/refund" className="hover:text-white transition-colors">취소·환불 정책</Link>
-          <span className="text-white/20">·</span>
-          <Link href="/support" className="hover:text-white transition-colors">고객센터</Link>
+          <Link href="/terms" className="inline-block py-1.5 hover:text-white transition-colors">이용약관</Link>
+          <span className="py-1.5 text-white/20">·</span>
+          <Link href="/privacy" className="inline-block py-1.5 hover:text-white transition-colors">개인정보처리방침</Link>
+          <span className="py-1.5 text-white/20">·</span>
+          <Link href="/refund" className="inline-block py-1.5 hover:text-white transition-colors">취소·환불 정책</Link>
+          <span className="py-1.5 text-white/20">·</span>
+          <Link href="/support" className="inline-block py-1.5 hover:text-white transition-colors">고객센터</Link>
         </div>
 
         <div className="space-y-1 leading-relaxed">

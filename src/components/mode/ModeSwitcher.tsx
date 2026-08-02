@@ -28,7 +28,7 @@ export default function ModeSwitcher({
 
   return (
     <div
-      className={`inline-flex items-center gap-1 rounded-full bg-white/10 border border-white/15 p-1 ${className}`}
+      className={`inline-flex items-center gap-1.5 rounded-full bg-white/10 border border-white/15 p-1 ${className}`}
       role="tablist"
       aria-label="시험 모드 선택"
     >
@@ -42,7 +42,7 @@ export default function ModeSwitcher({
             aria-selected={active}
             onClick={() => pick(id)}
             disabled={pending}
-            className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all disabled:opacity-60 ${
+            className={`px-3.5 py-2 rounded-full text-xs font-bold transition-all disabled:opacity-60 ${
               active
                 ? 'bg-white text-[#0f1f3d] shadow'
                 : 'text-white/70 hover:text-white'
