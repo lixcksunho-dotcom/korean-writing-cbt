@@ -36,12 +36,19 @@ export default function PaymentButton({
   const [phone, setPhone] = useState('')
 
   async function handlePayment(method: Method) {
-    if (!agreed) { setError('결제 전 이용약관·환불정책에 동의해 주세요.'); return }
+    // 결제창까지 못 간 이유도 남긴다. payment_started는 아래 가드를 모두 통과해야 찍혀서,
+    // 여기서 막힌 사람은 퍼널에 아예 안 보였다(구독 페이지 조회는 있는데 결제 시작이 0인 구간이 있었다).
+    if (!agreed) {
+      setError('결제 전 이용약관·환불정책에 동의해 주세요.')
+      trackEvent('payment_blocked', 'no_agree')
+      return
+    }
 
     // KG이니시스 V2 일반결제는 구매자 휴대폰 번호가 필수
     const phoneDigits = phone.replace(/\D/g, '')
     if (!/^01[0-9]\d{7,8}$/.test(phoneDigits)) {
       setError('휴대폰 번호를 정확히 입력해 주세요. (예: 010-1234-5678)')
+      trackEvent('payment_blocked', phoneDigits ? 'bad_phone' : 'no_phone')
       return
     }
 
@@ -50,6 +57,7 @@ export default function PaymentButton({
     const channelKey = process.env.NEXT_PUBLIC_PORTONE_CHANNEL_KEY
     if (!storeId || !channelKey) {
       setError('결제 설정이 준비 중입니다. 잠시 후 다시 시도하거나 고객센터로 문의해 주세요.')
+      trackEvent('payment_blocked', 'no_portone_key')
       return
     }
 
@@ -134,7 +142,9 @@ export default function PaymentButton({
         <button
           key={key}
           onClick={() => handlePayment(key)}
-          disabled={loading !== null || !agreed}
+          // 동의 전이라고 버튼을 잠그면, 누른 사람은 아무 반응도 못 받고 이유도 모른다.
+          // 눌리게 두고 handlePayment가 "무엇이 빠졌는지"를 말해 주게 한다(결제는 그대로 막힌다).
+          disabled={loading !== null}
           className={`w-full flex items-center justify-center gap-2.5 py-3.5 rounded-xl font-bold text-sm border-2 transition-all disabled:opacity-60 disabled:cursor-not-allowed hover:-translate-y-0.5 hover:shadow-lg ${color}`}
         >
           <span className="text-base">{emoji}</span>
