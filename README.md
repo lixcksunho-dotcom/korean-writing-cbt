@@ -54,6 +54,18 @@ PAGE_SWEEP_BASE=http://localhost:3000 npm run check:pages
 Editor에서 실행할 때 주의: `DO $$ ... $$;` 블록은 편집기가 `$$` 안의 세미콜론에서 문장을 잘라
 실패한다. 재실행 안전한 DDL은 `IF NOT EXISTS`로 쓰는 편이 낫다.
 
+## 운영
+
+문제 오류 신고는 `question_reports`에 쌓이고, 관리자 대시보드(`/admin`)의 '문제 신고' 카드에
+**미처리 N** 배지로 뜬다. 대시보드를 안 열어도 알림을 받고 싶으면 환경변수 두 개를 넣는다
+(선택 — 없으면 알림만 조용히 꺼진 채로 접수는 정상 동작한다).
+
+```
+TELEGRAM_BOT_TOKEN   @BotFather 로 봇을 만들어 받은 토큰
+TELEGRAM_CHAT_ID     그 봇과 대화를 시작한 뒤
+                     https://api.telegram.org/bot<토큰>/getUpdates 에서 chat.id 확인
+```
+
 ## 문항 데이터
 
 `questions` 테이블은 **서버 전용**이다. 공개 SELECT 정책을 없애고 `src/lib/questionBank.ts`
