@@ -146,7 +146,7 @@ export default function StandardWordsPage() {
                 <tbody>
                   {PAIRS.map((p) => (
                     <tr key={p.wrong} className="border-t border-[#e2e8f0]">
-                      <td className="px-3 py-2 text-[#94a3b8] line-through">{p.wrong}</td>
+                      <td className="px-3 py-2 text-[#64748b] line-through">{p.wrong}</td>
                       <td className="px-3 py-2 font-bold text-[#1e3a5f]">{p.right}</td>
                     </tr>
                   ))}

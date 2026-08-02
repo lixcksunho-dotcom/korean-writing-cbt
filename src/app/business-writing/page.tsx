@@ -210,7 +210,7 @@ export default function BusinessWritingPage() {
                 <tbody>
                   {POLITE.map((p) => (
                     <tr key={p.plain} className="border-t border-[#e2e8f0]">
-                      <td className="px-3 py-2.5 text-[#94a3b8]">{p.plain}</td>
+                      <td className="px-3 py-2.5 text-[#64748b]">{p.plain}</td>
                       <td className="px-3 py-2.5 font-semibold text-[#1e3a5f]">{p.polite}</td>
                     </tr>
                   ))}

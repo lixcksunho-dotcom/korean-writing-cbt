@@ -121,7 +121,7 @@ export default function ExamComparePage() {
                 <tbody>
                   {TABLE.map((r) => (
                     <tr key={r.label} className="border-t border-[#e2e8f0]">
-                      <td className="px-3 py-2.5 font-bold text-[#94a3b8] whitespace-nowrap align-top">{r.label}</td>
+                      <td className="px-3 py-2.5 font-bold text-[#64748b] whitespace-nowrap align-top">{r.label}</td>
                       <td className="px-3 py-2.5 text-[#334155] align-top">{r.sil}</td>
                       <td className="px-3 py-2.5 text-[#334155] align-top">{r.kbs}</td>
                     </tr>

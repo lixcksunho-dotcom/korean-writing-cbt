@@ -101,7 +101,7 @@ export default function RefinedWordsPage() {
                   <tbody>
                     {g.items.map((it) => (
                       <tr key={it.wrong} className="border-t border-[#e2e8f0]">
-                        <td className="px-3 py-2 text-[#94a3b8] align-top whitespace-nowrap">{it.wrong}</td>
+                        <td className="px-3 py-2 text-[#64748b] align-top whitespace-nowrap">{it.wrong}</td>
                         <td className="px-3 py-2 font-semibold text-[#1e3a5f]">{it.correct}</td>
                       </tr>
                     ))}

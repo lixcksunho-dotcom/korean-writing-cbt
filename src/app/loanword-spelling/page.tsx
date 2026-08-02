@@ -164,7 +164,7 @@ export default function LoanwordSpellingPage() {
                 <tbody>
                   {FIXES.map((f) => (
                     <tr key={f.wrong} className="border-t border-[#e2e8f0]">
-                      <td className="px-3 py-2 text-[#94a3b8] line-through">{f.wrong}</td>
+                      <td className="px-3 py-2 text-[#64748b] line-through">{f.wrong}</td>
                       <td className="px-3 py-2 font-bold text-[#1e3a5f]">{f.right}</td>
                     </tr>
                   ))}
