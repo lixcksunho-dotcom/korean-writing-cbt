@@ -184,13 +184,13 @@ export default function PracticeEssay({
               <Link
                 href="/subscribe"
                 title="저장하고 나가기는 구독 회원 전용이에요"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-[#f1f5f9] text-[#94a3b8] border border-[#e2e8f0] cursor-not-allowed hover:text-amber-600 hover:border-amber-200"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-[#f1f5f9] text-[#64748b] border border-[#e2e8f0] cursor-not-allowed hover:text-amber-600 hover:border-amber-200"
               >
                 <Lock className="h-3.5 w-3.5" /> 저장하고 나가기 <span className="text-[10px] font-bold text-amber-500">유료</span>
               </Link>
             )
           )}
-          <span className="text-sm text-[#94a3b8] whitespace-nowrap">서술형 {idx + 1} / {questions.length}</span>
+          <span className="text-sm text-[#64748b] whitespace-nowrap">서술형 {idx + 1} / {questions.length}</span>
         </div>
       </div>
 
@@ -252,7 +252,7 @@ export default function PracticeEssay({
         <div className={`bg-[#f8fafc] border border-[#e2e8f0] rounded-2xl mb-4 overflow-hidden ${sideBySide ? 'lg:mb-0 lg:sticky lg:top-24 lg:self-start' : ''}`}>
           <button onClick={() => setPassageOpen(v => !v)} className="w-full flex items-center justify-between px-5 py-3.5 text-left hover:bg-[#f1f5f9] transition-colors">
             <div className="flex items-center gap-2"><FileText className="h-4 w-4 text-[#1e3a5f]" /><span className="text-sm font-bold text-[#1e3a5f]">제시문 · 자료</span></div>
-            <ChevronDown className={`h-4 w-4 text-[#94a3b8] transition-transform ${passageOpen ? 'rotate-180' : ''}`} />
+            <ChevronDown className={`h-4 w-4 text-[#64748b] transition-transform ${passageOpen ? 'rotate-180' : ''}`} />
           </button>
           {passageOpen && <div className={`px-4 sm:px-5 pb-5 pt-2 overflow-y-auto ${sideBySide ? 'max-h-96 lg:max-h-[calc(100vh-9rem)]' : 'max-h-96'}`}><PassageView text={q.passage} /></div>}
         </div>
@@ -262,7 +262,7 @@ export default function PracticeEssay({
       <div className="bg-white rounded-2xl border border-[#e2e8f0] shadow-[0_4px_16px_rgba(15,31,61,0.06)] p-6 md:p-7 min-w-0">
         <div className="flex items-center gap-2 mb-5">
           <span className="text-xs font-bold text-amber-700 bg-amber-100 px-2.5 py-1 rounded-full">서술형 {idx + 1}</span>
-          <span className="text-xs text-[#94a3b8]">{q.points}점</span>
+          <span className="text-xs text-[#64748b]">{q.points}점</span>
         </div>
         <p className="text-[#0f172a] font-medium leading-relaxed mb-6 whitespace-pre-wrap text-base">{q.question}</p>
 
@@ -271,7 +271,7 @@ export default function PracticeEssay({
             {isManuscript ? `원고지 (${COLS}칸) — 칸에 바로 입력하세요` : '답안 작성'}
             {charLimit != null && <span className="ml-1 text-amber-600">· 제한 {charLimit}자</span>}
           </span>
-          <span className={`text-xs tabular-nums font-semibold ${overLimit ? 'text-red-500' : 'text-[#94a3b8]'}`}>
+          <span className={`text-xs tabular-nums font-semibold ${overLimit ? 'text-red-500' : 'text-[#64748b]'}`}>
             {charCount}{charLimit != null ? ` / ${charLimit}` : ''}자{overLimit ? ' 초과' : ''}
           </span>
         </div>
@@ -305,7 +305,7 @@ export default function PracticeEssay({
                 {isPending ? <><Loader2 className="h-4 w-4 animate-spin" /> 분석 중...</> : <><Sparkles className="h-4 w-4" /> {hasSubscription ? 'AI 분석받기' : '무료로 AI 분석 체험'}</>}
               </button>
               {!hasSubscription && (
-                <p className="text-xs text-[#94a3b8] mt-1.5">구독 없이 <span className="font-semibold text-amber-600">무료 {trialLeft}회</span> 더 AI 첨삭을 받아볼 수 있어요.</p>
+                <p className="text-xs text-[#64748b] mt-1.5">구독 없이 <span className="font-semibold text-amber-600">무료 {trialLeft}회</span> 더 AI 첨삭을 받아볼 수 있어요.</p>
               )}
             </>
           ) : (
@@ -321,7 +321,7 @@ export default function PracticeEssay({
           <div className="mt-4 bg-amber-50 border border-amber-100 rounded-xl p-5">
             <div className="flex items-baseline gap-2 mb-3">
               <span className="text-2xl font-black text-[#d97706]">{grade.score}</span>
-              <span className="text-sm text-[#94a3b8]">/ {grade.maxScore}점</span>
+              <span className="text-sm text-[#64748b]">/ {grade.maxScore}점</span>
             </div>
             <p className="text-sm text-[#334155] leading-relaxed mb-3">{grade.feedback}</p>
             {grade.strengths?.length > 0 && (

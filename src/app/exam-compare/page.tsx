@@ -129,7 +129,7 @@ export default function ExamComparePage() {
                 </tbody>
               </table>
             </div>
-            <p className="mt-2 text-xs text-[#94a3b8]">※ 등급 기준·배점은 주관처 사정으로 달라질 수 있어요. 접수 전 각 공식 홈페이지에서 확인하세요.</p>
+            <p className="mt-2 text-xs text-[#64748b]">※ 등급 기준·배점은 주관처 사정으로 달라질 수 있어요. 접수 전 각 공식 홈페이지에서 확인하세요.</p>
           </section>
 
           {/* 읽고 끝나지 않게 — 읽은 자리에서 바로 풀어보고 실전으로 잇는다 */}

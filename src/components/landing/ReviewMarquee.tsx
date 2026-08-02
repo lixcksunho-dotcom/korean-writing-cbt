@@ -55,7 +55,7 @@ function ReviewCard({ review }: { review: Review }) {
             </span>
           )}
         </span>
-        <span className="text-xs text-[#94a3b8]">{timeAgo(review.created_at)}</span>
+        <span className="text-xs text-[#64748b]">{timeAgo(review.created_at)}</span>
       </div>
     </div>
   )

@@ -31,7 +31,7 @@ export default async function PaymentHistoryPage() {
 
       {subs.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center bg-white rounded-2xl border border-[#e2e8f0]">
-          <div className="bg-[#f1f5f9] p-5 rounded-2xl mb-4"><Receipt className="h-10 w-10 text-[#94a3b8]" /></div>
+          <div className="bg-[#f1f5f9] p-5 rounded-2xl mb-4"><Receipt className="h-10 w-10 text-[#64748b]" /></div>
           <p className="text-[#64748b] text-sm font-medium">결제 내역이 없어요.</p>
           <Link href="/subscribe" className="mt-4 btn-gold inline-flex items-center gap-1.5 font-bold px-5 py-2.5 rounded-xl text-sm">
             이용권 보기
@@ -58,7 +58,7 @@ export default async function PaymentHistoryPage() {
                 </div>
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-[#334155] font-semibold">{(Number(s.amount) || 0).toLocaleString()}원</span>
-                  <span className="text-xs text-[#94a3b8]">
+                  <span className="text-xs text-[#64748b]">
                     {new Date(s.started_at as string).toLocaleDateString('ko-KR')} ~ {new Date(s.expires_at as string).toLocaleDateString('ko-KR')}
                   </span>
                 </div>

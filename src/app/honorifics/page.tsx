@@ -129,7 +129,7 @@ export default function HonorificsPage() {
                 <div key={e.bad} className="rounded-xl border border-[#e2e8f0] bg-white p-4">
                   <p className="text-sm">
                     <span className="font-bold text-[#64748b] line-through">{e.bad}</span>
-                    <span className="mx-1.5 text-[#94a3b8]">→</span>
+                    <span className="mx-1.5 text-[#64748b]">→</span>
                     <span className="font-black text-[#1e3a5f]">{e.good}</span>
                   </p>
                   <p className="mt-1 text-sm text-[#64748b] leading-relaxed">{e.why}</p>

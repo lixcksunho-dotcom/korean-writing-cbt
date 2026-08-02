@@ -21,7 +21,7 @@ function TypeGroup({
 }) {
   return (
     <div className="mb-6">
-      <p className="text-xs font-bold text-[#94a3b8] mb-2.5">{title}</p>
+      <p className="text-xs font-bold text-[#64748b] mb-2.5">{title}</p>
       <div className="grid sm:grid-cols-2 gap-3">
         {items.map(type => (
           <Link
@@ -37,7 +37,7 @@ function TypeGroup({
             </div>
             <div className="flex items-center gap-2 shrink-0">
               <span className="text-xs bg-[#f1f5f9] text-[#64748b] px-2.5 py-1 rounded-full font-semibold">{counts.get(type.key)}문</span>
-              <ChevronRight className="h-5 w-5 text-[#94a3b8] group-hover:translate-x-1 transition-transform" />
+              <ChevronRight className="h-5 w-5 text-[#64748b] group-hover:translate-x-1 transition-transform" />
             </div>
           </Link>
         ))}

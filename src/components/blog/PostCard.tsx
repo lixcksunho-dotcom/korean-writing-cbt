@@ -29,7 +29,7 @@ export default function PostCard({ post, featured = false }: { post: BlogPost; f
           {post.excerpt && (
             <p className="text-[#475569] leading-relaxed line-clamp-2">{post.excerpt}</p>
           )}
-          <p className="mt-3 text-xs text-[#94a3b8]">{formatDate(post.date)} · 자세히 보기 →</p>
+          <p className="mt-3 text-xs text-[#64748b]">{formatDate(post.date)} · 자세히 보기 →</p>
         </div>
       </Link>
     )
@@ -58,7 +58,7 @@ export default function PostCard({ post, featured = false }: { post: BlogPost; f
         {post.excerpt && (
           <p className="mt-2 text-sm text-[#64748b] leading-relaxed line-clamp-2">{post.excerpt}</p>
         )}
-        <p className="mt-3 text-xs text-[#94a3b8]">{formatDate(post.date)}</p>
+        <p className="mt-3 text-xs text-[#64748b]">{formatDate(post.date)}</p>
       </div>
     </Link>
   )

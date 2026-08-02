@@ -38,7 +38,7 @@ export const CATEGORIES: Category[] = [
   { slug: 'study', label: '공부법·로드맵', blurb: '기간별 공부 순서와 전략',
     icon: '🎯', from: '#0f766e', to: '#0e8477', tint: '#d7f2ee', ink: '#0f766e' },
   { slug: 'grammar', label: '맞춤법·어법', blurb: '자주 틀리는 맞춤법·띄어쓰기·외래어·높임법',
-    icon: '✏️', from: '#b45309', to: '#a36907', tint: '#fdf0d9', ink: '#b45309' },
+    icon: '✏️', from: '#b45309', to: '#a36907', tint: '#fdf0d9', ink: '#a84e08' },
   { slug: 'writing', label: '서술형·원고지', blurb: '서술형 700점·원고지·공문서 작성법',
     icon: '📝', from: '#6d28d9', to: '#7e55f8', tint: '#eee7fb', ink: '#6d28d9' },
   { slug: 'mock-exam', label: '기출·모의고사', blurb: '출제 유형 분석과 문제 풀이',

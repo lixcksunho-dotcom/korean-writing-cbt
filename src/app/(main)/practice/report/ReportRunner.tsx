@@ -124,7 +124,7 @@ export default function ReportRunner({
         <div className="bg-white border-2 border-[#1e3a5f]/20 rounded-xl mb-4">
           <div className="px-4 sm:px-5 py-2.5 border-b border-[#1e3a5f]/10 flex items-center justify-between bg-[#f8fafc] rounded-t-xl">
             <span className="text-sm font-bold text-[#1e3a5f]">[지문 · 자료]</span>
-            <span className="text-xs text-[#94a3b8]">{q.examLabel}</span>
+            <span className="text-xs text-[#64748b]">{q.examLabel}</span>
           </div>
           <div className="px-4 sm:px-5 py-4 max-h-[34vh] overflow-y-auto">
             <PassageView text={q.passage} />
@@ -136,7 +136,7 @@ export default function ReportRunner({
       <div className="bg-white rounded-2xl border border-[#e2e8f0] shadow-[0_4px_16px_rgba(15,31,61,0.06)] p-5 sm:p-7">
         <div className="flex items-center gap-2 mb-4">
           <span className="text-xs font-bold text-amber-700 bg-amber-100 px-2.5 py-1 rounded-full">보고서 {idx + 1}</span>
-          <span className="text-xs text-[#94a3b8]">{q.points}점 · {q.examLabel}</span>
+          <span className="text-xs text-[#64748b]">{q.points}점 · {q.examLabel}</span>
         </div>
         <p className="text-[#0f172a] font-medium leading-relaxed mb-5 whitespace-pre-wrap text-base">{q.question}</p>
 
@@ -145,7 +145,7 @@ export default function ReportRunner({
             원고지 ({COLS}칸) — 칸에 바로 입력하세요
             {charLimit != null && <span className="ml-1 text-amber-600">· 제한 {charLimit}자</span>}
           </span>
-          <span className={`text-xs tabular-nums font-semibold ${overLimit ? 'text-red-500' : 'text-[#94a3b8]'}`}>
+          <span className={`text-xs tabular-nums font-semibold ${overLimit ? 'text-red-500' : 'text-[#64748b]'}`}>
             {charCount}{charLimit != null ? ` / ${charLimit}` : ''}자{overLimit ? ' 초과' : ''}
           </span>
         </div>
@@ -165,7 +165,7 @@ export default function ReportRunner({
               <button onClick={grade_} disabled={isPending || !answer.trim()} className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold bg-gradient-to-r from-amber-500 to-[#d97706] text-white disabled:opacity-50">
                 {isPending ? <><Loader2 className="h-4 w-4 animate-spin" /> 분석 중...</> : <><Sparkles className="h-4 w-4" /> {hasSubscription ? 'AI 분석받기' : '무료로 AI 분석 체험'}</>}
               </button>
-              {!hasSubscription && <p className="text-xs text-[#94a3b8] mt-1.5">구독 없이 <span className="font-semibold text-amber-600">무료 {trialLeft}회</span> 더 받아볼 수 있어요.</p>}
+              {!hasSubscription && <p className="text-xs text-[#64748b] mt-1.5">구독 없이 <span className="font-semibold text-amber-600">무료 {trialLeft}회</span> 더 받아볼 수 있어요.</p>}
             </>
           ) : (
             <Link href="/subscribe" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold border-2 border-amber-300 text-amber-700 hover:bg-amber-50">
@@ -179,7 +179,7 @@ export default function ReportRunner({
           <div className="mt-4 bg-amber-50 border border-amber-100 rounded-xl p-5">
             <div className="flex items-baseline gap-2 mb-3">
               <span className="text-2xl font-black text-[#d97706]">{grade.score}</span>
-              <span className="text-sm text-[#94a3b8]">/ {grade.maxScore}점</span>
+              <span className="text-sm text-[#64748b]">/ {grade.maxScore}점</span>
             </div>
             <p className="text-sm text-[#334155] leading-relaxed mb-3">{grade.feedback}</p>
             {grade.strengths?.length > 0 && (

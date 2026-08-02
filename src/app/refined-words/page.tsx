@@ -89,7 +89,7 @@ export default function RefinedWordsPage() {
 
           {GROUPS.map((g) => (
             <section key={g.cat} className="mb-8">
-              <h2 className="text-2xl font-black text-[#0f172a] mb-3">{g.cat} <span className="text-sm font-semibold text-[#94a3b8]">{g.items.length}</span></h2>
+              <h2 className="text-2xl font-black text-[#0f172a] mb-3">{g.cat} <span className="text-sm font-semibold text-[#64748b]">{g.items.length}</span></h2>
               <div className="overflow-hidden rounded-xl border border-[#e2e8f0]">
                 <table className="w-full text-sm">
                   <thead>

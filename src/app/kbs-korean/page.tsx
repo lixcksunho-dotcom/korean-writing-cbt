@@ -145,7 +145,7 @@ export default function KbsKoreanPage() {
                 </tbody>
               </table>
             </div>
-            <p className="mt-2 text-xs text-[#94a3b8]">
+            <p className="mt-2 text-xs text-[#64748b]">
               일정은 주관처 사정으로 변경될 수 있어요. 접수·전체 일정은{" "}
               <a href={KBS_APPLY_URL} target="_blank" rel="noopener noreferrer" className="underline hover:text-[#1e3a5f]">
                 KBS한국어진흥원 공식 페이지
@@ -184,7 +184,7 @@ export default function KbsKoreanPage() {
                 </tbody>
               </table>
             </div>
-            <p className="mt-2 text-xs text-[#94a3b8]">
+            <p className="mt-2 text-xs text-[#64748b]">
               듣기·말하기 15문항은 앞부분 25분 동안 방송으로 진행되고, 남은 95분에 나머지 85문항을 풉니다.
             </p>
           </section>
@@ -209,7 +209,7 @@ export default function KbsKoreanPage() {
                 </tbody>
               </table>
             </div>
-            <p className="mt-2 text-xs text-[#94a3b8]">
+            <p className="mt-2 text-xs text-[#64748b]">
               주관처는 누적 응시 데이터를 바탕으로 등급을 산정하며 <b>절대 점수컷을 공개하지 않습니다</b>.
               실글패스가 보여 주는 등급은 학습 참고용 예상 등급이에요.
             </p>

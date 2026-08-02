@@ -73,7 +73,7 @@ export default function ModeIntroModal({ current }: { current: ProgramId }) {
           type="button"
           onClick={dismiss}
           aria-label="닫기"
-          className="absolute top-4 right-4 text-[#94a3b8] hover:text-[#0f172a] transition-colors"
+          className="absolute top-4 right-4 text-[#64748b] hover:text-[#0f172a] transition-colors"
         >
           <X className="h-5 w-5" />
         </button>
@@ -101,7 +101,7 @@ export default function ModeIntroModal({ current }: { current: ProgramId }) {
                 <Icon className="h-5 w-5 text-white" />
               </div>
               <div className="font-bold text-[#0f172a] text-sm leading-tight">{PROGRAMS[id].examName}</div>
-              <div className="text-xs text-[#94a3b8] mt-1">{desc}</div>
+              <div className="text-xs text-[#64748b] mt-1">{desc}</div>
             </button>
           ))}
         </div>

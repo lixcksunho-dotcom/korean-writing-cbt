@@ -110,9 +110,9 @@ export default function ReviewWriteModal({ defaultName }: { defaultName: string 
                 <div className="flex items-center justify-between mb-5">
                   <div>
                     <h3 className="text-lg font-black text-[#0f172a]">합격 후기 남기기</h3>
-                    <p className="text-xs text-[#94a3b8] mt-0.5">합격 후기를 남기고 5,000원 환급 받으세요</p>
+                    <p className="text-xs text-[#64748b] mt-0.5">합격 후기를 남기고 5,000원 환급 받으세요</p>
                   </div>
-                  <button onClick={handleClose} className="p-1.5 rounded-lg hover:bg-[#f1f5f9] transition-colors text-[#94a3b8]">
+                  <button onClick={handleClose} className="p-1.5 rounded-lg hover:bg-[#f1f5f9] transition-colors text-[#64748b]">
                     <X className="h-5 w-5" />
                   </button>
                 </div>
@@ -200,8 +200,8 @@ export default function ReviewWriteModal({ defaultName }: { defaultName: string 
                       required
                     />
                     <div className="flex justify-between mt-1">
-                      <span className="text-xs text-[#94a3b8]">최소 10자</span>
-                      <span className={`text-xs font-medium ${content.length > 130 ? 'text-amber-500' : 'text-[#94a3b8]'}`}>
+                      <span className="text-xs text-[#64748b]">최소 10자</span>
+                      <span className={`text-xs font-medium ${content.length > 130 ? 'text-amber-500' : 'text-[#64748b]'}`}>
                         {content.length}/150
                       </span>
                     </div>
@@ -229,7 +229,7 @@ export default function ReviewWriteModal({ defaultName }: { defaultName: string 
                         className="hidden"
                       />
                     </label>
-                    <p className="text-[11px] text-[#94a3b8] mt-1">인증 사진은 공개되지 않으며, 점수 확인·환급 용도로만 사용됩니다.</p>
+                    <p className="text-[11px] text-[#64748b] mt-1">인증 사진은 공개되지 않으며, 점수 확인·환급 용도로만 사용됩니다.</p>
                   </div>
 
                   {error && (

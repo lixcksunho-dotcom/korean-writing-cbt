@@ -59,7 +59,7 @@ export default async function SuccessPage({
         <p className="text-[#64748b] text-sm mb-1">
           <span className="font-semibold text-[#0f172a]">5,500원</span> 결제가 완료되었습니다.
         </p>
-        <p className="text-[#94a3b8] text-xs mb-8">
+        <p className="text-[#64748b] text-xs mb-8">
           {expiresAt.toLocaleDateString('ko-KR')} 까지 프리미엄 플랜을 이용할 수 있어요.
         </p>
         <Link

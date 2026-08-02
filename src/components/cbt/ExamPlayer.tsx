@@ -246,10 +246,10 @@ export default function ExamPlayer({
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3 mb-3">
           <div className="min-w-0">
             <span className="font-bold text-[#0f172a]">모의고사 {examRound}회</span>
-            <span className="text-[#94a3b8] text-xs ml-2">
+            <span className="text-[#64748b] text-xs ml-2">
               객관식 {multipleCount}문 · 서술형 {essayCount}문
             </span>
-            <span className="text-[#94a3b8] text-sm ml-2 whitespace-nowrap">{answeredCount}/{questions.length} 완료</span>
+            <span className="text-[#64748b] text-sm ml-2 whitespace-nowrap">{answeredCount}/{questions.length} 완료</span>
           </div>
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             <div className={`flex items-center gap-1.5 font-mono font-bold text-sm px-3 py-1.5 rounded-xl ${
@@ -272,7 +272,7 @@ export default function ExamPlayer({
               <Link
                 href="/subscribe"
                 title="저장하고 나가기는 구독 회원 전용이에요"
-                className="flex items-center gap-1.5 text-[#94a3b8] bg-[#f1f5f9] hover:bg-[#e2e8f0] px-3 py-2 rounded-xl text-sm font-semibold transition-colors"
+                className="flex items-center gap-1.5 text-[#64748b] bg-[#f1f5f9] hover:bg-[#e2e8f0] px-3 py-2 rounded-xl text-sm font-semibold transition-colors"
               >
                 <Lock className="h-3.5 w-3.5" />
                 <span className="hidden sm:inline">저장하고 나가기</span>
@@ -308,7 +308,7 @@ export default function ExamPlayer({
         {/* 문제 번호 사이드바 */}
         <div className="hidden lg:block w-44 shrink-0">
           <div className="bg-white rounded-2xl border border-[#e2e8f0] shadow-[0_4px_16px_rgba(15,31,61,0.06)] p-4 sticky top-24">
-            <p className="text-xs font-semibold text-[#94a3b8] mb-3 uppercase tracking-wide">문제 목록</p>
+            <p className="text-xs font-semibold text-[#64748b] mb-3 uppercase tracking-wide">문제 목록</p>
             <div className="grid grid-cols-5 gap-1.5">
               {questions.map((question, idx) => (
                 <button
@@ -331,7 +331,7 @@ export default function ExamPlayer({
                 </button>
               ))}
             </div>
-            <div className="mt-4 space-y-1.5 text-xs text-[#94a3b8]">
+            <div className="mt-4 space-y-1.5 text-xs text-[#64748b]">
               <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded bg-gradient-to-br from-[#1e3a5f] to-[#2d5488]" />현재</div>
               <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded bg-emerald-100" />완료</div>
               <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded bg-[#f1f5f9]" />미완료</div>
@@ -354,7 +354,7 @@ export default function ExamPlayer({
               className="flex w-full items-center justify-between text-xs font-bold text-[#1e3a5f]"
             >
               <span>문제 목록 {answeredCount}/{questions.length}</span>
-              <span className="flex items-center gap-1 text-[#94a3b8] font-semibold">
+              <span className="flex items-center gap-1 text-[#64748b] font-semibold">
                 {showGrid ? '접기' : '펼치기'}
                 <ChevronDown className={`h-4 w-4 transition-transform ${showGrid ? 'rotate-180' : ''}`} />
               </span>
@@ -413,7 +413,7 @@ export default function ExamPlayer({
                   </span>
                 )}
               </div>
-              <span className="text-xs text-[#94a3b8] font-medium">{currentIdx + 1} / {questions.length}</span>
+              <span className="text-xs text-[#64748b] font-medium">{currentIdx + 1} / {questions.length}</span>
             </div>
 
             <p className="text-[#0f172a] font-medium leading-relaxed mb-8 whitespace-pre-wrap text-base">
@@ -425,7 +425,7 @@ export default function ExamPlayer({
               <div className="mb-8 rounded-xl border border-[#e2e8f0] bg-[#f8fafc] p-4">
                 <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mb-2.5 text-xs font-bold text-[#1e3a5f]">
                   <span className="whitespace-nowrap">🎧 듣기</span>
-                  <span className="text-[#94a3b8] font-medium">음성을 듣고 답하세요 (여러 번 들을 수 있어요)</span>
+                  <span className="text-[#64748b] font-medium">음성을 듣고 답하세요 (여러 번 들을 수 있어요)</span>
                 </div>
                 <audio controls preload="none" src={q.audio_url} className="w-full">
                   브라우저가 오디오 재생을 지원하지 않습니다.
@@ -450,7 +450,7 @@ export default function ExamPlayer({
                           : 'border-[#e2e8f0] hover:border-[#94a3b8] text-[#334155] hover:bg-[#f8fafc]',
                       ].join(' ')}
                     >
-                      <span className={`mr-2.5 font-bold ${selected ? 'text-[#1e3a5f]' : 'text-[#94a3b8]'}`}>
+                      <span className={`mr-2.5 font-bold ${selected ? 'text-[#1e3a5f]' : 'text-[#64748b]'}`}>
                         {CIRCLE_NUMS[i]}
                       </span>
                       <MarkedText text={option} />
@@ -479,7 +479,7 @@ export default function ExamPlayer({
                     {isManuscriptQ(q) ? `원고지 (${ESSAY_COLS}칸) — 칸에 바로 입력하세요` : '답안 작성'}
                     {qCharLimit != null && <span className="ml-1 text-amber-600">· 제한 {qCharLimit}자</span>}
                   </span>
-                  <span className={`text-xs tabular-nums font-semibold ${qOverLimit ? 'text-red-500' : 'text-[#94a3b8]'}`}>
+                  <span className={`text-xs tabular-nums font-semibold ${qOverLimit ? 'text-red-500' : 'text-[#64748b]'}`}>
                     {qCharCount}{qCharLimit != null ? ` / ${qCharLimit}` : ''}자{qOverLimit ? ' 초과' : ''}
                   </span>
                 </div>
@@ -504,7 +504,7 @@ export default function ExamPlayer({
                     spellCheck={false}
                   />
                 )}
-                <p className="text-xs text-[#94a3b8]">
+                <p className="text-xs text-[#64748b]">
                   ※ 제출 후 결과 화면에서 <span className="font-semibold text-[#f59e0b]">AI 채점</span>(항목별 점수·첨삭) 또는 모범 답안 비교가 제공됩니다.
                 </p>
               </div>

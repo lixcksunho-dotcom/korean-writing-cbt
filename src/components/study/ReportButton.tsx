@@ -29,7 +29,7 @@ export default function ReportButton({ questionId }: { questionId: string }) {
     <div className="relative inline-block">
       <button
         onClick={() => setOpen(v => !v)}
-        className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-lg text-[#94a3b8] hover:bg-[#f1f5f9] transition-colors"
+        className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-lg text-[#64748b] hover:bg-[#f1f5f9] transition-colors"
       >
         <Flag className="h-3.5 w-3.5" /> 오류 신고
       </button>
@@ -37,7 +37,7 @@ export default function ReportButton({ questionId }: { questionId: string }) {
         <div className="absolute right-0 z-20 mt-1 w-56 bg-white border border-[#e2e8f0] rounded-xl shadow-lg p-2">
           <div className="flex items-center justify-between px-1.5 pb-1.5 mb-1 border-b border-[#f1f5f9]">
             <span className="text-xs font-bold text-[#334155]">무엇이 잘못됐나요?</span>
-            <button onClick={() => setOpen(false)} className="text-[#94a3b8] hover:text-[#64748b]"><X className="h-3.5 w-3.5" /></button>
+            <button onClick={() => setOpen(false)} className="text-[#64748b] hover:text-[#64748b]"><X className="h-3.5 w-3.5" /></button>
           </div>
           {REASONS.map(r => (
             <button key={r} disabled={pending} onClick={() => send(r)}

@@ -45,7 +45,7 @@ export default async function BookmarksPracticePage() {
         <div className="flex flex-col items-center justify-center py-20 text-center bg-white rounded-2xl border border-[#e2e8f0]">
           <div className="bg-amber-50 p-5 rounded-2xl mb-4"><Bookmark className="h-10 w-10 text-amber-400" /></div>
           <p className="text-[#334155] text-sm font-semibold">즐겨찾기한 문제가 없어요.</p>
-          <p className="text-[#94a3b8] text-xs mt-1">시험 결과 화면에서 어려운 문제를 즐겨찾기 해보세요.</p>
+          <p className="text-[#64748b] text-xs mt-1">시험 결과 화면에서 어려운 문제를 즐겨찾기 해보세요.</p>
         </div>
       </div>
     )

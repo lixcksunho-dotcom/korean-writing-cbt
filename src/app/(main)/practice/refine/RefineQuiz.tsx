@@ -71,7 +71,7 @@ export default function RefineQuiz({ items }: { items: RefineItem[] }) {
                     cat === c ? 'border-[#1e3a5f] bg-[#1e3a5f]/5 text-[#1e3a5f]' : 'border-[#e2e8f0] text-[#64748b] hover:border-[#94a3b8]'
                   }`}
                 >
-                  {c} <span className="text-xs text-[#94a3b8]">{count}</span>
+                  {c} <span className="text-xs text-[#64748b]">{count}</span>
                 </button>
               )
             })}
@@ -105,7 +105,7 @@ export default function RefineQuiz({ items }: { items: RefineItem[] }) {
           <ArrowLeft className="h-4 w-4" /> 분야 다시 선택
         </button>
         <div className="flex items-center gap-3 text-sm">
-          <span className="text-[#94a3b8]">{idx + 1} / {quiz.length}</span>
+          <span className="text-[#64748b]">{idx + 1} / {quiz.length}</span>
           <span className="font-semibold text-emerald-600">정답 {right}<span className="text-[#cbd5e1]">/{solved}</span></span>
         </div>
       </div>

@@ -11,7 +11,7 @@ export default function RefundPage() {
   return (
     <div className="text-[#334155] text-[15px] leading-7">
       <h1 className="text-2xl font-black text-[#0f172a] mb-1">취소·환불 정책</h1>
-      <p className="text-sm text-[#94a3b8] mb-8">시행일: 2026년 6월 5일</p>
+      <p className="text-sm text-[#64748b] mb-8">시행일: 2026년 6월 5일</p>
 
       <Section title="1. 판매 상품">
         AI 채점·분석 30일 이용권(디지털 콘텐츠) — 5,500원(부가세 포함). 결제 완료 즉시 이용권이

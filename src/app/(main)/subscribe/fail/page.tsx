@@ -65,7 +65,7 @@ export default async function FailPage({
         <h1 className="text-2xl font-black text-[#0f172a] mb-2">{view.title}</h1>
         <p className="text-[#64748b] text-sm mb-2 leading-relaxed">{view.desc}</p>
         {message && (
-          <p className="text-xs text-[#94a3b8] mb-2">{message} {code ? `(${code})` : ''}</p>
+          <p className="text-xs text-[#64748b] mb-2">{message} {code ? `(${code})` : ''}</p>
         )}
         <div className="space-y-3 mt-8">
           {view.kind === 'pending' ? (

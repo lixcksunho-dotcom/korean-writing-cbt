@@ -49,7 +49,7 @@ export default function WordCounter() {
           <div key={s.label} className="bg-white rounded-xl border border-[#e2e8f0] px-4 py-3.5 text-center">
             <div className="text-2xl font-black text-[#1e3a5f] tabular-nums">{s.value}</div>
             <div className="text-xs font-semibold text-[#64748b] mt-1">{s.label}</div>
-            {s.hint && <div className="text-[10px] text-[#94a3b8] mt-0.5">{s.hint}</div>}
+            {s.hint && <div className="text-[10px] text-[#64748b] mt-0.5">{s.hint}</div>}
           </div>
         ))}
       </div>

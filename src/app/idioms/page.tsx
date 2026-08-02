@@ -211,7 +211,7 @@ export default function IdiomsPage() {
                       <tr key={it.ko} className="border-t border-[#e2e8f0] first:border-t-0">
                         <td className="px-3 py-2.5 align-top whitespace-nowrap">
                           <span className="font-black text-[#1e3a5f]">{it.ko}</span>
-                          <span className="ml-1.5 text-xs text-[#94a3b8]">{it.hanja}</span>
+                          <span className="ml-1.5 text-xs text-[#64748b]">{it.hanja}</span>
                         </td>
                         <td className="px-3 py-2.5 text-[#475569] leading-relaxed">{it.meaning}</td>
                       </tr>

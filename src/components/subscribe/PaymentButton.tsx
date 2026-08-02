@@ -156,7 +156,7 @@ export default function PaymentButton({
         <p className="text-xs text-red-500 text-center pt-1">{error}</p>
       )}
 
-      <p className="text-center text-xs text-[#94a3b8] pt-1">
+      <p className="text-center text-xs text-[#64748b] pt-1">
         결제 후 즉시 30일 이용권이 활성화됩니다
       </p>
     </div>

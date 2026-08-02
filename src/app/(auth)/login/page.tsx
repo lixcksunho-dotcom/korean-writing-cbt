@@ -40,7 +40,7 @@ export default function LoginPage() {
     window.location.assign("/dashboard");
   }
 
-  const inputCls = "w-full bg-[#f8fafc] border-2 border-[#e2e8f0] rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#1e3a5f] focus:bg-white transition-all placeholder:text-[#94a3b8]";
+  const inputCls = "w-full bg-[#f8fafc] border-2 border-[#e2e8f0] rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#1e3a5f] focus:bg-white transition-all placeholder:text-[#64748b]";
 
   return (
     <div className="min-h-screen flex">
@@ -97,7 +97,7 @@ export default function LoginPage() {
                 <div className="w-full border-t border-[#e2e8f0]" />
               </div>
               <div className="relative flex justify-center">
-                <span className="bg-white px-3 text-xs text-[#94a3b8]">또는 이메일로</span>
+                <span className="bg-white px-3 text-xs text-[#64748b]">또는 이메일로</span>
               </div>
             </div>
 
@@ -119,7 +119,7 @@ export default function LoginPage() {
                     className={`${inputCls} pr-11`}
                   />
                   <button type="button" onClick={() => setShowPw(v => !v)}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#94a3b8] hover:text-[#64748b] transition-colors">
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#64748b] hover:text-[#64748b] transition-colors">
                     {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>

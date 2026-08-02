@@ -50,7 +50,7 @@ export default function SignupPage() {
     setLoading(false);
   }
 
-  const inputCls = "w-full bg-[#f8fafc] border-2 border-[#e2e8f0] rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#1e3a5f] focus:bg-white transition-all placeholder:text-[#94a3b8]";
+  const inputCls = "w-full bg-[#f8fafc] border-2 border-[#e2e8f0] rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#1e3a5f] focus:bg-white transition-all placeholder:text-[#64748b]";
 
   if (success) {
     return (
@@ -71,7 +71,7 @@ export default function SignupPage() {
               className="mt-5 w-full btn-primary text-white font-bold py-3.5 rounded-xl text-sm">
               인증 후 로그인하기
             </button>
-            <p className="mt-3 text-xs text-[#94a3b8]">메일 인증이 번거롭다면 <button onClick={() => window.location.assign("/signup")} className="text-emerald-600 font-semibold hover:underline">구글로 다시 시작</button>하면 인증 없이 바로 이용할 수 있어요.</p>
+            <p className="mt-3 text-xs text-[#64748b]">메일 인증이 번거롭다면 <button onClick={() => window.location.assign("/signup")} className="text-emerald-600 font-semibold hover:underline">구글로 다시 시작</button>하면 인증 없이 바로 이용할 수 있어요.</p>
           </div>
         </div>
       </div>
@@ -132,7 +132,7 @@ export default function SignupPage() {
                 <div className="w-full border-t border-[#e2e8f0]" />
               </div>
               <div className="relative flex justify-center">
-                <span className="bg-white px-3 text-xs text-[#94a3b8]">또는 이메일로</span>
+                <span className="bg-white px-3 text-xs text-[#64748b]">또는 이메일로</span>
               </div>
             </div>
 
@@ -153,7 +153,7 @@ export default function SignupPage() {
                   <input type={showPw ? "text" : "password"} value={password} onChange={e => setPassword(e.target.value)}
                     placeholder="6자리 이상" required autoComplete="new-password" className={`${inputCls} pr-11`} />
                   <button type="button" onClick={() => setShowPw(v => !v)}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#94a3b8] hover:text-[#64748b] transition-colors">
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#64748b] hover:text-[#64748b] transition-colors">
                     {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>

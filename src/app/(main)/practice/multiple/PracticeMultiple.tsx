@@ -67,7 +67,7 @@ export default function PracticeMultiple({
           <ArrowLeft className="h-4 w-4" /> {title}
         </Link>
         <div className="flex items-center gap-3 text-sm">
-          <span className="text-[#94a3b8]">{idx + 1} / {questions.length}</span>
+          <span className="text-[#64748b]">{idx + 1} / {questions.length}</span>
           <span className="font-semibold text-emerald-600">정답 {right}<span className="text-[#cbd5e1]">/{solved}</span></span>
         </div>
       </div>
@@ -82,7 +82,7 @@ export default function PracticeMultiple({
         <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-2xl mb-4 overflow-hidden">
           <button onClick={() => setPassageOpen(v => !v)} className="w-full flex items-center justify-between px-5 py-3.5 text-left hover:bg-[#f1f5f9] transition-colors">
             <div className="flex items-center gap-2"><FileText className="h-4 w-4 text-[#1e3a5f]" /><span className="text-sm font-bold text-[#1e3a5f]">지 문</span></div>
-            <ChevronDown className={`h-4 w-4 text-[#94a3b8] transition-transform ${passageOpen ? 'rotate-180' : ''}`} />
+            <ChevronDown className={`h-4 w-4 text-[#64748b] transition-transform ${passageOpen ? 'rotate-180' : ''}`} />
           </button>
           {passageOpen && <div className="px-5 pb-5 pt-1 max-h-96 overflow-y-auto"><PassageView text={q.passage} /></div>}
         </div>
@@ -98,7 +98,7 @@ export default function PracticeMultiple({
         {q.audio_url && (
           <div className="mb-7 rounded-xl border border-[#e2e8f0] bg-[#f8fafc] p-4">
             <div className="flex items-center gap-2 mb-2.5 text-xs font-bold text-[#1e3a5f]">
-              🎧 듣기 <span className="text-[#94a3b8] font-medium">음성을 듣고 답하세요</span>
+              🎧 듣기 <span className="text-[#64748b] font-medium">음성을 듣고 답하세요</span>
             </div>
             <audio controls preload="none" src={q.audio_url} className="w-full">
               브라우저가 오디오 재생을 지원하지 않습니다.
@@ -115,7 +115,7 @@ export default function PracticeMultiple({
             if (revealed) {
               if (isAnswer) cls = 'border-emerald-400 bg-emerald-50 text-emerald-800'
               else if (isPicked) cls = 'border-red-300 bg-red-50 text-red-600'
-              else cls = 'border-[#e2e8f0] text-[#94a3b8]'
+              else cls = 'border-[#e2e8f0] text-[#64748b]'
             }
             return (
               <button

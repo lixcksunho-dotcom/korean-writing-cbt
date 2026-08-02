@@ -215,7 +215,7 @@ export default function ManuscriptGuidePage() {
 
           {/* 제목·이름 쓰기 */}
           <section className="mb-10">
-            <h2 className="text-2xl font-black text-[#0f172a] mb-3">제목·이름 쓰기 <span className="text-sm font-semibold text-[#94a3b8]">(논술·독후감 등)</span></h2>
+            <h2 className="text-2xl font-black text-[#0f172a] mb-3">제목·이름 쓰기 <span className="text-sm font-semibold text-[#64748b]">(논술·독후감 등)</span></h2>
             <div className="space-y-2.5">
               {TITLE_RULES.map((t) => (
                 <div key={t.part} className="rounded-xl border border-[#e2e8f0] bg-white p-4">
@@ -224,7 +224,7 @@ export default function ManuscriptGuidePage() {
                 </div>
               ))}
             </div>
-            <p className="mt-2 text-xs text-[#94a3b8]">※ 한국실용글쓰기 서술형은 대개 제목·이름 없이 본문만 씁니다. 문제의 조건을 따르세요.</p>
+            <p className="mt-2 text-xs text-[#64748b]">※ 한국실용글쓰기 서술형은 대개 제목·이름 없이 본문만 씁니다. 문제의 조건을 따르세요.</p>
           </section>
 
           {/* CTA — 원고지 AI 첨삭(유료 핵심 기능)으로 유도 */}

@@ -100,7 +100,7 @@ export default function BlogIndexPage() {
                     전체 보기 →
                   </Link>
                 </div>
-                <p className="text-sm text-[#94a3b8] mb-3">{c.blurb}</p>
+                <p className="text-sm text-[#64748b] mb-3">{c.blurb}</p>
                 <div className="grid sm:grid-cols-2 gap-3">
                   {list.slice(0, 4).map((p) => (
                     <PostCard key={p.slug} post={p} />

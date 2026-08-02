@@ -79,7 +79,7 @@ export default async function BlogCategoryPage({
               ))}
             </div>
           ) : (
-            <p className="text-[#94a3b8]">아직 이 분류에 글이 없어요.</p>
+            <p className="text-[#64748b]">아직 이 분류에 글이 없어요.</p>
           )}
 
           {/* 다른 카테고리 */}

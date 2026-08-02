@@ -44,7 +44,7 @@ export default function SupportPage() {
   return (
     <div className="text-[#334155] text-[15px] leading-7">
       <h1 className="text-2xl font-black text-[#0f172a] mb-1">고객센터</h1>
-      <p className="text-sm text-[#94a3b8] mb-8">문의 사항은 아래 연락처로 보내주시면 확인 후 답변드립니다.</p>
+      <p className="text-sm text-[#64748b] mb-8">문의 사항은 아래 연락처로 보내주시면 확인 후 답변드립니다.</p>
 
       {/* 연락처 카드 */}
       <div className="grid sm:grid-cols-3 gap-3 mb-10">
@@ -75,7 +75,7 @@ export default function SupportPage() {
           <details key={q} className="group bg-white border border-[#e2e8f0] rounded-xl overflow-hidden">
             <summary className="cursor-pointer list-none px-5 py-3.5 font-semibold text-[#0f172a] text-sm flex items-center justify-between hover:bg-[#f8fafc] transition-colors">
               {q}
-              <span className="text-[#94a3b8] group-open:rotate-180 transition-transform">⌄</span>
+              <span className="text-[#64748b] group-open:rotate-180 transition-transform">⌄</span>
             </summary>
             <div className="px-5 pb-4 text-sm text-[#475569] leading-relaxed">{a}</div>
           </details>

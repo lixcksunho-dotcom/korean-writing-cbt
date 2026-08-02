@@ -129,7 +129,7 @@ export default function ExamInfoPage() {
                 </tbody>
               </table>
             </div>
-            <p className="mt-2 text-xs text-[#94a3b8]">
+            <p className="mt-2 text-xs text-[#64748b]">
               일정은 주관처 사정으로 변경될 수 있어요. 접수는{" "}
               <a href={APPLY_URL} target="_blank" rel="noopener noreferrer" className="underline hover:text-[#1e3a5f]">공식 접수처</a>,
               전체 일정은{" "}
@@ -161,7 +161,7 @@ export default function ExamInfoPage() {
                 </tbody>
               </table>
             </div>
-            <p className="mt-2 text-xs text-[#94a3b8]">550점 미만은 등급이 부여되지 않아요.</p>
+            <p className="mt-2 text-xs text-[#64748b]">550점 미만은 등급이 부여되지 않아요.</p>
           </section>
 
           {/* 점수 구성 */}
@@ -192,7 +192,7 @@ export default function ExamInfoPage() {
                 </tbody>
               </table>
             </div>
-            <p className="mt-2 text-xs text-[#94a3b8]">
+            <p className="mt-2 text-xs text-[#64748b]">
               서술형(700점) 비중이 커서, 서술형 답안을 얼마나 조건에 맞게 쓰느냐가 등급을 가릅니다.
             </p>
           </section>

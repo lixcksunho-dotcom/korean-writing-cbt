@@ -57,7 +57,7 @@ export default function GradingSample() {
           <p className="text-sm font-bold text-[#0f172a]">어떤 첨삭을 받게 되나요?</p>
           <p className="mt-0.5 text-xs text-[#64748b]">쓰기 전에 채점 결과 예시를 먼저 확인해 보세요</p>
         </div>
-        <ChevronDown className="h-5 w-5 shrink-0 text-[#94a3b8] transition-transform group-open:rotate-180" />
+        <ChevronDown className="h-5 w-5 shrink-0 text-[#64748b] transition-transform group-open:rotate-180" />
       </summary>
 
       <div className="border-t border-[#e2e8f0] px-5 py-5">
@@ -65,10 +65,10 @@ export default function GradingSample() {
           아래는 이해를 돕기 위한 <b className="text-[#334155]">예시</b>입니다. 실제 채점은 직접 쓴 글로 이뤄집니다.
         </p>
 
-        <p className="text-xs font-semibold text-[#94a3b8]">주제</p>
+        <p className="text-xs font-semibold text-[#64748b]">주제</p>
         <p className="mb-3 text-sm text-[#334155]">{SAMPLE_TOPIC}</p>
 
-        <p className="text-xs font-semibold text-[#94a3b8]">제출한 글</p>
+        <p className="text-xs font-semibold text-[#64748b]">제출한 글</p>
         <p className="mb-5 rounded-xl border border-[#e2e8f0] bg-[#f8fafc] px-4 py-3 text-sm leading-relaxed text-[#475569]">
           {SAMPLE_ANSWER}
         </p>
@@ -104,7 +104,7 @@ export default function GradingSample() {
             <div key={c.original} className="rounded-xl border border-[#e2e8f0] px-4 py-2.5">
               <p className="text-sm">
                 <span className="text-[#ef4444] line-through">{c.original}</span>
-                <span className="mx-1.5 text-[#94a3b8]">→</span>
+                <span className="mx-1.5 text-[#64748b]">→</span>
                 <span className="font-bold text-emerald-600">{c.correction}</span>
               </p>
               <p className="mt-0.5 text-xs text-[#64748b]">{c.reason}</p>

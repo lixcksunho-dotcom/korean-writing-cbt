@@ -162,7 +162,7 @@ export default function ScheduleModal({ program = 'silyong' }: { program?: strin
 
             {/* 다가오는 회차 목록 */}
             <div className="px-6 py-4 overflow-y-auto">
-              <div className="text-xs font-bold text-[#94a3b8] mb-2.5">다가오는 일정</div>
+              <div className="text-xs font-bold text-[#64748b] mb-2.5">다가오는 일정</div>
               <div className="space-y-1.5">
                 {upcoming.slice(0, 5).map(r => {
                   const st = statusOf(r)
@@ -195,7 +195,7 @@ export default function ScheduleModal({ program = 'silyong' }: { program?: strin
             <div className="flex items-center justify-between border-t border-[#eef2f7] px-5 py-3">
               <button
                 onClick={hideForToday}
-                className="text-xs font-semibold text-[#94a3b8] hover:text-[#64748b] transition-colors"
+                className="text-xs font-semibold text-[#64748b] hover:text-[#64748b] transition-colors"
               >
                 오늘 하루 안 열기
               </button>
@@ -216,7 +216,7 @@ export default function ScheduleModal({ program = 'silyong' }: { program?: strin
 function Row({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
   return (
     <div className="flex items-center justify-between py-1.5">
-      <span className="text-sm text-[#94a3b8]">{label}</span>
+      <span className="text-sm text-[#64748b]">{label}</span>
       <span className={`text-sm font-semibold ${highlight ? 'text-[#d97706]' : 'text-[#0f172a]'}`}>{value}</span>
     </div>
   )

@@ -62,7 +62,7 @@ export default async function WrongPracticePage() {
         <div className="flex flex-col items-center justify-center py-20 text-center bg-white rounded-2xl border border-[#e2e8f0]">
           <div className="bg-emerald-50 p-5 rounded-2xl mb-4"><CheckCircle2 className="h-10 w-10 text-emerald-500" /></div>
           <p className="text-[#334155] text-sm font-semibold">지금 틀리는 객관식이 없어요!</p>
-          <p className="text-[#94a3b8] text-xs mt-1">모의고사를 더 풀면 약점이 자동으로 모입니다.</p>
+          <p className="text-[#64748b] text-xs mt-1">모의고사를 더 풀면 약점이 자동으로 모입니다.</p>
         </div>
       </div>
     )

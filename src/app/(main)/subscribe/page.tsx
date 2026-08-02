@@ -87,7 +87,7 @@ export default async function SubscribePage() {
               </div>
             ))}
           </div>
-          <div className="text-xs text-[#94a3b8]">
+          <div className="text-xs text-[#64748b]">
             자동 결제가 없는 1회 이용권이에요. 만료 후 다시 결제하면 30일 연장됩니다.
           </div>
         </div>
@@ -148,13 +148,13 @@ export default async function SubscribePage() {
               <div className="flex items-center gap-1.5 mb-2.5">
                 <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
                 <span className="text-sm font-black text-[#0f172a]">{avgRating.toFixed(1)}</span>
-                <span className="text-xs text-[#94a3b8]">실사용 후기</span>
+                <span className="text-xs text-[#64748b]">실사용 후기</span>
               </div>
               <div className="space-y-2">
                 {reviews!.map((r, i) => (
                   <p key={i} className="text-xs text-[#475569] leading-relaxed line-clamp-2">
                     “{r.content}”
-                    <span className="text-[#94a3b8]">
+                    <span className="text-[#64748b]">
                       {' — '}{r.display_name}
                       {r.exam_score && r.verified ? ` · ${r.exam_score}점` : ''}
                     </span>
@@ -180,7 +180,7 @@ export default async function SubscribePage() {
                 <LogIn className="h-4 w-4" />
                 로그인하고 결제하기
               </Link>
-              <p className="text-center text-xs text-[#94a3b8]">
+              <p className="text-center text-xs text-[#64748b]">
                 결제는 로그인 후 진행되며, 카드 · 간편결제로 결제할 수 있어요.
               </p>
             </div>
@@ -202,14 +202,14 @@ export default async function SubscribePage() {
           </div>
 
           {/* 안전 결제 배지 */}
-          <div className="flex items-center justify-center gap-1.5 mt-3 text-xs text-[#94a3b8]">
+          <div className="flex items-center justify-center gap-1.5 mt-3 text-xs text-[#64748b]">
             <Shield className="h-3.5 w-3.5" />
             포트원(PortOne) 안전결제 · SSL 암호화 · 자동결제 없음
           </div>
 
           {/* 계정 공유 금지 고지 — 실제 코드에 걸려 있는 한도(DEVICE_LIMIT·DAILY_GRADE_LIMIT)를
               그대로 적는다. '무제한'이라고 하면서 숨은 한도를 두면 걸린 사람 입장에선 속은 것이다. */}
-          <p className="mt-3 text-[11px] text-[#94a3b8] text-center leading-relaxed">
+          <p className="mt-3 text-[11px] text-[#64748b] text-center leading-relaxed">
             이용권은 결제한 본인 1인 전용이며, 기기 3대까지 사용할 수 있어요. 계정 공유 등 부정 이용이
             확인되면 이용이 제한될 수 있고, 이 경우 환불은 제공되지 않습니다.
             <br />

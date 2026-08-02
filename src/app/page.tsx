@@ -366,19 +366,19 @@ export default async function HomePage() {
               <div className="inline-flex p-2.5 rounded-xl bg-[#f1f5f9] mb-3"><Wallet className="h-5 w-5 text-[#64748b]" /></div>
               <p className="text-sm font-bold text-[#334155] mb-1">시험 응시료</p>
               <p className="text-2xl font-black text-[#0f172a]">약 2~3만 원</p>
-              <p className="text-xs text-[#94a3b8] mt-1">1회 응시 기준</p>
+              <p className="text-xs text-[#64748b] mt-1">1회 응시 기준</p>
             </div>
             <div className="rounded-2xl border border-[#e2e8f0] bg-white p-5 text-center">
               <div className="inline-flex p-2.5 rounded-xl bg-red-50 mb-3"><RotateCcw className="h-5 w-5 text-red-500" /></div>
               <p className="text-sm font-bold text-[#334155] mb-1">불합격 후 재응시</p>
               <p className="text-2xl font-black text-red-500">+2~3만 원</p>
-              <p className="text-xs text-[#94a3b8] mt-1">떨어질 때마다 반복</p>
+              <p className="text-xs text-[#64748b] mt-1">떨어질 때마다 반복</p>
             </div>
             <div className="rounded-2xl border-2 border-amber-300 bg-gradient-to-br from-amber-50 to-white p-5 text-center shadow-[0_4px_20px_rgba(217,119,6,0.10)]">
               <div className="inline-flex p-2.5 rounded-xl bg-amber-100 mb-3"><Sparkles className="h-5 w-5 text-amber-600" /></div>
               <p className="text-sm font-bold text-[#334155] mb-1">실글패스 이용권</p>
               <p className="text-2xl font-black text-[#0f172a]">5,500원</p>
-              <p className="text-xs text-[#d97706] font-semibold mt-1">합격 전까지 무제한 연습</p>
+              <p className="text-xs text-[#b45309] font-semibold mt-1">합격 전까지 무제한 연습</p>
             </div>
           </div>
           <p className="text-center text-sm text-[#64748b] mt-6">
@@ -456,7 +456,7 @@ export default async function HomePage() {
               >
                 <summary className="flex items-center justify-between cursor-pointer list-none font-bold text-[#0f172a] text-base">
                   <span>{f.q}</span>
-                  <span className="ml-3 text-[#94a3b8] text-2xl leading-none transition-transform group-open:rotate-45">+</span>
+                  <span className="ml-3 text-[#64748b] text-2xl leading-none transition-transform group-open:rotate-45">+</span>
                 </summary>
                 <p className="mt-3 text-[#475569] text-sm leading-relaxed">{f.a}</p>
               </details>

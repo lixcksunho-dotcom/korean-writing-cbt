@@ -11,7 +11,7 @@ export default function PrivacyPage() {
   return (
     <div className="text-[#334155] text-[15px] leading-7">
       <h1 className="text-2xl font-black text-[#0f172a] mb-1">개인정보처리방침</h1>
-      <p className="text-sm text-[#94a3b8] mb-8">시행일: 2026년 6월 5일</p>
+      <p className="text-sm text-[#64748b] mb-8">시행일: 2026년 6월 5일</p>
 
       <p className="mb-7">
         {BUSINESS.serviceName}(이하 “회사”)는 「개인정보 보호법」 등 관련 법령을 준수하며, 이용자의

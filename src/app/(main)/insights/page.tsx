@@ -36,9 +36,9 @@ export default async function InsightsPage() {
       <div className="animate-fade-up max-w-2xl mx-auto">
         <BackLink />
         <div className="flex flex-col items-center justify-center py-20 text-center bg-white rounded-2xl border border-[#e2e8f0]">
-          <div className="bg-[#f1f5f9] p-5 rounded-2xl mb-4"><BarChart3 className="h-10 w-10 text-[#94a3b8]" /></div>
+          <div className="bg-[#f1f5f9] p-5 rounded-2xl mb-4"><BarChart3 className="h-10 w-10 text-[#64748b]" /></div>
           <p className="text-[#64748b] text-sm font-medium">아직 분석할 학습 기록이 없어요.</p>
-          <p className="text-[#94a3b8] text-xs mt-1 mb-5">모의고사를 풀면 성적 추이와 약점이 여기에 쌓여요.</p>
+          <p className="text-[#64748b] text-xs mt-1 mb-5">모의고사를 풀면 성적 추이와 약점이 여기에 쌓여요.</p>
           <Link href="/cbt" className="btn-primary inline-flex items-center gap-1.5 text-white font-bold px-5 py-2.5 rounded-xl text-sm">
             첫 모의고사 풀기 <ChevronRight className="h-4 w-4" />
           </Link>
@@ -105,7 +105,7 @@ export default async function InsightsPage() {
 
   const trendIcon = delta > 2 ? <TrendingUp className="h-4 w-4 text-emerald-500" />
     : delta < -2 ? <TrendingDown className="h-4 w-4 text-red-400" />
-    : <Minus className="h-4 w-4 text-[#94a3b8]" />
+    : <Minus className="h-4 w-4 text-[#64748b]" />
 
   return (
     <div className="animate-fade-up max-w-3xl">
@@ -121,7 +121,7 @@ export default async function InsightsPage() {
           <TrendingUp className="h-5 w-5 text-[#1e3a5f]" />
           <h2 className="text-base font-bold text-[#0f172a]">객관식 정답률 추이</h2>
         </div>
-        <p className="text-xs text-[#94a3b8] mb-4">모의고사를 풀수록 정답률이 어떻게 변하는지 보여줘요. (서술형 점수는 각 결과 화면에서 확인)</p>
+        <p className="text-xs text-[#64748b] mb-4">모의고사를 풀수록 정답률이 어떻게 변하는지 보여줘요. (서술형 점수는 각 결과 화면에서 확인)</p>
 
         <div className="grid grid-cols-4 gap-2 mb-5">
           <Stat label="최근" value={`${latestPct}%`} />
@@ -145,7 +145,7 @@ export default async function InsightsPage() {
         </div>
         <div className="flex gap-1.5 mt-1.5">
           {trend.map((t, i) => (
-            <span key={i} className="flex-1 text-center text-[10px] text-[#94a3b8] truncate">{t.round}회</span>
+            <span key={i} className="flex-1 text-center text-[10px] text-[#64748b] truncate">{t.round}회</span>
           ))}
         </div>
       </div>
@@ -157,7 +157,7 @@ export default async function InsightsPage() {
             <Target className="h-5 w-5 text-[#1e3a5f]" />
             <h2 className="text-base font-bold text-[#0f172a]">영역별 약점 추적</h2>
           </div>
-          <p className="text-xs text-[#94a3b8] mb-4">전체 기록을 합쳐 영역별 정답률을 계산했어요. 낮은 영역을 집중 연습하세요.</p>
+          <p className="text-xs text-[#64748b] mb-4">전체 기록을 합쳐 영역별 정답률을 계산했어요. 낮은 영역을 집중 연습하세요.</p>
           <div className="space-y-3.5">
             {bandStats.map(b => {
               const isWeak = weakest?.label === b.label && b.pct < 100
@@ -198,7 +198,7 @@ export default async function InsightsPage() {
             </Link>
           )}
         </div>
-        <p className="text-xs text-[#94a3b8] mb-4">지금도 틀리는 객관식만 모았어요. 해설을 보며 약점을 메우세요.</p>
+        <p className="text-xs text-[#64748b] mb-4">지금도 틀리는 객관식만 모았어요. 해설을 보며 약점을 메우세요.</p>
 
         {wrong.length === 0 ? (
           <div className="flex items-center gap-2 text-sm text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-xl px-4 py-3">
@@ -216,10 +216,10 @@ export default async function InsightsPage() {
                   <summary className="cursor-pointer list-none px-4 py-3 flex items-start gap-2.5 hover:bg-[#f1f5f9] transition-colors">
                     <XCircle className="h-4 w-4 text-red-400 shrink-0 mt-0.5" />
                     <div className="flex-1 min-w-0">
-                      <span className="text-[11px] font-bold text-[#94a3b8]">모의고사 {q.round}회 {q.number}번</span>
+                      <span className="text-[11px] font-bold text-[#64748b]">모의고사 {q.round}회 {q.number}번</span>
                       <p className="text-sm text-[#334155] font-medium leading-snug line-clamp-2">{q.question as string}</p>
                     </div>
-                    <ChevronRight className="h-4 w-4 text-[#94a3b8] group-open:rotate-90 transition-transform shrink-0 mt-0.5" />
+                    <ChevronRight className="h-4 w-4 text-[#64748b] group-open:rotate-90 transition-transform shrink-0 mt-0.5" />
                   </summary>
                   <div className="px-4 pb-4 pt-1 text-sm space-y-1.5">
                     <div className="flex gap-2"><span className="text-red-400 font-semibold text-xs shrink-0">내 답</span><span className="text-[#64748b] text-xs">{mineLabel}</span></div>
@@ -250,7 +250,7 @@ function Stat({ label, value, icon }: { label: string; value: string; icon?: Rea
   return (
     <div className="bg-[#f8fafc] rounded-xl p-3 text-center">
       <div className="text-lg font-black text-[#0f172a] tracking-tight flex items-center justify-center gap-1">{icon}{value}</div>
-      <div className="text-[11px] text-[#94a3b8] mt-0.5">{label}</div>
+      <div className="text-[11px] text-[#64748b] mt-0.5">{label}</div>
     </div>
   )
 }

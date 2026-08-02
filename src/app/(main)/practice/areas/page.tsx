@@ -63,12 +63,12 @@ export default async function AreaPracticePage({
                 </div>
                 <div>
                   <p className="font-bold text-[#0f172a]">{area.name}</p>
-                  <p className="text-xs text-[#94a3b8] mt-0.5">{area.from}~{area.to}번 영역</p>
+                  <p className="text-xs text-[#64748b] mt-0.5">{area.from}~{area.to}번 영역</p>
                 </div>
               </div>
               <div className="flex items-center gap-2 shrink-0">
                 <span className="text-xs bg-[#f1f5f9] text-[#64748b] px-2.5 py-1 rounded-full font-semibold">{counts[i]}문항</span>
-                <ChevronRight className="h-5 w-5 text-[#94a3b8] group-hover:translate-x-1 transition-transform" />
+                <ChevronRight className="h-5 w-5 text-[#64748b] group-hover:translate-x-1 transition-transform" />
               </div>
             </Link>
           ))}

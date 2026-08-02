@@ -371,7 +371,7 @@ export default async function DashboardPage() {
               <Icon className="h-4 w-4 text-white" />
             </div>
             <div className="text-2xl font-black text-[#0f172a] tracking-tight">{value}</div>
-            <div className="text-xs text-[#94a3b8] mt-0.5 font-medium">{label}</div>
+            <div className="text-xs text-[#64748b] mt-0.5 font-medium">{label}</div>
           </div>
         ))}
       </div>
@@ -385,10 +385,10 @@ export default async function DashboardPage() {
               <h2 className="text-base font-bold text-[#0f172a]">AI 예상 점수</h2>
               <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">AI 추정</span>
             </div>
-            <p className="text-xs text-[#94a3b8] mb-4">객관식 정답률과 서술형 AI 채점 평균을 {cfg.maxScore}점으로 환산한 추정치예요.{cfg.id === 'kbs' && ' (KBS는 상대평가라 실제 등급과 다를 수 있어요.)'}</p>
+            <p className="text-xs text-[#64748b] mb-4">객관식 정답률과 서술형 AI 채점 평균을 {cfg.maxScore}점으로 환산한 추정치예요.{cfg.id === 'kbs' && ' (KBS는 상대평가라 실제 등급과 다를 수 있어요.)'}</p>
 
             <div className="flex items-end gap-3 mb-4">
-              <span className="text-4xl font-black text-[#0f172a] tracking-tight">{predicted}<span className="text-lg text-[#94a3b8]">점</span></span>
+              <span className="text-4xl font-black text-[#0f172a] tracking-tight">{predicted}<span className="text-lg text-[#64748b]">점</span></span>
               {predictedTier && (
                 <span className={`mb-1.5 inline-flex items-center px-3 py-1 rounded-full text-sm font-black ${
                   predictedTier.color === 'emerald' ? 'bg-emerald-100 text-emerald-700'
@@ -420,10 +420,10 @@ export default async function DashboardPage() {
               <h2 className="text-base font-bold text-[#0f172a]">AI 예상 점수</h2>
               <span className="text-[10px] font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">구독 전용</span>
             </div>
-            <p className="text-xs text-[#94a3b8] mb-4">서술형까지 AI가 채점해, 지금 실력이면 <b className="text-[#1e3a5f]">실제 시험에서 몇 점·몇 등급</b>일지 알려줘요.</p>
+            <p className="text-xs text-[#64748b] mb-4">서술형까지 AI가 채점해, 지금 실력이면 <b className="text-[#1e3a5f]">실제 시험에서 몇 점·몇 등급</b>일지 알려줘요.</p>
             <div className="relative">
               <div className="blur-[5px] select-none pointer-events-none" aria-hidden>
-                <div className="text-4xl font-black text-[#0f172a] mb-3">{Math.floor(previewScore / 100)}●● <span className="text-lg text-[#94a3b8]">점 · 등급 ●●</span></div>
+                <div className="text-4xl font-black text-[#0f172a] mb-3">{Math.floor(previewScore / 100)}●● <span className="text-lg text-[#64748b]">점 · 등급 ●●</span></div>
                 <ScoreGauge predicted={previewScore} cuts={cfg.cuts} maxScore={cfg.maxScore} />
               </div>
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
@@ -443,9 +443,9 @@ export default async function DashboardPage() {
           </div>
           <div className="flex-1 min-w-0">
             <p className="font-bold text-[#0f172a] text-sm">학습 리포트 보기</p>
-            <p className="text-xs text-[#94a3b8]">성적 추이 · 영역별 약점 · 오답노트</p>
+            <p className="text-xs text-[#64748b]">성적 추이 · 영역별 약점 · 오답노트</p>
           </div>
-          <ChevronRight className="h-5 w-5 text-[#94a3b8] group-hover:translate-x-1 transition-transform" />
+          <ChevronRight className="h-5 w-5 text-[#64748b] group-hover:translate-x-1 transition-transform" />
         </Link>
       )}
 
@@ -459,7 +459,7 @@ export default async function DashboardPage() {
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
                 <h2 className="text-base font-bold text-[#0f172a]">CBT 문제풀기</h2>
-                <ArrowUpRight className="h-3.5 w-3.5 text-[#94a3b8] group-hover:text-[#1e3a5f] transition-colors" />
+                <ArrowUpRight className="h-3.5 w-3.5 text-[#64748b] group-hover:text-[#1e3a5f] transition-colors" />
               </div>
               <p className="text-sm text-[#64748b]">기출 유형 문항으로 실력을 테스트해보세요</p>
               <span className="inline-block mt-2 text-xs bg-emerald-100 text-emerald-700 px-2.5 py-0.5 rounded-full font-semibold">무료</span>
@@ -476,7 +476,7 @@ export default async function DashboardPage() {
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
                 <h2 className="text-base font-bold text-[#0f172a]">원고지 AI 채점</h2>
-                <ArrowUpRight className="h-3.5 w-3.5 text-[#94a3b8] group-hover:text-amber-500 transition-colors" />
+                <ArrowUpRight className="h-3.5 w-3.5 text-[#64748b] group-hover:text-amber-500 transition-colors" />
               </div>
               <p className="text-sm text-[#64748b]">AI가 맞춤법·문법·구성을 분석해드려요</p>
               <span className="inline-block mt-2 text-xs bg-amber-100 text-amber-700 px-2.5 py-0.5 rounded-full font-semibold">AI 탑재</span>
@@ -553,7 +553,7 @@ export default async function DashboardPage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-[#0f172a] text-sm">모의고사 {s.round}회</p>
-                    <p className="text-xs text-[#94a3b8]">{new Date(s.completed_at!).toLocaleDateString("ko-KR")}</p>
+                    <p className="text-xs text-[#64748b]">{new Date(s.completed_at!).toLocaleDateString("ko-KR")}</p>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     <span className="text-sm font-bold text-[#334155]">{s.score}/{s.total}</span>
@@ -590,7 +590,7 @@ function ScoreGauge({ predicted, cuts, maxScore }: { predicted: number; cuts: Gr
       </div>
       <div className="relative h-4 mt-1">
         {marks.map(m => (
-          <span key={m.name} className="absolute text-[9px] text-[#94a3b8] whitespace-nowrap" style={{ left: `${pct(m.min)}%`, transform: "translateX(-50%)" }}>
+          <span key={m.name} className="absolute text-[9px] text-[#64748b] whitespace-nowrap" style={{ left: `${pct(m.min)}%`, transform: "translateX(-50%)" }}>
             {m.name}
           </span>
         ))}

@@ -12,7 +12,7 @@ export default function TermsPage() {
   return (
     <div className="text-[#334155] text-[15px] leading-7">
       <h1 className="text-2xl font-black text-[#0f172a] mb-1">이용약관</h1>
-      <p className="text-sm text-[#94a3b8] mb-8">시행일: 2026년 6월 5일</p>
+      <p className="text-sm text-[#64748b] mb-8">시행일: 2026년 6월 5일</p>
 
       <Section title="제1조 (목적)">
         본 약관은 {BUSINESS.serviceName}(이하 “회사”)가 제공하는 온라인 자격증 학습·AI 채점

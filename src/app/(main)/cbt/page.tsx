@@ -100,10 +100,10 @@ export default async function CbtPage() {
       {uniqueExams.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 text-center bg-white rounded-2xl border border-[#e2e8f0]">
           <div className="bg-[#f1f5f9] p-5 rounded-2xl mb-4">
-            <FileQuestion className="h-10 w-10 text-[#94a3b8]" />
+            <FileQuestion className="h-10 w-10 text-[#64748b]" />
           </div>
           <p className="text-[#64748b] text-sm font-medium">아직 등록된 시험이 없습니다.</p>
-          <p className="text-[#94a3b8] text-xs mt-1">관리자가 문제를 등록하면 여기에 표시됩니다.</p>
+          <p className="text-[#64748b] text-xs mt-1">관리자가 문제를 등록하면 여기에 표시됩니다.</p>
         </div>
       ) : (
         <div className="grid md:grid-cols-2 gap-5">
@@ -131,7 +131,7 @@ export default async function CbtPage() {
                         </div>
                         <div>
                           <h2 className="font-bold text-[#0f172a] text-lg leading-tight">모의고사 {round}회</h2>
-                          <div className="flex items-center gap-2 text-xs text-[#94a3b8] mt-0.5">
+                          <div className="flex items-center gap-2 text-xs text-[#64748b] mt-0.5">
                             <Clock className="h-3 w-3" />
                             <span>{cfg.examMinutes}분</span>
                             <span>·</span>

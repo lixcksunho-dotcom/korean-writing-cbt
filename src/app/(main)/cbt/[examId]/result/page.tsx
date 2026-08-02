@@ -175,7 +175,7 @@ export default async function ResultPage({
             <h2 className="text-base font-bold text-[#0f172a]">영역별 약점 분석</h2>
             {!subscription && <span className="text-[10px] font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">구독 전용</span>}
           </div>
-          <p className="text-xs text-[#94a3b8] mb-4">객관식 정답률을 영역별로 나눠 봤어요. 낮은 영역을 집중 연습하면 점수가 가장 빨리 올라요.</p>
+          <p className="text-xs text-[#64748b] mb-4">객관식 정답률을 영역별로 나눠 봤어요. 낮은 영역을 집중 연습하면 점수가 가장 빨리 올라요.</p>
 
           {subscription ? (
             <>
@@ -268,7 +268,7 @@ export default async function ResultPage({
                 {subscription ? 'AI 분석' : aiTrial.remaining > 0 ? `무료 체험 ${aiTrial.remaining}회 · AI 분석` : '구독 전용 · AI 분석'}
               </span>
             </h2>
-            <p className="text-xs text-[#94a3b8] mt-1.5">
+            <p className="text-xs text-[#64748b] mt-1.5">
               내가 쓴 답안을 AI가 모범 답안과 비교해 <b className="text-amber-700">점수·첨삭</b>으로 분석해 드려요.
               {!subscription && (aiTrial.remaining > 0
                 ? ` 구독 없이 무료 ${aiTrial.remaining}회 체험할 수 있어요. 모범 답안은 언제나 무료예요.`
@@ -283,7 +283,7 @@ export default async function ResultPage({
                 <div key={q.id} className="bg-white rounded-2xl border-2 border-amber-100 p-5">
                   <div className="flex items-center gap-2 mb-3">
                     <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-700">서술형 {ei + 1}번</span>
-                    <span className="text-xs text-[#94a3b8]">{q.points}점</span>
+                    <span className="text-xs text-[#64748b]">{q.points}점</span>
                   </div>
                   <p className="text-[#334155] text-sm font-medium mb-4 whitespace-pre-wrap leading-relaxed">{q.question}</p>
                   {a?.user_answer ? (
@@ -296,7 +296,7 @@ export default async function ResultPage({
                       )}
                     </div>
                   ) : (
-                    <p className="text-xs text-[#94a3b8] mb-3">(미작성)</p>
+                    <p className="text-xs text-[#64748b] mb-3">(미작성)</p>
                   )}
 
                   {/* AI 채점 */}
@@ -331,7 +331,7 @@ export default async function ResultPage({
               객관식 상세 결과
               <span className="text-[11px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">무료 해설</span>
             </h2>
-            <p className="text-xs text-[#94a3b8] mt-1.5">정답과 해설은 누구나 무료로 볼 수 있어요.</p>
+            <p className="text-xs text-[#64748b] mt-1.5">정답과 해설은 누구나 무료로 볼 수 있어요.</p>
           </div>
           <div className="space-y-3">
             {autoQuestions.map(q => {
@@ -356,7 +356,7 @@ export default async function ResultPage({
                       <span className={`text-xs font-bold px-2 py-0.5 rounded-full mr-2 ${isCorrect ? 'bg-emerald-100 text-emerald-700' : 'bg-red-50 text-red-500'}`}>
                         {q.number}번 {isCorrect ? '정답' : '오답'}
                       </span>
-                      <span className="text-xs text-[#94a3b8]">{q.points}점</span>
+                      <span className="text-xs text-[#64748b]">{q.points}점</span>
                       <p className="text-[#334155] font-medium text-sm mt-2 leading-relaxed whitespace-pre-wrap"><MarkedText text={q.question} /></p>
                     </div>
                   </div>
