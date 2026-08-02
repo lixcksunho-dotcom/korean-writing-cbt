@@ -18,12 +18,19 @@ export async function toggleBookmark(questionId: string): Promise<boolean> {
     .eq('question_id', questionId)
     .maybeSingle()
 
+  // 화면은 낙관적으로 먼저 바뀌고, 실패하면 BookmarkButton이 되돌린다.
+  // 그런데 여기서 오류를 삼키면 그 되돌리기가 영영 실행되지 않는다 —
+  // 별은 켜져 있는데 즐겨찾기 목록은 비어 있는 상태가 된다.
   if (existing) {
-    await supabase.from('bookmarks').delete().eq('user_id', user.id).eq('question_id', questionId)
+    const { error } = await supabase
+      .from('bookmarks').delete().eq('user_id', user.id).eq('question_id', questionId)
+    if (error) throw new Error('즐겨찾기를 해제하지 못했어요.')
     revalidatePath('/practice/bookmarks')
     return false
   }
-  await supabase.from('bookmarks').insert({ user_id: user.id, question_id: questionId })
+  const { error } = await supabase
+    .from('bookmarks').insert({ user_id: user.id, question_id: questionId })
+  if (error) throw new Error('즐겨찾기에 담지 못했어요.')
   revalidatePath('/practice/bookmarks')
   return true
 }
