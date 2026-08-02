@@ -8,14 +8,14 @@ import TrafficTracker from "@/components/analytics/TrafficTracker";
 // next/font가 빌드 때 폰트를 받아 자체 호스팅한다 → googleapis·gstatic 왕복이 사라진다.
 // preload는 끈다: 한글 서브셋은 통째로 수 MB라 preload하면 첫 로드에 전부 받아 버린다.
 //   끄면 unicode-range 청크 방식이 유지돼 실제 쓰인 글자 조각만 받는다.
-// adjustFontFallback은 켠다: 대체 폰트에 metric override를 달아 폰트가 바뀔 때
-//   줄 수가 안 변하게 한다. 이전에 "한글엔 효과 없다"고 껐던 건 빠른 회선에서만 재서
-//   그렇다 — 그때는 폰트가 첫 페인트 전에 도착해 어느 쪽이든 이동이 없었다.
-//   3G로 조여 재면 끔 0.100 / 켬 0.000 으로 갈린다(각 3회, 로컬 프로덕션 빌드 A/B).
+// adjustFontFallback은 끈다: 이게 만드는 보정 대체 폰트는 src: local(Arial)이라
+//   한글 글리프가 없다. 한글은 그다음 폰트(시스템 한글 글꼴)로 넘어가므로 override가
+//   닿지 않는다. 프로덕션 실측으로도 켬/끔 모두 3G에서 CLS 0.1003으로 동일했다.
+//   (느린 회선에서 제목이 한 줄 줄며 생기는 이동은 이 옵션으로는 해결되지 않는다.)
 const notoSansKR = Noto_Sans_KR({
   weight: ["400", "500", "600", "700", "900"],
   preload: false,
-  adjustFontFallback: true,
+  adjustFontFallback: false,
   // optional: 폰트가 제때 못 오면 그 방문은 시스템 한글 폰트로 그리고 스왑하지 않는다.
   //   한글은 글리프가 무거워 swap이면 본문이 통째로 다시 그려지며 밀린다(실측 CLS 0.054~0.099).
   //   optional로 두면 전 페이지 CLS 0.000. 폰트는 뒤에서 받아 캐시되므로 재방문부터는 정상 노출.
