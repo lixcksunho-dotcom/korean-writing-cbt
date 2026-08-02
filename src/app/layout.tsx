@@ -15,9 +15,10 @@ const notoSansKR = Noto_Sans_KR({
   weight: ["400", "500", "600", "700", "900"],
   preload: false,
   adjustFontFallback: false,
-  // swap 유지 = 지금 프로덕션과 같은 동작. optional로 바꾸면 실측상 CLS가 0.05~0.10 → 0이 되지만,
-  // 느린 회선 첫 방문에서 본문이 시스템 한글 폰트로 그려진다(브랜드 변화) — 결정 사항이라 그대로 둔다.
-  display: "swap",
+  // optional: 폰트가 제때 못 오면 그 방문은 시스템 한글 폰트로 그리고 스왑하지 않는다.
+  //   한글은 글리프가 무거워 swap이면 본문이 통째로 다시 그려지며 밀린다(실측 CLS 0.054~0.099).
+  //   optional로 두면 전 페이지 CLS 0.000. 폰트는 뒤에서 받아 캐시되므로 재방문부터는 정상 노출.
+  display: "optional",
   variable: "--font-noto-sans-kr",
 });
 
