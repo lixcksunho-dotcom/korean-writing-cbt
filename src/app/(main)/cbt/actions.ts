@@ -3,7 +3,7 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@/lib/supabase/server'
 import { getActiveSubscription } from '@/lib/subscription'
-import { consumeAiTrial, FREE_AI_TRIAL } from '@/lib/aiTrial'
+import { consumeAiTrial, refundAiTrial, FREE_AI_TRIAL } from '@/lib/aiTrial'
 import { enforcePaidUsage, recordPaidGrade } from '@/lib/antiSharing'
 import { assertWithinGradingLimit, MAX_ANSWER_CHARS } from '@/lib/aiGradingLimits'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -95,17 +95,25 @@ export async function gradeExamEssay(
   }
 
   const client = new Anthropic()
-  const response = await client.messages.create({
-    model: 'claude-sonnet-4-6',
-    max_tokens: 1500,
-    system: [
-      { type: 'text', text: ESSAY_SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } },
-    ],
-    messages: [{
-      role: 'user',
-      content: `[배점] ${question.points}점\n\n[문제/조건]\n${question.question}\n\n[모범답안]\n${question.correct_answer}\n\n[수험자 답안]\n${answerRow.user_answer || '(미작성)'}`,
-    }],
-  })
+  let response
+  try {
+    response = await client.messages.create({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 1500,
+      system: [
+        { type: 'text', text: ESSAY_SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } },
+      ],
+      messages: [{
+        role: 'user',
+        content: `[배점] ${question.points}점\n\n[문제/조건]\n${question.question}\n\n[모범답안]\n${question.correct_answer}\n\n[수험자 답안]\n${answerRow.user_answer || '(미작성)'}`,
+      }],
+    })
+  } catch {
+    // 응답 자체를 못 받았다(통신 끊김·5xx·타임아웃). 우리 쪽 사정이니 차감을 되돌린다.
+    // 파싱 실패는 되돌리지 않는다 — 그건 입력을 골라 공짜로 무한 호출하는 통로가 된다.
+    if (usingTrial) await refundAiTrial(user.id, trialUsed + 1)
+    throw new Error('AI 채점 서버에 연결하지 못했어요. 잠시 후 다시 시도해 주세요.')
+  }
 
   const block = response.content[0]
   if (block.type !== 'text') throw new Error('Unexpected response type')

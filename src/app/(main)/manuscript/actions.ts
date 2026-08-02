@@ -3,7 +3,7 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@/lib/supabase/server'
 import { getActiveSubscription } from '@/lib/subscription'
-import { consumeAiTrial, FREE_AI_TRIAL } from '@/lib/aiTrial'
+import { consumeAiTrial, refundAiTrial, FREE_AI_TRIAL } from '@/lib/aiTrial'
 import { enforcePaidUsage, recordPaidGrade } from '@/lib/antiSharing'
 import { assertWithinGradingLimit, MAX_ANSWER_CHARS, MAX_TOPIC_CHARS } from '@/lib/aiGradingLimits'
 import { trackServerEvent } from '@/lib/analytics/trackServerEvent'
@@ -77,6 +77,7 @@ export async function gradeManuscript(text: string, topic: string): Promise<Grad
 
   // 사용량 차감은 API 호출 '전'에. 성공 후에 차감하면 응답 파싱이 실패하는 입력을 골라
   // 무한 재시도할 수 있고, 실패해도 요금은 이미 나간 뒤다.
+  // 단, 응답 자체를 못 받은 경우(통신·5xx)는 아래에서 refundAiTrial로 되돌린다.
   if (usingTrial) {
     if (!(await consumeAiTrial(user.id, trialUsed))) throw new Error('SUBSCRIPTION_REQUIRED')
     await trackServerEvent('ai_trial_used', user.id, `manuscript_${trialUsed + 1}/${FREE_AI_TRIAL}`)
@@ -86,23 +87,31 @@ export async function gradeManuscript(text: string, topic: string): Promise<Grad
 
   const client = new Anthropic()
 
-  const response = await client.messages.create({
-    model: 'claude-sonnet-4-6',
-    max_tokens: 2000,
-    // 채점 기준(SYSTEM_PROMPT)은 매 요청 동일하므로 프롬프트 캐싱 적용.
-    // 5분 TTL 내 반복 호출 시 시스템 프롬프트 입력 토큰 비용이 크게 절감됨.
-    system: [
-      {
-        type: 'text',
-        text: SYSTEM_PROMPT,
-        cache_control: { type: 'ephemeral' },
-      },
-    ],
-    messages: [{
-      role: 'user',
-      content: `주제: ${topic}\n\n작성한 글 (원고지 형식, 줄바꿈은 \\n으로 표시):\n${text}`,
-    }],
-  })
+  let response
+  try {
+    response = await client.messages.create({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 2000,
+      // 채점 기준(SYSTEM_PROMPT)은 매 요청 동일하므로 프롬프트 캐싱 적용.
+      // 5분 TTL 내 반복 호출 시 시스템 프롬프트 입력 토큰 비용이 크게 절감됨.
+      system: [
+        {
+          type: 'text',
+          text: SYSTEM_PROMPT,
+          cache_control: { type: 'ephemeral' },
+        },
+      ],
+      messages: [{
+        role: 'user',
+        content: `주제: ${topic}\n\n작성한 글 (원고지 형식, 줄바꿈은 \\n으로 표시):\n${text}`,
+      }],
+    })
+  } catch {
+    // 응답 자체를 못 받았다(통신 끊김·5xx·타임아웃). 우리 쪽 사정이니 차감을 되돌린다.
+    // 파싱 실패는 되돌리지 않는다 — 그건 입력을 골라 공짜로 무한 호출하는 통로가 된다.
+    if (usingTrial) await refundAiTrial(user.id, trialUsed + 1)
+    throw new Error('AI 채점 서버에 연결하지 못했어요. 잠시 후 다시 시도해 주세요.')
+  }
 
   const block = response.content[0]
   if (block.type !== 'text') throw new Error('Unexpected response type')
