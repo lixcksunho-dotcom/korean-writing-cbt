@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { Check, X, Sparkles } from 'lucide-react'
+import { trackEvent } from '@/lib/analytics/trackEvent'
 
 // 학습자료로 들어온 사람의 88%가 한 페이지만 보고 떠난다(로그인까지 간 사람은 139명 중 1명).
 // 규칙을 읽는 건 수동적이라, 읽고 나면 볼일이 끝난다. 그래서 읽은 자리에서 바로 풀어보게 하고
@@ -156,6 +157,17 @@ export default function TopicQuiz({ topic, ctaHref = '/cbt' }: { topic: string; 
   const items = BANK[topic]
   const [picked, setPicked] = useState<Record<number, number>>({})
 
+  // 가설로 만든 장치라 효과를 볼 수 있어야 한다 — 몇 명이 손대고 끝까지 푸는지 남긴다.
+  // setState 업데이터 안에서 보내면 StrictMode에서 두 번 찍힐 수 있어 밖에서 처리한다.
+  function pick(qIndex: number, optIndex: number) {
+    if (picked[qIndex] !== undefined) return
+    const next = { ...picked, [qIndex]: optIndex }
+    setPicked(next)
+    const count = Object.keys(next).length
+    if (count === 1) trackEvent('quiz_try', topic)
+    if (items && count === items.length) trackEvent('quiz_done', topic)
+  }
+
   if (!items?.length) return null
   const solved = Object.keys(picked).length
   const correct = items.filter((it, i) => picked[i] === it.answer).length
@@ -192,7 +204,7 @@ export default function TopicQuiz({ topic, ctaHref = '/cbt' }: { topic: string; 
                       key={opt}
                       type="button"
                       disabled={done}
-                      onClick={() => setPicked((p) => ({ ...p, [i]: oi }))}
+                      onClick={() => pick(i, oi)}
                       className={`flex items-center justify-between gap-2 rounded-xl border px-3.5 py-2.5 text-left text-sm text-[#334155] transition-colors disabled:cursor-default ${tone}`}
                     >
                       <span>{opt}</span>
@@ -222,6 +234,7 @@ export default function TopicQuiz({ topic, ctaHref = '/cbt' }: { topic: string; 
           </p>
           <Link
             href={ctaHref}
+            onClick={() => trackEvent('quiz_cta', topic)}
             className="mt-3 inline-flex items-center gap-1.5 rounded-xl bg-white px-4 py-2 text-xs font-black text-[#1e3a5f]"
           >
             <Sparkles className="h-3.5 w-3.5" />
