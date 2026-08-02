@@ -103,7 +103,7 @@ export default async function ManuscriptPage() {
               </div>
               <Link
                 href="/subscribe"
-                className="btn-gold w-full flex items-center justify-center gap-2 text-white font-bold py-3.5 rounded-xl text-sm"
+                className="btn-gold w-full flex items-center justify-center gap-2 font-bold py-3.5 rounded-xl text-sm"
               >
                 <Sparkles className="h-4 w-4" />
                 5,500원으로 시작하기

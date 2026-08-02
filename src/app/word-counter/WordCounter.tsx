@@ -75,7 +75,7 @@ export default function WordCounter() {
         <p className="text-white/60 text-sm mb-4">실전 CBT 모의고사 + 서술형 AI 채점·첨삭으로 시험처럼 연습 · 합격까지 한 번에</p>
         <Link
           href="/"
-          className="btn-gold inline-flex items-center gap-2 text-white font-bold px-7 py-3 rounded-xl text-sm"
+          className="btn-gold inline-flex items-center gap-2 font-bold px-7 py-3 rounded-xl text-sm"
         >
           무료로 시작하기 <ArrowRight className="h-4 w-4" />
         </Link>

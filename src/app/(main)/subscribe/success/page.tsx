@@ -64,7 +64,7 @@ export default async function SuccessPage({
         </p>
         <Link
           href="/dashboard"
-          className="w-full btn-gold flex items-center justify-center gap-2 text-white font-bold py-3.5 rounded-xl text-sm"
+          className="w-full btn-gold flex items-center justify-center gap-2 font-bold py-3.5 rounded-xl text-sm"
         >
           <PenLine className="h-4 w-4" />
           바로 시작하기

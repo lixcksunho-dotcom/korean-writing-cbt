@@ -20,7 +20,7 @@ export default function BlogCTA({
       <div className="flex flex-col sm:flex-row gap-3 justify-center">
         <Link
           href="/cbt"
-          className="btn-gold inline-flex items-center justify-center gap-1.5 text-white font-bold py-3 px-6 rounded-xl text-sm"
+          className="btn-gold inline-flex items-center justify-center gap-1.5 font-bold py-3 px-6 rounded-xl text-sm"
         >
           무료 CBT 모의고사
         </Link>

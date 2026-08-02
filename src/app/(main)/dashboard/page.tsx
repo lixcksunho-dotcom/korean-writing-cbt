@@ -220,7 +220,7 @@ export default async function DashboardPage() {
                 : '지금 연장하면 전 회차 무제한 풀이와 영역별 분석을 끊김 없이 이어갈 수 있어요.'}
             </p>
           </div>
-          <span className="shrink-0 btn-gold text-xs font-bold text-white px-4 py-2 rounded-xl">연장하기</span>
+          <span className="shrink-0 btn-gold text-xs font-bold px-4 py-2 rounded-xl">연장하기</span>
         </Link>
       )}
 
@@ -267,7 +267,7 @@ export default async function DashboardPage() {
                 5,500원 · 30일 · 자동결제 없음.
               </p>
             </div>
-            <span className="shrink-0 btn-gold text-xs font-bold text-white px-4 py-2 rounded-xl">다시 시작하기</span>
+            <span className="shrink-0 btn-gold text-xs font-bold px-4 py-2 rounded-xl">다시 시작하기</span>
           </div>
         </Link>
       )}
@@ -284,7 +284,7 @@ export default async function DashboardPage() {
               <h2 className="text-base font-black text-indigo-900 mb-0.5">결제가 완료되지 않았어요</h2>
               <p className="text-sm text-indigo-800/80">이용권 결제를 시작하셨는데 마무리가 안 됐네요. <b>5,500원 · 30일 · 자동결제 없음</b>으로 지금 바로 이어서 결제하실 수 있어요.</p>
             </div>
-            <span className="shrink-0 btn-gold text-xs font-bold text-white px-4 py-2 rounded-xl">이어서 결제하기</span>
+            <span className="shrink-0 btn-gold text-xs font-bold px-4 py-2 rounded-xl">이어서 결제하기</span>
           </div>
         </Link>
       )}
@@ -523,7 +523,7 @@ export default async function DashboardPage() {
               </p>
             </div>
           </div>
-          <Link href="/subscribe" className="shrink-0 btn-gold text-xs font-bold text-white px-4 py-2 rounded-xl">
+          <Link href="/subscribe" className="shrink-0 btn-gold text-xs font-bold px-4 py-2 rounded-xl">
             구독하기
           </Link>
         </div>

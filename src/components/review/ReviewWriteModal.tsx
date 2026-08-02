@@ -241,7 +241,7 @@ export default function ReviewWriteModal({ defaultName }: { defaultName: string 
                   <button
                     type="submit"
                     disabled={isPending}
-                    className="w-full btn-gold text-white font-bold py-3.5 rounded-xl text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full btn-gold font-bold py-3.5 rounded-xl text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isPending ? '등록 중...' : '합격 후기 등록하기'}
                   </button>

@@ -126,7 +126,7 @@ export default async function HomePage() {
             <Link href="/login" className="text-sm text-white/70 hover:text-white transition-colors px-4 py-2 rounded-lg hover:bg-white/10">
               로그인
             </Link>
-            <Link href="/signup" className="btn-gold text-sm text-white px-5 py-2 rounded-lg font-semibold">
+            <Link href="/signup" className="btn-gold text-sm px-5 py-2 rounded-lg font-semibold">
               무료 시작
             </Link>
           </div>
@@ -165,7 +165,7 @@ export default async function HomePage() {
           </div>
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center mb-16">
-            <Link href="/signup" className="btn-gold inline-flex items-center justify-center gap-2 text-white font-bold px-8 py-4 rounded-xl text-base">
+            <Link href="/signup" className="btn-gold inline-flex items-center justify-center gap-2 font-bold px-8 py-4 rounded-xl text-base">
               무료로 시작하기 <ArrowRight className="h-5 w-5" />
             </Link>
             <Link href="/login" className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/15 backdrop-blur-sm border border-white/20 text-white font-semibold px-8 py-4 rounded-xl transition-all text-base">
@@ -194,16 +194,17 @@ export default async function HomePage() {
       {/* 이벤트 배너 */}
       <section className="py-5 px-4 bg-gradient-to-r from-[#d97706] via-[#f59e0b] to-[#d97706]">
         <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div className="flex items-center gap-3 text-white">
+          {/* 금색 위 흰 글자는 명암비 2.15라 읽히지 않는다 — 금색을 살리고 글자를 진하게 둔다 */}
+          <div className="flex items-center gap-3 text-[#0f172a]">
             <Gift className="h-5 w-5 shrink-0" />
             <div>
               <span className="font-black text-sm sm:text-base">🎉 합격 후기 이벤트</span>
-              <span className="text-white/80 text-sm ml-2">시험 합격 후 후기를 남기면 응시료 5,000원 환급!</span>
+              <span className="text-[#451a03] text-sm ml-2">시험 합격 후 후기를 남기면 응시료 5,000원 환급!</span>
             </div>
           </div>
           <Link
             href="/signup"
-            className="shrink-0 bg-white text-[#d97706] text-sm font-black px-5 py-2 rounded-xl hover:bg-amber-50 transition-colors shadow-md"
+            className="shrink-0 bg-white text-[#b45309] text-sm font-black px-5 py-2 rounded-xl hover:bg-amber-50 transition-colors shadow-md"
           >
             지금 참여하기 →
           </Link>
@@ -259,7 +260,7 @@ export default async function HomePage() {
             실글패스는 AI가 <b className="text-white">조건 충족·맞춤법·논리 구성</b>을 항목별로 채점하고 첨삭까지 해 줘요.
             채점해 줄 사람이 없어도 혼자서 고쳐 쓰며 실력을 올릴 수 있어요.
           </p>
-          <Link href="/signup" className="btn-gold inline-flex items-center gap-2 text-white font-bold px-8 py-3.5 rounded-xl text-sm">
+          <Link href="/signup" className="btn-gold inline-flex items-center gap-2 font-bold px-8 py-3.5 rounded-xl text-sm">
             서술형 AI 첨삭 무료로 체험 <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
@@ -344,7 +345,7 @@ export default async function HomePage() {
                     </li>
                   ))}
                 </ul>
-                <Link href="/signup" className="btn-gold inline-flex items-center justify-center gap-2 w-full text-white font-bold py-3 rounded-xl text-sm">
+                <Link href="/signup" className="btn-gold inline-flex items-center justify-center gap-2 w-full font-bold py-3 rounded-xl text-sm">
                   무료로 체험하고 결정하기 <ArrowRight className="h-4 w-4" />
                 </Link>
               </div>
@@ -487,7 +488,7 @@ export default async function HomePage() {
         <div className="relative max-w-2xl mx-auto text-center">
           <h2 className="text-3xl font-black text-white mb-4 tracking-tight">지금 바로 시작해보세요</h2>
           <p className="text-white/60 mb-8 text-base">CBT 문제풀기는 완전 무료 · AI 첨삭도 무료 체험 · 5,500원 1회 결제로 30일 무제한</p>
-          <Link href="/signup" className="btn-gold inline-flex items-center gap-2 text-white font-bold px-10 py-4 rounded-xl text-base">
+          <Link href="/signup" className="btn-gold inline-flex items-center gap-2 font-bold px-10 py-4 rounded-xl text-base">
             무료로 시작하기 <ArrowRight className="h-5 w-5" />
           </Link>
         </div>

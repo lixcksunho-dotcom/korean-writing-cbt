@@ -139,7 +139,7 @@ export default function EssayGuidePage() {
               <p className="text-lg font-black mb-1">서술형은 ‘써보고 채점받아야’ 늘어요</p>
               <p className="text-white/70 text-sm mb-5">실전 CBT로 유형별 서술형을 풀고, AI 채점·첨삭으로 감점 포인트를 문장 단위로 확인하세요. 모의고사 2회분은 무료예요.</p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                <Link href="/cbt" className="btn-gold inline-flex items-center justify-center gap-1.5 text-white font-bold py-3 px-6 rounded-xl text-sm">
+                <Link href="/cbt" className="btn-gold inline-flex items-center justify-center gap-1.5 font-bold py-3 px-6 rounded-xl text-sm">
                   무료 CBT 모의고사 풀어보기
                 </Link>
                 <Link href="/signup" className="inline-flex items-center justify-center gap-1.5 font-bold py-3 px-6 rounded-xl text-sm bg-white/10 text-white border border-white/20 hover:bg-white/15 transition-colors">

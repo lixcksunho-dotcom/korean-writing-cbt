@@ -233,7 +233,7 @@ export default function ManuscriptGuidePage() {
               <p className="text-lg font-black mb-1">규정은 눈으로, 실력은 손으로</p>
               <p className="text-white/70 text-sm mb-5">실글패스의 원고지 채점에서 실제 칸을 채워 답안을 쓰고, AI가 원고지 규정 준수부터 내용·표현까지 첨삭해 줍니다. 무료로 체험해 보세요.</p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                <Link href="/manuscript" className="btn-gold inline-flex items-center justify-center gap-1.5 text-white font-bold py-3 px-6 rounded-xl text-sm">
+                <Link href="/manuscript" className="btn-gold inline-flex items-center justify-center gap-1.5 font-bold py-3 px-6 rounded-xl text-sm">
                   원고지 AI 첨삭 받아보기
                 </Link>
                 <Link href="/cbt" className="inline-flex items-center justify-center gap-1.5 font-bold py-3 px-6 rounded-xl text-sm bg-white/10 text-white border border-white/20 hover:bg-white/15 transition-colors">

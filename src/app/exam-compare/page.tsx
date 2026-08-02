@@ -174,7 +174,7 @@ export default function ExamComparePage() {
               <p className="text-lg font-black mb-1">두 시험 모두, 실글패스에서 대비하세요</p>
               <p className="text-white/70 text-sm mb-5">실용글쓰기·KBS한국어 모두 실전 CBT 모의고사와 유형별 연습을 제공해요. 상단에서 시험을 전환해 원하는 쪽을 무료로 먼저 풀어보세요.</p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                <Link href="/cbt" className="btn-gold inline-flex items-center justify-center gap-1.5 text-white font-bold py-3 px-6 rounded-xl text-sm">
+                <Link href="/cbt" className="btn-gold inline-flex items-center justify-center gap-1.5 font-bold py-3 px-6 rounded-xl text-sm">
                   무료 CBT 모의고사
                 </Link>
                 <Link href="/signup" className="inline-flex items-center justify-center gap-1.5 font-bold py-3 px-6 rounded-xl text-sm bg-white/10 text-white border border-white/20 hover:bg-white/15 transition-colors">

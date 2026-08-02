@@ -24,7 +24,8 @@ export type Category = {
   blurb: string
   icon: string       // 이모지 — 카드·헤더 시각 요소
   from: string       // 그라디언트 시작(hex)
-  to: string         // 그라디언트 끝(hex)
+  /** 그라디언트 끝(hex). 이 위에 흰 글자가 얹히므로 흰색 대비 4.5 이상을 유지할 것. */
+  to: string
   tint: string       // 옅은 배경(뱃지·칩)
   ink: string        // 뱃지 글자색
 }
@@ -35,13 +36,13 @@ export const CATEGORIES: Category[] = [
   { slug: 'exam-info', label: '시험 정보', blurb: '일정·등급·점수 구성 등 시험 자체 정보',
     icon: '📋', from: '#1e3a5f', to: '#3d6aa0', tint: '#e8eef6', ink: '#1e3a5f' },
   { slug: 'study', label: '공부법·로드맵', blurb: '기간별 공부 순서와 전략',
-    icon: '🎯', from: '#0f766e', to: '#14b8a6', tint: '#d7f2ee', ink: '#0f766e' },
+    icon: '🎯', from: '#0f766e', to: '#0e8477', tint: '#d7f2ee', ink: '#0f766e' },
   { slug: 'grammar', label: '맞춤법·어법', blurb: '자주 틀리는 맞춤법·띄어쓰기·외래어·높임법',
-    icon: '✏️', from: '#b45309', to: '#f59e0b', tint: '#fdf0d9', ink: '#b45309' },
+    icon: '✏️', from: '#b45309', to: '#a36907', tint: '#fdf0d9', ink: '#b45309' },
   { slug: 'writing', label: '서술형·원고지', blurb: '서술형 700점·원고지·공문서 작성법',
-    icon: '📝', from: '#6d28d9', to: '#a78bfa', tint: '#eee7fb', ink: '#6d28d9' },
+    icon: '📝', from: '#6d28d9', to: '#7e55f8', tint: '#eee7fb', ink: '#6d28d9' },
   { slug: 'mock-exam', label: '기출·모의고사', blurb: '출제 유형 분석과 문제 풀이',
-    icon: '📊', from: '#be123c', to: '#fb7185', tint: '#fde3e8', ink: '#be123c' },
+    icon: '📊', from: '#be123c', to: '#ea0728', tint: '#fde3e8', ink: '#be123c' },
   { slug: 'guide', label: '실글패스 사용법', blurb: '실글패스 기능과 활용법',
     icon: '💡', from: '#334155', to: '#64748b', tint: '#e9edf2', ink: '#334155' },
 ]

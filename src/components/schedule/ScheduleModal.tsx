@@ -154,7 +154,7 @@ export default function ScheduleModal({ program = 'silyong' }: { program?: strin
                 href={applyUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="btn-gold mt-4 w-full flex items-center justify-center gap-2 text-white font-bold py-3.5 rounded-xl text-sm"
+                className="btn-gold mt-4 w-full flex items-center justify-center gap-2 font-bold py-3.5 rounded-xl text-sm"
               >
                 원서접수 바로가기 <ArrowRight className="h-4 w-4" />
               </a>

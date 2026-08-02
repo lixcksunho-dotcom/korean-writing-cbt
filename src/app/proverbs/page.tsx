@@ -207,7 +207,7 @@ export default function ProverbsPage() {
               <p className="text-lg font-black mb-1">어휘는 ‘문제로 풀어야’ 는다</p>
               <p className="text-white/70 text-sm mb-5">속담·사자성어·어휘 문제를 실전 CBT로 유형별로 연습하세요. 실용글쓰기·KBS한국어 모두 모의고사는 무료로 시작할 수 있어요.</p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                <Link href="/cbt" className="btn-gold inline-flex items-center justify-center gap-1.5 text-white font-bold py-3 px-6 rounded-xl text-sm">
+                <Link href="/cbt" className="btn-gold inline-flex items-center justify-center gap-1.5 font-bold py-3 px-6 rounded-xl text-sm">
                   무료 CBT 모의고사
                 </Link>
                 <Link href="/signup" className="inline-flex items-center justify-center gap-1.5 font-bold py-3 px-6 rounded-xl text-sm bg-white/10 text-white border border-white/20 hover:bg-white/15 transition-colors">
