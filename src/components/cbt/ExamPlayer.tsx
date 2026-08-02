@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef, useTransition } from 'react'
+import { useState, useEffect, useMemo, useRef, useSyncExternalStore, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Clock, ChevronLeft, ChevronRight, ChevronDown, Send, AlertCircle, CheckCircle2, FileText, Save, Lock } from 'lucide-react'
@@ -13,6 +13,10 @@ import PassageView from '@/components/cbt/PassageView'
 import MarkedText from '@/components/cbt/MarkedText'
 import CopyGuard from '@/components/cbt/CopyGuard'
 import { getProgram, type ProgramId } from '@/lib/programs'
+import { readDraftRaw, parseDraft, saveDraft, clearDraft } from '@/lib/examDraft'
+
+// localStorage는 구독할 게 없다 — 마운트 시점 값만 필요하다.
+const noSubscribe = () => () => {}
 
 export type Question = {
   id: string
@@ -74,6 +78,53 @@ export default function ExamPlayer({
     return () => clearInterval(timer)
   }, [])
 
+  // ── 작성 중 답안 사고 복구 ─────────────────────────────────────────────
+  // 서버 저장('저장하고 나가기')은 유료 기능이라, 무료 사용자는 39문항을 풀다 탭이 닫히면
+  // 전부 잃었다. 브라우저에 임시 보관해 두었다가 되돌아오면 되살린다.
+  // 자동으로 덮어쓰지는 않는다 — 시험 도중 답이 갑자기 바뀌면 그게 더 놀랍다.
+  const rawDraft = useSyncExternalStore(noSubscribe, () => readDraftRaw(sessionId), () => null)
+  const draft = useMemo(() => parseDraft(rawDraft), [rawDraft])
+  const [draftDismissed, setDraftDismissed] = useState(false)
+  const answeredCount = Object.keys(answers).length
+  const showDraftBanner = !!draft && !draftDismissed && answeredCount === 0
+
+  // 마감 시각을 함께 저장한다. 자리를 비운 동안에도 시험 시계는 흘러야 하므로,
+  // 복구할 때 남은 시간을 여기서 다시 계산한다(시계를 멈추는 건 유료 기능 그대로다).
+  const deadlineRef = useRef<number | null>(null)
+
+  useEffect(() => {
+    if (answeredCount === 0) return
+    const id = setTimeout(() => {
+      if (deadlineRef.current === null) deadlineRef.current = Date.now() + timeLeftRef.current * 1000
+      saveDraft(sessionId, answersRef.current, deadlineRef.current)
+    }, 800)
+    return () => clearTimeout(id)
+  }, [answers, answeredCount, sessionId])
+
+  // 탭을 닫거나 앱이 백그라운드로 갈 때는 디바운스를 기다릴 수 없다.
+  useEffect(() => {
+    const flush = () => {
+      if (Object.keys(answersRef.current).length === 0) return
+      if (deadlineRef.current === null) deadlineRef.current = Date.now() + timeLeftRef.current * 1000
+      saveDraft(sessionId, answersRef.current, deadlineRef.current)
+    }
+    window.addEventListener('pagehide', flush)
+    return () => window.removeEventListener('pagehide', flush)
+  }, [sessionId])
+
+  function restoreDraft() {
+    if (!draft) return
+    setAnswers(draft.answers)
+    setTimeLeft(Math.max(0, Math.round((draft.deadline - Date.now()) / 1000)))
+    deadlineRef.current = draft.deadline
+    setDraftDismissed(true)
+  }
+
+  function discardDraft() {
+    clearDraft(sessionId)
+    setDraftDismissed(true)
+  }
+
   // 시간 종료 시 자동 제출 — 실제 CBT처럼 제한 시간을 강제한다(한 번만).
   const autoSubmittedRef = useRef(false)
   useEffect(() => {
@@ -81,6 +132,7 @@ export default function ExamPlayer({
     autoSubmittedRef.current = true
     startTransition(async () => {
       await submitSession(sessionId, answersRef.current)
+      clearDraft(sessionId)
       router.push(`/cbt/${examYear}-${examRound}/result?session=${sessionId}`)
     })
   }, [timeLeft, sessionId, examYear, examRound, router])
@@ -92,6 +144,7 @@ export default function ExamPlayer({
   function handleSubmit() {
     startTransition(async () => {
       await submitSession(sessionId, answersRef.current)
+      clearDraft(sessionId)
       router.push(`/cbt/${examYear}-${examRound}/result?session=${sessionId}`)
     })
     setShowConfirm(false)
@@ -131,7 +184,6 @@ export default function ExamPlayer({
   // 서술형 표시 번호(1~9) — DB 내부 번호(31~39)와 무관하게 등장 순서로 매김
   const essayList = questions.filter(x => x.type === 'essay')
   const essayNo = (id: string) => essayList.findIndex(x => x.id === id) + 1
-  const answeredCount = Object.keys(answers).length
   const progress = (answeredCount / questions.length) * 100
   const minutes = Math.floor(timeLeft / 60)
   const seconds = timeLeft % 60
@@ -141,6 +193,33 @@ export default function ExamPlayer({
 
   return (
     <div className="animate-fade-up">
+      {showDraftBanner && (
+        <div className="mb-3 rounded-2xl border border-amber-200 bg-gradient-to-br from-[#fffbeb] to-[#fff7ed] px-4 py-3">
+          <p className="text-sm font-bold text-[#0f172a]">
+            작성하던 답안 {Object.keys(draft!.answers).length}문항이 남아 있어요
+          </p>
+          <p className="mt-0.5 text-xs text-[#64748b]">
+            불러오면 이어서 풀 수 있어요. 시험 시간은 그동안에도 흘렀습니다.
+          </p>
+          <div className="mt-2.5 flex gap-2">
+            <button
+              type="button"
+              onClick={restoreDraft}
+              className="rounded-xl bg-[#1e3a5f] px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-[#2d5488]"
+            >
+              불러오기
+            </button>
+            <button
+              type="button"
+              onClick={discardDraft}
+              className="rounded-xl border border-[#e2e8f0] bg-white px-4 py-2 text-xs font-semibold text-[#64748b] transition-colors hover:bg-[#f8fafc]"
+            >
+              새로 시작
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* 시험 헤더 */}
       {/* 남은 시간·제출은 시험 내내 손에 닿아야 하므로 상단 고정 */}
       <div className="sticky top-0 z-30 -mx-4 px-4 pt-2 pb-1 bg-[#f8fafc]/95 backdrop-blur sm:static sm:mx-0 sm:p-0 sm:bg-transparent sm:backdrop-blur-none">
