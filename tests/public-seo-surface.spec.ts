@@ -81,6 +81,8 @@ test('블로그 글에서 학습자료로 돌아가는 길이 있다', async ({ 
   await page.goto(first!, { waitUntil: 'domcontentloaded' })
   const selector = CONTENT_PAGES.map((p) => `a[href="${p}"]`).join(', ')
   expect(await page.locator(selector).count(), '글 → 학습자료 링크').toBeGreaterThan(0)
+  // 글에도 맛보기 문제가 붙는다(글 페이지 한 곳이 39편 전부를 담당한다).
+  await expect(page.getByText('읽었으면 풀어볼까요?')).toBeVisible()
 })
 
 test('학습자료의 맛보기 문제가 풀리고 실전으로 이어진다', async ({ page }) => {
