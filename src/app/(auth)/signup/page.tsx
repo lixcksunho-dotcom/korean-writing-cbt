@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { CheckCircle, Eye, EyeOff } from "lucide-react";
 import LogoGlyph from "@/components/layout/LogoGlyph";
 import GoogleButton from "@/components/ui/GoogleButton";
+import { trackEvent } from "@/lib/analytics/trackEvent";
 // 카카오는 비즈 앱 전환 후 재활성화 예정 (KakaoButton 컴포넌트는 유지)
 // import KakaoButton from "@/components/ui/KakaoButton";
 
@@ -41,6 +42,9 @@ export default function SignupPage() {
       setLoading(false);
       return;
     }
+    // 가입은 여기서 이미 끝났다. 인증 메일을 언제 누를지는 사람마다 달라서
+    // /auth/callback 쪽 '생성 2분 이내' 판정으로는 대부분 놓친다(계정 48개 중 이벤트 4건이었다).
+    trackEvent("signup", "email");
     if (data.session) { window.location.assign("/dashboard"); return; }
     setSuccess(true);
     setLoading(false);

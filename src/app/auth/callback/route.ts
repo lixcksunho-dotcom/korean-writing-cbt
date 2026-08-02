@@ -38,11 +38,14 @@ export async function GET(request: NextRequest) {
     if (!error) {
       // 신규가입 판별: 계정 생성시각이 방금(2분 이내)이면 이 OAuth 콜백이 최초 가입 흐름 —
       // signup 이벤트로 기록해 상단 퍼널(가입→구독) 완성. 실패해도 로그인 자체는 막지 않음.
+      //
+      // 이메일 가입은 여기서 세지 않는다. 계정은 폼 제출 때 만들어지고 인증 메일은 한참 뒤에
+      // 누르는 경우가 많아 2분 창을 거의 못 맞춘다 → 가입 화면에서 직접 기록한다(중복 방지).
       const user = data.session?.user
-      if (user?.created_at) {
+      const provider = user?.app_metadata?.provider ?? 'unknown'
+      if (user?.created_at && provider !== 'email') {
         const ageMs = Date.now() - new Date(user.created_at).getTime()
         if (ageMs >= 0 && ageMs < 120_000) {
-          const provider = user.app_metadata?.provider ?? 'unknown'
           void trackServerEvent('signup', user.id, provider)
         }
       }
