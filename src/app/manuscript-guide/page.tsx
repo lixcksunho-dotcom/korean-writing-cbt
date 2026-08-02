@@ -5,6 +5,7 @@ import SiteFooter from "@/components/layout/SiteFooter";
 import BreadcrumbLd from "@/components/seo/BreadcrumbLd";
 import StickyMobileCTA from "@/components/landing/StickyMobileCTA";
 import RelatedBlogPosts from '@/components/blog/RelatedBlogPosts'
+import TopicQuiz from '@/components/study/TopicQuiz'
 
 export const metadata: Metadata = {
   title: "원고지 작성법 — 칸 쓰는 법·문장부호·띄어쓰기 총정리",
@@ -266,6 +267,9 @@ export default function ManuscriptGuidePage() {
             {" · "}
             <Link href="/exam-info" className="underline hover:text-[#1e3a5f]">시험정보</Link>
           </section>
+          {/* 읽고 끝나지 않게 — 읽은 자리에서 바로 풀어보고 실전으로 잇는다 */}
+          <TopicQuiz topic="manuscript-guide" />
+
           <RelatedBlogPosts category="writing" />
         </div>
       </main>
