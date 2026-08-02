@@ -26,7 +26,7 @@ npx tsc --noEmit   # 타입 검사
 | 명령 | 무엇을 보는가 | 왜 필요한가 |
 | --- | --- | --- |
 | `npm test` | 공개 표면 (사이트맵·RSS·robots·구조화데이터·맛보기 문제) | 자격 증명 없이 어디서나 돌아간다 |
-| `npm run check:pages` | 로그인 화면 40개 (실글·KBS 두 모드) | `npm test`는 로그인 뒤 화면을 못 본다 |
+| `npm run check:pages` | 로그인 화면 40개(실글·KBS 두 모드) + 페이월 5건 | `npm test`는 로그인 뒤 화면을 못 본다. 페이월이 뚫려도 화면은 멀쩡해 보이고 매출만 샌다 |
 | `npm run check:schema` | 코드가 쓰는 테이블·컬럼이 운영 DB에 있는가 | supabase-js는 throw 대신 `{error}`를 준다 — 없는 테이블/컬럼을 써도 화면은 "0건"으로 멀쩡하다 |
 | `npm run check:questions` | 문항 정합성 (선택지·정답·해설·길이 단서) | 정답만 유난히 길면 내용을 몰라도 맞힌다 |
 | `npm run check:duplicates` | 회차 간 같은 문항 반복 | 이용권을 사서 여러 회차를 도는 사람이 같은 문제를 또 만나면 환불 사유다 |

@@ -104,6 +104,27 @@ try {
       if (uniq.length) problems.push(`${mode} ${route} → 콘솔: ${uniq.slice(0, 2).join(' | ')}`)
     }
   }
+
+  // ── 페이월: 무료 계정이 URL로 유료 콘텐츠에 닿으면 안 된다.
+  // 뚫려도 화면은 멀쩡해 보이고, 그대로 매출이 샌다.
+  await ctx.addCookies([{ name: 'kptest_mode', value: 'silyong', domain: new URL(BASE).hostname, path: '/' }])
+  for (const paid of ['/cbt/2025-5', '/cbt/2025-9', '/practice/multiple?set=2025-5', '/practice/essay?set=2025-5']) {
+    await page.goto(`${BASE}${paid}`, { waitUntil: 'networkidle', timeout: 40000 }).catch(() => {})
+    await page.waitForTimeout(800)
+    const landed = new URL(page.url()).pathname
+    const choices = await page.locator('label, button').filter({ hasText: /^\s*[①②③④⑤]/ }).count()
+    visited++
+    if (landed !== '/subscribe' || choices > 0) {
+      problems.push(`페이월 뚫림: ${paid} → ${landed} (선택지 ${choices}개)`)
+    }
+  }
+  // '전체 모아 풀기'는 접근은 되지만 무료 회차 분량만 실려야 한다(무료 2회차 = 60문항).
+  await page.goto(`${BASE}/practice/multiple?set=all`, { waitUntil: 'networkidle', timeout: 40000 }).catch(() => {})
+  await page.waitForTimeout(800)
+  const loaded = (await page.content()).match(/correct_answer/g)?.length ?? 0
+  visited++
+  if (loaded > 100) problems.push(`set=all에 유료 회차 혼입 의심: 문항 ${loaded}개(무료면 60 안팎)`)
+
   await browser.close()
 } catch (e) {
   problems.push('중단: ' + String(e).slice(0, 200))
