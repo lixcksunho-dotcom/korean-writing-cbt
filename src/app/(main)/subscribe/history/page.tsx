@@ -31,7 +31,7 @@ export default async function PaymentHistoryPage() {
 
       {subs.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center bg-white rounded-2xl border border-[#e2e8f0]">
-          <div className="bg-[#f1f5f9] p-5 rounded-2xl mb-4"><Receipt className="h-10 w-10 text-[#64748b]" /></div>
+          <div className="bg-[#f1f5f9] p-5 rounded-2xl mb-4"><Receipt className="h-10 w-10 text-[#475569]" /></div>
           <p className="text-[#64748b] text-sm font-medium">결제 내역이 없어요.</p>
           <Link href="/subscribe" className="mt-4 btn-gold inline-flex items-center gap-1.5 font-bold px-5 py-2.5 rounded-xl text-sm">
             이용권 보기
@@ -48,8 +48,8 @@ export default async function PaymentHistoryPage() {
               : cancelled
                 ? { icon: <XCircle className="h-3.5 w-3.5" />, text: '해지됨', cls: 'bg-red-50 text-red-500' }
                 : expired
-                  ? { icon: <Clock className="h-3.5 w-3.5" />, text: '만료됨', cls: 'bg-[#f1f5f9] text-[#64748b]' }
-                  : { icon: <Clock className="h-3.5 w-3.5" />, text: s.status as string, cls: 'bg-[#f1f5f9] text-[#64748b]' }
+                  ? { icon: <Clock className="h-3.5 w-3.5" />, text: '만료됨', cls: 'bg-[#f1f5f9] text-[#475569]' }
+                  : { icon: <Clock className="h-3.5 w-3.5" />, text: s.status as string, cls: 'bg-[#f1f5f9] text-[#475569]' }
             return (
               <div key={s.id as string} className="bg-white rounded-2xl border border-[#e2e8f0] shadow-[0_4px_16px_rgba(15,31,61,0.06)] p-5">
                 <div className="flex items-center justify-between mb-2">

@@ -136,7 +136,7 @@ export default async function BlogPostPage({
           {post.tags.length > 0 && (
             <div className="flex flex-wrap gap-2 mt-8 pt-6 border-t border-[#e2e8f0]">
               {post.tags.map((t) => (
-                <span key={t} className="text-xs text-[#64748b] bg-[#f1f5f9] rounded-full px-2.5 py-1">
+                <span key={t} className="text-xs text-[#475569] bg-[#f1f5f9] rounded-full px-2.5 py-1">
                   #{t}
                 </span>
               ))}

@@ -272,7 +272,7 @@ export default function ExamPlayer({
               <Link
                 href="/subscribe"
                 title="저장하고 나가기는 구독 회원 전용이에요"
-                className="flex items-center gap-1.5 text-[#64748b] bg-[#f1f5f9] hover:bg-[#e2e8f0] px-3 py-2 rounded-xl text-sm font-semibold transition-colors"
+                className="flex items-center gap-1.5 text-[#475569] bg-[#f1f5f9] hover:bg-[#e2e8f0] px-3 py-2 rounded-xl text-sm font-semibold transition-colors"
               >
                 <Lock className="h-3.5 w-3.5" />
                 <span className="hidden sm:inline">저장하고 나가기</span>
@@ -320,7 +320,7 @@ export default function ExamPlayer({
                       ? 'bg-gradient-to-br from-[#1e3a5f] to-[#2d5488] text-white shadow-md'
                       : answers[question.id]
                         ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'
-                        : 'bg-[#f1f5f9] text-[#64748b] hover:bg-[#e2e8f0]',
+                        : 'bg-[#f1f5f9] text-[#475569] hover:bg-[#e2e8f0]',
                   ].join(' ')}
                   title={question.type === 'essay' ? '서술형' : ''}
                 >
@@ -368,7 +368,7 @@ export default function ExamPlayer({
                     'h-9 w-9 rounded-lg text-xs font-bold transition-all relative',
                     idx === currentIdx ? 'bg-gradient-to-br from-[#1e3a5f] to-[#2d5488] text-white'
                       : answers[question.id] ? 'bg-emerald-100 text-emerald-700'
-                      : 'bg-[#f1f5f9] text-[#64748b]',
+                      : 'bg-[#f1f5f9] text-[#475569]',
                   ].join(' ')}
                 >
                   {question.type === 'essay' ? `서${essayNo(question.id)}` : question.number}

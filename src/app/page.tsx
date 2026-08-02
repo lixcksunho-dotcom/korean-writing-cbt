@@ -363,7 +363,7 @@ export default async function HomePage() {
           </div>
           <div className="grid sm:grid-cols-3 gap-4">
             <div className="rounded-2xl border border-[#e2e8f0] bg-white p-5 text-center">
-              <div className="inline-flex p-2.5 rounded-xl bg-[#f1f5f9] mb-3"><Wallet className="h-5 w-5 text-[#64748b]" /></div>
+              <div className="inline-flex p-2.5 rounded-xl bg-[#f1f5f9] mb-3"><Wallet className="h-5 w-5 text-[#475569]" /></div>
               <p className="text-sm font-bold text-[#334155] mb-1">시험 응시료</p>
               <p className="text-2xl font-black text-[#0f172a]">약 2~3만 원</p>
               <p className="text-xs text-[#64748b] mt-1">1회 응시 기준</p>

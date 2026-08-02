@@ -36,7 +36,7 @@ export default async function InsightsPage() {
       <div className="animate-fade-up max-w-2xl mx-auto">
         <BackLink />
         <div className="flex flex-col items-center justify-center py-20 text-center bg-white rounded-2xl border border-[#e2e8f0]">
-          <div className="bg-[#f1f5f9] p-5 rounded-2xl mb-4"><BarChart3 className="h-10 w-10 text-[#64748b]" /></div>
+          <div className="bg-[#f1f5f9] p-5 rounded-2xl mb-4"><BarChart3 className="h-10 w-10 text-[#475569]" /></div>
           <p className="text-[#64748b] text-sm font-medium">아직 분석할 학습 기록이 없어요.</p>
           <p className="text-[#64748b] text-xs mt-1 mb-5">모의고사를 풀면 성적 추이와 약점이 여기에 쌓여요.</p>
           <Link href="/cbt" className="btn-primary inline-flex items-center gap-1.5 text-white font-bold px-5 py-2.5 rounded-xl text-sm">

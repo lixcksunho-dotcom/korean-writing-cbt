@@ -67,7 +67,7 @@ export default async function AreaPracticePage({
                 </div>
               </div>
               <div className="flex items-center gap-2 shrink-0">
-                <span className="text-xs bg-[#f1f5f9] text-[#64748b] px-2.5 py-1 rounded-full font-semibold">{counts[i]}문항</span>
+                <span className="text-xs bg-[#f1f5f9] text-[#475569] px-2.5 py-1 rounded-full font-semibold">{counts[i]}문항</span>
                 <ChevronRight className="h-5 w-5 text-[#64748b] group-hover:translate-x-1 transition-transform" />
               </div>
             </Link>

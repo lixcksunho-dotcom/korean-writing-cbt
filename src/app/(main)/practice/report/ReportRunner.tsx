@@ -110,7 +110,7 @@ export default function ReportRunner({
                 i === idx ? 'bg-gradient-to-br from-[#1e3a5f] to-[#2d5488] text-white'
                   : grades[question.id] ? 'bg-emerald-100 text-emerald-700'
                   : answers[question.id] ? 'bg-amber-50 text-amber-700'
-                  : 'bg-[#f1f5f9] text-[#64748b]'
+                  : 'bg-[#f1f5f9] text-[#475569]'
               }`}
             >
               보고서 {i + 1}

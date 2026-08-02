@@ -125,7 +125,7 @@ export default async function PracticePage() {
             <h2 className="font-bold text-[#0f172a] text-lg mb-1">{title}</h2>
             <p className="text-[#64748b] text-sm leading-relaxed flex-1">{desc}</p>
             <div className="flex items-center justify-between mt-5">
-              <span className="text-xs bg-[#f1f5f9] text-[#64748b] px-2.5 py-1 rounded-full font-semibold">{meta}</span>
+              <span className="text-xs bg-[#f1f5f9] text-[#475569] px-2.5 py-1 rounded-full font-semibold">{meta}</span>
               <span className="flex items-center gap-1 text-sm font-semibold text-[#1e3a5f] group-hover:gap-2 transition-all">
                 시작 <ChevronRight className="h-4 w-4" />
               </span>

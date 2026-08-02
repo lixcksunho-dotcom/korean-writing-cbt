@@ -61,7 +61,7 @@ export default function GradingSample() {
       </summary>
 
       <div className="border-t border-[#e2e8f0] px-5 py-5">
-        <p className="mb-4 rounded-lg bg-[#f1f5f9] px-3 py-2 text-xs text-[#64748b]">
+        <p className="mb-4 rounded-lg bg-[#f1f5f9] px-3 py-2 text-xs text-[#475569]">
           아래는 이해를 돕기 위한 <b className="text-[#334155]">예시</b>입니다. 실제 채점은 직접 쓴 글로 이뤄집니다.
         </p>
 
