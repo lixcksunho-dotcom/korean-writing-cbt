@@ -33,7 +33,11 @@ function ReviewCard({ review }: { review: Review }) {
             />
           ))}
         </div>
-        {review.exam_score != null && (
+        {/* 점수는 인증 사진을 확인한 뒤에만 보여 준다.
+            후기 자체는 작성 즉시 노출되지만(참여를 막지 않으려고), 확인 안 된 점수를
+            "820점 합격"처럼 단정해 보여 주면 방문자는 그걸 사실로 읽는다.
+            이름 옆 '인증' 표시보다 이 배지가 훨씬 눈에 띈다. */}
+        {review.exam_score != null && review.verified && (
           <span className="text-[11px] font-black text-[#d97706] bg-amber-50 border border-amber-100 px-2 py-0.5 rounded-full">
             {review.exam_score}점 합격
           </span>

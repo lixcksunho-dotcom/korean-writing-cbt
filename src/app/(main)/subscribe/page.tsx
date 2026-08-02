@@ -50,7 +50,8 @@ export default async function SubscribePage() {
   // 결제 직전이 사회적 증거가 가장 잘 먹히는 자리 — 공개된 실사용 후기를 함께 보여 준다.
   const { data: reviews } = await supabase
     .from('reviews')
-    .select('display_name, content, rating, exam_score')
+    // verified도 같이 — 확인 안 된 점수는 결제 직전 화면에 숫자로 내보내지 않는다.
+    .select('display_name, content, rating, exam_score, verified')
     .eq('is_visible', true)
     .order('created_at', { ascending: false })
     .limit(3)
@@ -155,7 +156,7 @@ export default async function SubscribePage() {
                     “{r.content}”
                     <span className="text-[#94a3b8]">
                       {' — '}{r.display_name}
-                      {r.exam_score ? ` · ${r.exam_score}` : ''}
+                      {r.exam_score && r.verified ? ` · ${r.exam_score}점` : ''}
                     </span>
                   </p>
                 ))}
