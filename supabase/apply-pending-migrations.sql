@@ -59,15 +59,12 @@ WHERE a.session_id = b.session_id
   AND a.question_id = b.question_id
   AND a.id < b.id;
 
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint WHERE conname = 'quiz_answers_session_question_uniq'
-  ) THEN
-    ALTER TABLE public.quiz_answers
-      ADD CONSTRAINT quiz_answers_session_question_uniq UNIQUE (session_id, question_id);
-  END IF;
-END $$;
+-- 032 원본은 DO $$ 블록을 쓰는데, Supabase SQL Editor가 $$ 안의 세미콜론에서 문장을
+-- 잘라 버려 "syntax error at or near END"로 실패한다. 유니크 인덱스는 IF NOT EXISTS를
+-- 지원해 PL/pgSQL 없이도 재실행 안전하고, 강제력은 UNIQUE 제약과 같다.
+-- (quiz_answers는 onConflict를 쓰는 곳이 없어 제약 '이름'에 의존하지 않는다.)
+CREATE UNIQUE INDEX IF NOT EXISTS quiz_answers_session_question_uniq
+  ON public.quiz_answers (session_id, question_id);
 
 
 -- =====================================================================
