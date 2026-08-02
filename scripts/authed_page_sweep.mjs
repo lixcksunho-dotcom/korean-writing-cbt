@@ -55,8 +55,11 @@ try {
 
   const browser = await chromium.launch()
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 })
-  // 첫 방문 안내 팝업은 화면을 가려 판정을 흐린다.
-  await ctx.addCookies([{ name: 'kptest_mode_intro_v1', value: '1', domain: new URL(BASE).hostname, path: '/' }])
+  // 첫 방문 안내 팝업(ModeIntroModal)은 화면을 가려 판정을 흐린다.
+  // 이 플래그는 쿠키가 아니라 localStorage에 있다 — 쿠키로 심으면 아무 효과가 없다.
+  await ctx.addInitScript(() => {
+    try { localStorage.setItem('kptest_mode_intro_v1', '1') } catch { /* 접근 불가면 그냥 둔다 */ }
+  })
   const page = await ctx.newPage()
   let pageErrs = []
   page.on('pageerror', (e) => pageErrs.push(String(e).slice(0, 110)))
