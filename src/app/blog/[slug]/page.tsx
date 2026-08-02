@@ -6,6 +6,8 @@ import BlogHeader from '@/components/blog/BlogHeader'
 import BlogCTA from '@/components/blog/BlogCTA'
 import PostCard from '@/components/blog/PostCard'
 import RelatedStudyPages from '@/components/blog/RelatedStudyPages'
+import TopicQuiz from '@/components/study/TopicQuiz'
+import { quizTopicForPost } from '@/components/study/quizTopicForPost'
 import SiteFooter from '@/components/layout/SiteFooter'
 import { getAllPosts, getPost, getRelated, formatDate, catTheme } from '@/lib/blog'
 
@@ -54,6 +56,7 @@ export default async function BlogPostPage({
 
   const related = getRelated(post, 4)
   const t = catTheme(post.category)
+  const quizTopic = quizTopicForPost(post.category, post.slug)
 
   // 검색 리치결과용 구조화 데이터(자체 도메인이라 script가 유지된다 — 워드프레스와 달리 안전)
   // BlogPosting + BreadcrumbList 를 한 그래프로 — 검색결과에 글 정보와 경로(홈>블로그>카테고리)가 함께 노출된다.
@@ -138,6 +141,10 @@ export default async function BlogPostPage({
           <div className="mt-10">
             <BlogCTA path={post.ctaPath} label={post.ctaLabel} />
           </div>
+
+          {/* 읽고 끝나지 않게 — 읽은 자리에서 바로 풀어보고 실전으로 잇는다.
+              같은 카테고리 글을 여러 편 읽어도 매번 같은 문제가 나오지 않게 slug로 주제를 가른다. */}
+          {quizTopic && <TopicQuiz topic={quizTopic} />}
 
           {/* 같은 주제의 학습자료 — 글로 들어온 사람을 무료 도구까지 데려간다 */}
           <RelatedStudyPages category={post.category} />
