@@ -11,6 +11,9 @@ export function generateStaticParams() {
   return CATEGORIES.map((c) => ({ slug: c.slug }))
 }
 
+// 카테고리는 CATEGORIES 상수로 고정이다. 없는 카테고리도 프로덕션에서 500이 났다.
+export const dynamicParams = false
+
 export async function generateMetadata({
   params,
 }: {

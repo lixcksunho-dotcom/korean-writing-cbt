@@ -15,6 +15,12 @@ export function generateStaticParams() {
   return getAllPosts().map((p) => ({ slug: p.slug }))
 }
 
+// 글 목록은 빌드 시점에 src/content/blog/*.json 으로 확정된다. 목록에 없는 슬러그를
+// 굳이 요청 때 렌더할 이유가 없고, 실제로 한글 슬러그로 없는 글을 열면 프로덕션에서
+// 404가 아니라 500이 나왔다(로컬에서는 재현되지 않는 서버리스 환경 문제).
+// 500은 검색엔진에 '서버 고장, 다시 와라'로 읽혀 404보다 나쁘다.
+export const dynamicParams = false
+
 export async function generateMetadata({
   params,
 }: {
