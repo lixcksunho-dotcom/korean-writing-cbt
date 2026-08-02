@@ -104,12 +104,33 @@ export function getCategory(slug: string): Category | null {
   return CATEGORIES.find((c) => c.slug === slug) ?? null
 }
 
-/** 같은 카테고리 우선, 부족하면 최신글로 채워 관련글 N개 */
+/** slug에서 뽑는 고정 오프셋 — 같은 글은 늘 같은 관련글을 보여 준다(캐시·하이드레이션 안정). */
+function slugOffset(slug: string): number {
+  let sum = 0
+  for (const ch of slug) sum = (sum + ch.codePointAt(0)!) % 100000
+  return sum
+}
+
+/** 배열을 start부터 순환하며 count개 뽑는다. */
+function ring<T>(arr: T[], start: number, count: number): T[] {
+  if (!arr.length) return []
+  const take = Math.min(count, arr.length)
+  return Array.from({ length: take }, (_, i) => arr[(start + i) % arr.length])
+}
+
+/** 같은 카테고리 우선, 부족하면 다른 카테고리로 채워 관련글 N개 */
 export function getRelated(post: BlogPost, n = 4): BlogPost[] {
   const all = readAll().filter((p) => p.slug !== post.slug)
   const same = all.filter((p) => p.category === post.category)
   const rest = all.filter((p) => p.category !== post.category)
-  return [...same, ...rest].slice(0, n)
+
+  // 앞에서 n개를 그냥 자르면(readAll이 최신순) 모든 글이 같은 최신 4편만 가리킨다.
+  // 그러면 오래된 글은 카테고리 페이지 말고 들어오는 링크가 없다
+  // (실측: 50편 중 22편이 링크 1개, 최신 글은 21개).
+  // 글마다 시작 지점을 옮겨 링크가 고르게 퍼지게 한다. 같은 카테고리 우선은 그대로.
+  const offset = slugOffset(post.slug)
+  const fromSame = ring(same, offset % Math.max(same.length, 1), n)
+  return [...fromSame, ...ring(rest, offset % Math.max(rest.length, 1), n - fromSame.length)]
 }
 
 /** 'YYYY-MM-DD' → '2026년 7월 24일' */
