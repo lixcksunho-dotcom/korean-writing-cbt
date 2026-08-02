@@ -147,7 +147,7 @@ export default async function BlogPostPage({
           {quizTopic && <TopicQuiz topic={quizTopic} />}
 
           {/* 같은 주제의 학습자료 — 글로 들어온 사람을 무료 도구까지 데려간다 */}
-          <RelatedStudyPages category={post.category} />
+          <RelatedStudyPages category={post.category} slug={post.slug} />
 
           {/* 관련 글 */}
           {related.length > 0 && (

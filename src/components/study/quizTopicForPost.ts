@@ -16,6 +16,8 @@ const BY_CATEGORY: Record<string, string[]> = {
 }
 
 export function quizTopicForPost(category: string, slug: string): string | null {
+  // KBS 글에 서술형·원고지 문제를 붙이면 엉뚱하다(KBS는 전부 객관식이다).
+  if (slug.includes('KBS')) return 'kbs-korean'
   const candidates = BY_CATEGORY[category]
   if (!candidates?.length) return null
   let sum = 0

@@ -35,8 +35,16 @@ const BY_CATEGORY: Record<string, StudyPage[]> = {
 BY_CATEGORY['mock-exam'] = BY_CATEGORY.study
 BY_CATEGORY.guide = BY_CATEGORY['exam-info']
 
-export default function RelatedStudyPages({ category }: { category: string }) {
-  const pages = BY_CATEGORY[category] ?? BY_CATEGORY.study
+// KBS 글에는 실글 전용 자료(서술형·원고지)를 안내하면 엉뚱하다 — KBS는 전부 객관식이다.
+const KBS_PAGES: StudyPage[] = [
+  { href: '/kbs-korean', title: 'KBS한국어능력시험 정보', desc: '영역·시간·등급 구성' },
+  { href: '/exam-compare', title: '실용글쓰기·KBS 비교', desc: '어느 쪽이 나에게 맞나' },
+  { href: '/idioms', title: '사자성어 모음', desc: '어휘 영역 단골 갈래' },
+  { href: '/loanword-spelling', title: '외래어 표기법', desc: '어법 영역 단골 규정' },
+]
+
+export default function RelatedStudyPages({ category, slug }: { category: string; slug?: string }) {
+  const pages = slug?.includes('KBS') ? KBS_PAGES : (BY_CATEGORY[category] ?? BY_CATEGORY.study)
   return (
     <section className="mt-12">
       <h2 className="text-xl font-black text-[#0f172a] mb-4">📚 함께 보면 좋은 자료</h2>
