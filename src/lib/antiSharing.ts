@@ -56,10 +56,17 @@ export async function enforcePaidUsage(userId: string): Promise<void> {
       `계정 공유가 의심되어 이용이 제한되었습니다. 한 계정은 기기 ${DEVICE_LIMIT}대까지만 사용할 수 있어요. 본인 계정이 맞다면 고객센터로 문의해 주세요.`
     )
   }
-  await admin.from('device_usage').upsert(
+  // 이 등록이 조용히 실패하면 기기 수가 영영 늘지 않아 제한 자체가 무력해진다.
+  // 사용자를 막을 일은 아니라 던지지는 않지만, 모르고 지나가서도 안 된다.
+  const { error: deviceError } = await admin.from('device_usage').upsert(
     { user_id: userId, device_id: deviceId, last_seen: new Date().toISOString() },
     { onConflict: 'user_id,device_id' }
   )
+  if (deviceError) {
+    console.error('[antiSharing] 기기 등록 실패 — 기기 수 제한이 집계되지 않음', {
+      userId, code: deviceError.code, message: deviceError.message,
+    })
+  }
 
   // 2) 일일 한도
   const day = todayKey()
@@ -77,7 +84,13 @@ export async function enforcePaidUsage(userId: string): Promise<void> {
   }
 }
 
-/** AI 첨삭이 성공한 뒤 호출 — 오늘 사용 횟수 1 증가 */
+/**
+ * 오늘 사용 횟수 1 증가. AI 호출 '앞'에서 부른다 — 성공 후에 세면 응답 파싱이 깨지는
+ * 입력으로 무한 재시도가 되고 그동안 요금은 계속 나간다(consumeAiTrial과 같은 이유).
+ *
+ * 읽고 나서 쓰는 방식이라 동시 요청이 겹치면 한 건이 덜 세어질 수 있다. 하루 30회
+ * 한도에서는 실익이 없어 그대로 둔다.
+ */
 export async function recordPaidGrade(userId: string): Promise<void> {
   const admin = createAdminClient()
   const day = todayKey()
