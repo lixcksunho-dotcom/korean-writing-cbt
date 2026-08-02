@@ -115,13 +115,23 @@ export async function gradeManuscript(text: string, topic: string): Promise<Grad
     throw new Error('AI 응답을 파싱할 수 없습니다.')
   }
 
-  await supabase.from('manuscript_submissions').insert({
+  // 저장 실패를 삼키면 안 된다: 사용량은 이미 차감됐고 유료 API 요금도 나간 뒤라,
+  // 조용히 넘어가면 사용자는 값을 치르고 기록만 잃는다(실제로 테이블 미생성으로 그랬다).
+  // 다만 여기서 throw하면 방금 받은 채점 결과까지 사라지므로, 결과는 돌려주고 로그로 남긴다.
+  const { error: saveError } = await supabase.from('manuscript_submissions').insert({
     user_id: user.id,
     topic,
     content: text,
     score: result.totalScore,
     feedback: result,
   })
+  if (saveError) {
+    console.error('[manuscript] 채점 결과 저장 실패 — 사용량은 차감된 상태', {
+      userId: user.id,
+      code: saveError.code,
+      message: saveError.message,
+    })
+  }
 
   return result
 }
