@@ -143,6 +143,9 @@ export default function ManuscriptGuidePage() {
             </div>
           </section>
 
+          {/* 읽고 끝나지 않게 — 읽은 자리에서 바로 풀어보고 실전으로 잇는다 */}
+          <TopicQuiz topic="manuscript-guide" />
+
           {/* 문장부호 */}
           <section className="mb-10">
             <h2 className="text-2xl font-black text-[#0f172a] mb-3">문장부호 쓰는 법</h2>
@@ -267,9 +270,6 @@ export default function ManuscriptGuidePage() {
             {" · "}
             <Link href="/exam-info" className="underline hover:text-[#1e3a5f]">시험정보</Link>
           </section>
-          {/* 읽고 끝나지 않게 — 읽은 자리에서 바로 풀어보고 실전으로 잇는다 */}
-          <TopicQuiz topic="manuscript-guide" />
-
           <RelatedBlogPosts category="writing" />
         </div>
       </main>

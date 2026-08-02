@@ -119,6 +119,9 @@ export default function EssayGuidePage() {
             </div>
           </section>
 
+          {/* 읽고 끝나지 않게 — 읽은 자리에서 바로 풀어보고 실전으로 잇는다 */}
+          <TopicQuiz topic="essay-guide" />
+
           <section className="mb-10">
             <h2 className="text-2xl font-black text-[#0f172a] mb-4">감점을 부르는 흔한 실수</h2>
             <div className="space-y-2.5">
@@ -173,9 +176,6 @@ export default function EssayGuidePage() {
             {" · "}
             <Link href="/word-counter" className="underline hover:text-[#1e3a5f]">글자수 세기</Link>
           </section>
-          {/* 읽고 끝나지 않게 — 읽은 자리에서 바로 풀어보고 실전으로 잇는다 */}
-          <TopicQuiz topic="essay-guide" />
-
           <RelatedBlogPosts category="writing" />
         </div>
       </main>

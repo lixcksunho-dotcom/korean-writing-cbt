@@ -147,6 +147,9 @@ export default function LoanwordSpellingPage() {
             </div>
           </section>
 
+          {/* 읽고 끝나지 않게 — 읽은 자리에서 바로 풀어보고 실전으로 잇는다 */}
+          <TopicQuiz topic="loanword-spelling" />
+
           {/* 틀림 → 바름 */}
           <section className="mb-10">
             <h2 className="text-2xl font-black text-[#0f172a] mb-3">자주 틀리는 외래어 표기</h2>
@@ -213,9 +216,6 @@ export default function LoanwordSpellingPage() {
             {" · "}
             <Link href="/kbs-korean" className="underline hover:text-[#1e3a5f]">KBS한국어 시험정보</Link>
           </section>
-          {/* 읽고 끝나지 않게 — 읽은 자리에서 바로 풀어보고 실전으로 잇는다 */}
-          <TopicQuiz topic="loanword-spelling" />
-
           <RelatedBlogPosts category="grammar" />
         </div>
       </main>

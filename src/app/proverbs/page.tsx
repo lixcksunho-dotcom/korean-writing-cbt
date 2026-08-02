@@ -212,6 +212,9 @@ export default function ProverbsPage() {
             </div>
           </section>
 
+          {/* 읽고 끝나지 않게 — 읽은 자리에서 바로 풀어보고 실전으로 잇는다 */}
+          <TopicQuiz topic="proverbs" />
+
           {/* FAQ */}
           <section className="mt-12">
             <h2 className="text-2xl font-black text-[#0f172a] mb-4">자주 묻는 질문</h2>
@@ -241,9 +244,6 @@ export default function ProverbsPage() {
             {" · "}
             <Link href="/exam-info" className="underline hover:text-[#1e3a5f]">실용글쓰기 시험정보</Link>
           </section>
-          {/* 읽고 끝나지 않게 — 읽은 자리에서 바로 풀어보고 실전으로 잇는다 */}
-          <TopicQuiz topic="proverbs" />
-
           <RelatedBlogPosts category="grammar" />
         </div>
       </main>

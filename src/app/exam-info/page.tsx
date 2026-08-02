@@ -137,6 +137,9 @@ export default function ExamInfoPage() {
             </p>
           </section>
 
+          {/* 읽고 끝나지 않게 — 읽은 자리에서 바로 풀어보고 실전으로 잇는다 */}
+          <TopicQuiz topic="exam-info" />
+
           {/* 등급 기준 */}
           <section className="mb-10">
             <h2 className="text-2xl font-black text-[#0f172a] mb-3">등급 기준 (1000점 만점)</h2>
@@ -242,9 +245,6 @@ export default function ExamInfoPage() {
             {" · "}
             <Link href="/exam-compare" className="underline hover:text-[#1e3a5f]">실용글쓰기·KBS 비교</Link>
           </section>
-          {/* 읽고 끝나지 않게 — 읽은 자리에서 바로 풀어보고 실전으로 잇는다 */}
-          <TopicQuiz topic="exam-info" />
-
           <RelatedBlogPosts category="exam-info" />
         </div>
       </main>

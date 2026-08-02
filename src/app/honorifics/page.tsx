@@ -138,6 +138,9 @@ export default function HonorificsPage() {
             </div>
           </section>
 
+          {/* 읽고 끝나지 않게 — 읽은 자리에서 바로 풀어보고 실전으로 잇는다 */}
+          <TopicQuiz topic="honorifics" />
+
           {/* 높임 어휘 */}
           <section className="mb-10">
             <h2 className="text-2xl font-black text-[#0f172a] mb-3">높임 어휘</h2>
@@ -218,9 +221,6 @@ export default function HonorificsPage() {
             {" · "}
             <Link href="/refined-words" className="underline hover:text-[#1e3a5f]">순화어 모음</Link>
           </section>
-          {/* 읽고 끝나지 않게 — 읽은 자리에서 바로 풀어보고 실전으로 잇는다 */}
-          <TopicQuiz topic="honorifics" />
-
           <RelatedBlogPosts category="grammar" />
         </div>
       </main>

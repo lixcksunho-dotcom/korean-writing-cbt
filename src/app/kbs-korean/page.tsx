@@ -154,6 +154,9 @@ export default function KbsKoreanPage() {
             </p>
           </section>
 
+          {/* 읽고 끝나지 않게 — 읽은 자리에서 바로 풀어보고 실전으로 잇는다 */}
+          <TopicQuiz topic="kbs-korean" />
+
           <section className="mb-10">
             <h2 className="text-2xl font-black text-[#0f172a] mb-3">영역 구성 (100문항 · 120분)</h2>
             <div className="overflow-hidden rounded-xl border border-[#e2e8f0]">
@@ -262,9 +265,6 @@ export default function KbsKoreanPage() {
               공식 접수 페이지
             </a>
           </section>
-          {/* 읽고 끝나지 않게 — 읽은 자리에서 바로 풀어보고 실전으로 잇는다 */}
-          <TopicQuiz topic="kbs-korean" />
-
           <RelatedBlogPosts category="exam-info" />
         </div>
       </main>

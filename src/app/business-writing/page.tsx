@@ -138,6 +138,9 @@ export default function BusinessWritingPage() {
             </div>
           </section>
 
+          {/* 읽고 끝나지 않게 — 읽은 자리에서 바로 풀어보고 실전으로 잇는다 */}
+          <TopicQuiz topic="business-writing" />
+
           {/* 안내문 예시 */}
           <section className="mb-10">
             <h2 className="text-2xl font-black text-[#0f172a] mb-3">사내 안내문 예시</h2>
@@ -257,9 +260,6 @@ export default function BusinessWritingPage() {
             {" · "}
             <Link href="/word-counter" className="underline hover:text-[#1e3a5f]">글자수 세기</Link>
           </section>
-          {/* 읽고 끝나지 않게 — 읽은 자리에서 바로 풀어보고 실전으로 잇는다 */}
-          <TopicQuiz topic="business-writing" />
-
           <RelatedBlogPosts category="writing" />
         </div>
       </main>

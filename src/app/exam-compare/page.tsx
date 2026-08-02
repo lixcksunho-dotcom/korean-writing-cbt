@@ -132,6 +132,9 @@ export default function ExamComparePage() {
             <p className="mt-2 text-xs text-[#94a3b8]">※ 등급 기준·배점은 주관처 사정으로 달라질 수 있어요. 접수 전 각 공식 홈페이지에서 확인하세요.</p>
           </section>
 
+          {/* 읽고 끝나지 않게 — 읽은 자리에서 바로 풀어보고 실전으로 잇는다 */}
+          <TopicQuiz topic="exam-compare" />
+
           {/* 평가 영역 */}
           <section className="mb-10">
             <h2 className="text-2xl font-black text-[#0f172a] mb-3">평가 영역</h2>
@@ -208,9 +211,6 @@ export default function ExamComparePage() {
             {" · "}
             <Link href="/manuscript-guide" className="underline hover:text-[#1e3a5f]">원고지 작성법</Link>
           </section>
-          {/* 읽고 끝나지 않게 — 읽은 자리에서 바로 풀어보고 실전으로 잇는다 */}
-          <TopicQuiz topic="exam-compare" />
-
           <RelatedBlogPosts category="exam-info" />
         </div>
       </main>
