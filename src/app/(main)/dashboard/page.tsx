@@ -461,7 +461,7 @@ export default async function DashboardPage() {
                 <h2 className="text-base font-bold text-[#0f172a]">CBT 문제풀기</h2>
                 <ArrowUpRight className="h-3.5 w-3.5 text-[#94a3b8] group-hover:text-[#1e3a5f] transition-colors" />
               </div>
-              <p className="text-sm text-[#64748b]">기출문제로 실력을 테스트해보세요</p>
+              <p className="text-sm text-[#64748b]">기출 유형 문항으로 실력을 테스트해보세요</p>
               <span className="inline-block mt-2 text-xs bg-emerald-100 text-emerald-700 px-2.5 py-0.5 rounded-full font-semibold">무료</span>
             </div>
           </div>

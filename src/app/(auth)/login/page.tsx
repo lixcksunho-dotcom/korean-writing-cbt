@@ -62,7 +62,7 @@ export default function LoginPage() {
               <span className="text-gradient-gold">최고의 도구</span>
             </h2>
             <ul className="space-y-2.5">
-              {["기출문제 CBT 무료 제공", "AI 원고지 채점·첨삭 무료 체험", "항목별 상세 피드백"].map(t => (
+              {["기출 유형 CBT 무료 제공", "AI 원고지 채점·첨삭 무료 체험", "항목별 상세 피드백"].map(t => (
                 <li key={t} className="flex items-center gap-2 text-white/70 text-sm">
                   <span className="w-5 h-5 rounded-full bg-[#f59e0b]/20 flex items-center justify-center text-[#f59e0b] text-xs font-bold shrink-0">✓</span>
                   {t}

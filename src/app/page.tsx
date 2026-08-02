@@ -17,7 +17,7 @@ const features = [
   {
     icon: BookOpen,
     title: "CBT 문제풀기",
-    desc: "한국실용글쓰기 기출문제를 실전과 동일한 CBT 환경에서 풀어보세요. 즉시 채점과 오답 해설을 제공합니다.",
+    desc: "한국실용글쓰기 기출 유형 문항을 실전과 동일한 CBT 환경에서 풀어보세요. 즉시 채점과 오답 해설을 제공합니다.",
     badge: "무료",
     badgeStyle: "bg-emerald-100 text-emerald-700",
     gradient: "from-blue-500 to-[#1e3a5f]",
@@ -40,7 +40,7 @@ const steps = [
 ];
 
 const benefits = [
-  "기출문제 기반 실전 CBT 환경",
+  "기출 유형 기반 실전 CBT 환경",
   "AI 원고지 즉시 채점·첨삭",
   "항목별 세부 점수 분석",
   "오답 해설 및 교정 제공",
@@ -152,7 +152,7 @@ export default async function HomePage() {
           </h1>
 
           <p className="text-white/60 text-lg mb-6 leading-relaxed max-w-xl mx-auto">
-            기출문제 CBT로 실력을 확인하고,
+            기출 유형 CBT로 실력을 확인하고,
             AI가 원고지 답안을 즉시 채점·첨삭해드립니다.
           </p>
 
