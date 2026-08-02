@@ -306,7 +306,9 @@ export default async function HomePage() {
               <p className="text-sm text-[#64748b] mb-5">회원이면 누구나, 결제 없이</p>
               <ul className="space-y-2.5">
                 {[
-                  'CBT 실전 모의고사 전 회차 풀이',
+                  // '전 회차'라고 적혀 있었는데 무료는 실글 2회차·KBS 1회차뿐이다(programs.ts의 freeRounds).
+                  // 결제 여부를 여기서 판단하는 표라, 여기가 틀리면 산 사람이 기대한 것과 다른 걸 받는다.
+                  'CBT 실전 모의고사 무료 2회차 (KBS 1회차)',
                   '객관식 정답·해설 전체 공개',
                   '서술형 모범답안 열람',
                   '맞춤법·외래어·문장호응 유형별 연습',
@@ -330,6 +332,8 @@ export default async function HomePage() {
                 <p className="text-sm text-white/60 mb-5">1회 결제 · 자동결제 없음 — 합격까지 무제한</p>
                 <ul className="space-y-2.5 mb-6">
                   {[
+                    // 잠긴 회차 해제가 유료의 가장 큰 실익인데 목록에서 빠져 있었다.
+                    '잠긴 모의고사 전 회차 무제한 풀이',
                     'AI 예상 점수·합격 등급 판정',
                     '서술형 9문항 AI 첨삭·점수 무제한',
                     '원고지 AI 채점·첨삭 무제한',
