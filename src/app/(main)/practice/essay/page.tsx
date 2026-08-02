@@ -90,6 +90,11 @@ export default async function EssayPracticePage({
   const trialRemaining = subscription ? 0 : Math.max(0, FREE_AI_TRIAL - trialUsed)
 
   return (
+    // saveKey(서버 '저장하고 나가기')는 여기서 일부러 넘기지 않는다.
+    // savePracticeProgress는 quiz_sessions를 (user, year, round)로 찾는데, 이 화면의
+    // year·round는 실제 모의고사 회차와 같다 → 그 사람이 풀던 진짜 시험 세션을 찾아
+    // saved_answers를 연습 답안으로 덮어쓴다. 유형별 연습이 센티넬 연도(9001)를 쓰는 이유다.
+    // 작성 중 답안 유실은 PracticeEssay의 브라우저 임시 보관으로 막는다.
     <PracticeEssay
       questions={questions as unknown as PracticeEssayQuestion[]}
       title={`모의고사 ${r}회 서술형`}
