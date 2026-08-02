@@ -41,11 +41,17 @@ export async function consumeAiTrial(userId: string, currentUsed: number): Promi
 export async function refundAiTrial(userId: string, currentUsed: number): Promise<void> {
   if (currentUsed <= 0) return
   try {
-    const admin = createAdminClient()
-    await admin.auth.admin.updateUserById(userId, {
+    const { error } = await createAdminClient().auth.admin.updateUserById(userId, {
       app_metadata: { ai_trial_used: currentUsed - 1 },
     })
-  } catch {
-    // 되돌리기까지 실패하면 어쩔 수 없다. 원래 오류를 덮지 않는 게 더 중요하다.
+    if (error) throw error
+  } catch (e) {
+    // 되돌리기까지 실패하면 그 사용자는 아무것도 못 받고 횟수만 잃는다.
+    // 여기서 다시 던지면 원래 오류를 덮으니, 남겨만 두고 넘어간다.
+    console.error('[aiTrial] 체험 횟수 되돌리기 실패 — 사용자가 횟수를 잃은 상태', {
+      userId,
+      currentUsed,
+      message: e instanceof Error ? e.message : String(e),
+    })
   }
 }
