@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation'
 import BlogHeader from '@/components/blog/BlogHeader'
 import BlogCTA from '@/components/blog/BlogCTA'
 import PostCard from '@/components/blog/PostCard'
+import RelatedStudyPages from '@/components/blog/RelatedStudyPages'
 import SiteFooter from '@/components/layout/SiteFooter'
 import { getAllPosts, getPost, getRelated, formatDate, catTheme } from '@/lib/blog'
 
@@ -137,6 +138,9 @@ export default async function BlogPostPage({
           <div className="mt-10">
             <BlogCTA path={post.ctaPath} label={post.ctaLabel} />
           </div>
+
+          {/* 같은 주제의 학습자료 — 글로 들어온 사람을 무료 도구까지 데려간다 */}
+          <RelatedStudyPages category={post.category} />
 
           {/* 관련 글 */}
           {related.length > 0 && (

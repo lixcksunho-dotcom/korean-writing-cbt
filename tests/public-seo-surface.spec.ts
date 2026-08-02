@@ -72,6 +72,17 @@ test('학습자료 페이지에 구조화데이터와 블로그 연결이 붙어
   }
 })
 
+test('블로그 글에서 학습자료로 돌아가는 길이 있다', async ({ page, request }) => {
+  // 주제 클러스터는 양방향이어야 한다. 한쪽만 이어 두면 글이 크롤 막다른 길이 된다.
+  const xml = await (await request.get(`${BASE}/sitemap.xml`)).text()
+  const first = xml.match(/<loc>(https:\/\/kptest\.cloud\/blog\/[^<]+)<\/loc>/)?.[1]
+  expect(first, '사이트맵에 블로그 글').toBeTruthy()
+
+  await page.goto(first!, { waitUntil: 'domcontentloaded' })
+  const selector = CONTENT_PAGES.map((p) => `a[href="${p}"]`).join(', ')
+  expect(await page.locator(selector).count(), '글 → 학습자료 링크').toBeGreaterThan(0)
+})
+
 test('시험 중 화면에 정답이 실려 나가지 않는다', async ({ request }) => {
   // 로그인 없이도 확인 가능한 회귀 방지선 — 공개 HTML 어디에도 정답 필드가 없어야 한다.
   for (const path of ['/', '/blog', '/spelling']) {
