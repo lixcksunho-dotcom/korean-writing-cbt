@@ -115,8 +115,10 @@ export default function ExamPlayer({
   function restoreDraft() {
     if (!draft) return
     setAnswers(draft.answers)
-    setTimeLeft(Math.max(0, Math.round((draft.deadline - Date.now()) / 1000)))
-    deadlineRef.current = draft.deadline
+    if (draft.deadline !== null) {
+      setTimeLeft(Math.max(0, Math.round((draft.deadline - Date.now()) / 1000)))
+      deadlineRef.current = draft.deadline
+    }
     setDraftDismissed(true)
   }
 

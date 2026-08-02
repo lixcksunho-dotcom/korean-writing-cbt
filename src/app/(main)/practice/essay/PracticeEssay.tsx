@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState, useTransition } from 'react'
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore, useTransition } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { ArrowLeft, ChevronRight, ChevronLeft, FileText, ChevronDown, Sparkles, Lock, Loader2, Save, Check } from 'lucide-react'
@@ -12,6 +12,10 @@ import { gradeEssayPractice, savePracticeProgress } from '../actions'
 import { parseCharLimit, manuscriptRows, clampToCharLimit } from '@/lib/charLimit'
 import { extractCircledLabels, insertAtTextareaCursor } from '@/lib/circledSymbols'
 import type { EssayGrade } from '@/app/(main)/cbt/actions'
+import { readDraftRaw, parseDraft, saveDraft, clearDraft } from '@/lib/examDraft'
+
+// localStorage는 구독할 게 없다 — 마운트 시점 값만 필요하다.
+const noSubscribe = () => () => {}
 
 export type PracticeEssayQuestion = {
   id: string
@@ -60,6 +64,46 @@ export default function PracticeEssay({
   // 구독자거나, 비구독자라도 무료 체험이 남아있으면 AI 분석 가능
   const trialLeft = Math.max(0, aiTrialRemaining - trialUsedLocal)
   const canUseAi = hasSubscription || trialLeft > 0
+
+  // ── 작성 중 답안 사고 복구 ─────────────────────────────────────────────
+  // '저장하고 나가기'는 유료 전용이라 무료 회원은 원고지 답안을 쓰다 탭이 닫히면 잃는다.
+  // 브라우저에 임시 보관해 두었다가 되돌아오면 알려 준다(모의고사와 같은 방식).
+  const draftKey = saveKey ? `practice-${saveKey.year}-${saveKey.round}` : `practice-${questions[0]?.id ?? 'x'}`
+  const rawDraft = useSyncExternalStore(noSubscribe, () => readDraftRaw(draftKey), () => null)
+  const draft = useMemo(() => parseDraft(rawDraft), [rawDraft])
+  const [draftDismissed, setDraftDismissed] = useState(false)
+  const answeredCount = Object.keys(answers).length
+  // 서버에 저장해 둔 답안(유료)을 이미 불러왔다면 그쪽이 우선이다.
+  const showDraftBanner = !!draft && !draftDismissed && !resumed && answeredCount === 0
+
+  const answersRef = useRef(answers)
+  useEffect(() => { answersRef.current = answers }, [answers])
+
+  useEffect(() => {
+    if (answeredCount === 0) return
+    // 연습은 시간 제한이 없어 마감 시각이 없다.
+    const id = setTimeout(() => saveDraft(draftKey, answersRef.current, null), 800)
+    return () => clearTimeout(id)
+  }, [answers, answeredCount, draftKey])
+
+  useEffect(() => {
+    const flush = () => {
+      if (Object.keys(answersRef.current).length > 0) saveDraft(draftKey, answersRef.current, null)
+    }
+    window.addEventListener('pagehide', flush)
+    return () => window.removeEventListener('pagehide', flush)
+  }, [draftKey])
+
+  function restoreDraft() {
+    if (!draft) return
+    setAnswers(draft.answers)
+    setDraftDismissed(true)
+  }
+
+  function discardDraft() {
+    clearDraft(draftKey)
+    setDraftDismissed(true)
+  }
 
   function saveAndExit() {
     if (!saveKey) return
@@ -153,6 +197,30 @@ export default function PracticeEssay({
       {resumed && (
         <div className="mb-4 flex items-center gap-2 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-xl px-3.5 py-2.5">
           <Check className="h-4 w-4" /> 저장해 둔 답안을 불러왔어요. 이어서 작성하세요.
+        </div>
+      )}
+
+      {showDraftBanner && (
+        <div className="mb-4 rounded-xl border border-amber-200 bg-gradient-to-br from-[#fffbeb] to-[#fff7ed] px-4 py-3">
+          <p className="text-sm font-bold text-[#0f172a]">
+            작성하던 답안 {Object.keys(draft!.answers).length}문항이 남아 있어요
+          </p>
+          <div className="mt-2.5 flex gap-2">
+            <button
+              type="button"
+              onClick={restoreDraft}
+              className="rounded-xl bg-[#1e3a5f] px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-[#2d5488]"
+            >
+              불러오기
+            </button>
+            <button
+              type="button"
+              onClick={discardDraft}
+              className="rounded-xl border border-[#e2e8f0] bg-white px-4 py-2 text-xs font-semibold text-[#64748b] transition-colors hover:bg-[#f8fafc]"
+            >
+              새로 시작
+            </button>
+          </div>
         </div>
       )}
       {saveError && <p className="mb-3 text-xs text-red-500">{saveError}</p>}

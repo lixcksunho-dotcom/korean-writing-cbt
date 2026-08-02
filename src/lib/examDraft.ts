@@ -7,7 +7,8 @@
 
 const KEY = (sessionId: string) => `kptest_exam_draft_${sessionId}`
 
-export type ExamDraft = { answers: Record<string, string>; deadline: number }
+// deadline은 시간 제한이 있는 모의고사에서만 쓴다. 유형별 연습은 타이머가 없어 null이다.
+export type ExamDraft = { answers: Record<string, string>; deadline: number | null }
 
 /** getSnapshot에 그대로 쓸 수 있게 원문 문자열을 돌려준다(매번 새 객체를 만들면 무한 렌더). */
 export function readDraftRaw(sessionId: string): string | null {
@@ -22,7 +23,7 @@ export function parseDraft(raw: string | null): ExamDraft | null {
   if (!raw) return null
   try {
     const d = JSON.parse(raw) as ExamDraft
-    if (!d || typeof d.deadline !== 'number' || typeof d.answers !== 'object') return null
+    if (!d || typeof d.answers !== 'object' || d.answers === null) return null
     // 내용 없는 초안은 복구 배너를 띄울 이유가 없다.
     return Object.keys(d.answers).length > 0 ? d : null
   } catch {
@@ -30,7 +31,7 @@ export function parseDraft(raw: string | null): ExamDraft | null {
   }
 }
 
-export function saveDraft(sessionId: string, answers: Record<string, string>, deadline: number): void {
+export function saveDraft(sessionId: string, answers: Record<string, string>, deadline: number | null): void {
   try {
     localStorage.setItem(KEY(sessionId), JSON.stringify({ answers, deadline }))
   } catch {
