@@ -123,8 +123,11 @@ test('학습자료의 맛보기 문제가 풀리고 실전으로 이어진다', 
 
   // 어휘 면은 본문이 map으로 만든 12개 묶음이라, 위젯을 map 안에 넣었다.
   // 조건을 잃으면 묶음마다 하나씩 붙어 12개가 된다 — 눈에 잘 안 띄는 회귀다.
-  await page.goto(`${BASE}/idioms`, { waitUntil: 'domcontentloaded' })
-  await expect(page.locator('section').filter({ hasText: '읽었으면 풀어볼까요?' })).toHaveCount(1)
+  // load까지 기다린다: 배포가 롤아웃되는 중에 domcontentloaded로만 보면 개수가 흔들린다.
+  await page.goto(`${BASE}/idioms`, { waitUntil: 'load' })
+  const vocabQuiz = page.locator('section').filter({ hasText: '읽었으면 풀어볼까요?' })
+  await expect(vocabQuiz.first()).toBeVisible()
+  await expect(vocabQuiz).toHaveCount(1)
 })
 
 test('시험 중 화면에 정답이 실려 나가지 않는다', async ({ request }) => {
