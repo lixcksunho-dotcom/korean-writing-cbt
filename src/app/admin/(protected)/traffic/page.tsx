@@ -33,9 +33,17 @@ function StatCard({ label, pv, uv }: { label: string; pv: number; uv: number }) 
   )
 }
 
+const DAY = 24 * 3600 * 1000
+
+// 시각 기준은 한 번만 읽는다 — 따로 호출하면 자정을 걸칠 때 창끼리 어긋난다.
+function timeWindows() {
+  const now = Date.now()
+  return { since: new Date(now - 30 * DAY).toISOString(), d7: now - 7 * DAY, d30: now - 30 * DAY }
+}
+
 export default async function AdminTrafficPage() {
   const admin = createAdminClient()
-  const since = new Date(Date.now() - 30 * 24 * 3600 * 1000).toISOString()
+  const { since, d7, d30 } = timeWindows()
 
   const { data, error } = await admin
     .from('page_views')
@@ -75,8 +83,6 @@ export default async function AdminTrafficPage() {
     .gte('created_at', since)
 
   const todayStart = startOfTodayKST().getTime()
-  const d7 = Date.now() - 7 * 24 * 3600 * 1000
-  const d30 = Date.now() - 30 * 24 * 3600 * 1000
 
   function agg(fromMs: number) {
     const sub = rows.filter(r => new Date(r.created_at).getTime() >= fromMs)

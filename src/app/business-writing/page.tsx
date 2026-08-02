@@ -217,7 +217,7 @@ export default function BusinessWritingPage() {
           {/* CTA */}
           <section className="mb-10">
             <div className="rounded-2xl border border-[#e2e8f0] bg-gradient-to-br from-[#0f1f3d] to-[#1e3a5f] p-6 text-center text-white">
-              <p className="text-lg font-black mb-1">서술형은 '조건 지키기'가 점수예요</p>
+              <p className="text-lg font-black mb-1">서술형은 ‘조건 지키기’가 점수예요</p>
               <p className="text-white/70 text-sm mb-5">한국실용글쓰기 서술형은 안내문·이메일·공문서 작성이 자주 나와요. 실전처럼 풀고 AI 첨삭으로 조건 충족·높임 표현까지 점검하세요. 무료로 시작할 수 있어요.</p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <Link href="/cbt" className="btn-gold inline-flex items-center justify-center gap-1.5 text-white font-bold py-3 px-6 rounded-xl text-sm">

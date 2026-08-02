@@ -1,7 +1,7 @@
 'use client'
 
 // 첫 방문 시 1회 뜨는 안내 팝업 — KBS한국어능력시험 추가를 알리고 모드를 고르게 한다.
-import { useEffect, useState, useTransition } from 'react'
+import { useState, useSyncExternalStore, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { setActiveProgram } from '@/app/(main)/mode-actions'
 import { PROGRAMS, type ProgramId } from '@/lib/programs'
@@ -9,18 +9,23 @@ import { BookOpen, GraduationCap, X } from 'lucide-react'
 
 const SEEN_KEY = 'kptest_mode_intro_v1'
 
+// localStorage는 읽기만 하고 구독할 게 없다(다른 탭 변화까지 따라갈 필요가 없는 1회성 안내).
+const noSubscribe = () => () => {}
+const readSeen = () => {
+  try {
+    return !!localStorage.getItem(SEEN_KEY)
+  } catch {
+    return true // 접근 불가면 띄우지 않는다
+  }
+}
+
 export default function ModeIntroModal({ current }: { current: ProgramId }) {
-  const [open, setOpen] = useState(false)
+  // 서버에서는 '이미 봤음'으로 렌더해 하이드레이션 불일치 없이 클라이언트에서만 뜬다.
+  const alreadySeen = useSyncExternalStore(noSubscribe, readSeen, () => true)
+  const [dismissed, setDismissed] = useState(false)
+  const open = !alreadySeen && !dismissed
   const router = useRouter()
   const [pending, startTransition] = useTransition()
-
-  useEffect(() => {
-    try {
-      if (!localStorage.getItem(SEEN_KEY)) setOpen(true)
-    } catch {
-      /* localStorage 접근 불가 시 조용히 무시 */
-    }
-  }, [])
 
   function seen() {
     try {
@@ -32,7 +37,7 @@ export default function ModeIntroModal({ current }: { current: ProgramId }) {
 
   function dismiss() {
     seen()
-    setOpen(false)
+    setDismissed(true)
   }
 
   function choose(id: ProgramId) {
@@ -42,7 +47,7 @@ export default function ModeIntroModal({ current }: { current: ProgramId }) {
         await setActiveProgram(id)
         router.refresh()
       }
-      setOpen(false)
+      setDismissed(true)
     })
   }
 
