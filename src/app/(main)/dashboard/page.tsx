@@ -146,9 +146,12 @@ export default async function DashboardPage() {
   const predictedTier = predicted != null ? tierFor(predicted, program) : null;
   const objPart = objRate != null ? Math.round(objRate * wObj) : null;
   const essayPart = essayRate != null ? Math.round(essayRate * wEssay) : null;
-  // 비구독자 미리보기용 샘플(블러 처리되는 마케팅 값)
-  const sampleScore = Math.round(cfg.maxScore * 0.74);
-  const sampleTier = tierFor(sampleScore, program);
+  // 비구독자 미리보기에는 '그 사람의' 추정치를 쓴다.
+  // 예전에는 만점의 74%를 고정으로 보여 줬는데(모두에게 '준2급 예상'), 카드 문구가
+  // "지금 실력이면 몇 점·몇 등급"이라 사용자는 그 흐린 숫자를 자기 점수로 읽는다.
+  // 정답률 22%인 사람에게 준2급을 보여 주면 결제 직후 실제 점수를 보고 속았다고 느낀다.
+  // 등급은 구독 후에 확인하도록 남겨 두되, 숫자만큼은 진짜를 쓴다.
+  const previewScore = predicted ?? 0;
 
   const stats = [
     {
@@ -420,8 +423,8 @@ export default async function DashboardPage() {
             <p className="text-xs text-[#94a3b8] mb-4">서술형까지 AI가 채점해, 지금 실력이면 <b className="text-[#1e3a5f]">실제 시험에서 몇 점·몇 등급</b>일지 알려줘요.</p>
             <div className="relative">
               <div className="blur-[5px] select-none pointer-events-none" aria-hidden>
-                <div className="text-4xl font-black text-[#0f172a] mb-3">{Math.floor(sampleScore / 100)}●● <span className="text-lg text-[#94a3b8]">점 · {sampleTier.name} 예상</span></div>
-                <ScoreGauge predicted={sampleScore} cuts={cfg.cuts} maxScore={cfg.maxScore} />
+                <div className="text-4xl font-black text-[#0f172a] mb-3">{Math.floor(previewScore / 100)}●● <span className="text-lg text-[#94a3b8]">점 · 등급 ●●</span></div>
+                <ScoreGauge predicted={previewScore} cuts={cfg.cuts} maxScore={cfg.maxScore} />
               </div>
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
                 <span className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-amber-100"><Lock className="h-4 w-4 text-amber-600" /></span>
