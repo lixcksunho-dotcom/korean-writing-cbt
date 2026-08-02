@@ -202,7 +202,7 @@ export default function HonorificsPage() {
                 <details key={f.q} className="group bg-[#f8fafc] rounded-xl border border-[#e2e8f0] px-5 py-4 [&_summary::-webkit-details-marker]:hidden">
                   <summary className="flex items-center justify-between cursor-pointer list-none font-bold text-[#0f172a] text-base">
                     <span>{f.q}</span>
-                    <span className="ml-3 text-[#94a3b8] text-2xl leading-none transition-transform group-open:rotate-45">+</span>
+                    <span className="ml-3 text-[#64748b] text-2xl leading-none transition-transform group-open:rotate-45">+</span>
                   </summary>
                   <p className="mt-3 text-[#475569] text-sm leading-relaxed">{f.a}</p>
                 </details>
