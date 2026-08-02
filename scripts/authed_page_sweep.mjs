@@ -1,0 +1,130 @@
+// 로그인한 무료 사용자 기준으로 앱의 모든 화면을 전수로 훑는다.
+//
+// npm test(스모크)는 로그인 없이 볼 수 있는 공개 표면만 본다. 정작 돈이 오가는 화면은
+// 전부 로그인 뒤에 있어서, 배포가 그쪽을 깨뜨려도 스모크는 초록으로 남는다.
+// 여기서는 테스트 계정을 만들어 실글·KBS 두 모드로 모든 화면을 돌고 지운다.
+//
+// 결제와 AI 채점은 건드리지 않는다(유료 API·결제 행동).
+//
+// 사용: npm run check:pages          (기본 대상 https://kptest.cloud)
+//       PAGE_SWEEP_BASE=http://localhost:3000 npm run check:pages
+import fs from 'node:fs'
+import path from 'node:path'
+import { fileURLToPath, pathToFileURL } from 'node:url'
+
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
+const { chromium } = await import(pathToFileURL(path.join(ROOT, 'node_modules', 'playwright', 'index.mjs')).href)
+
+const ENV = Object.fromEntries(
+  fs.readFileSync(path.join(ROOT, '.env.local'), 'utf-8')
+    .split('\n').filter((l) => l.includes('=') && !l.trim().startsWith('#'))
+    .map((l) => { const i = l.indexOf('='); return [l.slice(0, i).trim(), l.slice(i + 1).trim().replace(/^"|"$/g, '')] }),
+)
+const SB = ENV.NEXT_PUBLIC_SUPABASE_URL
+const SVC = ENV.SUPABASE_SERVICE_ROLE_KEY
+const BASE = process.env.PAGE_SWEEP_BASE ?? 'https://kptest.cloud'
+const api = (p, init) => fetch(`${SB}${p}`, {
+  ...init,
+  headers: { apikey: SVC, Authorization: `Bearer ${SVC}`, 'Content-Type': 'application/json', ...(init?.headers || {}) },
+})
+
+// 결제 이후 경로(success/fail)는 결제 흐름이라 제외. /admin은 권한이 없어 리다이렉트가 정상.
+const ROUTES = [
+  '/dashboard', '/insights', '/cbt', '/manuscript', '/manuscript/history',
+  '/practice', '/practice/areas', '/practice/bookmarks', '/practice/essay',
+  '/practice/multiple', '/practice/refine', '/practice/report', '/practice/types',
+  '/practice/kbs-types', '/practice/wrong', '/subscribe', '/subscribe/history',
+  '/guides', '/word-counter', '/refined-words',
+]
+
+const stamp = String(Date.now())
+const email = `uicheck+${stamp}@kptest.cloud`
+const password = `Chk-${stamp}-aA1!`
+let userId = null
+const problems = []
+let visited = 0
+let slowest = { route: '-', ms: 0 }
+
+try {
+  const created = await (await api('/auth/v1/admin/users', {
+    method: 'POST',
+    body: JSON.stringify({ email, password, email_confirm: true }),
+  })).json()
+  userId = created.id
+  if (!userId) throw new Error('테스트 계정 생성 실패: ' + JSON.stringify(created).slice(0, 160))
+
+  const browser = await chromium.launch()
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 })
+  // 첫 방문 안내 팝업은 화면을 가려 판정을 흐린다.
+  await ctx.addCookies([{ name: 'kptest_mode_intro_v1', value: '1', domain: new URL(BASE).hostname, path: '/' }])
+  const page = await ctx.newPage()
+  let pageErrs = []
+  page.on('pageerror', (e) => pageErrs.push(String(e).slice(0, 110)))
+  page.on('console', (m) => { if (m.type() === 'error') pageErrs.push('console: ' + m.text().slice(0, 100)) })
+
+  // 배포 직후엔 첫 시도가 간헐적으로 안 넘어간다 — 한 번 더 시도한다.
+  let loggedIn = false
+  for (let attempt = 0; attempt < 2 && !loggedIn; attempt++) {
+    await page.goto(`${BASE}/login`, { waitUntil: 'domcontentloaded' })
+    await page.fill('input[type="email"]', email)
+    await page.fill('input[type="password"]', password)
+    await page.click('button[type="submit"]')
+    for (let i = 0; i < 45; i++) {
+      if (!new URL(page.url()).pathname.includes('/login')) { loggedIn = true; break }
+      await page.waitForTimeout(1000)
+    }
+  }
+  if (!loggedIn) throw new Error('로그인이 되지 않음')
+
+  for (const mode of ['silyong', 'kbs']) {
+    await ctx.addCookies([{ name: 'kptest_mode', value: mode, domain: new URL(BASE).hostname, path: '/' }])
+    for (const route of ROUTES) {
+      pageErrs = []
+      const t0 = Date.now()
+      let status
+      try {
+        status = (await page.goto(`${BASE}${route}`, { waitUntil: 'domcontentloaded', timeout: 40000 }))?.status()
+      } catch (e) {
+        problems.push(`${mode} ${route} — 이동 실패: ${String(e).slice(0, 70)}`)
+        continue
+      }
+      await page.waitForTimeout(1200)
+      const ms = Date.now() - t0
+      if (ms > slowest.ms) slowest = { route: `${mode} ${route}`, ms }
+      const text = await page.evaluate(() => document.body.innerText)
+      visited++
+      if (status !== 200) problems.push(`${mode} ${route} → HTTP ${status}`)
+      if (/Application error|Internal Server Error|문제가 발생/.test(text)) problems.push(`${mode} ${route} → 오류 화면`)
+      // 리다이렉트 자체는 정상일 수 있으나(모드 전용 화면), 내용이 없는 건 문제다.
+      if (text.length < 120) problems.push(`${mode} ${route} → 내용 없음(${text.length}자, 도착 ${new URL(page.url()).pathname})`)
+      const uniq = [...new Set(pageErrs)]
+      if (uniq.length) problems.push(`${mode} ${route} → 콘솔: ${uniq.slice(0, 2).join(' | ')}`)
+    }
+  }
+  await browser.close()
+} catch (e) {
+  problems.push('중단: ' + String(e).slice(0, 200))
+} finally {
+  // 테스트 계정이 남기는 것들을 전부 지운다.
+  if (userId) {
+    const sessions = await (await api(`/rest/v1/quiz_sessions?user_id=eq.${userId}&select=id`)).json()
+    for (const s of Array.isArray(sessions) ? sessions : []) {
+      await api(`/rest/v1/quiz_answers?session_id=eq.${s.id}`, { method: 'DELETE' })
+      await api(`/rest/v1/quiz_sessions?id=eq.${s.id}`, { method: 'DELETE' })
+    }
+    await api(`/rest/v1/bookmarks?user_id=eq.${userId}`, { method: 'DELETE' })
+    await api(`/rest/v1/manuscript_submissions?user_id=eq.${userId}`, { method: 'DELETE' })
+    await api(`/auth/v1/admin/users/${userId}`, { method: 'DELETE' })
+  }
+}
+
+console.log(`${BASE} · 훑은 화면 ${visited}개 (실글/KBS 두 모드)`)
+console.log(`가장 느린 화면: ${slowest.route} ${slowest.ms}ms`)
+if (problems.length) {
+  console.log(`\n문제 ${problems.length}건`)
+  problems.forEach((p) => console.log('  ' + p))
+  // process.exit()는 아직 안 나간 stdout을 잘라 먹는다 — 종료 코드만 남기고 자연히 끝낸다.
+  process.exitCode = 1
+} else {
+  console.log('문제 없음 ✓')
+}

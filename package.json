@@ -11,6 +11,8 @@
     "check:schema": "python scripts/schema_drift_check.py",
     "check:questions": "python scripts/audit_questions.py",
     "check:duplicates": "python scripts/question_overlap_check.py 0.35",
+    "check:pages": "node scripts/authed_page_sweep.mjs",
+    "check:blog": "python scripts/blog_keyword_overlap.py 0.35",
     "funnel": "python scripts/funnel_report.py"
   },
   "dependencies": {
