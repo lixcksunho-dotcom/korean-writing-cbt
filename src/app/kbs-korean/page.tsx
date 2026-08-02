@@ -19,6 +19,7 @@ export const metadata: Metadata = {
   ],
   alternates: { canonical: "/kbs-korean" },
   openGraph: {
+    images: [{ url: "/opengraph-image.png", width: 1200, height: 630 }],
     title: "KBS한국어능력시험 시험일정·등급·영역 총정리",
     description: "990점 8등급, 100문항 120분, 7개 영역 구성과 공부 순서를 한눈에. 무료 CBT 모의고사 제공.",
     url: "/kbs-korean",

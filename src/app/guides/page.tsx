@@ -14,6 +14,7 @@ export const metadata: Metadata = {
   ],
   alternates: { canonical: "/guides" },
   openGraph: {
+    images: [{ url: "/opengraph-image.png", width: 1200, height: 630 }],
     title: "학습 자료 모음 — 어휘·어법·작문 총정리",
     description: "사자성어·속담·순화어·맞춤법·높임법·원고지 작성법까지 무료 국어 학습 자료.",
     url: "/guides",

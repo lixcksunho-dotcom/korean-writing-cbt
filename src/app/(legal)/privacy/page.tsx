@@ -2,8 +2,9 @@ import type { Metadata } from 'next'
 import { BUSINESS, biz } from '@/lib/businessInfo'
 
 export const metadata: Metadata = {
-  title: '개인정보처리방침 · 실글패스',
-  description: '실글패스(한국실용글쓰기 자격 대비) 개인정보처리방침',
+  title: '개인정보처리방침',
+  description:
+    '실글패스가 수집하는 개인정보와 이용 목적(회원 식별·로그인 유지, 결제와 환불 처리, 서비스 개선 및 부정이용 방지), 보관 기간과 파기, 이용자의 권리와 문의 방법을 안내합니다.',
 }
 
 export default function PrivacyPage() {

@@ -2,8 +2,9 @@ import type { Metadata } from 'next'
 import { BUSINESS, biz } from '@/lib/businessInfo'
 
 export const metadata: Metadata = {
-  title: '취소·환불 정책 · 실글패스',
-  description: '실글패스(한국실용글쓰기 자격 대비) 취소 및 환불 정책',
+  title: '취소·환불 정책',
+  description:
+    '실글패스 30일 이용권의 취소·환불 기준 — 전자상거래법에 따른 청약철회 요건, 콘텐츠를 이용한 경우의 처리, 계정 공유 등 환불이 제한되는 경우와 신청 방법을 안내합니다.',
 }
 
 export default function RefundPage() {

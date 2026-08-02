@@ -17,6 +17,7 @@ export const metadata: Metadata = {
   ],
   alternates: { canonical: "/exam-compare" },
   openGraph: {
+    images: [{ url: "/opengraph-image.png", width: 1200, height: 630 }],
     title: "한국실용글쓰기 vs KBS한국어능력시험 — 차이·비교",
     description: "형식·배점·영역·활용을 비교하고 나에게 맞는 국어 자격시험을 고르세요.",
     url: "/exam-compare",

@@ -45,6 +45,7 @@ export const metadata: Metadata = {
     types: { "application/rss+xml": `${SITE_URL}/rss.xml` },
   },
   openGraph: {
+    images: [{ url: "/opengraph-image.png", width: 1200, height: 630 }],
     type: "website",
     locale: "ko_KR",
     url: SITE_URL,

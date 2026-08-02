@@ -4,8 +4,9 @@ import { Mail, Phone, Clock } from 'lucide-react'
 import { BUSINESS, biz } from '@/lib/businessInfo'
 
 export const metadata: Metadata = {
-  title: '고객센터 · 실글패스',
-  description: '실글패스(한국실용글쓰기 자격 대비) 고객센터 — 문의 안내 및 자주 묻는 질문',
+  title: '고객센터',
+  description:
+    '실글패스 문의 안내 — 이메일·전화와 운영 시간, 결제와 이용권, 모의고사 응시와 AI 첨삭에 대해 자주 묻는 질문을 모았습니다. 답을 못 찾으면 직접 문의해 주세요.',
 }
 
 const FAQS = [

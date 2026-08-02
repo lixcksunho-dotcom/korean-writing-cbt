@@ -16,6 +16,7 @@ export const metadata: Metadata = {
   ],
   alternates: { canonical: "/standard-words" },
   openGraph: {
+    images: [{ url: "/opengraph-image.png", width: 1200, height: 630 }],
     title: "표준어 바로 알기 — 비표준어·웃/윗 구분",
     description: "헷갈리는 비표준어를 표준어로, ‘웃-/윗-/위-’ 구분까지 정리.",
     url: "/standard-words",

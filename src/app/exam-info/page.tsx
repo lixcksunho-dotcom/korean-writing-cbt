@@ -19,6 +19,7 @@ export const metadata: Metadata = {
   ],
   alternates: { canonical: "/exam-info" },
   openGraph: {
+    images: [{ url: "/opengraph-image.png", width: 1200, height: 630 }],
     title: "한국실용글쓰기 시험일정·등급·점수 총정리",
     description:
       "시험일정·등급 기준·점수 구성·응시 방법을 한눈에. 무료 CBT 모의고사로 실력 확인.",

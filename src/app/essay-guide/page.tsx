@@ -17,6 +17,7 @@ export const metadata: Metadata = {
   ],
   alternates: { canonical: "/essay-guide" },
   openGraph: {
+    images: [{ url: "/opengraph-image.png", width: 1200, height: 630 }],
     title: "한국실용글쓰기 서술형 유형별 공략 (700점)",
     description: "요약·고쳐쓰기·안내문/이메일·원고지 보고서 쓰는 법과 채점 포인트 정리.",
     url: "/essay-guide",

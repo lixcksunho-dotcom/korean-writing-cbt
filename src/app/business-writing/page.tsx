@@ -16,6 +16,7 @@ export const metadata: Metadata = {
   ],
   alternates: { canonical: "/business-writing" },
   openGraph: {
+    images: [{ url: "/opengraph-image.png", width: 1200, height: 630 }],
     title: "공문서·비즈니스 이메일 쓰는 법과 예시",
     description: "공문서 구조, 안내문·기안문·이메일 예시와 정중한 표현 모음.",
     url: "/business-writing",

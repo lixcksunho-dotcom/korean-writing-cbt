@@ -18,6 +18,7 @@ export const metadata: Metadata = {
   ],
   alternates: { canonical: "/word-counter" },
   openGraph: {
+    images: [{ url: "/opengraph-image.png", width: 1200, height: 630 }],
     title: "글자수 세기 — 공백 포함·제외, 원고지 칸수까지",
     description:
       "공백 포함·제외 글자수, 단어·줄·바이트, 원고지 칸수·매수를 실시간 계산하는 무료 도구.",

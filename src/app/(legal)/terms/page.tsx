@@ -2,8 +2,10 @@ import type { Metadata } from 'next'
 import { BUSINESS, biz } from '@/lib/businessInfo'
 
 export const metadata: Metadata = {
-  title: '이용약관 · 실글패스',
-  description: '실글패스(한국실용글쓰기 자격 대비) 서비스 이용약관',
+  // 제목에 '실글패스'를 또 넣으면 루트 template(%s | 실글패스)과 겹쳐 두 번 붙는다.
+  title: '이용약관',
+  description:
+    '실글패스 서비스 이용약관 — 회원가입과 계정, 서비스 제공 범위, 유료서비스 결제와 청약철회·환불, 이용자의 의무, 저작권과 면책, 분쟁해결까지 12개 조항을 안내합니다.',
 }
 
 export default function TermsPage() {

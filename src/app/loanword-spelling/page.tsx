@@ -16,6 +16,7 @@ export const metadata: Metadata = {
   ],
   alternates: { canonical: "/loanword-spelling" },
   openGraph: {
+    images: [{ url: "/opengraph-image.png", width: 1200, height: 630 }],
     title: "외래어 표기법 — 자주 틀리는 외래어 표기 총정리",
     description: "된소리 없이, 받침은 7개만. 초콜릿·리모컨 등 헷갈리는 외래어 표기를 틀림→바름으로.",
     url: "/loanword-spelling",

@@ -16,6 +16,7 @@ export const metadata: Metadata = {
   ],
   alternates: { canonical: "/proverbs" },
   openGraph: {
+    images: [{ url: "/opengraph-image.png", width: 1200, height: 630 }],
     title: "시험에 자주 나오는 속담 모음 (뜻·풀이)",
     description: "노력·말·처세·인간관계 등 핵심 속담을 주제별로 뜻과 함께 정리.",
     url: "/proverbs",

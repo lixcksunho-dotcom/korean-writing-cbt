@@ -16,6 +16,7 @@ export const metadata: Metadata = {
   ],
   alternates: { canonical: "/idioms" },
   openGraph: {
+    images: [{ url: "/opengraph-image.png", width: 1200, height: 630 }],
     title: "시험에 자주 나오는 사자성어 모음 (뜻·풀이)",
     description: "노력·우정·처세·배움 등 핵심 사자성어를 주제별로 뜻과 함께 정리.",
     url: "/idioms",

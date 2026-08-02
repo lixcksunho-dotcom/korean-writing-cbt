@@ -21,12 +21,14 @@ export async function generateMetadata({
   if (!cat) return { title: '카테고리를 찾을 수 없어요' }
   return {
     title: `${cat.label} — 한국실용글쓰기 블로그`,
-    description: `${cat.label}: ${cat.blurb}. 한국실용글쓰기 독학에 필요한 글을 모았어요.`,
+    // 글 편수를 넣어 카테고리마다 설명이 달라지게 한다(짧은 blurb는 50자도 안 돼 검색결과에서 잘린다).
+    description: `${cat.label}: ${cat.blurb}. 한국실용글쓰기 독학에 필요한 글 ${getPostsByCategory(cat.slug).length}편을 모았습니다. 시험 준비하며 궁금했던 것부터 찾아보세요.`,
     alternates: {
       canonical: `/blog/category/${cat.slug}`,
       types: { 'application/rss+xml': 'https://kptest.cloud/rss.xml' },
     },
     openGraph: {
+      images: [{ url: "/opengraph-image.png", width: 1200, height: 630 }],
       title: `${cat.label} — 한국실용글쓰기 블로그`,
       description: cat.blurb,
       url: `/blog/category/${cat.slug}`,

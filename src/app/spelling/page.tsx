@@ -16,6 +16,7 @@ export const metadata: Metadata = {
   ],
   alternates: { canonical: "/spelling" },
   openGraph: {
+    images: [{ url: "/opengraph-image.png", width: 1200, height: 630 }],
     title: "자주 틀리는 맞춤법·띄어쓰기 모음",
     description: "되/돼, 안/않, 왠/웬, 며칠… 헷갈리는 표기를 틀림→바름으로 정리.",
     url: "/spelling",

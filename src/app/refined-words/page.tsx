@@ -17,6 +17,7 @@ export const metadata: Metadata = {
   ],
   alternates: { canonical: "/refined-words" },
   openGraph: {
+    images: [{ url: "/opengraph-image.png", width: 1200, height: 630 }],
     title: "순화어(다듬은 말) 모음 — 쉬운 우리말로",
     description: "외래어·일본어 투·어려운 한자어를 쉬운 우리말로 바꾼 순화어를 주제별로 정리.",
     url: "/refined-words",

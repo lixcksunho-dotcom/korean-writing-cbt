@@ -16,6 +16,7 @@ export const metadata: Metadata = {
   ],
   alternates: { canonical: "/honorifics" },
   openGraph: {
+    images: [{ url: "/opengraph-image.png", width: 1200, height: 630 }],
     title: "높임법 바로 쓰기 — 높임 어휘·사물 존대 오류 정리",
     description: "높임 어휘와 ‘커피 나오셨습니다’ 같은 사물 존대 오류를 바르게 고치는 법.",
     url: "/honorifics",

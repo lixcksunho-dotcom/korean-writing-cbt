@@ -17,6 +17,7 @@ export const metadata: Metadata = {
   ],
   alternates: { canonical: "/manuscript-guide" },
   openGraph: {
+    images: [{ url: "/opengraph-image.png", width: 1200, height: 630 }],
     title: "원고지 작성법 — 칸·문장부호·띄어쓰기 총정리",
     description: "한 칸 한 글자, 숫자·알파벳, 문장부호, 들여쓰기까지 원고지 표준 규정을 정리했어요.",
     url: "/manuscript-guide",
