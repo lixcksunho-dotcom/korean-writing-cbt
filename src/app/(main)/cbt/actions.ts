@@ -279,11 +279,34 @@ export async function submitSession(
     return { session_id: sessionId, question_id: q.id, user_answer: userAnswer, is_correct: isCorrect }
   })
 
-  await supabase.from('quiz_answers').insert(answerRows)
-  await supabase
+  // 답안 저장이 실패했는데 세션만 완료로 찍으면, 사용자는 점수만 있고 답안이 없는 결과를
+  // 보게 된다. 문항별 복기도 오답노트도 비고, 클라이언트가 들고 있던 답안은 이미 버려진 뒤다.
+  // 그러니 여기서 멈춰야 한다 — 화면에 남아 있으면 다시 제출할 수 있다.
+  // insert가 아니라 upsert인 이유: 답안은 들어갔는데 아래 세션 업데이트만 실패하면
+  // 사용자가 다시 제출하게 되는데, 그때 (session_id, question_id) 유니크 제약에 걸려
+  // 영영 못 끝낸다. 같은 키면 덮어쓰게 해 재시도가 되도록 한다.
+  const { error: answersError } = await supabase
+    .from('quiz_answers')
+    .upsert(answerRows, { onConflict: 'session_id,question_id' })
+  if (answersError) {
+    console.error('[cbt] 답안 저장 실패 — 세션을 완료로 표시하지 않음', {
+      sessionId, code: answersError.code, message: answersError.message,
+    })
+    throw new Error('답안을 저장하지 못했어요. 잠시 후 다시 제출해 주세요.')
+  }
+
+  const { error: sessionError } = await supabase
     .from('quiz_sessions')
     .update({ completed_at: new Date().toISOString(), score, total: autoGradable.length })
     .eq('id', sessionId)
+  if (sessionError) {
+    // 답안은 들어갔으니 데이터는 살아 있다. completed_at이 아직 비어 있어 재제출이
+    // 가능하고, 답안은 upsert라 같은 값으로 덮어써진다.
+    console.error('[cbt] 세션 완료 표시 실패', {
+      sessionId, code: sessionError.code, message: sessionError.message,
+    })
+    throw new Error('채점 결과를 저장하지 못했어요. 잠시 후 다시 제출해 주세요.')
+  }
 
   // 퍼널: 모의고사 완료(가입→첫시험→체험→구독 상단 퍼널 측정용)
   // 이벤트 키는 formatExamId로 — 실용글쓰기는 기존 "year-round" 유지, KBS는 "kbs-year-round".

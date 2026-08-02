@@ -64,6 +64,7 @@ export default function ExamPlayer({
   const [timeLeft, setTimeLeft] = useState(initialTimeLeft ?? EXAM_MINUTES * 60)
   const [isPending, startTransition] = useTransition()
   const [saving, setSaving] = useState(false)
+  const [submitError, setSubmitError] = useState('')
 
   const answersRef = useRef(answers)
   useEffect(() => { answersRef.current = answers }, [answers])
@@ -133,7 +134,15 @@ export default function ExamPlayer({
     if (timeLeft > 0 || autoSubmittedRef.current) return
     autoSubmittedRef.current = true
     startTransition(async () => {
-      await submitSession(sessionId, answersRef.current)
+      try {
+        await submitSession(sessionId, answersRef.current)
+      } catch (e) {
+        // 시간 종료 자동 제출이 실패해도 답안은 브라우저에 남겨 둔다. 여기서 자동 재시도는
+        // 하지 않는다 — timeLeft가 이미 0이라 이 이펙트가 다시 돌지 않고, 억지로 돌리면
+        // 실패가 계속될 때 무한 반복이 된다. 대신 오류를 띄워 직접 제출하게 한다.
+        setSubmitError(e instanceof Error ? e.message : '제출에 실패했어요. 제출하기를 다시 눌러 주세요.')
+        return
+      }
       clearDraft(sessionId)
       router.push(`/cbt/${examYear}-${examRound}/result?session=${sessionId}`)
     })
@@ -144,8 +153,16 @@ export default function ExamPlayer({
   }
 
   function handleSubmit() {
+    setSubmitError('')
     startTransition(async () => {
-      await submitSession(sessionId, answersRef.current)
+      try {
+        await submitSession(sessionId, answersRef.current)
+      } catch (e) {
+        // 저장에 실패했으면 화면에 남아야 한다. 여기서 초안을 지우거나 결과로 넘기면
+        // 사용자가 방금 푼 답안이 통째로 사라진다.
+        setSubmitError(e instanceof Error ? e.message : '제출에 실패했어요. 잠시 후 다시 시도해 주세요.')
+        return
+      }
       clearDraft(sessionId)
       router.push(`/cbt/${examYear}-${examRound}/result?session=${sessionId}`)
     })
@@ -270,6 +287,14 @@ export default function ExamPlayer({
             </button>
           </div>
         </div>
+        {/* 제출이 실패하면 화면에 그대로 남는다. 왜 안 넘어갔는지 알려 주지 않으면
+            사용자는 답안이 날아간 줄 알고 새로고침해 버린다. */}
+        {submitError && (
+          <div className="mb-2 flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-3.5 py-2.5 text-xs text-red-600">
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+            <span>{submitError} 작성한 답안은 그대로 남아 있어요.</span>
+          </div>
+        )}
         <div className="h-1.5 bg-[#f1f5f9] rounded-full overflow-hidden">
           <div
             className="h-full bg-gradient-to-r from-[#1e3a5f] to-[#3d6aa0] rounded-full transition-all duration-500"
