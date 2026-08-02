@@ -29,8 +29,8 @@ def load_env():
     return d
 
 
-def live_tables(env):
-    """PostgREST 루트가 노출 중인 테이블 목록을 그대로 알려 준다."""
+def live_schema(env):
+    """PostgREST 루트의 OpenAPI 스펙에서 테이블과 각 테이블의 컬럼을 그대로 읽는다."""
     r = requests.get(
         f"{env['NEXT_PUBLIC_SUPABASE_URL']}/rest/v1/",
         headers={
@@ -40,7 +40,13 @@ def live_tables(env):
         timeout=30,
     )
     r.raise_for_status()
-    return {p.lstrip("/") for p in r.json().get("paths", {}) if p != "/"}
+    spec = r.json()
+    tables = {p.lstrip("/") for p in spec.get("paths", {}) if p != "/"}
+    columns = {
+        name: set((d.get("properties") or {}).keys())
+        for name, d in (spec.get("definitions") or {}).items()
+    }
+    return tables, columns
 
 
 def migration_tables():
@@ -64,9 +70,69 @@ def code_tables():
     return found
 
 
+# .from('t') 뒤에 이어지는 체인에서 실제로 참조하는 컬럼을 뽑는다.
+# 없는 컬럼도 테이블 누락과 똑같이 조용히 실패한다(supabase-js는 throw 대신 {error}).
+CHAIN_LEN = 900
+FROM_RE = re.compile(r"(?<!storage)\.from\(\s*[\"'](\w+)[\"']\s*\)")
+SELECT_RE = re.compile(r"\.select\(\s*[\"'`]([^\"'`]*)[\"'`]", re.S)
+FILTER_RE = re.compile(r"\.(?:eq|neq|gt|gte|lt|lte|like|ilike|is|in|order)\(\s*[\"']([A-Za-z_][\w]*)[\"']")
+
+
+def top_level_select_columns(sel: str):
+    """select 문자열에서 '이 테이블의' 컬럼만 돌려준다.
+
+    임베드(`questions(number, type)`)의 괄호 안은 다른 테이블 컬럼이므로 건너뛴다.
+    괄호 깊이를 세지 않고 콤마로만 자르면 그 안쪽 이름이 이 테이블 컬럼으로 잘못 잡힌다.
+    """
+    cols, buf, depth = [], "", 0
+    for ch in sel:
+        if ch == "(":
+            depth += 1
+        elif ch == ")":
+            depth -= 1
+        elif ch == "," and depth == 0:
+            cols.append(buf)
+            buf = ""
+            continue
+        if depth == 0:
+            buf += ch
+    cols.append(buf)
+
+    out = set()
+    for part in cols:
+        part = part.strip()
+        if not part or part == "*" or "(" in part:
+            continue  # 임베드는 이름만 남으므로 제외
+        if ":" in part:  # 별칭(alias:col)
+            part = part.split(":", 1)[1].strip()
+        if re.fullmatch(r"[A-Za-z_]\w*", part):
+            out.add(part)
+    return out
+
+
+def referenced_columns():
+    """{테이블: {컬럼: {파일…}}}"""
+    found = {}
+    for f in (ROOT / "src").rglob("*.ts*"):
+        text = f.read_text(encoding="utf-8")
+        starts = [m.start() for m in FROM_RE.finditer(text)]
+        for m in FROM_RE.finditer(text):
+            table = m.group(1)
+            # 체인은 '다음 .from(' 직전까지다. 안 끊으면 뒤 쿼리의 컬럼이 딸려 들어온다.
+            nxt = next((s for s in starts if s > m.start()), len(text))
+            chain = text[m.end(): min(nxt, m.end() + CHAIN_LEN)]
+            cols = set(FILTER_RE.findall(chain))
+            sel = SELECT_RE.search(chain)
+            if sel:
+                cols |= top_level_select_columns(sel.group(1))
+            for c in cols:
+                found.setdefault(table, {}).setdefault(c, set()).add(str(f.relative_to(ROOT)))
+    return found
+
+
 def main():
     env = load_env()
-    live = live_tables(env)
+    live, live_cols = live_schema(env)
     mig = migration_tables()
     code = code_tables()
 
@@ -87,7 +153,24 @@ def main():
         print(f"\n[경고] 마이그레이션에만 있고 DB에 없는 테이블: {', '.join(sorted(unapplied))}")
         print("       => Supabase SQL Editor에서 해당 마이그레이션을 실행해야 한다.")
 
-    if not broken and not unapplied:
+    # 컬럼 단위. 테이블이 있어도 없는 컬럼을 고르면 결과가 통째로 비어 돌아온다.
+    bad_cols = []
+    for table, cols in sorted(referenced_columns().items()):
+        known = live_cols.get(table)
+        if not known:
+            continue  # 없는 테이블은 위에서 이미 보고했다
+        for col, files in sorted(cols.items()):
+            if col not in known:
+                bad_cols.append((table, col, sorted(files)))
+
+    if bad_cols:
+        print(f"\n[치명] 코드가 참조하지만 테이블에 없는 컬럼 {len(bad_cols)}개:")
+        for table, col, files in bad_cols:
+            print(f"  - {table}.{col}")
+            for f in files:
+                print(f"      {f}")
+
+    if not broken and not unapplied and not bad_cols:
         print("불일치 없음 ✓")
         return 0
     return 1
