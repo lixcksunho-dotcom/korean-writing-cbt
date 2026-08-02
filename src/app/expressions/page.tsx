@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Fragment } from "react";
 import Link from "next/link";
 import LogoGlyph from "@/components/layout/LogoGlyph";
 import SiteFooter from "@/components/layout/SiteFooter";
@@ -187,8 +188,9 @@ export default function ExpressionsPage() {
             글자 그대로의 뜻이 아니라 <strong className="text-[#334155]">굳어진 특별한 의미</strong>를 익히는 것이 핵심입니다.
           </p>
 
-          {GROUPS.map((g) => (
-            <section key={g.theme} className="mb-8">
+          {GROUPS.map((g, gi) => (
+            <Fragment key={g.theme}>
+            <section className="mb-8">
               <h2 className="text-2xl font-black text-[#0f172a] mb-3">{g.theme}</h2>
               <div className="overflow-hidden rounded-xl border border-[#e2e8f0]">
                 <table className="w-full text-sm">
@@ -203,6 +205,9 @@ export default function ExpressionsPage() {
                 </table>
               </div>
             </section>
+            {/* 읽고 끝나지 않게 — 첫 묶음을 본 직후, 아직 페이지를 떠나기 전에 */}
+            {gi === 0 && <TopicQuiz topic="expressions" />}
+            </Fragment>
           ))}
 
           {/* CTA */}
@@ -221,8 +226,6 @@ export default function ExpressionsPage() {
             </div>
           </section>
 
-          {/* 읽고 끝나지 않게 — 읽은 자리에서 바로 풀어보고 실전으로 잇는다 */}
-          <TopicQuiz topic="expressions" />
 
           {/* FAQ */}
           <section className="mt-12">
