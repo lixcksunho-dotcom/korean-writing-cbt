@@ -1,28 +1,21 @@
 import type { Metadata } from "next";
-import { Noto_Sans_KR } from "next/font/google";
 import "./globals.css";
 
 import Analytics from "@/components/analytics/Analytics";
 import TrafficTracker from "@/components/analytics/TrafficTracker";
 
-// next/font가 빌드 때 폰트를 받아 자체 호스팅한다 → googleapis·gstatic 왕복이 사라진다.
-// preload는 끈다: 한글 서브셋은 통째로 수 MB라 preload하면 첫 로드에 전부 받아 버린다.
-//   끄면 unicode-range 청크 방식이 유지돼 실제 쓰인 글자 조각만 받는다.
-// adjustFontFallback은 끈다: 이게 만드는 보정 대체 폰트는 src: local(Arial)이라
-//   한글 글리프가 없다. 한글은 그다음 폰트(시스템 한글 글꼴)로 넘어가므로 override가
-//   닿지 않는다. 프로덕션 실측으로도 켬/끔 모두 3G에서 CLS 0.1003으로 동일했다.
-//   (느린 회선에서 제목이 한 줄 줄며 생기는 이동은 이 옵션으로는 해결되지 않는다.)
-const notoSansKR = Noto_Sans_KR({
-  weight: ["400", "500", "600", "700", "900"],
-  preload: false,
-  adjustFontFallback: false,
-  // optional: 폰트가 제때 못 오면 그 방문은 시스템 한글 폰트로 그리고 스왑하지 않는다.
-  //   한글은 글리프가 무거워 swap이면 본문이 통째로 다시 그려지며 밀린다(실측 CLS 0.054~0.099).
-  //   optional로 두면 전 페이지 CLS 0.000. 폰트는 뒤에서 받아 캐시되므로 재방문부터는 정상 노출.
-  display: "optional",
-  variable: "--font-noto-sans-kr",
-});
-
+// 웹폰트(Noto Sans KR)를 걷어내고 시스템 한글 글꼴로 그린다. 글꼴 지정은 globals.css.
+//
+// 왜 뺐는지 — 실측 결과가 셋 다 나쁜 쪽이었다(2026-08-03, 프로덕션):
+//  1. 느린 회선(1.6Mbps·CPU 4배)에서 뒤늦게 적용되며 CLS 0.167(/exam-info)·0.123(/blog).
+//     한글은 unicode-range 서브셋이 621개라 display:optional의 차단 구간이 서브셋마다
+//     따로 돌고, 늦게 도착한 조각이 하나씩 적용되며 문단이 계속 다시 접힌다.
+//  2. 빠른 회선에서는 아예 적용되지 않았다(글리프 집계: Malgun Gothic 48% / Arial 52%).
+//     즉 회선 속도에 따라 글꼴이 달라져 타이포그래피가 일정하지 않았다.
+//  3. woff2 요청을 막고 재면 같은 조건에서 CLS 0.0000 — 밀림의 원인이 폰트임이 확정된다.
+//
+// 안드로이드의 Noto Sans CJK KR은 Noto Sans KR과 사실상 같은 디자인이고, iOS는 Apple SD
+// Gothic Neo, 윈도우는 맑은 고딕이라 시스템 글꼴만으로도 한글 본문 품질이 떨어지지 않는다.
 const SITE_URL = "https://kptest.cloud";
 
 export const metadata: Metadata = {
@@ -123,7 +116,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ko" className={`h-full ${notoSansKR.variable}`}>
+    <html lang="ko" className="h-full">
       <body className="min-h-full flex flex-col">
         <script
           type="application/ld+json"

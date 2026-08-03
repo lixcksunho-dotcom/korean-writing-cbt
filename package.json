@@ -16,7 +16,8 @@
     "funnel": "python scripts/funnel_report.py",
     "cleanup:test": "node scripts/cleanup_test_accounts.mjs",
     "check:contrast": "node scripts/contrast_check.mjs",
-    "check:mobile": "node scripts/mobile_ux_check.mjs"
+    "check:mobile": "node scripts/mobile_ux_check.mjs",
+    "check:vitals": "node scripts/web_vitals_check.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.100.1",
