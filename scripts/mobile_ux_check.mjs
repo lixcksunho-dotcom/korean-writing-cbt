@@ -106,12 +106,14 @@ function audit() {
     if (fs && fs < 12) out.tiny.push({ text: txt.slice(0, 20), fs })
   }
 
-  // 화면에 떠 있는 것(고정 CTA 바·플로팅 버튼)이 본문 버튼을 덮고 있는지.
+  // 떠다니는 버튼이 조작 가능한 것 위에 앉아 있는지.
   // 겹치면 어느 쪽이 눌릴지 z-index 순서에 달리는데, 하필 전환 버튼이 덮이면 매출이 샌다.
+  // 화면 폭을 꽉 채우는 하단 바는 뺀다 — 본문을 덮는 게 그 물건의 본질이고, 스크롤하면 지나간다.
   for (const f of document.querySelectorAll('body *')) {
     if (getComputedStyle(f).position !== 'fixed') continue
     const fr = f.getBoundingClientRect()
     if (fr.height < 20 || fr.width < 20 || fr.top > innerHeight || fr.bottom < 0) continue
+    if (fr.width >= vw * 0.9) continue
     for (const t of document.querySelectorAll('a[href], button, [role="button"]')) {
       if (f.contains(t) || t.contains(f)) continue
       if (getComputedStyle(t).position === 'fixed') continue
