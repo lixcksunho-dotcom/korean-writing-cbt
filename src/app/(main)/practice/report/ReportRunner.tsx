@@ -199,7 +199,7 @@ export default function ReportRunner({
 
         {/* 모범답안 */}
         <div className="mt-4">
-          <button onClick={() => setShowModel(v => !v)} className="text-xs font-semibold text-amber-700 hover:underline">
+          <button onClick={() => setShowModel(v => !v)} className="py-2.5 text-xs font-semibold text-amber-700 hover:underline">
             {showModel ? '모범 답안 숨기기' : '모범 답안 보기'}
           </button>
           {showModel && (
