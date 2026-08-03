@@ -99,7 +99,7 @@ export default function ScheduleModal({ program = 'silyong' }: { program?: strin
         // 모바일 고정 CTA가 떠 있으면 그 높이만큼 올라간다(StickyMobileCTA가 알려 준다).
         // 안 그러면 '무료 시작' 버튼 위에 그대로 겹쳐 앉는다.
         style={{ bottom: 'calc(1.25rem + var(--sticky-cta-h, 0px))' }}
-        className="fixed right-5 z-40 flex items-center gap-2 bg-[#0f1f3d]/95 backdrop-blur text-white text-sm font-bold p-3 sm:pl-3 sm:pr-4 sm:py-2.5 rounded-full shadow-lg hover:-translate-y-0.5 hover:shadow-xl transition-all border border-white/10"
+        className="fixed right-5 z-40 flex items-center gap-2 bg-[#0f1f3d]/95 backdrop-blur text-white text-sm font-bold p-3.5 sm:pl-3 sm:pr-4 sm:py-2.5 rounded-full shadow-lg hover:-translate-y-0.5 hover:shadow-xl transition-all border border-white/10"
       >
         <CalendarDays className="h-4 w-4 text-[#f59e0b]" />
         <span className="hidden sm:inline">시험일정</span>
