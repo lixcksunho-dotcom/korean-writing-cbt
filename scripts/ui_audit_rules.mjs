@@ -188,7 +188,16 @@ export function browserAuditMobile() {
       const ov = Math.max(0, Math.min(fr.right, tr.right) - Math.max(fr.left, tr.left)) *
                  Math.max(0, Math.min(fr.bottom, tr.bottom) - Math.max(fr.top, tr.top))
       const pct = Math.round((ov / (tr.width * tr.height)) * 100)
-      if (pct >= 5) out.covered.push({ over: label(f).slice(0, 16), under: label(t).slice(0, 16), pct })
+      if (pct < 5) continue
+      // 덮인 쪽도 화면에 붙어 있으면(고정·스티키 안) 스크롤해도 안 비켜서 영영 못 누른다.
+      // 본문 위에 잠깐 겹치는 것과는 무게가 다르다.
+      let anc = t.parentElement, pinned = false
+      while (anc && anc !== document.body) {
+        const ps = getComputedStyle(anc).position
+        if (ps === 'fixed' || ps === 'sticky') { pinned = true; break }
+        anc = anc.parentElement
+      }
+      out.covered.push({ over: label(f).slice(0, 16), under: label(t).slice(0, 16), pct, pinned })
     }
   }
   return out
@@ -209,6 +218,11 @@ export function mobileProblemLines(path, r) {
   for (const x of uniq(r.crowded, (v) => v.a + v.b).slice(0, 4)) out.push({ hard: true, line: `${path}  누름대상 간격 ${x.gap}px "${x.a}" ↔ "${x.b}"` })
   for (const x of uniq(r.tiny, (v) => v.text).slice(0, 4)) out.push({ hard: x.fs < 11, line: `${path}  ${x.fs}px 글자 "${x.text}"` })
   for (const x of uniq(r.escaped, (v) => v.what)) out.push({ hard: true, line: `${path}  떠 있는 "${x.what}"가 화면 아래로 ${x.over}px 나감 — 버튼 ${x.hidden}개가 화면 밖` })
-  for (const x of uniq(r.covered, (v) => v.over + v.under)) out.push({ hard: true, line: `${path}  떠 있는 "${x.over}"가 "${x.under}"를 ${x.pct}% 덮음` })
+  for (const x of uniq(r.covered, (v) => v.over + v.under)) {
+    out.push({
+      hard: x.pinned,
+      line: `${path}  떠 있는 "${x.over}"가 ${x.pinned ? '화면에 붙어 있는 ' : ''}"${x.under}"를 ${x.pct}% 덮음`,
+    })
+  }
   return out
 }

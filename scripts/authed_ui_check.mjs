@@ -100,14 +100,20 @@ try {
     return last
   }
 
+  // 배포 직후나 인증 레이트리밋에 걸리면 한 번에 안 들어간다 — 몇 번 다시 해 본다.
   async function login(p, acc) {
-    await p.goto(`${BASE}/login`, { waitUntil: 'domcontentloaded' })
-    await p.fill('input[type="email"]', acc.email)
-    await p.fill('input[type="password"]', acc.password)
-    await p.click('button[type="submit"]')
-    for (let i = 0; i < 45; i++) {
-      if (!new URL(p.url()).pathname.includes('/login')) return true
-      await p.waitForTimeout(1000)
+    for (let attempt = 0; attempt < 3; attempt++) {
+      await p.goto(`${BASE}/login`, { waitUntil: 'domcontentloaded' })
+      await p.fill('input[type="email"]', acc.email)
+      await p.fill('input[type="password"]', acc.password)
+      await p.click('button[type="submit"]')
+      for (let i = 0; i < 30; i++) {
+        if (!new URL(p.url()).pathname.includes('/login')) return true
+        await p.waitForTimeout(1000)
+      }
+      const msg = await p.evaluate(() => document.body.innerText.slice(0, 120).replace(/\s+/g, ' ')).catch(() => '')
+      console.log(`  로그인 재시도 ${attempt + 1}/3 — 화면: ${msg}`)
+      await p.waitForTimeout(5000)
     }
     return false
   }
