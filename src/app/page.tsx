@@ -7,6 +7,7 @@ import ReviewMarquee from "@/components/landing/ReviewMarquee";
 import StickyMobileCTA from "@/components/landing/StickyMobileCTA";
 import SiteFooter from "@/components/layout/SiteFooter";
 import ScheduleModal from "@/components/schedule/ScheduleModal";
+import { GradingSampleCompact } from "@/components/manuscript/GradingSample";
 import { questionBank } from '@/lib/questionBank'
 
 // ISR 캐시로 빠르게 응답(매 요청 SSR 시 Supabase 왕복으로 7초+ 느려지던 문제 해소).
@@ -256,10 +257,16 @@ export default async function HomePage() {
               <div className="text-xs text-amber-200/80 mt-0.5">서술형 · AI 첨삭</div>
             </div>
           </div>
-          <p className="text-white/70 leading-relaxed mb-7 max-w-xl mx-auto">
-            실글패스는 AI가 <b className="text-white">조건 충족·맞춤법·논리 구성</b>을 항목별로 채점하고 첨삭까지 해 줘요.
-            채점해 줄 사람이 없어도 혼자서 고쳐 쓰며 실력을 올릴 수 있어요.
+          <p className="text-white/70 leading-relaxed mb-6 max-w-xl mx-auto">
+            실글패스는 AI가 <b className="text-white">원고지 사용법·답안 기준 부합·맞춤법</b>을 항목별로 채점하고
+            틀린 곳을 하나씩 고쳐 줘요. 채점해 줄 사람이 없어도 혼자서 고쳐 쓰며 실력을 올릴 수 있어요.
           </p>
+
+          {/* 말로만 설명하지 않고 결과가 어떻게 생겼는지 그대로 보여 준다 */}
+          <div className="mb-7 max-w-md mx-auto">
+            <GradingSampleCompact />
+          </div>
+
           <Link href="/signup" className="btn-gold inline-flex items-center gap-2 font-bold px-8 py-3.5 rounded-xl text-sm">
             서술형 AI 첨삭 무료로 체험 <ArrowRight className="h-4 w-4" />
           </Link>

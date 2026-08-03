@@ -49,6 +49,60 @@ const CORRECTIONS = [
 
 const TOTAL = BREAKDOWN.reduce((sum, b) => sum + b.score, 0)
 
+/**
+ * 랜딩용 압축판. 랜딩은 "AI가 항목별로 채점하고 첨삭해 준다"고 말만 하고 정작 결과가
+ * 어떻게 생겼는지는 안 보여 주고 있었다 — 사려는 사람이 판단할 근거가 없다.
+ * 접어 두면 아무도 안 펴므로 여기서는 펼친 채로, 대신 교정 사항은 두 건만 보여 준다.
+ */
+export function GradingSampleCompact() {
+  return (
+    <div className="rounded-2xl bg-white p-5 text-left shadow-[0_8px_32px_rgba(0,0,0,0.18)]">
+      <div className="mb-4 flex items-center justify-between gap-2">
+        <p className="text-sm font-black text-[#0f172a]">AI 첨삭은 이렇게 나옵니다</p>
+        <span className="shrink-0 rounded-full bg-[#f1f5f9] px-2.5 py-1 text-[11px] font-bold text-[#475569]">예시</span>
+      </div>
+
+      <div className="mb-4 flex items-center gap-4 rounded-xl bg-gradient-to-br from-[#1e3a5f] to-[#2d5488] px-5 py-3 text-white">
+        <div className="shrink-0">
+          <span className="text-2xl font-black">{TOTAL}</span>
+          <span className="text-sm text-white/70">/100점</span>
+        </div>
+        <p className="text-xs leading-relaxed text-white/80">
+          조건은 모두 건드렸습니다. 문제점과 해결 방안을 단락으로 나누면 점수가 올라갑니다.
+        </p>
+      </div>
+
+      <div className="mb-4 space-y-2.5">
+        {BREAKDOWN.map((b) => (
+          <div key={b.label}>
+            <div className="mb-1 flex items-baseline justify-between gap-2">
+              <span className="text-xs font-bold text-[#0f172a]">{b.label}</span>
+              <span className="shrink-0 text-xs text-[#64748b]">{b.score}/{b.max}</span>
+            </div>
+            <div className="h-1.5 overflow-hidden rounded-full bg-[#e2e8f0]">
+              <div className={`h-full rounded-full ${b.color}`} style={{ width: `${(b.score / b.max) * 100}%` }} />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <p className="mb-2 text-xs font-bold text-[#0f172a]">교정 사항 {CORRECTIONS.length}건 중 2건</p>
+      <div className="space-y-2">
+        {CORRECTIONS.slice(0, 2).map((c) => (
+          <div key={c.original} className="rounded-xl border border-[#e2e8f0] px-3 py-2">
+            <p className="text-xs">
+              <span className="text-[#dc2626] line-through">{c.original}</span>
+              <span className="mx-1.5 text-[#64748b]">→</span>
+              <span className="font-bold text-emerald-700">{c.correction}</span>
+            </p>
+            <p className="mt-0.5 text-[11px] leading-relaxed text-[#64748b]">{c.reason}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 export default function GradingSample() {
   return (
     <details className="group mb-5 rounded-2xl border border-[#e2e8f0] bg-white overflow-hidden">
