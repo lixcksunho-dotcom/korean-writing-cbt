@@ -184,7 +184,7 @@ export default async function DashboardPage() {
         <div className="absolute top-0 right-0 w-64 h-64 bg-[#d97706] rounded-full blur-3xl opacity-10 -translate-y-1/2 translate-x-1/2" />
         <div className="absolute bottom-0 left-1/3 w-48 h-48 bg-[#3d6aa0] rounded-full blur-3xl opacity-20 translate-y-1/2" />
         <div className="relative">
-          <div className="flex items-start justify-between gap-4">
+          <div className="flex flex-col sm:flex-row items-start sm:justify-between gap-4">
             <div>
               <p className="text-white/50 text-sm mb-1">{getGreeting()}, 반갑습니다 · <b className="text-white/70">{cfg.examName}</b></p>
               <h1 className="text-2xl md:text-3xl font-black text-white tracking-tight">
@@ -298,7 +298,7 @@ export default async function DashboardPage() {
             <div className="absolute top-0 right-0 w-40 h-40 bg-amber-300 rounded-full blur-3xl opacity-20 -translate-y-1/3 translate-x-1/3" />
             <div className="relative">
               <div className="flex items-center gap-2 mb-3">
-                <span className="text-[10px] font-bold text-white bg-amber-500 px-2 py-0.5 rounded-full">START</span>
+                <span className="text-[11px] font-bold text-white bg-amber-500 px-2 py-0.5 rounded-full">START</span>
                 <h2 className="text-base font-black text-amber-900">2분이면 끝나는 첫걸음</h2>
               </div>
               <div className="grid sm:grid-cols-2 gap-3 mb-4">
@@ -332,7 +332,7 @@ export default async function DashboardPage() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-0.5">
                   <h2 className="text-base font-black text-amber-900">서술형 AI 첨삭, 무료 {aiTrial.remaining}회 남음</h2>
-                  <span className="text-[10px] font-bold text-white bg-amber-500 px-2 py-0.5 rounded-full">FREE</span>
+                  <span className="text-[11px] font-bold text-white bg-amber-500 px-2 py-0.5 rounded-full">FREE</span>
                 </div>
                 <p className="text-sm text-amber-800/80">내가 쓴 답안을 AI가 모범답안과 비교해 <b>점수·첨삭</b>으로 분석해 드려요. 지금 바로 무료로 받아보세요.</p>
               </div>

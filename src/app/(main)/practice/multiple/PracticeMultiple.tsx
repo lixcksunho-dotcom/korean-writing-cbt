@@ -63,7 +63,7 @@ export default function PracticeMultiple({
   return (
     <div className="animate-fade-up">
       <div className="flex items-center justify-between mb-5">
-        <Link href={backHref} className="inline-flex items-center gap-1.5 text-sm text-[#64748b] hover:text-[#1e3a5f]">
+        <Link href={backHref} className="inline-flex items-center gap-1.5 py-1.5 text-sm text-[#64748b] hover:text-[#1e3a5f]">
           <ArrowLeft className="h-4 w-4" /> {title}
         </Link>
         <div className="flex items-center gap-3 text-sm">

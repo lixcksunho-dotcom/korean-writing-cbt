@@ -165,7 +165,7 @@ const EditableManuscript = forwardRef<EditableManuscriptHandle, {
 
         {/* 플레이스홀더 */}
         {!value && placeholder && (
-          <div aria-hidden style={{ position: 'absolute', left: Math.round(fitCell * 0.2), top: Math.round(fitCell * 0.25), color: '#94a3b8', fontSize: `${Math.round(fitCell * 0.4)}px`, pointerEvents: 'none' }}>
+          <div aria-hidden style={{ position: 'absolute', left: Math.round(fitCell * 0.2), top: Math.round(fitCell * 0.25), color: '#64748b', fontSize: `${Math.max(12, Math.round(fitCell * 0.4))}px`, pointerEvents: 'none' }}>
             {placeholder}
           </div>
         )}

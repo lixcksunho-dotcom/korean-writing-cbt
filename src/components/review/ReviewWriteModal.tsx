@@ -82,7 +82,7 @@ export default function ReviewWriteModal({ defaultName }: { defaultName: string 
     <>
       <button
         onClick={() => setOpen(true)}
-        className="flex items-center gap-2 bg-gradient-to-r from-[#f59e0b] to-[#d97706] text-white text-sm font-semibold px-4 py-2.5 rounded-xl shadow-md shadow-amber-500/20 hover:shadow-lg hover:shadow-amber-500/30 transition-all hover:-translate-y-0.5"
+        className="flex items-center gap-2 bg-gradient-to-r from-[#f59e0b] to-[#d97706] text-[#0f172a] text-sm font-bold px-4 py-3 rounded-xl shadow-md shadow-amber-500/20 hover:shadow-lg hover:shadow-amber-500/30 transition-all hover:-translate-y-0.5"
       >
         <MessageSquarePlus className="h-4 w-4" />
         후기 남기기

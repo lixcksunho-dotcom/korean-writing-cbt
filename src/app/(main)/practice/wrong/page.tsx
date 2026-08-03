@@ -56,7 +56,7 @@ export default async function WrongPracticePage() {
   if (questions.length === 0) {
     return (
       <div className="animate-fade-up max-w-2xl mx-auto">
-        <Link href="/insights" className="inline-flex items-center gap-1.5 text-sm text-[#64748b] hover:text-[#1e3a5f] mb-5">
+        <Link href="/insights" className="inline-flex items-center gap-1.5 py-1.5 text-sm text-[#64748b] hover:text-[#1e3a5f] mb-5">
           <ArrowLeft className="h-4 w-4" /> 학습 리포트
         </Link>
         <div className="flex flex-col items-center justify-center py-20 text-center bg-white rounded-2xl border border-[#e2e8f0]">
