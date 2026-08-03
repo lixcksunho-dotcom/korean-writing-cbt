@@ -1,0 +1,169 @@
+// 시험을 처음부터 끝까지 실제로 풀고 제출해서, 결과 화면까지 제대로 나오는지 본다.
+//   npm run check:exam-flow
+//
+// 이 서비스의 본체다. 그런데 여기가 조용히 망가진 적이 실제로 있다 — 답안 저장이
+// 실패해도 세션만 '완료'로 바뀌어, 화면은 멀쩡한데 푼 답이 하나도 없었다.
+// 화면만 훑는 검사로는 안 잡히고, 끝까지 풀어 봐야 잡힌다.
+//
+// AI 채점은 절대 누르지 않는다(유료 API). 결과 화면의 표시만 확인한다.
+import fs from 'node:fs'
+import { chromium, devices } from 'playwright'
+import { dismissIntros } from './ui_audit_rules.mjs'
+
+const ENV = Object.fromEntries(
+  fs.readFileSync('.env.local', 'utf-8').split('\n')
+    .filter((l) => l.includes('=') && !l.trim().startsWith('#'))
+    .map((l) => { const i = l.indexOf('='); return [l.slice(0, i).trim(), l.slice(i + 1).trim()] })
+)
+const SB = ENV.NEXT_PUBLIC_SUPABASE_URL
+const SVC = ENV.SUPABASE_SERVICE_ROLE_KEY
+const BASE = process.env.EXAM_FLOW_BASE ?? 'https://kptest.cloud'
+
+const admin = (p, init) => fetch(`${SB}${p}`, {
+  ...init,
+  headers: { apikey: SVC, Authorization: `Bearer ${SVC}`, 'Content-Type': 'application/json', ...(init?.headers ?? {}) },
+})
+
+const stamp = String(Date.now())
+const email = `uicheck+${stamp}@kptest.cloud`
+const password = `Chk-${stamp}-aA1!`
+const mk = await admin('/auth/v1/admin/users', { method: 'POST', body: JSON.stringify({ email, password, email_confirm: true }) })
+if (!mk.ok) { console.error('검증용 계정을 만들지 못했습니다:', await mk.text()); process.exit(1) }
+const uid = (await mk.json()).id
+
+const results = []
+const ok = (n, d) => results.push({ ok: true, n, d })
+const bad = (n, d) => results.push({ ok: false, n, d })
+
+const browser = await chromium.launch()
+let sessionId = null
+try {
+  const ctx = await browser.newContext({ ...devices['iPhone 13'] })
+  await ctx.addInitScript(dismissIntros)
+  const page = await ctx.newPage()
+
+  let logged = false
+  for (let a = 0; a < 3 && !logged; a++) {
+    await page.goto(`${BASE}/login`, { waitUntil: 'domcontentloaded' })
+    await page.fill('input[type="email"]', email)
+    await page.fill('input[type="password"]', password)
+    await page.click('button[type="submit"]')
+    for (let i = 0; i < 30; i++) {
+      if (!new URL(page.url()).pathname.includes('/login')) { logged = true; break }
+      await page.waitForTimeout(1000)
+    }
+    if (!logged) await page.waitForTimeout(4000)
+  }
+  if (!logged) { bad('로그인', '들어가지 못함'); throw new Error('로그인 실패') }
+
+  // ── 시험 시작 ────────────────────────────────────────────────────────────
+  await page.goto(`${BASE}/cbt`, { waitUntil: 'load' })
+  await page.waitForTimeout(1200)
+  await page.locator('a,button').filter({ hasText: /시작하기/ }).first().click().catch(() => {})
+  await page.waitForTimeout(4000)
+  if (!/\/cbt\/[^/]+$/.test(new URL(page.url()).pathname)) {
+    bad('시험 시작', `시작 버튼을 눌렀는데 ${page.url()}`)
+    throw new Error('시험 진입 실패')
+  }
+  ok('시험 시작', page.url().replace(BASE, ''))
+
+  const total = await page.evaluate(() => Number(/\d+\s*\/\s*(\d+)\s*완료/.exec(document.body.innerText)?.[1] ?? 0))
+  if (!total) { bad('문항 수 확인', '"n/m 완료" 표시를 찾지 못함'); throw new Error('문항 수 확인 실패') }
+
+  // ── 끝까지 푼다 ──────────────────────────────────────────────────────────
+  // 객관식은 첫 선택지를 고르고, 서술형은 짧게 채운다(채점 자체가 목적이 아니다).
+  let guard = 0
+  while (guard++ < total + 10) {
+    const done = await page.evaluate(() => Number(/(\d+)\s*\/\s*\d+\s*완료/.exec(document.body.innerText)?.[1] ?? 0))
+    if (done >= total) break
+    const opt = page.locator('button').filter({ hasText: /^[①②③④⑤]/ }).first()
+    if (await opt.count()) {
+      await opt.click().catch(() => {})
+    } else {
+      const ta = page.locator('textarea, [contenteditable="true"]').first()
+      if (await ta.count()) await ta.fill('연결이 끊긴 상황을 대비해 짧게 씁니다. 조건을 지켜 문어체로 작성했습니다.').catch(() => {})
+    }
+    await page.waitForTimeout(250)
+    const next = page.locator('button').filter({ hasText: /^다음$/ }).first()
+    if (await next.count()) await next.click().catch(() => {})
+    await page.waitForTimeout(250)
+  }
+  const answered = await page.evaluate(() => Number(/(\d+)\s*\/\s*\d+\s*완료/.exec(document.body.innerText)?.[1] ?? 0))
+  if (answered >= total) ok('문항 풀이', `${answered}/${total} 완료`)
+  else bad('문항 풀이', `${answered}/${total}만 채워짐 — 이후 판정은 참고만`)
+
+  sessionId = await page.evaluate(() => {
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i)
+      if (k && /draft|exam/i.test(k)) {
+        const m = /([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i.exec(k)
+        if (m) return m[1]
+      }
+    }
+    return null
+  })
+
+  // ── 제출 ─────────────────────────────────────────────────────────────────
+  await page.locator('button').filter({ hasText: /^제출하기$/ }).first().click().catch(() => {})
+  await page.waitForTimeout(1200)
+  await page.locator('button').filter({ hasText: /^제출하기$/ }).last().click().catch(() => {})
+  for (let i = 0; i < 30; i++) {
+    if (/\/result/.test(page.url())) break
+    await page.waitForTimeout(1000)
+  }
+  if (!/\/result/.test(page.url())) {
+    const t = await page.evaluate(() => document.body.innerText.slice(0, 200).replace(/\s+/g, ' ')).catch(() => '')
+    bad('제출', `결과 화면으로 못 넘어감 — ${t}`)
+    throw new Error('제출 실패')
+  }
+  ok('제출', '결과 화면으로 넘어감')
+  await page.waitForTimeout(2500)
+
+  // ── 결과 화면 ────────────────────────────────────────────────────────────
+  const view = await page.evaluate(() => {
+    const t = document.body.innerText
+    return {
+      text: t.replace(/\s+/g, ' ').slice(0, 400),
+      score: /(\d+)\s*점/.exec(t)?.[1] ?? null,
+      hasWrong: /오답|해설|틀린/.test(t),
+      hasAiPaid: /AI 채점|AI 첨삭/.test(t),
+    }
+  })
+  console.log('  [결과 화면 본문] ' + view.text.slice(0, 300))
+  if (view.score) ok('결과 화면 점수', `${view.score}점 표시`)
+  else bad('결과 화면 점수', `점수를 찾지 못함 — ${view.text.slice(0, 120)}`)
+  if (view.hasWrong) ok('오답 해설', '오답·해설 안내가 있다')
+  else bad('오답 해설', '오답 관련 안내가 없다')
+
+  // ── DB에 실제로 답안이 저장됐는가 (화면이 멀쩡해도 여기서 갈린다) ──────────
+  // 완료 표시는 status가 아니라 completed_at이다(컬럼 이름을 잘못 짚어 한 번 헛다리 짚었다)
+  const sess = await (await admin(`/rest/v1/quiz_sessions?user_id=eq.${uid}&select=id,completed_at,score,total`)).json().catch(() => [])
+  const sid = Array.isArray(sess) && sess.length ? sess[0].id : sessionId
+  if (!sid) {
+    bad('답안 저장', 'quiz_sessions에 세션이 없다')
+  } else {
+    const rows = await (await admin(`/rest/v1/quiz_answers?session_id=eq.${sid}&select=question_id`)).json().catch(() => [])
+    const n = Array.isArray(rows) ? rows.length : 0
+    if (n >= total) ok('답안 저장', `quiz_answers ${n}행 (문항 ${total}개)`)
+    else bad('답안 저장', `quiz_answers ${n}행뿐 — 문항 ${total}개인데 저장이 빠졌다`)
+    const row = Array.isArray(sess) && sess.length ? sess[0] : null
+    if (!row) bad('세션 기록', 'quiz_sessions에서 세션을 찾지 못함')
+    else if (!row.completed_at) bad('세션 기록', 'completed_at이 비어 있다 — 완료로 기록되지 않았다')
+    else if (row.score === null || row.total === null) bad('세션 기록', `완료는 됐지만 점수가 비어 있다(score ${row.score}, total ${row.total})`)
+    else ok('세션 기록', `완료 기록 + ${row.score}/${row.total}점`)
+  }
+} catch (e) {
+  bad('검사 진행', String(e).slice(0, 140))
+} finally {
+  await browser.close()
+  for (const t of ['quiz_answers', 'quiz_sessions', 'device_usage', 'manuscript_submissions']) {
+    await admin(`/rest/v1/${t}?user_id=eq.${uid}`, { method: 'DELETE' }).catch(() => {})
+  }
+  await admin(`/auth/v1/admin/users/${uid}`, { method: 'DELETE' }).catch(() => {})
+}
+
+console.log('\n시험 한 회차 끝까지 풀기\n')
+for (const r of results) console.log(`  ${r.ok ? '○' : '×'} ${r.n} — ${r.d}`)
+const fails = results.filter((r) => !r.ok)
+console.log(`\n통과 ${results.length - fails.length} / ${results.length}`)
+if (fails.length) process.exitCode = 1

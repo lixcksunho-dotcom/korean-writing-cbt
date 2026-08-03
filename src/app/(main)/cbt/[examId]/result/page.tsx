@@ -120,10 +120,18 @@ export default async function ResultPage({
           </div>
           <div className="text-4xl sm:text-5xl md:text-6xl font-black mb-1 tracking-tight">{scaled}<span className="text-2xl">점</span></div>
           <div className="text-white/70 text-sm mb-4">획득 {earnedPoints} / {totalPoints}점 · {cfg.maxScore}점 환산</div>
-          <div className="inline-flex items-center gap-1.5 px-5 py-2 rounded-full text-sm font-bold bg-white/20">
-            {isPass ? <Star className="h-4 w-4 fill-current" /> : null}
-            {isPass ? `${tier.name}${program === 'silyong' ? ' 합격권' : ' 예상'}` : `${cfg.belowLabel} — 다시 도전하세요`}
-          </div>
+          {/* 서술형이 채점 전이면 등급을 말하지 않는다. 서술형이 700점인데 객관식만으로
+              '미달'이라고 하면 사실과 다르다 — 객관식을 다 맞혀도 300점이라 늘 미달로 나온다. */}
+          {!essaysGraded && essayQuestions.length > 0 ? (
+            <div className="inline-flex items-center gap-1.5 px-5 py-2 rounded-full text-sm font-bold bg-white/20">
+              서술형 {essayQuestions.length}문항 채점 전 · 등급은 채점 후에 나와요
+            </div>
+          ) : (
+            <div className="inline-flex items-center gap-1.5 px-5 py-2 rounded-full text-sm font-bold bg-white/20">
+              {isPass ? <Star className="h-4 w-4 fill-current" /> : null}
+              {isPass ? `${tier.name}${program === 'silyong' ? ' 합격권' : ' 예상'}` : `${cfg.belowLabel} — 다시 도전하세요`}
+            </div>
+          )}
           {/* KBS는 주관처가 절대 등급컷을 공개하지 않는다 — 참고용임을 분명히 알린다 */}
           {program === 'kbs' && (
             <p className="text-white/50 text-xs mt-3">
