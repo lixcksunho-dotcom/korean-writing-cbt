@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { usePathname } from 'next/navigation'
 import { CalendarDays, X, ExternalLink, ArrowRight } from 'lucide-react'
 import { getSchedule, type Round } from '@/lib/examSchedule'
@@ -104,7 +105,9 @@ export default function ScheduleModal({ program = 'silyong' }: { program?: strin
         <span className="hidden sm:inline">시험일정</span>
       </button>
 
-      {!open ? null : (
+      {/* body로 빼서 띄운다 — 변환(transform)이 걸린 조상 안에 있으면 position:fixed가
+          화면이 아니라 그 요소 기준이 되어 내용이 화면 밖으로 밀린다. */}
+      {!open ? null : createPortal(
         <div
           className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/50 backdrop-blur-sm"
           onClick={() => setOpen(false)}
@@ -210,7 +213,8 @@ export default function ScheduleModal({ program = 'silyong' }: { program?: strin
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
     </>
   )

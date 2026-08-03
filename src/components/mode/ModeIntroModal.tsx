@@ -2,6 +2,7 @@
 
 // 첫 방문 시 1회 뜨는 안내 팝업 — KBS한국어능력시험 추가를 알리고 모드를 고르게 한다.
 import { useState, useSyncExternalStore, useTransition } from 'react'
+import { createPortal } from 'react-dom'
 import { useRouter } from 'next/navigation'
 import { setActiveProgram } from '@/app/(main)/mode-actions'
 import { PROGRAMS, type ProgramId } from '@/lib/programs'
@@ -58,7 +59,12 @@ export default function ModeIntroModal({ current }: { current: ProgramId }) {
     { id: 'kbs', icon: GraduationCap, desc: '국가공인 국어능력 시험 대비', accent: 'from-emerald-500 to-teal-600' },
   ]
 
-  return (
+  // body로 빼서 띄운다. 이 팝업이 놓이는 대시보드 본문에는 animate-fade-up이 걸려 있는데,
+  // 변환(transform)이 붙은 요소는 그 안의 position:fixed의 기준이 되어 버린다. 그래서
+  // 화면 가운데가 아니라 그 요소 가운데에 놓였고, 실측하면 선택 버튼 두 개가 화면 아래로
+  // 완전히 밀려나 있었다(iPhone SE 374px, iPhone 13 227px, Pixel 7 36px 잘림).
+  // 가입 직후 첫 화면이라 아무것도 못 고르고 시작하게 된다.
+  return createPortal(
     <div
       className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
       onClick={dismiss}
@@ -106,6 +112,7 @@ export default function ModeIntroModal({ current }: { current: ProgramId }) {
           ))}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }

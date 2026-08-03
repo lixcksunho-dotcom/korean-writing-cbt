@@ -23,7 +23,7 @@ const PAGES = [
 
 function audit() {
   const vw = document.documentElement.clientWidth
-  const out = { overflow: null, tiny: [], small: [], crowded: [], offscreen: [], covered: [] }
+  const out = { overflow: null, tiny: [], small: [], crowded: [], offscreen: [], covered: [], escaped: [] }
 
   // 가로 스크롤 — 무엇이 튀어나왔는지까지 짚어야 고칠 수 있다
   if (document.documentElement.scrollWidth > vw + 1) {
@@ -106,6 +106,25 @@ function audit() {
     if (fs && fs < 12) out.tiny.push({ text: txt.slice(0, 20), fs })
   }
 
+  // 떠 있어야 할 것이 화면 밖으로 나가 있는지.
+  // transform이 걸린 조상 안의 position:fixed는 화면이 아니라 그 조상 기준이 되어,
+  // 팝업이 화면 아래로 밀려 버튼을 못 누르게 된다(실제로 가입 직후 안내 팝업이 그랬다).
+  for (const f of document.querySelectorAll('body *')) {
+    if (getComputedStyle(f).position !== 'fixed') continue
+    const fr = f.getBoundingClientRect()
+    if (fr.height < 20) continue
+    const over = Math.round(Math.max(0, fr.bottom - innerHeight))
+    if (over < 20) continue
+    const btns = f.querySelectorAll('a[href], button, [role="button"]')
+    const hidden = [...btns].filter((x) => x.getBoundingClientRect().top >= innerHeight)
+    if (!hidden.length) continue
+    out.escaped.push({
+      what: (f.getAttribute('aria-label') || f.textContent || f.tagName).trim().slice(0, 20),
+      over,
+      hidden: hidden.length,
+    })
+  }
+
   // 떠다니는 버튼이 조작 가능한 것 위에 앉아 있는지.
   // 겹치면 어느 쪽이 눌릴지 z-index 순서에 달리는데, 하필 전환 버튼이 덮이면 매출이 샌다.
   // 화면 폭을 꽉 채우는 하단 바는 뺀다 — 본문을 덮는 게 그 물건의 본질이고, 스크롤하면 지나간다.
@@ -163,6 +182,7 @@ for (const path of PAGES) {
   await page.waitForTimeout(700)
   const scrolled = await page.evaluate(audit)
   r.covered.push(...scrolled.covered)
+  r.escaped.push(...scrolled.escaped)
   await page.evaluate(() => window.scrollTo(0, 0))
 
   const uniq = (arr, key) => [...new Map(arr.map((x) => [key(x), x])).values()]
@@ -176,6 +196,7 @@ for (const path of PAGES) {
   }
   for (const x of uniq(r.crowded, (v) => v.a + v.b).slice(0, 4)) problems.push({ hard: true, line: `${path}  누름대상 간격 ${x.gap}px "${x.a}" ↔ "${x.b}"` })
   for (const x of uniq(r.tiny, (v) => v.text).slice(0, 4)) problems.push({ hard: x.fs < 11, line: `${path}  ${x.fs}px 글자 "${x.text}"` })
+  for (const x of uniq(r.escaped, (v) => v.what)) problems.push({ hard: true, line: `${path}  떠 있는 "${x.what}"가 화면 아래로 ${x.over}px 나감 — 버튼 ${x.hidden}개가 화면 밖` })
   for (const x of uniq(r.covered, (v) => v.over + v.under)) problems.push({ hard: true, line: `${path}  떠 있는 "${x.over}"가 "${x.under}"를 ${x.pct}% 덮음` })
 }
 await browser.close()
