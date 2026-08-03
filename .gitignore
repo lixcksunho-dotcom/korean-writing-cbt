@@ -60,3 +60,8 @@ __pycache__/
 scripts/_*.txt
 scripts/_question_audit.txt
 scripts/_question_overlap.txt
+
+# 검사 스크립트가 남기는 임시 출력
+_*.txt
+_*.log
+_*.png
