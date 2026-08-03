@@ -391,7 +391,7 @@ export default function TopicQuiz({ topic, ctaHref = '/signup?from=quiz' }: { to
               누르면 예고 없이 로그인 화면이 떴다 — 맨 위에서 '가입 없이 풀 수 있다'고
               해 놓고서. 34명이 문제를 다 풀고도 한 명도 누르지 않은 자리다. */}
           <p className="mt-2 text-xs text-white/60">
-            이메일만 있으면 됩니다 · 카드 등록 없음
+            이메일·비밀번호만 · 카드 등록 없음
           </p>
         </div>
       )}

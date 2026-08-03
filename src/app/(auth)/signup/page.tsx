@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { CheckCircle, Eye, EyeOff } from "lucide-react";
@@ -10,13 +10,23 @@ import { trackEvent } from "@/lib/analytics/trackEvent";
 // 카카오는 비즈 앱 전환 후 재활성화 예정 (KakaoButton 컴포넌트는 유지)
 // import KakaoButton from "@/components/ui/KakaoButton";
 
+// 구독할 게 없는 1회성 읽기(주소는 이 화면에서 바뀌지 않는다)
+const noSubscribe = () => () => {};
+
 export default function SignupPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState("");
+  // useSearchParams는 Suspense 경계를 요구하므로 주소에서 직접 읽는다.
+  // 이펙트에서 setState하면 React 19 규칙에 걸려서, 이 프로젝트가 쓰는 방식(useSyncExternalStore)을 따른다.
+  // 서버 스냅샷은 false — 서버에는 주소 질의문자열이 없으니 하이드레이션 불일치가 나지 않는다.
+  const fromQuiz = useSyncExternalStore(
+    noSubscribe,
+    () => new URLSearchParams(window.location.search).get("from") === "quiz",
+    () => false,
+  );
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -24,7 +34,6 @@ export default function SignupPage() {
     e.preventDefault();
     setError("");
     if (password.length < 6) { setError("비밀번호는 6자리 이상이어야 합니다."); return; }
-    if (password !== confirmPassword) { setError("비밀번호가 일치하지 않습니다."); return; }
     setLoading(true);
     const supabase = createClient();
     const { data, error } = await supabase.auth.signUp({
@@ -122,7 +131,16 @@ export default function SignupPage() {
 
           <div className="bg-white rounded-2xl shadow-[0_8px_40px_rgba(15,31,61,0.1)] border border-[#e2e8f0] p-8">
             <h1 className="text-2xl font-black text-[#0f172a] mb-1 tracking-tight">회원가입</h1>
-            <p className="text-[#64748b] text-sm mb-7">무료로 시작하세요</p>
+            <p className="text-[#64748b] text-sm mb-4">무료로 시작하세요</p>
+
+            {/* 학습자료의 맛보기 문제를 풀고 넘어온 사람 — 무엇 때문에 왔는지 이어서 말해 준다.
+                전에는 문제를 다 풀고 버튼을 눌러도 아무 설명 없는 로그인 화면이 떴다. */}
+            {fromQuiz && (
+              <p className="mb-6 rounded-xl bg-[#f8fafc] border border-[#e2e8f0] px-4 py-3 text-xs leading-relaxed text-[#475569]">
+                방금 푼 문제는 맛보기예요. <b className="text-[#0f172a]">실전은 39문항</b>이고,
+                가입하면 바로 풀 수 있어요. 채점과 오답 해설도 함께 나옵니다.
+              </p>
+            )}
 
             <GoogleButton />
             <p className="mt-2 text-center text-xs text-emerald-600 font-medium">✓ 가장 빠른 방법 · 인증 메일 없이 바로 시작</p>
@@ -159,12 +177,6 @@ export default function SignupPage() {
                   </button>
                 </div>
               </div>
-              <div>
-                <label className="block text-xs font-semibold text-[#334155] mb-1.5">비밀번호 확인</label>
-                <input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)}
-                  placeholder="비밀번호를 다시 입력하세요" required className={inputCls} />
-              </div>
-
               {error && (
                 <div className="bg-red-50 border border-red-100 rounded-xl px-4 py-3 text-sm text-red-600 flex items-center gap-2">
                   <span className="shrink-0">⚠</span>{error}
