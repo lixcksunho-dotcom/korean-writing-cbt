@@ -43,7 +43,7 @@ export default function Navbar({
         <div className="flex items-center justify-between h-16">
           {/* 로고 + 모드 스위처 (현재 모드가 한눈에) */}
           <div className="flex items-center gap-3 min-w-0">
-            <Link href="/dashboard" className="flex items-center gap-2.5 shrink-0">
+            <Link href="/dashboard" className="flex items-center gap-2.5 shrink-0 py-1.5">
               <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${brandGradient} flex items-center justify-center shadow-lg shadow-black/20`}>
                 <LogoGlyph className="h-5 w-5 text-white" />
               </div>
@@ -100,8 +100,10 @@ export default function Navbar({
 
           {/* 모바일 햄버거 */}
           <button
-            className="md:hidden p-2 rounded-lg hover:bg-white/10 transition-colors"
+            className="md:hidden p-3 rounded-lg hover:bg-white/10 transition-colors"
             onClick={() => setMenuOpen((v) => !v)}
+            aria-label={menuOpen ? '메뉴 닫기' : '메뉴 열기'}
+            aria-expanded={menuOpen}
           >
             {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
