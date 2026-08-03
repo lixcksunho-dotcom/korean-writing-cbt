@@ -101,7 +101,12 @@ export function browserAuditMobile() {
       const cs = getComputedStyle(el)
       if (cs.display === 'none' || cs.visibility === 'hidden' || cs.opacity === '0') return false
       const r = el.getBoundingClientRect()
-      return r.width > 0 && r.height > 0
+      if (r.width <= 0 || r.height <= 0) return false
+      // 화면 낭독기 전용(sr-only) 요소는 눈에 보일 때 제 크기를 갖는다.
+      // 숨어 있는 상태(1x1 + clip)로 크기를 재면 '본문 바로가기'가 늘 미달로 잡힌다.
+      const clipped = cs.clip !== 'auto' || cs.clipPath !== 'none'
+      if (clipped && r.width <= 2 && r.height <= 2) return false
+      return true
     })
 
   // 문장 안에 흐르는 링크는 크기·간격 기준에서 빠진다(WCAG 2.5.8의 inline 예외).
