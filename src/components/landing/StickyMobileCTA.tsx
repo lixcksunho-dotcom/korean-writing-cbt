@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
@@ -8,6 +8,7 @@ import { ArrowRight } from "lucide-react";
 // 모바일 비중이 큰 시험 준비생 특성상 상시 노출 CTA가 가입 전환을 끌어올린다.
 export default function StickyMobileCTA() {
   const [show, setShow] = useState(false);
+  const barRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const onScroll = () => {
@@ -26,6 +27,15 @@ export default function StickyMobileCTA() {
     };
   }, []);
 
+  // 이 바가 차지하는 높이를 문서에 알린다. 시험일정 플로팅 버튼이 이만큼 위로 비켜서
+  // '무료 시작'을 가리지 않게 하려는 것 — 둘 다 z-40이라 겹치면 어느 쪽이 눌릴지 모른다.
+  useEffect(() => {
+    const root = document.documentElement;
+    const h = show ? (barRef.current?.getBoundingClientRect().height ?? 0) + 12 : 0;
+    root.style.setProperty("--sticky-cta-h", `${Math.round(h)}px`);
+    return () => root.style.setProperty("--sticky-cta-h", "0px");
+  }, [show]);
+
   return (
     <div
       className={`sm:hidden fixed inset-x-0 bottom-0 z-40 transition-transform duration-300 ${
@@ -33,7 +43,7 @@ export default function StickyMobileCTA() {
       }`}
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
-      <div className="mx-3 mb-3 flex items-center gap-3 rounded-2xl border border-[#e2e8f0] bg-white/95 backdrop-blur-md px-4 py-3 shadow-[0_-2px_24px_rgba(15,31,61,0.12)]">
+      <div ref={barRef} className="mx-3 mb-3 flex items-center gap-3 rounded-2xl border border-[#e2e8f0] bg-white/95 backdrop-blur-md px-4 py-3 shadow-[0_-2px_24px_rgba(15,31,61,0.12)]">
         <div className="min-w-0 flex-1">
           <p className="text-[13px] font-black text-[#0f172a] leading-tight">CBT 무료 · AI 첨삭 무료 체험</p>
           <p className="text-[11px] text-[#64748b] leading-tight">가입만 하면 바로 시작 · 자동결제 없음</p>

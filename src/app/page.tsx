@@ -139,7 +139,7 @@ export default async function HomePage() {
         <div className="absolute top-1/4 -left-20 w-96 h-96 bg-[#1e3a5f] rounded-full blur-3xl opacity-40" />
         <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-[#d97706] rounded-full blur-3xl opacity-5" />
 
-        <div className="relative max-w-4xl mx-auto px-4 py-28 text-center">
+        <div className="relative max-w-4xl mx-auto px-4 py-16 sm:py-28 text-center">
           <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 text-white/90 text-xs font-medium px-4 py-1.5 rounded-full mb-8">
             <Sparkles className="h-3.5 w-3.5 text-[#f59e0b]" />
             한국실용글쓰기 자격증 합격을 위한 최적의 도구
