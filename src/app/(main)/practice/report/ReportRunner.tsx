@@ -83,7 +83,7 @@ export default function ReportRunner({
     <div className="animate-fade-up">
       {/* 헤더 + 타이머 */}
       <div className="flex items-center justify-between mb-4">
-        <Link href="/practice" className="inline-flex items-center gap-1.5 py-1.5 text-sm text-[#64748b] hover:text-[#1e3a5f]">
+        <Link href="/practice" className="inline-flex items-center gap-1.5 py-3 text-sm text-[#64748b] hover:text-[#1e3a5f]">
           <ArrowLeft className="h-4 w-4" /> 연습 메뉴
         </Link>
         <div className={`flex items-center gap-1.5 font-mono font-bold text-sm px-3 py-1.5 rounded-xl ${

@@ -66,7 +66,7 @@ export default async function ManuscriptPage() {
               </div>
               <Link
                 href="/subscribe"
-                className="shrink-0 text-xs font-bold text-[#1e3a5f] border border-[#1e3a5f]/20 bg-white px-4 py-2 rounded-xl hover:bg-[#1e3a5f]/5 transition-colors"
+                className="shrink-0 text-xs font-bold text-[#1e3a5f] border border-[#1e3a5f]/20 bg-white px-4 py-3.5 rounded-xl hover:bg-[#1e3a5f]/5 transition-colors"
               >
                 이용권 보기
               </Link>

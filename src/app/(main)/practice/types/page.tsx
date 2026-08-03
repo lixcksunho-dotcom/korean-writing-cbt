@@ -45,7 +45,7 @@ export default async function TypesPracticePage({
 
     return (
       <div className="animate-fade-up max-w-2xl mx-auto">
-        <Link href="/practice" className="inline-flex items-center gap-1.5 py-1.5 text-sm text-[#64748b] hover:text-[#1e3a5f] mb-5">
+        <Link href="/practice" className="inline-flex items-center gap-1.5 py-3 text-sm text-[#64748b] hover:text-[#1e3a5f] mb-5">
           <ArrowLeft className="h-4 w-4" /> 연습 메뉴
         </Link>
         <h1 className="text-2xl font-black text-[#0f172a] tracking-tight mb-1">유형별 집중 연습</h1>

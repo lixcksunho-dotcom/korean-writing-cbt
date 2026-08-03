@@ -52,7 +52,7 @@ export default function RefineQuiz({ items }: { items: RefineItem[] }) {
   if (!quiz) {
     return (
       <div className="animate-fade-up max-w-xl">
-        <Link href="/practice" className="inline-flex items-center gap-1.5 py-1.5 text-sm text-[#64748b] hover:text-[#1e3a5f] mb-5">
+        <Link href="/practice" className="inline-flex items-center gap-1.5 py-3 text-sm text-[#64748b] hover:text-[#1e3a5f] mb-5">
           <ArrowLeft className="h-4 w-4" /> 연습 메뉴
         </Link>
         <h1 className="text-2xl font-black text-[#0f172a] tracking-tight mb-1">순화어 O/X 퀴즈</h1>
@@ -101,7 +101,7 @@ export default function RefineQuiz({ items }: { items: RefineItem[] }) {
   return (
     <div className="animate-fade-up max-w-xl">
       <div className="flex items-center justify-between mb-5">
-        <button onClick={() => setQuiz(null)} className="inline-flex items-center gap-1.5 py-1.5 text-sm text-[#64748b] hover:text-[#1e3a5f]">
+        <button onClick={() => setQuiz(null)} className="inline-flex items-center gap-1.5 py-3 text-sm text-[#64748b] hover:text-[#1e3a5f]">
           <ArrowLeft className="h-4 w-4" /> 분야 다시 선택
         </button>
         <div className="flex items-center gap-3 text-sm">

@@ -42,7 +42,7 @@ export default async function ManuscriptHistoryPage() {
             <PenLine className="h-10 w-10 text-[#f59e0b]" />
           </div>
           <p className="text-gray-500 text-sm mb-4">아직 제출한 원고지가 없습니다.</p>
-          <Link href="/manuscript" className="text-sm bg-[#1e3a5f] text-white px-5 py-2.5 rounded-xl font-medium hover:bg-[#2d5488] transition-colors">
+          <Link href="/manuscript" className="text-sm bg-[#1e3a5f] text-white px-5 py-3.5 rounded-xl font-medium hover:bg-[#2d5488] transition-colors">
             원고지 작성하기
           </Link>
         </div>

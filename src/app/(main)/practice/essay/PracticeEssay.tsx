@@ -166,7 +166,7 @@ export default function PracticeEssay({
   return (
     <div className="animate-fade-up">
       <div className="flex items-center justify-between mb-5 gap-2">
-        <Link href={backHref} className="inline-flex items-center gap-1.5 py-1.5 text-sm text-[#64748b] hover:text-[#1e3a5f] min-w-0">
+        <Link href={backHref} className="inline-flex items-center gap-1.5 py-3 text-sm text-[#64748b] hover:text-[#1e3a5f] min-w-0">
           <ArrowLeft className="h-4 w-4 shrink-0" /> <span className="truncate">{title}</span>
         </Link>
         <div className="flex items-center gap-2 shrink-0">
