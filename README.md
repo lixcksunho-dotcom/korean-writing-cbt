@@ -31,6 +31,9 @@ npx tsc --noEmit   # 타입 검사
 | `npm run check:questions` | 문항 정합성 (선택지·정답·해설·길이 단서) | 정답만 유난히 길면 내용을 몰라도 맞힌다 |
 | `npm run check:duplicates` | 회차 간 같은 문항 반복 | 이용권을 사서 여러 회차를 도는 사람이 같은 문제를 또 만나면 환불 사유다 |
 | `npm run check:blog` | 블로그 글끼리 같은 검색어 경쟁 | 두 글이 같은 검색어를 노리면 둘 다 밀린다 |
+| `npm run check:contrast` | 글자·배경 명암비 (공개 21개 면) | 눈으로는 "좀 흐린가" 하고 넘어간다. 주 CTA가 2.15:1이던 것도 이걸로 찾았다 |
+| `npm run check:mobile` | 휴대폰 화면의 누름 대상·가로 스크롤·겹침 | 대부분 휴대폰으로 들어온다. 떠 있는 버튼이 전환 버튼을 덮고 있어도 데스크톱에선 안 보인다 |
+| `npm run check:vitals` | 느린 회선 체감 성능 (LCP·CLS) | 빠른 회선에서 재면 전부 0으로 나와 아무것도 못 잡는다 |
 | `npm run funnel` | 전환 퍼널 (DB 상태 + 이벤트) | 이벤트만 보면 실제보다 적게 잡힌다 |
 | `npm run cleanup:test` | 남은 검증용 계정 정리 | 실행이 끊기면 뒷정리를 못 해 관리자 지표에 섞인다 (`-- --yes`로 실제 삭제) |
 
@@ -67,34 +70,32 @@ TELEGRAM_CHAT_ID     그 봇과 대화를 시작한 뒤
                      https://api.telegram.org/bot<토큰>/getUpdates 에서 chat.id 확인
 ```
 
-## 알려진 문제
+## 글꼴
 
-**느린 회선에서 CLS 0.1** — 빠른 회선에서는 0.000인데 3G로 조이면 `/spelling` 0.100,
-`/blog` 0.069가 나온다. 'good' 기준(0.1) 경계다.
+**웹폰트를 쓰지 않는다.** 시스템 한글 글꼴로 그린다(`src/app/globals.css`).
 
-원인: 한글 서브셋(621개 @font-face 중 9번째쯤)이 8초쯤 도착해 적용되면서 `h1`이
-2줄에서 1줄로 줄고(72px → 36px) 아래 내용이 통째로 36px 올라간다. `display: optional`
-인데도 unicode-range 서브셋마다 블록 구간 타이밍이 달라 중간에 적용된다.
+한동안 Noto Sans KR을 `next/font`로 자체 호스팅했는데, 2026-08-03에 재 보니 이득 쪽이
+하나도 없었다.
 
-`adjustFontFallback: true`는 답이 아니다. 그 보정 대체 폰트는 `src: local(Arial)`이라
+- 느린 회선(1.6Mbps·150ms·CPU 4배)에서 CLS `/exam-info` 0.167, `/blog` 0.123 — 기준 초과
+- 빠른 회선에서는 **아예 적용되지 않았다** (실제 그려진 글꼴: 맑은 고딕 48% / Arial 52%)
+- woff2 요청만 막고 같은 조건으로 재면 두 면 모두 **0.0000**
+
+한글은 unicode-range 서브셋이 621개라 `display: optional`의 차단 구간이 서브셋마다 따로
+돈다. 빠른 회선에서는 페이지가 먼저 그려져 어느 조각도 못 들어오고, 느린 회선에서는 늦게
+도착한 조각이 하나씩 적용되며 문단이 계속 다시 접힌다. 결국 회선 속도에 따라 글꼴이
+달라지면서 밀림만 남았다.
+
+`adjustFontFallback: true`도 답이 아니었다. 그 보정 대체 폰트는 `src: local(Arial)`이라
 한글 글리프가 없고, 한글은 그다음 시스템 글꼴로 넘어가 override가 닿지 않는다.
-프로덕션에서 켜고 재도 0.1003으로 동일했다.
 
-해결하려면 한글 시스템 글꼴(윈도우 맑은 고딕 / iOS Apple SD Gothic Neo /
-안드로이드 Noto Sans CJK KR)에 맞춘 metric override를 직접 만들어야 하는데, 셋의
-자폭이 달라 하나의 값으로는 맞지 않는다. 제목 높이를 예약하는 방법도 있으나 폰트가
-제때 오면 빈 공간이 남는다.
+걷어낸 뒤 전 면 CLS 0.0000, LCP도 내려갔다(`/blog` 2576 → 1788ms, `/exam-info` 2304 →
+1592ms). 안드로이드의 Noto Sans CJK KR은 Noto Sans KR과 사실상 같은 디자인이고, iOS는
+Apple SD Gothic Neo, 윈도우는 맑은 고딕이라 본문 품질도 떨어지지 않는다.
 
-재현(빠른 회선에서 재면 문제가 안 보인다):
-
-```js
-await cdp.send('Network.emulateNetworkConditions',
-  { offline: false, downloadThroughput: 780 * 1024 / 8, uploadThroughput: 330 * 1024 / 8, latency: 300 })
-```
-
-> 폰트 관련 측정 전에 **빌드에 폰트가 들어 있는지 먼저 확인할 것**
-> (`.next/static/media/*.woff2`). 폰트가 빠진 빌드로 재면 교체가 없어 CLS가 0으로
-> 나오는데, 이걸 개선으로 착각하기 쉽다(실제로 한 번 그렇게 잘못 결론 냈다).
+> 다시 웹폰트를 넣게 되면 `npm run check:vitals`로 **느린 회선에서** 재 볼 것.
+> 빠른 회선에서 재면 교체가 안 일어나 CLS가 0으로 나오는데, 이걸 개선으로 착각하기 쉽다
+> (실제로 한 번 그렇게 잘못 결론 냈다).
 
 ## 문항 데이터
 
