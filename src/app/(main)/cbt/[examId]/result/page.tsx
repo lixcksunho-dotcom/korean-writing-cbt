@@ -318,7 +318,7 @@ export default async function ResultPage({
 
                   {/* 모범 답안 */}
                   <details className="mt-3 group">
-                    <summary className="cursor-pointer text-xs font-semibold text-amber-700 hover:underline">모범 답안 보기</summary>
+                    <summary className="cursor-pointer py-2 text-xs font-semibold text-amber-700 hover:underline">모범 답안 보기</summary>
                     <div className="mt-2 bg-amber-50 border border-amber-100 rounded-xl p-3">
                       <p className="text-sm text-[#334155] whitespace-pre-wrap leading-relaxed">{q.correct_answer}</p>
                     </div>

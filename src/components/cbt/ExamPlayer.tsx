@@ -359,7 +359,7 @@ export default function ExamPlayer({
               type="button"
               onClick={() => setShowGrid(v => !v)}
               aria-expanded={showGrid}
-              className="flex w-full items-center justify-between text-xs font-bold text-[#1e3a5f]"
+              className="flex w-full items-center justify-between py-2.5 text-xs font-bold text-[#1e3a5f]"
             >
               <span>문제 목록 {answeredCount}/{questions.length}</span>
               <span className="flex items-center gap-1 text-[#64748b] font-semibold">
