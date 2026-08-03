@@ -18,7 +18,13 @@ export default async function MainLayout({ children }: { children: React.ReactNo
     <div className="min-h-screen flex flex-col bg-[#f8fafc]">
       <Navbar userEmail={userEmail} program={program} brandName={cfg.serviceName} brandGradient={cfg.logoGradient} showManuscript={cfg.hasManuscript} />
       {/* pb-24: 우하단 플로팅 버튼이 마지막 카드의 CTA를 덮지 않도록 여백 확보 */}
-      <main className="flex-1 max-w-6xl w-full mx-auto px-4 pt-8 pb-24">
+      <a
+        href="#main"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[200] focus:rounded-lg focus:bg-white focus:px-4 focus:py-2.5 focus:text-sm focus:font-bold focus:text-[#0f172a] focus:shadow-lg focus:outline focus:outline-2 focus:outline-[#1e3a5f]"
+      >
+        본문 바로가기
+      </a>
+      <main id="main" tabIndex={-1} className="flex-1 max-w-6xl w-full mx-auto px-4 pt-8 pb-24">
         {children}
       </main>
       <SiteFooter />

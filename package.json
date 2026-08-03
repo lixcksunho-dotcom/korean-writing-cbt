@@ -18,7 +18,8 @@
     "check:contrast": "node scripts/contrast_check.mjs",
     "check:mobile": "node scripts/mobile_ux_check.mjs",
     "check:vitals": "node scripts/web_vitals_check.mjs",
-    "check:ui-authed": "node scripts/authed_ui_check.mjs"
+    "check:ui-authed": "node scripts/authed_ui_check.mjs",
+    "check:keyboard": "node scripts/keyboard_desktop_check.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.100.1",
