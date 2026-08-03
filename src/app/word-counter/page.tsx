@@ -66,7 +66,7 @@ export default function WordCountPage() {
             <LogoGlyph className="h-7 w-7" />
             <span className="font-black text-[#1e3a5f]">실글패스</span>
           </Link>
-          <Link href="/" className="text-sm font-semibold text-[#64748b] hover:text-[#1e3a5f] transition-colors">
+          <Link href="/" className="py-1.5 text-sm font-semibold text-[#64748b] hover:text-[#1e3a5f] transition-colors">
             한국실용글쓰기 CBT →
           </Link>
         </div>

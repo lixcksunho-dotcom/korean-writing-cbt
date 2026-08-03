@@ -46,7 +46,7 @@ export default function RelatedBlogPosts({
       </ul>
       <Link
         href={`/blog/category/${category}`}
-        className="inline-block mt-3 text-sm font-semibold text-[#64748b] hover:text-[#1e3a5f]"
+        className="inline-block mt-3 py-1.5 text-sm font-semibold text-[#64748b] hover:text-[#1e3a5f]"
       >
         {t.label} 글 전체 보기 →
       </Link>

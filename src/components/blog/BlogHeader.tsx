@@ -12,7 +12,7 @@ export default function BlogHeader() {
         </Link>
         <Link
           href="/cbt"
-          className="text-sm font-semibold text-[#64748b] hover:text-[#1e3a5f] transition-colors"
+          className="py-1.5 text-sm font-semibold text-[#64748b] hover:text-[#1e3a5f] transition-colors"
         >
           무료 CBT 모의고사 →
         </Link>

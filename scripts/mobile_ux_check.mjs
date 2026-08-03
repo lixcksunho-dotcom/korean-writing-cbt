@@ -8,7 +8,7 @@
 // 재는 것:
 //  - 가로 스크롤: 본문이 화면보다 넓으면 좌우로 밀린다(가장 흔하고 가장 티 나는 깨짐)
 //  - 손가락 크기: 누르는 것이 44x44 미만이면 오조작이 난다(iOS 휴먼 인터페이스 기준)
-//  - 겹친 누름 대상: 간격이 8px 미만이면 옆의 것이 눌린다
+//  - 붙어 있는 누름 대상: 24px보다 작은 것이 24px 안에 붙어 있으면 옆의 것이 눌린다
 //  - 너무 작은 글자: 12px 미만은 확대 없이는 못 읽는다
 //  - 화면 밖으로 나간 요소: 오른쪽이 잘려 내용이 사라진다
 import { chromium, devices } from 'playwright'
@@ -62,7 +62,13 @@ function audit() {
     const r = el.getBoundingClientRect()
     const label = (el.getAttribute('aria-label') || el.textContent || el.getAttribute('placeholder') || el.tagName).trim().slice(0, 22)
     if (r.right > vw + 1 || r.left < -1) out.offscreen.push({ label, left: Math.round(r.left), right: Math.round(r.right) })
-    if (isInline(el)) continue
+  }
+
+  // 크기·간격 기준이 적용되는 대상(문장 속 링크 제외)
+  const sized = tappables.filter((el) => !isInline(el))
+  for (const el of sized) {
+    const r = el.getBoundingClientRect()
+    const label = (el.getAttribute('aria-label') || el.textContent || el.getAttribute('placeholder') || el.tagName).trim().slice(0, 22)
     const w = Math.round(r.width), h = Math.round(r.height)
     if (w < 24 || h < 24) out.small.push({ label, w, h, hard: true })
     else if (w < 44 || h < 44) out.small.push({ label, w, h, hard: false })
@@ -72,20 +78,20 @@ function audit() {
   // 규격(WCAG 2.5.8)은 24px보다 작은 대상에만 간격을 요구한다 — 충분히 큰 것끼리는
   // 붙어 있어도 위반이 아니다(분절 컨트롤·표 셀이 그렇다). 작은 것만 본다.
   const undersized = (r) => r.width < 24 || r.height < 24
-  for (let i = 0; i < tappables.length; i++) {
-    const a = tappables[i].getBoundingClientRect()
-    for (let j = i + 1; j < tappables.length; j++) {
-      const b = tappables[j].getBoundingClientRect()
+  for (let i = 0; i < sized.length; i++) {
+    const a = sized[i].getBoundingClientRect()
+    for (let j = i + 1; j < sized.length; j++) {
+      const b = sized[j].getBoundingClientRect()
       if (!undersized(a) && !undersized(b)) continue
-      if (tappables[i].contains(tappables[j]) || tappables[j].contains(tappables[i])) continue
+      if (sized[i].contains(sized[j]) || sized[j].contains(sized[i])) continue
       const dx = Math.max(0, Math.max(a.left, b.left) - Math.min(a.right, b.right))
       const dy = Math.max(0, Math.max(a.top, b.top) - Math.min(a.bottom, b.bottom))
       if (dx === 0 && dy === 0) continue // 겹침은 레이아웃상 정상인 경우가 많다(래퍼 등)
       const gap = Math.hypot(dx, dy)
       if (gap > 0 && gap < 24) {
         out.crowded.push({
-          a: (tappables[i].textContent || tappables[i].tagName).trim().slice(0, 16),
-          b: (tappables[j].textContent || tappables[j].tagName).trim().slice(0, 16),
+          a: (sized[i].textContent || sized[i].tagName).trim().slice(0, 16),
+          b: (sized[j].textContent || sized[j].tagName).trim().slice(0, 16),
           gap: Math.round(gap),
         })
       }
