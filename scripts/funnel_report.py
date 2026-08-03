@@ -9,7 +9,7 @@
 사용: python scripts/funnel_report.py
 """
 import sys
-from collections import Counter
+from collections import Counter, defaultdict
 from pathlib import Path
 
 sys.stdout.reconfigure(encoding="utf-8")
@@ -62,6 +62,38 @@ def pct(n, d):
     return f"{n / d * 100:4.0f}%" if d else "   -"
 
 
+def automated_visitors(rows):
+    """검사 스크립트가 남긴 방문자를 골라낸다.
+
+    사람은 90초 안에 서로 다른 화면 8개를 훑지 않는다. 검사는 그렇게 훑는다.
+    2026-08-04에 트래커가 navigator.webdriver를 보고 거르게 했지만, 그 전 기록은
+    이 방법으로 걸러야 한다 — 안 그러면 순방문자 대부분이 봇이라 퍼널이 통째로 거짓이 된다.
+    """
+    from datetime import datetime
+    by_visitor = defaultdict(list)
+    for r in rows:
+        if r["path"].startswith("#event/"):
+            continue
+        by_visitor[r["visitor_id"]].append((r["created_at"], r["path"]))
+    bots = set()
+    for vid, items in by_visitor.items():
+        items.sort()
+        for i in range(len(items)):
+            j = i
+            paths = set()
+            t0 = datetime.fromisoformat(items[i][0].replace("Z", "+00:00"))
+            while j < len(items):
+                t = datetime.fromisoformat(items[j][0].replace("Z", "+00:00"))
+                if (t - t0).total_seconds() > 90:
+                    break
+                paths.add(items[j][1])
+                j += 1
+            if len(paths) >= 8:
+                bots.add(vid)
+                break
+    return bots
+
+
 def main():
     users = admin_users()
     ids = {u["id"] for u in users}
@@ -90,6 +122,9 @@ def main():
 
     # 이벤트 쪽(사람 수 기준). 결제창 앞단에서 막힌 시도는 payment_blocked로 남는다.
     rows = page_all("page_views?select=path,visitor_id,created_at&order=created_at.asc")
+    bots = automated_visitors(rows)
+    if bots:
+        rows = [r for r in rows if r["visitor_id"] not in bots]
     events = [r for r in rows if r["path"].startswith("#event/")]
     views = [r for r in rows if not r["path"].startswith("#event/")]
     uniq = Counter()
@@ -98,7 +133,8 @@ def main():
     for name in list(uniq):
         uniq[name] = len({r["visitor_id"] for r in events if r["path"] == f"#event/{name}"})
 
-    print(f"\n이벤트 (사람 수) — 페이지뷰 {len(views)} · 순방문자 {len({r['visitor_id'] for r in views})}")
+    bot_note = f" · 자동 검사 {len(bots)}명 제외" if bots else ""
+    print(f"\n이벤트 (사람 수) — 페이지뷰 {len(views)} · 순방문자 {len({r['visitor_id'] for r in views})}{bot_note}")
     print("─" * 52)
     for name in ["signup", "exam_completed", "ai_trial_used", "subscribe_view",
                  "payment_blocked", "payment_started", "purchase_success", "payment_fail"]:

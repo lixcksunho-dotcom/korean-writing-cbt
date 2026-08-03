@@ -5,6 +5,8 @@ export function trackEvent(event: string, meta?: string) {
   let visitorId = 'anon'
   let sessionId = 'anon'
   try {
+    // 자동화된 브라우저는 세지 않는다 — 이유는 TrafficTracker 주석 참고.
+    if (navigator.webdriver || localStorage.getItem('kpt_no_track') === '1') return
     visitorId = localStorage.getItem('kpt_vid') || 'anon'
     sessionId = sessionStorage.getItem('kpt_sid') || 'anon'
   } catch {

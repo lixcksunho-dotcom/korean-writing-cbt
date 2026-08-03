@@ -290,7 +290,10 @@ const BANK: Record<string, Item[]> = {
   ],
 }
 
-export default function TopicQuiz({ topic, ctaHref = '/cbt' }: { topic: string; ctaHref?: string }) {
+// ctaHref 기본값이 /cbt였는데, 비로그인으로 열면 곧바로 /login으로 튕긴다.
+// 맛보기 문제를 다 푼 사람은 아직 가입 전이므로 가입 화면으로 바로 보낸다 —
+// 로그인 화면을 한 번 거치게 하면 '계정이 없으신가요?'를 찾아야 하는 단계가 하나 는다.
+export default function TopicQuiz({ topic, ctaHref = '/signup?from=quiz' }: { topic: string; ctaHref?: string }) {
   const items = BANK[topic]
   const [picked, setPicked] = useState<Record<number, number>>({})
 
@@ -362,21 +365,34 @@ export default function TopicQuiz({ topic, ctaHref = '/cbt' }: { topic: string; 
       </div>
 
       {solved === items.length && (
-        <div className="mt-5 rounded-xl bg-gradient-to-br from-[#0f1f3d] to-[#1e3a5f] px-5 py-4 text-center text-white">
-          <p className="text-sm font-bold">
+        <div className="mt-5 rounded-xl bg-gradient-to-br from-[#0f1f3d] to-[#1e3a5f] px-5 py-5 text-center text-white">
+          <p className="text-base font-black">
             {items.length}문제 중 {correct}문제 정답
           </p>
-          <p className="mt-0.5 text-xs text-white/70">
-            실전은 39문항이에요. 무료 모의고사로 지금 점수를 재 보세요.
+          {/* 점수를 그냥 되풀이하지 않고, 그 점수가 무슨 뜻인지 한 줄로 말해 준다.
+              전에는 몇 개를 맞혔든 같은 문장이라 다음 행동으로 이어질 이유가 없었다. */}
+          <p className="mx-auto mt-1 max-w-xs text-xs leading-relaxed text-white/75">
+            {correct === items.length
+              ? '이 유형은 잡혔어요. 실전 39문항에서도 그런지 확인해 보세요.'
+              : correct >= items.length - 1
+                ? '거의 다 맞혔어요. 실전은 39문항이라 이런 문제가 계속 나와요.'
+                : '헷갈리는 유형이 보여요. 실전 39문항을 풀면 어느 영역이 약한지 나옵니다.'}
           </p>
+
           <Link
             href={ctaHref}
             onClick={() => trackEvent('quiz_cta', topic)}
-            className="mt-3 inline-flex items-center gap-1.5 rounded-xl bg-white px-4 py-2 text-xs font-black text-[#1e3a5f]"
+            className="mt-4 flex w-full items-center justify-center gap-1.5 rounded-xl bg-white px-4 py-3.5 text-sm font-black text-[#1e3a5f]"
           >
-            <Sparkles className="h-3.5 w-3.5" />
-            무료 모의고사 풀어보기
+            <Sparkles className="h-4 w-4" />
+            30초 가입하고 39문항 풀어보기
           </Link>
+          {/* 여기서 무슨 일이 생기는지 미리 말한다. 전에는 '무료 모의고사 풀어보기'를
+              누르면 예고 없이 로그인 화면이 떴다 — 맨 위에서 '가입 없이 풀 수 있다'고
+              해 놓고서. 34명이 문제를 다 풀고도 한 명도 누르지 않은 자리다. */}
+          <p className="mt-2 text-xs text-white/60">
+            이메일만 있으면 됩니다 · 카드 등록 없음
+          </p>
         </div>
       )}
     </section>
