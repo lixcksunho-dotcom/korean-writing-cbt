@@ -84,7 +84,7 @@ export default function ModeIntroModal({ current }: { current: ProgramId }) {
           <X className="h-5 w-5" />
         </button>
 
-        <div className="inline-flex items-center gap-1.5 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full mb-3">
+        <div className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full mb-3">
           NEW
         </div>
         <h2 className="text-lg font-black text-[#0f172a] mb-1">

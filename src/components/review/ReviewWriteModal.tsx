@@ -229,7 +229,7 @@ export default function ReviewWriteModal({ defaultName }: { defaultName: string 
                         className="hidden"
                       />
                     </label>
-                    <p className="text-[11px] text-[#64748b] mt-1">인증 사진은 공개되지 않으며, 점수 확인·환급 용도로만 사용됩니다.</p>
+                    <p className="text-xs text-[#64748b] mt-1">인증 사진은 공개되지 않으며, 점수 확인·환급 용도로만 사용됩니다.</p>
                   </div>
 
                   {error && (

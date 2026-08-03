@@ -55,7 +55,7 @@ function Row({ r }: { r: AdminReview }) {
         ) : (
           <div className="w-24 h-24 rounded-lg border bg-gray-50 flex flex-col items-center justify-center text-gray-300 gap-1">
             <ImageOff className="h-5 w-5" />
-            <span className="text-[11px] text-gray-400">사진 없음</span>
+            <span className="text-xs text-gray-400">사진 없음</span>
           </div>
         )}
       </div>
@@ -68,11 +68,11 @@ function Row({ r }: { r: AdminReview }) {
             {Array.from({ length: r.rating }).map((_, i) => <Star key={i} className="h-3 w-3 fill-current" />)}
           </span>
           {r.verified && (
-            <span className="inline-flex items-center gap-0.5 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-full">
+            <span className="inline-flex items-center gap-0.5 text-xs font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-full">
               <BadgeCheck className="h-3 w-3" /> 점수 인증
             </span>
           )}
-          {!r.isVisible && <span className="text-[11px] font-bold text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded-full">숨김</span>}
+          {!r.isVisible && <span className="text-xs font-bold text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded-full">숨김</span>}
         </div>
         <p className="text-sm text-gray-700 leading-relaxed mb-1.5 whitespace-pre-wrap">{r.content}</p>
         <div className="flex items-center gap-3 text-xs text-gray-400">

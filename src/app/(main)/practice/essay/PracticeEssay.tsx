@@ -186,7 +186,7 @@ export default function PracticeEssay({
                 title="저장하고 나가기는 구독 회원 전용이에요"
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-[#f1f5f9] text-[#475569] border border-[#e2e8f0] cursor-not-allowed hover:text-amber-600 hover:border-amber-200"
               >
-                <Lock className="h-3.5 w-3.5" /> 저장하고 나가기 <span className="text-[11px] font-bold text-amber-500">유료</span>
+                <Lock className="h-3.5 w-3.5" /> 저장하고 나가기 <span className="text-xs font-bold text-amber-500">유료</span>
               </Link>
             )
           )}

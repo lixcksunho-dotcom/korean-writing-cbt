@@ -192,7 +192,7 @@ export default function ScheduleModal({ program = 'silyong' }: { program?: strin
               >
                 전체 일정 보기 (공식 홈페이지) <ExternalLink className="h-3 w-3" />
               </a>
-              <p className="mt-2 text-[11px] text-[#b4bfce]">
+              <p className="mt-2 text-xs text-[#b4bfce]">
                 일정은 주관처 사정으로 변경될 수 있습니다. 접수 전 공식 홈페이지에서 확인하세요.
               </p>
             </div>
@@ -235,5 +235,5 @@ function StatusBadge({ status }: { status: Status }) {
     upcoming: { t: '예정', c: 'bg-slate-100 text-slate-500' },
     closed: { t: '마감', c: 'bg-slate-100 text-slate-400' },
   }[status]
-  return <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${map.c}`}>{map.t}</span>
+  return <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${map.c}`}>{map.t}</span>
 }

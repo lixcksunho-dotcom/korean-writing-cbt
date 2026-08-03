@@ -51,7 +51,7 @@ export default function ReportButton({ questionId }: { questionId: string }) {
             <button disabled={pending || !custom.trim()} onClick={() => send(custom)}
               className="text-xs font-bold text-white bg-[#1e3a5f] px-2.5 rounded-lg disabled:opacity-40">전송</button>
           </div>
-          {err && <p className="text-[11px] text-red-500 px-1.5 pt-1">{err}</p>}
+          {err && <p className="text-xs text-red-500 px-1.5 pt-1">{err}</p>}
         </div>
       )}
     </div>

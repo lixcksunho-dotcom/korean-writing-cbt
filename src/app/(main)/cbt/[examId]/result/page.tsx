@@ -181,7 +181,7 @@ export default async function ResultPage({
           <div className="flex items-center gap-2 mb-1 flex-wrap">
             <Target className="h-5 w-5 text-[#1e3a5f]" />
             <h2 className="text-base font-bold text-[#0f172a]">영역별 약점 분석</h2>
-            {!subscription && <span className="text-[11px] font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">구독 전용</span>}
+            {!subscription && <span className="text-xs font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">구독 전용</span>}
           </div>
           <p className="text-xs text-[#64748b] mb-4">객관식 정답률을 영역별로 나눠 봤어요. 낮은 영역을 집중 연습하면 점수가 가장 빨리 올라요.</p>
 
@@ -196,7 +196,7 @@ export default async function ResultPage({
                       <div className="flex items-center justify-between mb-1.5">
                         <span className="text-sm font-semibold text-[#334155] flex items-center gap-1.5">
                           {b.label}
-                          {isWeak && <span className="text-[11px] font-bold text-red-500 bg-red-50 px-1.5 py-0.5 rounded-full">약점</span>}
+                          {isWeak && <span className="text-xs font-bold text-red-500 bg-red-50 px-1.5 py-0.5 rounded-full">약점</span>}
                         </span>
                         <span className="text-xs font-bold text-[#64748b] tabular-nums">{b.correct}/{b.total} · {b.pct}%</span>
                       </div>
@@ -272,7 +272,7 @@ export default async function ResultPage({
             <h2 className="text-base font-bold text-[#0f172a] flex items-center gap-2 flex-wrap">
               <span className="w-6 h-6 rounded-lg bg-amber-100 flex items-center justify-center text-amber-600 text-xs font-black">서</span>
               서술형 ({essayQuestions.length}문항)
-              <span className="text-[11px] font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">
+              <span className="text-xs font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">
                 {subscription ? 'AI 분석' : aiTrial.remaining > 0 ? `무료 체험 ${aiTrial.remaining}회 · AI 분석` : '구독 전용 · AI 분석'}
               </span>
             </h2>
@@ -337,7 +337,7 @@ export default async function ResultPage({
           <div className="mb-4">
             <h2 className="text-base font-bold text-[#0f172a] flex items-center gap-2 flex-wrap">
               객관식 상세 결과
-              <span className="text-[11px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">무료 해설</span>
+              <span className="text-xs font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">무료 해설</span>
             </h2>
             <p className="text-xs text-[#64748b] mt-1.5">정답과 해설은 누구나 무료로 볼 수 있어요.</p>
           </div>

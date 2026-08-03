@@ -42,7 +42,7 @@ export default function ModeSwitcher({
             aria-selected={active}
             onClick={() => pick(id)}
             disabled={pending}
-            className={`px-3.5 py-2 rounded-full text-xs font-bold transition-all disabled:opacity-60 ${
+            className={`px-3.5 py-3.5 rounded-full text-xs font-bold transition-all disabled:opacity-60 ${
               active
                 ? 'bg-white text-[#0f1f3d] shadow'
                 : 'text-white/70 hover:text-white'

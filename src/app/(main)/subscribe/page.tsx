@@ -194,11 +194,11 @@ export default async function SubscribePage() {
 
           {/* 약관·정책 링크 (심사·고지) */}
           <div className="mt-3 flex items-center justify-center gap-3 text-xs text-[#64748b]">
-            <Link href="/terms" className="inline-block py-1.5 underline hover:text-[#1e3a5f]">이용약관</Link>
+            <Link href="/terms" className="inline-block py-3.5 underline hover:text-[#1e3a5f]">이용약관</Link>
             <span className="text-[#cbd5e1]">·</span>
-            <Link href="/refund" className="inline-block py-1.5 underline hover:text-[#1e3a5f]">취소·환불 정책</Link>
+            <Link href="/refund" className="inline-block py-3.5 underline hover:text-[#1e3a5f]">취소·환불 정책</Link>
             <span className="text-[#cbd5e1]">·</span>
-            <Link href="/privacy" className="inline-block py-1.5 underline hover:text-[#1e3a5f]">개인정보처리방침</Link>
+            <Link href="/privacy" className="inline-block py-3.5 underline hover:text-[#1e3a5f]">개인정보처리방침</Link>
           </div>
 
           {/* 안전 결제 배지 */}
@@ -209,7 +209,7 @@ export default async function SubscribePage() {
 
           {/* 계정 공유 금지 고지 — 실제 코드에 걸려 있는 한도(DEVICE_LIMIT·DAILY_GRADE_LIMIT)를
               그대로 적는다. '무제한'이라고 하면서 숨은 한도를 두면 걸린 사람 입장에선 속은 것이다. */}
-          <p className="mt-3 text-[11px] text-[#64748b] text-center leading-relaxed">
+          <p className="mt-3 text-xs text-[#64748b] text-center leading-relaxed">
             이용권은 결제한 본인 1인 전용이며, 기기 3대까지 사용할 수 있어요. 계정 공유 등 부정 이용이
             확인되면 이용이 제한될 수 있고, 이 경우 환불은 제공되지 않습니다.
             <br />

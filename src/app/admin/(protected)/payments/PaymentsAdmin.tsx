@@ -100,7 +100,7 @@ export default function PaymentsAdmin({ rows, listError }: { rows: PaymentRow[];
                       <td className="py-2 pr-3 whitespace-nowrap text-gray-600">
                         {p.paidAt ? new Date(p.paidAt).toLocaleString('ko-KR') : '-'}
                       </td>
-                      <td className="py-2 pr-3 font-mono text-[11px] text-gray-700">{p.id}</td>
+                      <td className="py-2 pr-3 font-mono text-xs text-gray-700">{p.id}</td>
                       <td className="py-2 pr-3">
                         <span className={p.status === 'PAID' ? 'text-emerald-600 font-semibold' : 'text-gray-500'}>{p.status}</span>
                       </td>

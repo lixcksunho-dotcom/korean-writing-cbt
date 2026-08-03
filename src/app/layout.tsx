@@ -33,6 +33,9 @@ export const metadata: Metadata = {
     "KBS한국어능력시험", "국어능력시험 모의고사", "국어 자격증 CBT",
   ],
   applicationName: "실글패스",
+  // 홈 화면에 추가했을 때 앱처럼 열리게 하는 설정(src/app/manifest.ts).
+  // iOS는 매니페스트만으로는 부족해 아래 apple 항목이 필요하다.
+  appleWebApp: { capable: true, title: "실글패스", statusBarStyle: "black-translucent" },
   // RSS 자동발견(rel=alternate) — 리더·수집기가 /rss.xml 을 스스로 찾는다.
   alternates: {
     canonical: "/",

@@ -49,7 +49,7 @@ export default function WordCounter() {
           <div key={s.label} className="bg-white rounded-xl border border-[#e2e8f0] px-4 py-3.5 text-center">
             <div className="text-2xl font-black text-[#1e3a5f] tabular-nums">{s.value}</div>
             <div className="text-xs font-semibold text-[#64748b] mt-1">{s.label}</div>
-            {s.hint && <div className="text-[11px] text-[#64748b] mt-0.5">{s.hint}</div>}
+            {s.hint && <div className="text-xs text-[#64748b] mt-0.5">{s.hint}</div>}
           </div>
         ))}
       </div>
@@ -57,13 +57,13 @@ export default function WordCounter() {
       <div className="flex flex-wrap gap-2">
         <button
           onClick={() => setText('')}
-          className="px-4 py-2.5 rounded-xl text-sm font-semibold text-[#475569] bg-[#f1f5f9] hover:bg-[#e2e8f0] transition-colors"
+          className="px-4 py-3.5 rounded-xl text-sm font-semibold text-[#475569] bg-[#f1f5f9] hover:bg-[#e2e8f0] transition-colors"
         >
           지우기
         </button>
         <button
           onClick={() => { if (text) navigator.clipboard?.writeText(text) }}
-          className="px-4 py-2.5 rounded-xl text-sm font-semibold text-[#1e3a5f] bg-[#1e3a5f]/8 hover:bg-[#1e3a5f]/15 transition-colors"
+          className="px-4 py-3.5 rounded-xl text-sm font-semibold text-[#1e3a5f] bg-[#1e3a5f]/8 hover:bg-[#1e3a5f]/15 transition-colors"
         >
           복사
         </button>

@@ -85,7 +85,7 @@ export default function SignupPage() {
         <div className="absolute inset-0 bg-gradient-to-br from-[#080f1e] via-[#0f1f3d] to-[#1e3a5f]" />
         <div className="absolute top-1/3 -right-20 w-72 h-72 bg-[#d97706] rounded-full blur-3xl opacity-10" />
         <div className="relative flex flex-col justify-between p-10 w-full">
-          <Link href="/" className="flex items-center gap-2.5">
+          <Link href="/" className="flex items-center gap-2.5 py-1">
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#f59e0b] to-[#d97706] flex items-center justify-center shadow-lg shadow-[#d97706]/30">
               <LogoGlyph className="h-5 w-5 text-white" />
             </div>
@@ -113,7 +113,7 @@ export default function SignupPage() {
       {/* 오른쪽 폼 */}
       <div className="flex-1 flex items-center justify-center px-6 py-12 bg-[#f8fafc]">
         <div className="w-full max-w-md">
-          <Link href="/" className="flex items-center justify-center gap-2 mb-8 lg:hidden">
+          <Link href="/" className="flex items-center justify-center gap-2 py-1 mb-8 lg:hidden">
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#f59e0b] to-[#d97706] flex items-center justify-center">
               <LogoGlyph className="h-5 w-5 text-white" />
             </div>
@@ -151,10 +151,10 @@ export default function SignupPage() {
                 <label className="block text-xs font-semibold text-[#334155] mb-1.5">비밀번호</label>
                 <div className="relative">
                   <input type={showPw ? "text" : "password"} value={password} onChange={e => setPassword(e.target.value)}
-                    placeholder="6자리 이상" required autoComplete="new-password" className={`${inputCls} pr-11`} />
+                    placeholder="6자리 이상" required autoComplete="new-password" className={`${inputCls} pr-14`} />
                   <button type="button" onClick={() => setShowPw(v => !v)}
                     aria-label={showPw ? "비밀번호 숨기기" : "비밀번호 보기"}
-                    className="absolute right-1.5 top-1/2 -translate-y-1/2 p-2 rounded-lg text-[#64748b] hover:text-[#334155] transition-colors">
+                    className="absolute right-1 top-1/2 -translate-y-1/2 p-3.5 rounded-lg text-[#64748b] hover:text-[#334155] transition-colors">
                     {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>

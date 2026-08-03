@@ -31,7 +31,7 @@ export default function CopyGuard({ notice = true }: { notice?: boolean }) {
 
   if (!notice) return null
   return (
-    <p className="mt-6 text-center text-[11px] text-[#64748b] leading-relaxed select-none">
+    <p className="mt-6 text-center text-xs text-[#64748b] leading-relaxed select-none">
       ⓒ 본 문제·지문·자료의 저작권은 운영자(만물아들)에게 있습니다. 무단 복제·캡처·배포·전송을 금하며, 위반 시 관련 법령에 따라 책임을 물을 수 있습니다.
     </p>
   )

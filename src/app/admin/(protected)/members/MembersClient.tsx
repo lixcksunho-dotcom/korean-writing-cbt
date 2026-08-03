@@ -51,7 +51,7 @@ export default function MembersClient({ members }: { members: AdminMember[] }) {
 
       {/* 목록 */}
       <div className="bg-white border rounded-xl overflow-hidden">
-        <div className="hidden sm:grid grid-cols-[1fr_auto_auto_auto] gap-3 px-4 py-2.5 bg-gray-50 text-[11px] font-bold text-gray-500 uppercase">
+        <div className="hidden sm:grid grid-cols-[1fr_auto_auto_auto] gap-3 px-4 py-2.5 bg-gray-50 text-xs font-bold text-gray-500 uppercase">
           <span>회원</span><span>가입</span><span>유료</span><span>삭제</span>
         </div>
         <div className="divide-y">
@@ -92,7 +92,7 @@ function Row({ m, onError }: { m: AdminMember; onError: (s: string) => void }) {
         <div className="flex items-center gap-1.5">
           <span className="font-semibold text-gray-900 truncate">{m.name || m.email.split('@')[0]}</span>
           {paid && <Crown className="h-3.5 w-3.5 text-amber-500 shrink-0" />}
-          {m.provider !== 'email' && <span className="text-[11px] text-gray-400 bg-gray-100 px-1.5 rounded">{m.provider}</span>}
+          {m.provider !== 'email' && <span className="text-xs text-gray-400 bg-gray-100 px-1.5 rounded">{m.provider}</span>}
         </div>
         <span className="text-xs text-gray-400 truncate block">{m.email}</span>
       </div>
@@ -141,7 +141,7 @@ function AddForm({ onClose, onError }: { onClose: () => void; onError: (s: strin
       <button disabled={pending} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-bold bg-gray-900 text-white hover:bg-gray-700 disabled:opacity-50">
         {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : <UserPlus className="h-4 w-4" />} 추가하기
       </button>
-      <p className="text-[11px] text-gray-400 mt-2">이메일 인증 완료 상태로 즉시 생성됩니다. 비밀번호는 회원에게 직접 전달하세요.</p>
+      <p className="text-xs text-gray-400 mt-2">이메일 인증 완료 상태로 즉시 생성됩니다. 비밀번호는 회원에게 직접 전달하세요.</p>
     </form>
   )
 }

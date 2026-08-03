@@ -59,7 +59,7 @@ export function GradingSampleCompact() {
     <div className="rounded-2xl bg-white p-5 text-left shadow-[0_8px_32px_rgba(0,0,0,0.18)]">
       <div className="mb-4 flex items-center justify-between gap-2">
         <p className="text-sm font-black text-[#0f172a]">AI 첨삭은 이렇게 나옵니다</p>
-        <span className="shrink-0 rounded-full bg-[#f1f5f9] px-2.5 py-1 text-[11px] font-bold text-[#475569]">예시</span>
+        <span className="shrink-0 rounded-full bg-[#f1f5f9] px-2.5 py-1 text-xs font-bold text-[#475569]">예시</span>
       </div>
 
       <div className="mb-4 flex items-center gap-4 rounded-xl bg-gradient-to-br from-[#1e3a5f] to-[#2d5488] px-5 py-3 text-white">

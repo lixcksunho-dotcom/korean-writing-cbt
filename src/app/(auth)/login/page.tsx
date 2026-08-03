@@ -50,7 +50,7 @@ export default function LoginPage() {
         <div className="absolute top-1/4 -left-20 w-80 h-80 bg-[#2d5488] rounded-full blur-3xl opacity-30" />
         <div className="absolute bottom-1/4 right-0 w-64 h-64 bg-[#d97706] rounded-full blur-3xl opacity-10" />
         <div className="relative flex flex-col justify-between p-10 w-full">
-          <Link href="/" className="flex items-center gap-2.5">
+          <Link href="/" className="flex items-center gap-2.5 py-1">
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#f59e0b] to-[#d97706] flex items-center justify-center shadow-lg shadow-[#d97706]/30">
               <LogoGlyph className="h-5 w-5 text-white" />
             </div>
@@ -78,7 +78,7 @@ export default function LoginPage() {
       <div className="flex-1 flex items-center justify-center px-6 py-12 bg-[#f8fafc]">
         <div className="w-full max-w-md">
           {/* 모바일 로고 */}
-          <Link href="/" className="flex items-center justify-center gap-2 mb-8 lg:hidden">
+          <Link href="/" className="flex items-center justify-center gap-2 py-1 mb-8 lg:hidden">
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#f59e0b] to-[#d97706] flex items-center justify-center">
               <LogoGlyph className="h-5 w-5 text-white" />
             </div>
@@ -116,11 +116,11 @@ export default function LoginPage() {
                   <input
                     type={showPw ? "text" : "password"} value={password} onChange={e => setPassword(e.target.value)}
                     placeholder="비밀번호를 입력하세요" required autoComplete="current-password"
-                    className={`${inputCls} pr-11`}
+                    className={`${inputCls} pr-14`}
                   />
                   <button type="button" onClick={() => setShowPw(v => !v)}
                     aria-label={showPw ? "비밀번호 숨기기" : "비밀번호 보기"}
-                    className="absolute right-1.5 top-1/2 -translate-y-1/2 p-2 rounded-lg text-[#64748b] hover:text-[#334155] transition-colors">
+                    className="absolute right-1 top-1/2 -translate-y-1/2 p-3.5 rounded-lg text-[#64748b] hover:text-[#334155] transition-colors">
                     {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>

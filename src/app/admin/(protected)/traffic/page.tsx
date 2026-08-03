@@ -168,7 +168,7 @@ export default async function AdminTrafficPage() {
             <div key={f.label} className={`rounded-lg p-4 text-center ${i === 2 ? 'bg-emerald-50' : 'bg-gray-50'}`}>
               <p className="text-xs font-semibold text-gray-500">{f.label}</p>
               <p className={`mt-1 text-2xl font-black ${i === 2 ? 'text-emerald-600' : 'text-gray-900'}`}>{f.value.toLocaleString()}</p>
-              <p className="mt-0.5 text-[11px] text-gray-400">{f.sub}</p>
+              <p className="mt-0.5 text-xs text-gray-400">{f.sub}</p>
             </div>
           ))}
         </div>
@@ -191,7 +191,7 @@ export default async function AdminTrafficPage() {
                 <div key={f.label} className={`rounded-lg p-4 text-center ${i === 2 ? 'bg-emerald-50' : 'bg-gray-50'}`}>
                   <p className="text-xs font-semibold text-gray-500">{f.label}</p>
                   <p className={`mt-1 text-2xl font-black ${i === 2 ? 'text-emerald-600' : 'text-gray-900'}`}>{f.value.toLocaleString()}</p>
-                  <p className="mt-0.5 text-[11px] text-gray-400">{f.sub}</p>
+                  <p className="mt-0.5 text-xs text-gray-400">{f.sub}</p>
                 </div>
               ))}
             </div>
@@ -228,7 +228,7 @@ export default async function AdminTrafficPage() {
         <div className="flex items-end gap-1.5" style={{ height: 140 }}>
           {days.map(d => (
             <div key={d.label} className="flex flex-1 flex-col items-center justify-end gap-1">
-              <span className="text-[11px] font-semibold text-gray-500">{d.pv || ''}</span>
+              <span className="text-xs font-semibold text-gray-500">{d.pv || ''}</span>
               <div
                 className="w-full rounded-t bg-amber-400"
                 style={{ height: `${Math.round((d.pv / maxPv) * 104)}px`, minHeight: d.pv ? 3 : 0 }}
@@ -251,7 +251,7 @@ export default async function AdminTrafficPage() {
               <tbody>
                 {topPaths.map(([path, count]) => (
                   <tr key={path} className="border-b border-gray-100">
-                    <td className="py-2 font-mono text-[11px] text-gray-700">{path}</td>
+                    <td className="py-2 font-mono text-xs text-gray-700">{path}</td>
                     <td className="py-2 text-right font-semibold text-gray-900">{count.toLocaleString()}</td>
                   </tr>
                 ))}

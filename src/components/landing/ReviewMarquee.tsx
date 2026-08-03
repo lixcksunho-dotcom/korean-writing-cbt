@@ -38,7 +38,7 @@ function ReviewCard({ review }: { review: Review }) {
             "820점 합격"처럼 단정해 보여 주면 방문자는 그걸 사실로 읽는다.
             이름 옆 '인증' 표시보다 이 배지가 훨씬 눈에 띈다. */}
         {review.exam_score != null && review.verified && (
-          <span className="text-[11px] font-black text-[#d97706] bg-amber-50 border border-amber-100 px-2 py-0.5 rounded-full">
+          <span className="text-xs font-black text-[#d97706] bg-amber-50 border border-amber-100 px-2 py-0.5 rounded-full">
             {review.exam_score}점 합격
           </span>
         )}
@@ -50,7 +50,7 @@ function ReviewCard({ review }: { review: Review }) {
         <span className="text-xs font-semibold text-[#0f172a] flex items-center gap-1">
           {review.display_name}
           {review.verified && (
-            <span className="inline-flex items-center gap-0.5 text-[11px] font-bold text-emerald-600" title="점수 인증 완료">
+            <span className="inline-flex items-center gap-0.5 text-xs font-bold text-emerald-600" title="점수 인증 완료">
               <BadgeCheck className="h-3.5 w-3.5" /> 인증
             </span>
           )}

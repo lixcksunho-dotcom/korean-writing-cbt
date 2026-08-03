@@ -14,7 +14,7 @@ export default function SymbolPalette({
   if (!symbols.length) return null
   return (
     <div className="flex flex-wrap items-center gap-1.5 rounded-xl border border-[#e2e8f0] bg-[#f8fafc] px-3 py-2">
-      <span className="text-[11px] font-semibold text-[#64748b] mr-0.5">기호 삽입</span>
+      <span className="text-xs font-semibold text-[#64748b] mr-0.5">기호 삽입</span>
       {symbols.map(s => (
         <button
           key={s}

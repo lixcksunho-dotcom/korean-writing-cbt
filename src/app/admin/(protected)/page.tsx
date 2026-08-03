@@ -59,7 +59,7 @@ export default async function AdminHome() {
             <div className={`inline-flex p-2 rounded-lg mb-3 ${color}`}><Icon className="h-4 w-4" /></div>
             <div className="text-2xl font-black text-gray-900 tracking-tight">{value}</div>
             <div className="text-xs font-semibold text-gray-700 mt-0.5">{label}</div>
-            <div className="text-[11px] text-gray-400 mt-0.5">{sub}</div>
+            <div className="text-xs text-gray-400 mt-0.5">{sub}</div>
           </div>
         ))}
       </div>
@@ -74,7 +74,7 @@ export default async function AdminHome() {
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
                 <h2 className="font-bold text-gray-900">{title}</h2>
-                {badge && <span className="text-[11px] font-bold text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded-full">{badge}</span>}
+                {badge && <span className="text-xs font-bold text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded-full">{badge}</span>}
               </div>
               <p className="text-xs text-gray-500 mt-0.5">{desc}</p>
             </div>

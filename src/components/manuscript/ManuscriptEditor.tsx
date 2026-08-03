@@ -133,7 +133,7 @@ export default function ManuscriptEditor({
           cell={30}
           placeholder="원고지 칸에 바로 입력하세요"
         />
-        <div className="mt-2 bg-gray-50 rounded-lg px-3 py-2 text-[11px] text-gray-500 leading-relaxed">
+        <div className="mt-2 bg-gray-50 rounded-lg px-3 py-2 text-xs text-gray-500 leading-relaxed">
           <span className="font-medium text-gray-600">원고지 규칙 안내</span>
           {' · '}제목: 첫 줄 오른쪽에서 2~4칸 비우고 시작
           {' · '}본문: 각 단락 첫 칸 공백 들여쓰기

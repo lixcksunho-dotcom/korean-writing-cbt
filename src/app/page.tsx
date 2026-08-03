@@ -430,7 +430,7 @@ export default async function HomePage() {
       <section className="py-14 px-4 bg-white">
         <div className="max-w-3xl mx-auto rounded-2xl border border-emerald-200 bg-gradient-to-br from-[#ecfdf5] to-[#f0fdfa] p-6 sm:p-7 flex flex-col sm:flex-row sm:items-center gap-5">
           <div className="flex-1">
-            <div className="inline-flex items-center gap-1.5 text-[11px] font-black text-emerald-700 bg-white/70 border border-emerald-200 px-2.5 py-1 rounded-full mb-2">
+            <div className="inline-flex items-center gap-1.5 text-xs font-black text-emerald-700 bg-white/70 border border-emerald-200 px-2.5 py-1 rounded-full mb-2">
               NEW
             </div>
             <h2 className="text-xl font-black text-[#0f172a] mb-1.5">KBS한국어능력시험도 같은 계정으로</h2>
