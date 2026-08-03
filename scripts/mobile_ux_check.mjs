@@ -68,17 +68,21 @@ function audit() {
     else if (w < 44 || h < 44) out.small.push({ label, w, h, hard: false })
   }
 
-  // 인접한 누름 대상 사이 간격
+  // 인접한 누름 대상 사이 간격.
+  // 규격(WCAG 2.5.8)은 24px보다 작은 대상에만 간격을 요구한다 — 충분히 큰 것끼리는
+  // 붙어 있어도 위반이 아니다(분절 컨트롤·표 셀이 그렇다). 작은 것만 본다.
+  const undersized = (r) => r.width < 24 || r.height < 24
   for (let i = 0; i < tappables.length; i++) {
     const a = tappables[i].getBoundingClientRect()
     for (let j = i + 1; j < tappables.length; j++) {
       const b = tappables[j].getBoundingClientRect()
+      if (!undersized(a) && !undersized(b)) continue
       if (tappables[i].contains(tappables[j]) || tappables[j].contains(tappables[i])) continue
       const dx = Math.max(0, Math.max(a.left, b.left) - Math.min(a.right, b.right))
       const dy = Math.max(0, Math.max(a.top, b.top) - Math.min(a.bottom, b.bottom))
       if (dx === 0 && dy === 0) continue // 겹침은 레이아웃상 정상인 경우가 많다(래퍼 등)
       const gap = Math.hypot(dx, dy)
-      if (gap > 0 && gap < 8) {
+      if (gap > 0 && gap < 24) {
         out.crowded.push({
           a: (tappables[i].textContent || tappables[i].tagName).trim().slice(0, 16),
           b: (tappables[j].textContent || tappables[j].tagName).trim().slice(0, 16),

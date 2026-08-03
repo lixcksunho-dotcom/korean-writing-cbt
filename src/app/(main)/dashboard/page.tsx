@@ -408,7 +408,7 @@ export default async function DashboardPage() {
               <span className="text-[#64748b]">서술형 <b className="text-[#0f172a]">{essayPart ?? '미채점'}</b>/{wEssay}</span>
             </div>
             {essayPart == null && (
-              <Link href="/cbt" className="mt-3 inline-flex items-center gap-1 text-xs font-bold text-amber-700 hover:underline">
+              <Link href="/cbt" className="mt-3 inline-flex items-center gap-1 text-xs font-bold text-amber-700 hover:underline py-1.5">
                 서술형 AI 채점을 받으면 예상 점수가 더 정확해져요 <ChevronRight className="h-3.5 w-3.5" />
               </Link>
             )}
@@ -451,7 +451,7 @@ export default async function DashboardPage() {
 
       {/* 바로가기 카드 */}
       <div className={`grid ${cfg.hasManuscript ? 'md:grid-cols-2' : 'grid-cols-1'} gap-4 mb-8`}>
-        <Link href="/cbt" className="group card-hover bg-white rounded-2xl p-6 border border-[#e2e8f0] shadow-[0_4px_16px_rgba(15,31,61,0.06)] block">
+        <Link href="/cbt" className="group card-hover bg-white rounded-2xl p-6 border border-[#e2e8f0] shadow-[0_4px_16px_rgba(15,31,61,0.06)] block py-1.5">
           <div className="flex items-start gap-4">
             <div className="bg-gradient-to-br from-blue-500 to-[#1e3a5f] p-3.5 rounded-2xl shadow-lg shadow-blue-500/20 group-hover:shadow-xl group-hover:shadow-blue-500/30 transition-all">
               <BookOpen className="h-6 w-6 text-white" />
@@ -534,7 +534,7 @@ export default async function DashboardPage() {
         <div className="bg-white rounded-2xl border border-[#e2e8f0] shadow-[0_4px_16px_rgba(15,31,61,0.06)] overflow-hidden">
           <div className="flex items-center justify-between px-6 py-4 border-b border-[#f1f5f9]">
             <h2 className="font-bold text-[#0f172a]">최근 CBT 기록</h2>
-            <Link href="/cbt" className="text-xs text-[#1e3a5f] font-medium hover:underline flex items-center gap-0.5">
+            <Link href="/cbt" className="text-xs text-[#1e3a5f] font-medium hover:underline flex items-center gap-0.5 py-1.5">
               전체 보기 <ChevronRight className="h-3.5 w-3.5" />
             </Link>
           </div>
