@@ -62,11 +62,11 @@ export default function WordCountPage() {
       {/* 상단바 */}
       <header className="border-b border-[#e2e8f0] bg-white">
         <div className="max-w-3xl mx-auto px-4 h-14 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
+          <Link href="/" className="flex items-center gap-2 py-2">
             <LogoGlyph className="h-7 w-7" />
             <span className="font-black text-[#1e3a5f]">실글패스</span>
           </Link>
-          <Link href="/" className="py-1.5 text-sm font-semibold text-[#64748b] hover:text-[#1e3a5f] transition-colors">
+          <Link href="/" className="py-3 text-sm font-semibold text-[#64748b] hover:text-[#1e3a5f] transition-colors">
             한국실용글쓰기 CBT →
           </Link>
         </div>

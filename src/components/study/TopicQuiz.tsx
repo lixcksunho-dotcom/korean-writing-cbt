@@ -342,7 +342,7 @@ export default function TopicQuiz({ topic, ctaHref = '/cbt' }: { topic: string; 
                       type="button"
                       disabled={done}
                       onClick={() => pick(i, oi)}
-                      className={`flex items-center justify-between gap-2 rounded-xl border px-3.5 py-2.5 text-left text-sm text-[#334155] transition-colors disabled:cursor-default ${tone}`}
+                      className={`flex items-center justify-between gap-2 rounded-xl border px-3.5 py-3 text-left text-sm text-[#334155] transition-colors disabled:cursor-default ${tone}`}
                     >
                       <span>{opt}</span>
                       {done && isAnswer && <Check className="h-4 w-4 shrink-0 text-emerald-600" />}

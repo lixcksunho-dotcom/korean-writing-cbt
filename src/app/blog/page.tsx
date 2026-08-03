@@ -62,7 +62,7 @@ export default function BlogIndexPage() {
               <Link
                 key={c.slug}
                 href={`/blog/category/${c.slug}`}
-                className="inline-flex items-center gap-1 text-sm font-semibold rounded-full px-3.5 py-2.5 transition-colors hover:brightness-95"
+                className="inline-flex items-center gap-1 text-sm font-semibold rounded-full px-3.5 py-3 transition-colors hover:brightness-95"
                 style={{ background: c.tint, color: c.ink }}
               >
                 {c.icon} {c.label} <span className="opacity-50">{byCat.get(c.slug)?.length}</span>
