@@ -119,7 +119,13 @@ test('학습자료의 맛보기 문제가 풀리고 실전으로 이어진다', 
     await left.first().click()
   }
   await expect(quiz.getByText(/문제 중 \d+문제 정답/)).toBeVisible()
-  await expect(quiz.getByRole('link', { name: /무료 모의고사/ })).toBeVisible()
+
+  // 다 푼 사람을 가입으로 잇는 링크. 전에는 /cbt를 가리켰는데 비로그인으로 열면 예고 없이
+  // 로그인 화면으로 튕겨서, 문제를 다 푼 34명 중 아무도 누르지 않았다. 목적지가 다시
+  // 로그인 벽으로 돌아가지 않도록 여기서 못을 박는다.
+  const cta = quiz.getByRole('link', { name: /39문항|모의고사/ })
+  await expect(cta).toBeVisible()
+  expect(await cta.getAttribute('href')).toContain('/signup')
 
   // 어휘 면은 본문이 map으로 만든 12개 묶음이라, 위젯을 map 안에 넣었다.
   // 조건을 잃으면 묶음마다 하나씩 붙어 12개가 된다 — 눈에 잘 안 띄는 회귀다.
