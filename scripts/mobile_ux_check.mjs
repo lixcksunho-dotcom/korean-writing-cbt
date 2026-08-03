@@ -55,8 +55,18 @@ if (hard.length) {
   for (const p of hard) console.log('  ' + p.line)
 }
 if (soft.length) {
-  console.log('\n[권장 미달 — 44px 손가락 크기]')
-  for (const p of soft) console.log('  ' + p.line)
+  // 같은 요소(푸터 링크 등)가 여러 면에 반복돼서 건수만 보면 실제보다 심각해 보인다.
+  // 종류로 묶어야 '무엇이 몇 종류 남았는지'가 보인다.
+  const byLabel = new Map()
+  for (const p of soft) {
+    const m = /미만 (\d+)x(\d+) "(.+)"$/.exec(p.line) ?? /(\d+(?:\.\d+)?)px 글자 "(.+)"$/.exec(p.line)
+    const key = m ? (m.length === 4 ? `${m[3]} (${m[2]}px)` : `${m[2]} (${m[1]}px 글자)`) : p.line
+    byLabel.set(key, (byLabel.get(key) ?? 0) + 1)
+  }
+  console.log(`\n[권장 미달 — 44px 손가락 크기] ${byLabel.size}종류 / ${soft.length}건`)
+  for (const [k, n] of [...byLabel.entries()].sort((a, b) => b[1] - a[1])) {
+    console.log(`  ${String(n).padStart(3)}면  ${k}`)
+  }
 }
 if (!problems.length) console.log('문제 0건')
 if (hard.length) process.exitCode = 1

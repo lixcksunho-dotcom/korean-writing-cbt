@@ -95,7 +95,7 @@ export function GradingSampleCompact() {
               <span className="mx-1.5 text-[#64748b]">→</span>
               <span className="font-bold text-emerald-700">{c.correction}</span>
             </p>
-            <p className="mt-0.5 text-[11px] leading-relaxed text-[#64748b]">{c.reason}</p>
+            <p className="mt-0.5 text-xs leading-relaxed text-[#64748b]">{c.reason}</p>
           </div>
         ))}
       </div>

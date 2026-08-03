@@ -3,47 +3,44 @@ import { BUSINESS, biz } from '@/lib/businessInfo'
 
 // 전자상거래법 표시의무 + PG 심사를 위한 공통 푸터.
 // 사업자 정보와 약관/정책 링크를 모든 페이지 하단에 노출한다.
+
+// 학습자료로 가는 길. 휴대폰에서는 2열 격자로 세운다 — 19개를 가운뎃점으로 이어
+// 붙이면 줄이 뒤엉켜 훑기 어렵고, 한 줄 높이가 28px이라 옆 링크가 눌린다.
+// 넓은 화면에서는 원래대로 한 줄에 이어 붙인다.
+const STUDY_LINKS = [
+  { href: '/guides', label: '학습 자료 모음' },
+  { href: '/exam-info', label: '한국실용글쓰기 시험정보' },
+  { href: '/kbs-korean', label: 'KBS한국어능력시험 정보' },
+  { href: '/exam-compare', label: '실용글쓰기·KBS 비교' },
+  { href: '/essay-guide', label: '서술형 공략' },
+  { href: '/manuscript-guide', label: '원고지 작성법' },
+  { href: '/spelling', label: '자주 틀리는 맞춤법' },
+  { href: '/idioms', label: '사자성어 모음' },
+  { href: '/proverbs', label: '속담 모음' },
+  { href: '/expressions', label: '관용구 모음' },
+  { href: '/refined-words', label: '순화어 모음' },
+  { href: '/honorifics', label: '높임법' },
+  { href: '/standard-words', label: '표준어' },
+  { href: '/loanword-spelling', label: '외래어 표기법' },
+  { href: '/business-writing', label: '공문서·이메일 예시' },
+  { href: '/word-counter', label: '글자수 세기' },
+  { href: '/blog', label: '독학 블로그' },
+  { href: '/cbt', label: '무료 CBT 모의고사' },
+]
 export default function SiteFooter() {
   return (
     <footer className="bg-[#080f1e] text-white/40 text-xs">
       <div className="max-w-6xl mx-auto px-4 py-7">
-        <div className="flex flex-wrap gap-x-4 gap-y-2 mb-3 font-semibold text-white/70">
-          <Link href="/guides" className="inline-block py-1.5 hover:text-white transition-colors">학습 자료 모음</Link>
-          <span className="py-1.5 text-white/20">·</span>
-          <Link href="/exam-info" className="inline-block py-1.5 hover:text-white transition-colors">한국실용글쓰기 시험정보</Link>
-          <span className="py-1.5 text-white/20">·</span>
-          <Link href="/kbs-korean" className="inline-block py-1.5 hover:text-white transition-colors">KBS한국어능력시험 정보</Link>
-          <span className="py-1.5 text-white/20">·</span>
-          <Link href="/exam-compare" className="inline-block py-1.5 hover:text-white transition-colors">실용글쓰기·KBS 비교</Link>
-          <span className="py-1.5 text-white/20">·</span>
-          <Link href="/essay-guide" className="inline-block py-1.5 hover:text-white transition-colors">서술형 공략</Link>
-          <span className="py-1.5 text-white/20">·</span>
-          <Link href="/manuscript-guide" className="inline-block py-1.5 hover:text-white transition-colors">원고지 작성법</Link>
-          <span className="py-1.5 text-white/20">·</span>
-          <Link href="/spelling" className="inline-block py-1.5 hover:text-white transition-colors">자주 틀리는 맞춤법</Link>
-          <span className="py-1.5 text-white/20">·</span>
-          <Link href="/idioms" className="inline-block py-1.5 hover:text-white transition-colors">사자성어 모음</Link>
-          <span className="py-1.5 text-white/20">·</span>
-          <Link href="/proverbs" className="inline-block py-1.5 hover:text-white transition-colors">속담 모음</Link>
-          <span className="py-1.5 text-white/20">·</span>
-          <Link href="/expressions" className="inline-block py-1.5 hover:text-white transition-colors">관용구 모음</Link>
-          <span className="py-1.5 text-white/20">·</span>
-          <Link href="/refined-words" className="inline-block py-1.5 hover:text-white transition-colors">순화어 모음</Link>
-          <span className="py-1.5 text-white/20">·</span>
-          <Link href="/honorifics" className="inline-block py-1.5 hover:text-white transition-colors">높임법</Link>
-          <span className="py-1.5 text-white/20">·</span>
-          <Link href="/standard-words" className="inline-block py-1.5 hover:text-white transition-colors">표준어</Link>
-          <span className="py-1.5 text-white/20">·</span>
-          <Link href="/loanword-spelling" className="inline-block py-1.5 hover:text-white transition-colors">외래어 표기법</Link>
-          <span className="py-1.5 text-white/20">·</span>
-          <Link href="/business-writing" className="inline-block py-1.5 hover:text-white transition-colors">공문서·이메일 예시</Link>
-          <span className="py-1.5 text-white/20">·</span>
-          <Link href="/word-counter" className="inline-block py-1.5 hover:text-white transition-colors">글자수 세기</Link>
-          <span className="py-1.5 text-white/20">·</span>
-          <Link href="/blog" className="inline-block py-1.5 hover:text-white transition-colors">독학 블로그</Link>
-          <span className="py-1.5 text-white/20">·</span>
-          <Link href="/cbt" className="inline-block py-3 hover:text-white transition-colors">무료 CBT 모의고사</Link>
-        </div>
+        <ul className="grid grid-cols-2 sm:flex sm:flex-wrap sm:gap-x-4 gap-y-0.5 sm:gap-y-2 mb-3 font-semibold text-white/70">
+          {STUDY_LINKS.map((l, i) => (
+            <li key={l.href} className="contents sm:inline">
+              <Link href={l.href} className="block py-3 sm:py-1.5 pr-3 hover:text-white transition-colors">
+                {l.label}
+              </Link>
+              {i < STUDY_LINKS.length - 1 && <span className="hidden sm:inline py-1.5 text-white/20">·</span>}
+            </li>
+          ))}
+        </ul>
         <div className="flex flex-wrap gap-x-4 gap-y-2 mb-4 font-semibold text-white/70">
           <Link href="/terms" className="inline-block py-1.5 hover:text-white transition-colors">이용약관</Link>
           <span className="py-1.5 text-white/20">·</span>
