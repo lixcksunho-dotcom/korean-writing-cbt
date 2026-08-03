@@ -7,6 +7,13 @@ import { BUSINESS, biz } from '@/lib/businessInfo'
 // 학습자료로 가는 길. 휴대폰에서는 2열 격자로 세운다 — 19개를 가운뎃점으로 이어
 // 붙이면 줄이 뒤엉켜 훑기 어렵고, 한 줄 높이가 28px이라 옆 링크가 눌린다.
 // 넓은 화면에서는 원래대로 한 줄에 이어 붙인다.
+const POLICY_LINKS = [
+  { href: '/terms', label: '이용약관' },
+  { href: '/privacy', label: '개인정보처리방침' },
+  { href: '/refund', label: '취소·환불 정책' },
+  { href: '/support', label: '고객센터' },
+]
+
 const STUDY_LINKS = [
   { href: '/guides', label: '학습 자료 모음' },
   { href: '/exam-info', label: '한국실용글쓰기 시험정보' },
@@ -41,15 +48,17 @@ export default function SiteFooter() {
             </li>
           ))}
         </ul>
-        <div className="flex flex-wrap gap-x-4 gap-y-2 mb-4 font-semibold text-white/70">
-          <Link href="/terms" className="inline-block py-1.5 hover:text-white transition-colors">이용약관</Link>
-          <span className="py-1.5 text-white/20">·</span>
-          <Link href="/privacy" className="inline-block py-1.5 hover:text-white transition-colors">개인정보처리방침</Link>
-          <span className="py-1.5 text-white/20">·</span>
-          <Link href="/refund" className="inline-block py-1.5 hover:text-white transition-colors">취소·환불 정책</Link>
-          <span className="py-1.5 text-white/20">·</span>
-          <Link href="/support" className="inline-block py-1.5 hover:text-white transition-colors">고객센터</Link>
-        </div>
+        {/* 약관·정책도 학습자료와 같은 규칙으로 — 휴대폰에서는 격자, 넓은 화면에서는 한 줄 */}
+        <ul className="grid grid-cols-2 sm:flex sm:flex-wrap sm:gap-x-4 gap-y-0.5 sm:gap-y-2 mb-4 font-semibold text-white/70">
+          {POLICY_LINKS.map((l, i) => (
+            <li key={l.href} className="contents sm:inline">
+              <Link href={l.href} className="block py-3.5 sm:py-1.5 pr-3 hover:text-white transition-colors">
+                {l.label}
+              </Link>
+              {i < POLICY_LINKS.length - 1 && <span className="hidden sm:inline py-1.5 text-white/20">·</span>}
+            </li>
+          ))}
+        </ul>
 
         <div className="space-y-1 leading-relaxed">
           <p className="text-white/60 font-semibold">{BUSINESS.serviceName}</p>

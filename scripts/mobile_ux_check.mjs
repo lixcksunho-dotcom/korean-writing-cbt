@@ -25,6 +25,9 @@ const problems = []
 for (const path of PAGES) {
   const res = await page.goto(BASE + path, { waitUntil: 'load' }).catch(() => null)
   if (!res || res.status() >= 400) { problems.push({ hard: true, line: `${path} 열지 못함` }); continue }
+  // 전환이 도는 중간 프레임을 재면 하단 고정 바가 '화면 밖으로 나갔다'고 잘못 잡힌다.
+  // (실제로 91% 지점에서 찍혀 75px 넘침으로 보고된 적이 있다)
+  await page.addStyleTag({ content: '*,*::before,*::after{transition:none!important;animation:none!important}' }).catch(() => {})
   await page.waitForTimeout(500)
   // 화면 아래쪽까지 렌더시킨 뒤 재야 지연 로딩된 것도 포함된다
   await page.evaluate(async () => {
@@ -36,7 +39,7 @@ for (const path of PAGES) {
 
   // 하단 고정 CTA는 스크롤한 뒤에야 올라온다 — 겹침은 그 상태에서 다시 봐야 보인다.
   await page.evaluate(() => window.scrollTo(0, 1200))
-  await page.waitForTimeout(700)
+  await page.waitForTimeout(900)
   const scrolled = await page.evaluate(browserAuditMobile)
   r.covered.push(...scrolled.covered)
   r.escaped.push(...scrolled.escaped)

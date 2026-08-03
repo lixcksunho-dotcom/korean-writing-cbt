@@ -46,7 +46,7 @@ export default function StickyMobileCTA() {
       <div ref={barRef} className="mx-3 mb-3 flex items-center gap-3 rounded-2xl border border-[#e2e8f0] bg-white/95 backdrop-blur-md px-4 py-3 shadow-[0_-2px_24px_rgba(15,31,61,0.12)]">
         <div className="min-w-0 flex-1">
           <p className="text-[13px] font-black text-[#0f172a] leading-tight">CBT 무료 · AI 첨삭 무료 체험</p>
-          <p className="text-[11px] text-[#64748b] leading-tight">가입만 하면 바로 시작 · 자동결제 없음</p>
+          <p className="text-xs text-[#64748b] leading-tight">가입만 하면 바로 시작 · 자동결제 없음</p>
         </div>
         <Link
           href="/signup"
