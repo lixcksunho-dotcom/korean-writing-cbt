@@ -35,7 +35,7 @@ function statusOf(r: Round): Status {
 }
 
 // 시험을 푸는 화면(시간 제한 CBT·연습 풀이)에서는 어떤 것도 답안 위를 덮으면 안 된다.
-const QUIET_ROUTES = [/^\/cbt\/[^/]+$/, /^\/practice\/(multiple|essay|types|refine|wrong|bookmarks)/, /^\/manuscript$/]
+const QUIET_ROUTES = [/^\/cbt\/[^/]+$/, /^\/practice\/(multiple|essay|types|refine|wrong|bookmarks)/, /^\/manuscript$/, /^\/subscribe/]
 
 export default function ScheduleModal({ program = 'silyong' }: { program?: string }) {
   const [open, setOpen] = useState(false)
