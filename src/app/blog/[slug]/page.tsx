@@ -102,14 +102,14 @@ export default async function BlogPostPage({
           className="relative overflow-hidden"
           style={{ background: `linear-gradient(135deg, ${t.from}, ${t.to})` }}
         >
-          <span className="pointer-events-none absolute -right-6 -top-6 text-[8rem] opacity-15 select-none">
+          <span aria-hidden className="pointer-events-none absolute -right-6 -top-6 text-[8rem] opacity-15 select-none">
             {t.icon}
           </span>
           <div className="max-w-3xl mx-auto px-4 py-10 sm:py-14">
             <nav className="text-sm text-white/70 mb-4">
-              <Link href="/blog" className="hover:text-white">블로그</Link>
+              <Link href="/blog" className="inline-block py-1.5 hover:text-white">블로그</Link>
               <span className="mx-1.5">›</span>
-              <Link href={`/blog/category/${post.category}`} className="hover:text-white">
+              <Link href={`/blog/category/${post.category}`} className="inline-block py-1.5 hover:text-white">
                 {post.categoryLabel}
               </Link>
             </nav>

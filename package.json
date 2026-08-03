@@ -21,7 +21,8 @@
     "check:ui-authed": "node scripts/authed_ui_check.mjs",
     "check:keyboard": "node scripts/keyboard_desktop_check.mjs",
     "check:recovery": "node scripts/error_recovery_check.mjs",
-    "check:exam-flow": "node scripts/exam_flow_check.mjs"
+    "check:exam-flow": "node scripts/exam_flow_check.mjs",
+    "check:blog-render": "node scripts/blog_render_check.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.100.1",

@@ -154,7 +154,9 @@ body {
 .blog-body h3 { font-size: 1.22rem; font-weight: 700; color: #1e3a5f; margin: 1.6em 0 0.5em; }
 .blog-body strong, .blog-body b { color: #0f172a; font-weight: 700; }
 .blog-body em { font-style: normal; background: linear-gradient(transparent 60%, #fef3c7 60%); padding: 0 1px; }
-.blog-body a { color: #b45309; font-weight: 600; text-decoration: underline; text-underline-offset: 2px; }
+/* 본문에는 발행 파이프라인이 넣는 인라인 배경(옅은 파랑·노랑 강조박스)이 섞여 있다.
+   #b45309는 흰 배경에서 5.02지만 그 박스 위에서는 4.40으로 떨어져 기준에 못 미친다. */
+.blog-body a { color: #92400e; font-weight: 600; text-decoration: underline; text-underline-offset: 2px; }
 .blog-body a:hover { color: #d97706; }
 .blog-body ul, .blog-body ol { margin: 1.1em 0; padding-left: 1.4em; }
 .blog-body li { margin: 0.45em 0; }

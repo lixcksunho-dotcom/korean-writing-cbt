@@ -35,6 +35,8 @@ export function browserCollectText() {
     const cs = getComputedStyle(el)
     if (cs.visibility === 'hidden' || cs.opacity === '0' || !cs.color.startsWith('rgb')) continue
     if (cs.webkitBackgroundClip === 'text' || cs.backgroundClip === 'text') continue
+    // 장식으로 표시한 것(aria-hidden)은 읽으라고 둔 글자가 아니다 — 명암비 대상이 아니다
+    if (el.closest('[aria-hidden="true"]')) continue
     const rect = el.getBoundingClientRect()
     if (rect.width < 8 || rect.height < 8) continue
 
