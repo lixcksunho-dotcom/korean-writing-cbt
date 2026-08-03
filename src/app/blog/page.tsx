@@ -95,7 +95,7 @@ export default function BlogIndexPage() {
                   <h2 className="text-2xl font-black text-[#0f172a]">{c.label}</h2>
                   <Link
                     href={`/blog/category/${c.slug}`}
-                    className="text-sm font-semibold text-[#64748b] hover:text-[#1e3a5f]"
+                    className="inline-block py-3 text-sm font-semibold text-[#64748b] hover:text-[#1e3a5f]"
                   >
                     전체 보기 →
                   </Link>

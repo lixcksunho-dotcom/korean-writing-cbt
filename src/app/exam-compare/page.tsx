@@ -89,7 +89,7 @@ export default function ExamComparePage() {
             <LogoGlyph className="h-7 w-7" />
             <span className="font-black text-[#1e3a5f]">실글패스</span>
           </Link>
-          <Link href="/cbt" className="text-sm font-semibold text-[#64748b] hover:text-[#1e3a5f] transition-colors py-1.5">
+          <Link href="/cbt" className="text-sm font-semibold text-[#64748b] hover:text-[#1e3a5f] transition-colors py-3">
             무료 CBT 모의고사 →
           </Link>
         </div>
@@ -162,7 +162,7 @@ export default function ExamComparePage() {
                 <div key={c.pick} className="rounded-xl border border-[#e2e8f0] bg-white p-5">
                   <p className="font-black text-[#0f172a] mb-1">{c.pick}</p>
                   <p className="text-sm text-[#475569] leading-relaxed mb-3">{c.who}</p>
-                  <Link href={c.href} className="text-sm font-bold text-[#1e3a5f] hover:underline">{c.cta} →</Link>
+                  <Link href={c.href} className="inline-block py-3 text-sm font-bold text-[#1e3a5f] hover:underline">{c.cta} →</Link>
                 </div>
               ))}
             </div>

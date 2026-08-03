@@ -109,7 +109,7 @@ export default async function PracticePage() {
     <div className="animate-fade-up">
       <div className="mb-8">
         <h1 className="text-2xl font-black text-[#0f172a] tracking-tight mb-1">유형별 연습</h1>
-        <p className="text-[#64748b] text-sm py-1.5">{cfg.hasManuscript ? '객관식·서술형·원고지를' : '객관식 문제를'} 골라 연습할 수 있어요. 전체 모의고사는 <Link href="/cbt" className="text-[#1e3a5f] font-semibold underline">CBT 문제풀기</Link>에서 풀 수 있습니다.</p>
+        <p className="text-[#64748b] text-sm py-3">{cfg.hasManuscript ? '객관식·서술형·원고지를' : '객관식 문제를'} 골라 연습할 수 있어요. 전체 모의고사는 <Link href="/cbt" className="text-[#1e3a5f] font-semibold underline">CBT 문제풀기</Link>에서 풀 수 있습니다.</p>
       </div>
 
       <div className="grid md:grid-cols-3 gap-5">

@@ -42,7 +42,7 @@ export default function SiteFooter() {
           <span className="py-1.5 text-white/20">·</span>
           <Link href="/blog" className="inline-block py-1.5 hover:text-white transition-colors">독학 블로그</Link>
           <span className="py-1.5 text-white/20">·</span>
-          <Link href="/cbt" className="inline-block py-1.5 hover:text-white transition-colors">무료 CBT 모의고사</Link>
+          <Link href="/cbt" className="inline-block py-3 hover:text-white transition-colors">무료 CBT 모의고사</Link>
         </div>
         <div className="flex flex-wrap gap-x-4 gap-y-2 mb-4 font-semibold text-white/70">
           <Link href="/terms" className="inline-block py-1.5 hover:text-white transition-colors">이용약관</Link>
