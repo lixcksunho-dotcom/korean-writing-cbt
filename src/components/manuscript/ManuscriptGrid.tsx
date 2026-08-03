@@ -75,7 +75,7 @@ export default function ManuscriptGrid({
             <tr key={rowIdx}>
               <td
                 className="text-center text-gray-500 border-r border-gray-200 bg-gray-50 select-none"
-                style={{ fontSize: `${Math.max(10, Math.round(fitCell * 0.4))}px` }}
+                style={{ fontSize: `${Math.max(11, Math.round(fitCell * 0.4))}px` }}
               >
                 {rowIdx + 1}
               </td>
