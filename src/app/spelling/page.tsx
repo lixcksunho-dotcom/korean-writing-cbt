@@ -1,12 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import dynamic from "next/dynamic";
 import LogoGlyph from "@/components/layout/LogoGlyph";
 import SiteFooter from "@/components/layout/SiteFooter";
 import BreadcrumbLd from "@/components/seo/BreadcrumbLd";
-const StickyMobileCTA = dynamic(() => import("@/components/landing/StickyMobileCTA"));
+import StickyMobileCTA from "@/components/landing/StickyMobileCTA";
 import RelatedBlogPosts from '@/components/blog/RelatedBlogPosts'
-const TopicQuiz = dynamic(() => import('@/components/study/TopicQuiz'))
+import TopicQuiz from '@/components/study/TopicQuiz'
 
 export const metadata: Metadata = {
   title: "자주 틀리는 맞춤법·띄어쓰기 모음 — 헷갈리는 표기 총정리",
