@@ -238,7 +238,7 @@ export default async function DashboardPage() {
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-0.5">
                 <h2 className="text-base font-black text-indigo-900">무제한 AI 첨삭, 이용 중이에요</h2>
-                <span className="text-[10px] font-bold text-white bg-indigo-500 px-2 py-0.5 rounded-full">PRO</span>
+                <span className="text-[11px] font-bold text-white bg-indigo-500 px-2 py-0.5 rounded-full">PRO</span>
               </div>
               <p className="text-sm text-indigo-800/80">
                 {manuscriptCount > 0
@@ -383,7 +383,7 @@ export default async function DashboardPage() {
             <div className="flex items-center gap-2 mb-1">
               <Gauge className="h-5 w-5 text-[#1e3a5f]" />
               <h2 className="text-base font-bold text-[#0f172a]">AI 예상 점수</h2>
-              <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">AI 추정</span>
+              <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">AI 추정</span>
             </div>
             <p className="text-xs text-[#64748b] mb-4">객관식 정답률과 서술형 AI 채점 평균을 {cfg.maxScore}점으로 환산한 추정치예요.{cfg.id === 'kbs' && ' (KBS는 상대평가라 실제 등급과 다를 수 있어요.)'}</p>
 
@@ -418,7 +418,7 @@ export default async function DashboardPage() {
             <div className="flex items-center gap-2 mb-1">
               <Gauge className="h-5 w-5 text-[#1e3a5f]" />
               <h2 className="text-base font-bold text-[#0f172a]">AI 예상 점수</h2>
-              <span className="text-[10px] font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">구독 전용</span>
+              <span className="text-[11px] font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">구독 전용</span>
             </div>
             <p className="text-xs text-[#64748b] mb-4">서술형까지 AI가 채점해, 지금 실력이면 <b className="text-[#1e3a5f]">실제 시험에서 몇 점·몇 등급</b>일지 알려줘요.</p>
             <div className="relative">
@@ -579,7 +579,7 @@ function ScoreGauge({ predicted, cuts, maxScore }: { predicted: number; cuts: Gr
   return (
     <div className="relative pt-5">
       <div className="absolute top-0" style={{ left: `${pos}%`, transform: "translateX(-50%)" }}>
-        <div className="text-[10px] font-black text-[#1e3a5f] whitespace-nowrap text-center">{predicted}</div>
+        <div className="text-[11px] font-black text-[#1e3a5f] whitespace-nowrap text-center">{predicted}</div>
         <div className="w-0.5 h-2 bg-[#1e3a5f] mx-auto" />
       </div>
       <div className="relative h-3 rounded-full overflow-hidden bg-slate-200">

@@ -74,7 +74,7 @@ export default async function AdminHome() {
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
                 <h2 className="font-bold text-gray-900">{title}</h2>
-                {badge && <span className="text-[10px] font-bold text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded-full">{badge}</span>}
+                {badge && <span className="text-[11px] font-bold text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded-full">{badge}</span>}
               </div>
               <p className="text-xs text-gray-500 mt-0.5">{desc}</p>
             </div>

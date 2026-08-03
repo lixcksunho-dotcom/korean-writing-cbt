@@ -51,11 +51,14 @@ export default function ManuscriptGrid({
 
   // 인덱스열(~22px) 자리를 빼고 남은 너비에 칸을 맞춤. prop(cell)을 넘지 않음.
   const fitCell = availW
-    ? Math.max(12, Math.min(cell, Math.floor((availW - 24) / cols)))
+    ? Math.max(16, Math.min(cell, Math.floor((availW - 24) / cols)))
     : cell
 
   const grid = textToGrid(text, cols, rows)
-  const fontPx = Math.round(fitCell * 0.5)
+  // 휴대폰에서는 20칸을 맞추느라 칸이 18px까지 줄어든다. 글자를 칸의 절반(9px)으로 그리면
+  // 자기가 쓴 답을 못 읽는다. 원고지는 원래 글자가 칸을 거의 채우므로 비율을 올리고
+  // 11px 바닥을 둔다 — 가로 스크롤 없이 읽히게 하는 쪽을 택했다.
+  const fontPx = Math.max(11, Math.round(fitCell * 0.62))
   const idxW = Math.max(18, Math.round(fitCell * 0.9))
 
   return (
@@ -71,8 +74,8 @@ export default function ManuscriptGrid({
           {grid.map((row, rowIdx) => (
             <tr key={rowIdx}>
               <td
-                className="text-center text-gray-300 border-r border-gray-200 bg-gray-50 select-none"
-                style={{ fontSize: `${Math.max(7, Math.round(fitCell * 0.32))}px` }}
+                className="text-center text-gray-500 border-r border-gray-200 bg-gray-50 select-none"
+                style={{ fontSize: `${Math.max(10, Math.round(fitCell * 0.4))}px` }}
               >
                 {rowIdx + 1}
               </td>

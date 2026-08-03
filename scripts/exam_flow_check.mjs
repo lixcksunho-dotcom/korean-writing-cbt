@@ -8,7 +8,7 @@
 // AI 채점은 절대 누르지 않는다(유료 API). 결과 화면의 표시만 확인한다.
 import fs from 'node:fs'
 import { chromium, devices } from 'playwright'
-import { dismissIntros } from './ui_audit_rules.mjs'
+import { browserAuditMobile, mobileProblemLines, dismissIntros } from './ui_audit_rules.mjs'
 
 const ENV = Object.fromEntries(
   fs.readFileSync('.env.local', 'utf-8').split('\n')
@@ -70,6 +70,15 @@ try {
   const total = await page.evaluate(() => Number(/\d+\s*\/\s*(\d+)\s*완료/.exec(document.body.innerText)?.[1] ?? 0))
   if (!total) { bad('문항 수 확인', '"n/m 완료" 표시를 찾지 못함'); throw new Error('문항 수 확인 실패') }
 
+  // 시험 화면은 사람이 120분을 보내는 자리인데 세션이 있어야 열려서 다른 검사가 못 본다.
+  // 여기서 열린 김에 휴대폰 사용성을 같이 잰다.
+  {
+    const r = await page.evaluate(browserAuditMobile)
+    const lines = mobileProblemLines('시험 화면', r).filter((x) => x.hard)
+    if (lines.length) for (const l of lines) bad('시험 화면 사용성', l.line.replace('시험 화면  ', ''))
+    else ok('시험 화면 사용성', '휴대폰 기준 미달 0건')
+  }
+
   // ── 끝까지 푼다 ──────────────────────────────────────────────────────────
   // 객관식은 첫 선택지를 고르고, 서술형은 짧게 채운다(채점 자체가 목적이 아니다).
   let guard = 0
@@ -127,6 +136,8 @@ try {
       score: /(\d+)\s*점/.exec(t)?.[1] ?? null,
       hasWrong: /오답|해설|틀린/.test(t),
       hasAiPaid: /AI 채점|AI 첨삭/.test(t),
+      essayPending: /채점 전/.test(t),
+      verdict: /미달|합격권|예상/.test(t),
     }
   })
   console.log('  [결과 화면 본문] ' + view.text.slice(0, 300))
@@ -134,6 +145,18 @@ try {
   else bad('결과 화면 점수', `점수를 찾지 못함 — ${view.text.slice(0, 120)}`)
   if (view.hasWrong) ok('오답 해설', '오답·해설 안내가 있다')
   else bad('오답 해설', '오답 관련 안내가 없다')
+
+  // 서술형이 채점 전인데 등급을 말하면 안 된다 — 객관식만으로는 누구나 늘 '미달'이다
+  {
+    const r = await page.evaluate(browserAuditMobile)
+    const lines = mobileProblemLines('결과 화면', r).filter((x) => x.hard)
+    if (lines.length) for (const l of lines) bad('결과 화면 사용성', l.line.replace('결과 화면  ', ''))
+    else ok('결과 화면 사용성', '휴대폰 기준 미달 0건')
+  }
+
+  if (!view.essayPending) bad('등급 판정', '서술형 채점 전인데 "채점 전" 안내가 없다')
+  else if (view.verdict) bad('등급 판정', '채점 전인데도 등급(미달/합격권)을 말한다')
+  else ok('등급 판정', '채점 전에는 등급을 말하지 않는다')
 
   // ── DB에 실제로 답안이 저장됐는가 (화면이 멀쩡해도 여기서 갈린다) ──────────
   // 완료 표시는 status가 아니라 completed_at이다(컬럼 이름을 잘못 짚어 한 번 헛다리 짚었다)

@@ -134,7 +134,7 @@ export default async function InsightsPage() {
         <div className="flex items-end gap-1.5 h-40 border-b border-[#f1f5f9] pb-0">
           {trend.map((t, i) => (
             <div key={i} className="flex-1 flex flex-col items-center justify-end gap-1 min-w-0">
-              <span className="text-[10px] font-bold text-[#64748b] tabular-nums">{t.pct}</span>
+              <span className="text-[11px] font-bold text-[#64748b] tabular-nums">{t.pct}</span>
               <div
                 className={`w-full rounded-t-md ${t.pct >= 80 ? 'bg-emerald-400' : t.pct >= 60 ? 'bg-amber-400' : 'bg-red-300'}`}
                 style={{ height: `${Math.max(4, t.pct)}%` }}
@@ -145,7 +145,7 @@ export default async function InsightsPage() {
         </div>
         <div className="flex gap-1.5 mt-1.5">
           {trend.map((t, i) => (
-            <span key={i} className="flex-1 text-center text-[10px] text-[#64748b] truncate">{t.round}회</span>
+            <span key={i} className="flex-1 text-center text-[11px] text-[#64748b] truncate">{t.round}회</span>
           ))}
         </div>
       </div>
@@ -167,7 +167,7 @@ export default async function InsightsPage() {
                   <div className="flex items-center justify-between mb-1.5">
                     <span className="text-sm font-semibold text-[#334155] flex items-center gap-1.5">
                       {b.label}
-                      {isWeak && <span className="text-[10px] font-bold text-red-500 bg-red-50 px-1.5 py-0.5 rounded-full">약점</span>}
+                      {isWeak && <span className="text-[11px] font-bold text-red-500 bg-red-50 px-1.5 py-0.5 rounded-full">약점</span>}
                     </span>
                     <span className="text-xs font-bold text-[#64748b] tabular-nums">{b.correct}/{b.total} · {b.pct}%</span>
                   </div>

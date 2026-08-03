@@ -92,7 +92,7 @@ function Row({ m, onError }: { m: AdminMember; onError: (s: string) => void }) {
         <div className="flex items-center gap-1.5">
           <span className="font-semibold text-gray-900 truncate">{m.name || m.email.split('@')[0]}</span>
           {paid && <Crown className="h-3.5 w-3.5 text-amber-500 shrink-0" />}
-          {m.provider !== 'email' && <span className="text-[10px] text-gray-400 bg-gray-100 px-1.5 rounded">{m.provider}</span>}
+          {m.provider !== 'email' && <span className="text-[11px] text-gray-400 bg-gray-100 px-1.5 rounded">{m.provider}</span>}
         </div>
         <span className="text-xs text-gray-400 truncate block">{m.email}</span>
       </div>

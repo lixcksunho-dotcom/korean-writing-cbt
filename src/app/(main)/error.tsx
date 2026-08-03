@@ -34,7 +34,7 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
           </Link>
         </div>
         {error?.digest && (
-          <p className="text-[10px] text-[#cbd5e1] mt-5">오류코드: {error.digest}</p>
+          <p className="text-[11px] text-[#cbd5e1] mt-5">오류코드: {error.digest}</p>
         )}
       </div>
     </div>

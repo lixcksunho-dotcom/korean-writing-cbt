@@ -37,8 +37,8 @@ function Row({ r }: { r: AdminReport }) {
       <div className="flex items-center gap-2 mb-1.5 flex-wrap">
         <span className="text-xs font-bold text-gray-800">{r.label}</span>
         {r.resolved
-          ? <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-full">처리됨</span>
-          : <span className="text-[10px] font-bold text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded-full">미처리</span>}
+          ? <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-full">처리됨</span>
+          : <span className="text-[11px] font-bold text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded-full">미처리</span>}
         <span className="text-[11px] text-gray-400 ml-auto">{new Date(r.createdAt).toLocaleDateString('ko-KR')}</span>
       </div>
       {r.questionText && <p className="text-xs text-gray-500 line-clamp-2 mb-1.5">{r.questionText}</p>}

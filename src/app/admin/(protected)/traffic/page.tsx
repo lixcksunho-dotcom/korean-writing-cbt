@@ -228,7 +228,7 @@ export default async function AdminTrafficPage() {
         <div className="flex items-end gap-1.5" style={{ height: 140 }}>
           {days.map(d => (
             <div key={d.label} className="flex flex-1 flex-col items-center justify-end gap-1">
-              <span className="text-[10px] font-semibold text-gray-500">{d.pv || ''}</span>
+              <span className="text-[11px] font-semibold text-gray-500">{d.pv || ''}</span>
               <div
                 className="w-full rounded-t bg-amber-400"
                 style={{ height: `${Math.round((d.pv / maxPv) * 104)}px`, minHeight: d.pv ? 3 : 0 }}
