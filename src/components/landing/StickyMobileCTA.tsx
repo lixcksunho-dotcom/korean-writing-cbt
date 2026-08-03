@@ -40,7 +40,7 @@ export default function StickyMobileCTA() {
         </div>
         <Link
           href="/signup"
-          className="btn-gold shrink-0 inline-flex items-center gap-1 font-bold px-5 py-2.5 rounded-xl text-sm"
+          className="btn-gold shrink-0 inline-flex items-center gap-1 font-bold px-5 py-3 rounded-xl text-sm"
         >
           무료 시작 <ArrowRight className="h-4 w-4" />
         </Link>

@@ -123,10 +123,10 @@ export default async function HomePage() {
             <span className="font-bold text-white text-lg tracking-tight">실글패스</span>
           </div>
           <div className="flex items-center gap-2">
-            <Link href="/login" className="text-sm text-white/70 hover:text-white transition-colors px-4 py-2 rounded-lg hover:bg-white/10">
+            <Link href="/login" className="text-sm text-white/70 hover:text-white transition-colors px-4 py-3 rounded-lg hover:bg-white/10">
               로그인
             </Link>
-            <Link href="/signup" className="btn-gold text-sm px-5 py-2 rounded-lg font-semibold">
+            <Link href="/signup" className="btn-gold text-sm px-5 py-3 rounded-lg font-semibold">
               무료 시작
             </Link>
           </div>
@@ -204,7 +204,7 @@ export default async function HomePage() {
           </div>
           <Link
             href="/signup"
-            className="shrink-0 bg-white text-[#b45309] text-sm font-black px-5 py-2 rounded-xl hover:bg-amber-50 transition-colors shadow-md"
+            className="shrink-0 bg-white text-[#b45309] text-sm font-black px-5 py-3 rounded-xl hover:bg-amber-50 transition-colors shadow-md"
           >
             지금 참여하기 →
           </Link>
