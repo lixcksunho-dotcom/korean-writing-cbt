@@ -168,7 +168,7 @@ export default async function BlogPostPage({
           )}
 
           <div className="mt-10">
-            <Link href="/blog" className="text-sm font-semibold text-[#64748b] hover:text-[#1e3a5f]">
+            <Link href="/blog" className="inline-block py-3 text-sm font-semibold text-[#64748b] hover:text-[#1e3a5f]">
               ← 블로그 전체 글 보기
             </Link>
           </div>
