@@ -115,6 +115,8 @@ function audit() {
     if (fr.height < 20) continue
     const over = Math.round(Math.max(0, fr.bottom - innerHeight))
     if (over < 20) continue
+    // 통째로 화면 밖에 있으면 일부러 숨긴 것이다(하단 고정 바가 translate-y-full로 내려가 있는 상태)
+    if (fr.top >= innerHeight) continue
     const btns = f.querySelectorAll('a[href], button, [role="button"]')
     const hidden = [...btns].filter((x) => x.getBoundingClientRect().top >= innerHeight)
     if (!hidden.length) continue
