@@ -78,7 +78,7 @@ export default function Navbar({
             <div className="w-px h-5 bg-white/10 mx-1" />
             <Link
               href="/subscribe"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-md shadow-amber-500/20 hover:shadow-lg hover:shadow-amber-500/30 transition-all"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-[#0f172a] shadow-md shadow-amber-500/20 hover:shadow-lg hover:shadow-amber-500/30 transition-all"
             >
               <Sparkles className="h-3.5 w-3.5" />
               구독

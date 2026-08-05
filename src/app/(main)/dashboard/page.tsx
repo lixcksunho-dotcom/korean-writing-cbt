@@ -313,7 +313,7 @@ export default async function DashboardPage() {
                   </span>
                 </div>
               </div>
-              <Link href="/cbt" className="inline-flex items-center gap-2 px-5 py-3.5 rounded-xl bg-gradient-to-r from-amber-500 to-[#d97706] text-white text-sm font-black hover:opacity-90 transition-opacity">
+              <Link href="/cbt" className="inline-flex items-center gap-2 px-5 py-3.5 rounded-xl bg-gradient-to-r from-amber-500 to-[#d97706] text-[#0f172a] text-sm font-black hover:opacity-90 transition-opacity">
                 첫 모의고사 시작하기 <ChevronRight className="h-4 w-4" />
               </Link>
             </div>

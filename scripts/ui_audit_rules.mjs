@@ -30,8 +30,16 @@ export function browserCollectText() {
   const res = []
   let i = 0
   for (const el of document.querySelectorAll('body *')) {
-    const txt = el.textContent?.trim()
-    if (!txt || el.children.length > 0) continue
+    // 자기 글자를 직접 가진 요소만 본다. 예전엔 자식 요소가 하나라도 있으면 건너뛰었는데,
+    // 그러면 아이콘+글자 버튼(<button><svg/>글자</button>)이 통째로 빠진다.
+    // 실제로 결과 화면의 'AI 분석' 버튼이 그렇게 빠져 흰 글자 2.15:1로 남아 있었다.
+    const ownText = [...el.childNodes]
+      .filter((n) => n.nodeType === 3)
+      .map((n) => n.textContent.trim())
+      .join(' ')
+      .trim()
+    if (!ownText) continue
+    const txt = ownText
     const cs = getComputedStyle(el)
     if (cs.visibility === 'hidden' || cs.opacity === '0' || !cs.color.startsWith('rgb')) continue
     if (cs.webkitBackgroundClip === 'text' || cs.backgroundClip === 'text') continue

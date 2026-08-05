@@ -162,7 +162,7 @@ export default function ReportRunner({
         <div className="mt-4">
           {canUseAi ? (
             <>
-              <button onClick={grade_} disabled={isPending || !answer.trim()} className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold bg-gradient-to-r from-amber-500 to-[#d97706] text-white disabled:opacity-50">
+              <button onClick={grade_} disabled={isPending || !answer.trim()} className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold bg-gradient-to-r from-amber-500 to-[#d97706] text-[#0f172a] disabled:opacity-50">
                 {isPending ? <><Loader2 className="h-4 w-4 animate-spin" /> 분석 중...</> : <><Sparkles className="h-4 w-4" /> {hasSubscription ? 'AI 분석받기' : '무료로 AI 분석 체험'}</>}
               </button>
               {!hasSubscription && <p className="text-xs text-[#64748b] mt-1.5">구독 없이 <span className="font-semibold text-amber-600">무료 {trialLeft}회</span> 더 받아볼 수 있어요.</p>}

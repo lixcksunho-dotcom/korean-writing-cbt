@@ -8,7 +8,10 @@
 // AI 채점은 절대 누르지 않는다(유료 API). 결과 화면의 표시만 확인한다.
 import fs from 'node:fs'
 import { chromium, devices } from 'playwright'
-import { browserAuditMobile, mobileProblemLines, dismissIntros } from './ui_audit_rules.mjs'
+import {
+  browserAuditMobile, mobileProblemLines, dismissIntros,
+  lum, ratio, contrastBar, browserCollectText, cheapContrast,
+} from './ui_audit_rules.mjs'
 
 const ENV = Object.fromEntries(
   fs.readFileSync('.env.local', 'utf-8').split('\n')
@@ -34,6 +37,33 @@ const uid = (await mk.json()).id
 const results = []
 const ok = (n, d) => results.push({ ok: true, n, d })
 const bad = (n, d) => results.push({ ok: false, n, d })
+
+// 요소 자리의 배경 픽셀 중앙값 — 글자를 잠깐 지우고 찍는다(명암비 2단 확증).
+let decoderPage = null
+async function bgMedian(page, el) {
+  if (!decoderPage) decoderPage = await page.context().browser().newPage()
+  await el.evaluate((e) => { e.dataset.oc = e.style.color; e.style.color = 'transparent' }).catch(() => {})
+  let px = null
+  try {
+    const buf = await el.screenshot({ timeout: 4000 })
+    px = await decoderPage.evaluate(async (b64) => {
+      const img = new Image()
+      img.src = 'data:image/png;base64,' + b64
+      await img.decode()
+      const cv = document.createElement('canvas')
+      cv.width = img.width; cv.height = img.height
+      cv.getContext('2d').drawImage(img, 0, 0)
+      const d = cv.getContext('2d').getImageData(0, 0, cv.width, cv.height).data
+      const out = []
+      for (let i = 0; i < d.length; i += 4) out.push([d[i], d[i + 1], d[i + 2]])
+      return out
+    }, buf.toString('base64'))
+  } catch { /* 화면 밖이거나 가려진 요소 */ }
+  await el.evaluate((e) => { e.style.color = e.dataset.oc || '' }).catch(() => {})
+  if (!px?.length) return null
+  const mid = (k) => { const v = px.map((p) => p[k]).sort((a, b) => a - b); return v[Math.floor(v.length / 2)] }
+  return [mid(0), mid(1), mid(2)]
+}
 
 const browser = await chromium.launch()
 let sessionId = null
@@ -152,6 +182,35 @@ try {
     const lines = mobileProblemLines('결과 화면', r).filter((x) => x.hard)
     if (lines.length) for (const l of lines) bad('결과 화면 사용성', l.line.replace('결과 화면  ', ''))
     else ok('결과 화면 사용성', '휴대폰 기준 미달 0건')
+  }
+
+  // 결과 화면은 완료된 세션이 있어야 열려서 명암비 검사가 한 번도 못 봤다.
+  // 실제로 여기서 'AI 분석' 버튼이 금색 위 흰 글자(2.15:1)로 남아 있었다 —
+  // 정작 눌리게 하려는 버튼이 가장 안 읽혔다.
+  {
+    await page.addStyleTag({ content: '*,*::before,*::after{animation:none!important;transition:none!important}' }).catch(() => {})
+    const items = await page.evaluate(browserCollectText).catch(() => [])
+    const seen = new Set()
+    const fails = []
+    for (const it of items) {
+      const key = it.text + it.color + it.bg.raw
+      if (seen.has(key)) continue
+      seen.add(key)
+      const cheap = cheapContrast(it)
+      if (!cheap) continue
+      const barValue = contrastBar(it.fs, it.bold)
+      if (cheap.worst >= barValue) continue
+      const el = page.locator(`[data-cc="${it.id}"]`)
+      await el.scrollIntoViewIfNeeded({ timeout: 3000 }).catch(() => {})
+      await page.waitForTimeout(100)
+      const px = await bgMedian(page, el)
+      if (!px) continue
+      const real = ratio(cheap.fl, lum(px))
+      if (real >= barValue) continue
+      fails.push(`${real.toFixed(2)} (필요 ${barValue}) ${it.fs}px "${it.text}"`)
+    }
+    if (fails.length) for (const f of fails.slice(0, 5)) bad('결과 화면 명암비', f)
+    else ok('결과 화면 명암비', '기준 미달 0건')
   }
 
   if (!view.essayPending) bad('등급 판정', '서술형 채점 전인데 "채점 전" 안내가 없다')

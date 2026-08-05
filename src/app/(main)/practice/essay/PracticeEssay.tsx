@@ -233,7 +233,7 @@ export default function PracticeEssay({
               key={question.id}
               onClick={() => go(i)}
               className={`h-9 px-3.5 rounded-lg text-xs font-bold transition-all ${
-                i === idx ? 'bg-gradient-to-br from-amber-500 to-[#d97706] text-white'
+                i === idx ? 'bg-gradient-to-br from-amber-500 to-[#d97706] text-[#0f172a]'
                 : grades[question.id] ? 'bg-emerald-100 text-emerald-700'
                 : answers[question.id] ? 'bg-amber-50 text-amber-700'
                 : 'bg-[#f1f5f9] text-[#475569]'
@@ -300,7 +300,7 @@ export default function PracticeEssay({
               <button
                 onClick={grade_}
                 disabled={isPending || !answer.trim()}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold bg-gradient-to-r from-amber-500 to-[#d97706] text-white disabled:opacity-50"
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold bg-gradient-to-r from-amber-500 to-[#d97706] text-[#0f172a] disabled:opacity-50"
               >
                 {isPending ? <><Loader2 className="h-4 w-4 animate-spin" /> 분석 중...</> : <><Sparkles className="h-4 w-4" /> {hasSubscription ? 'AI 분석받기' : '무료로 AI 분석 체험'}</>}
               </button>

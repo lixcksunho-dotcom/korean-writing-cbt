@@ -113,8 +113,12 @@ export default function EssayGrader({
       <button
         onClick={handleGrade}
         disabled={isPending}
-        className={`flex items-center justify-center gap-2 w-full py-3 rounded-xl disabled:opacity-60 text-white text-sm font-bold transition-colors ${
-          canUseTrial ? 'bg-gradient-to-r from-amber-500 to-[#d97706] hover:opacity-90' : 'bg-[#1e3a5f] hover:bg-[#2d5488]'
+        // 금색 위 흰 글자는 명암비 2.15라 읽히지 않는다. 주 CTA(.btn-gold)와 같은 기준으로
+        // 금색은 살리고 글자를 진하게 둔다(8.31/5.60). 남색 버튼일 때는 흰 글자가 맞다.
+        className={`flex items-center justify-center gap-2 w-full py-3 rounded-xl disabled:opacity-60 text-sm font-bold transition-colors ${
+          canUseTrial
+            ? 'bg-gradient-to-r from-amber-500 to-[#d97706] text-[#0f172a] hover:opacity-90'
+            : 'bg-[#1e3a5f] text-white hover:bg-[#2d5488]'
         }`}
       >
         <Sparkles className="h-4 w-4" />
