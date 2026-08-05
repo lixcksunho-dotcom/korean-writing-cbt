@@ -154,6 +154,27 @@ export default async function ResultPage({
         </div>
       </div>
 
+      {/* 서술형을 써 놓고도 채점을 안 받고 나가는 사람이 많다(시험 완료 16명 중 3명만 체험).
+          안내가 문항마다 붙어 있긴 한데 문서 9~36% 지점이라, 점수만 보고 떠나면 만나지 못한다.
+          이미 답을 써 뒀고 무료 체험도 남은 사람에게만, 모두가 도착하는 이 자리에서 한 번 알린다. */}
+      {!subscription && aiTrial.remaining > 0 && essayQuestions.length > 0 && !essaysGraded && (
+        <a
+          href="#essay-section"
+          className="mb-3 flex items-center gap-3 rounded-2xl bg-gradient-to-r from-amber-500 to-[#d97706] px-5 py-4 text-[#0f172a]"
+        >
+          <Sparkles className="h-5 w-5 shrink-0" />
+          <span className="min-w-0 flex-1">
+            <span className="block text-sm font-black">
+              서술형 {essayQuestions.length}문항, 아직 채점 전이에요
+            </span>
+            <span className="mt-0.5 block text-xs leading-relaxed text-[#3b2005]">
+              무료 체험 {aiTrial.remaining}회가 남아 있어요. 조건 충족·맞춤법·구성을 항목별로 짚어 줍니다.
+            </span>
+          </span>
+          <ChevronRight className="h-5 w-5 shrink-0" />
+        </a>
+      )}
+
       {/* 오답 즉시 재도전 — '틀린 것만 반복'이 자격증 CBT 학습의 핵심 루프 */}
       {wrongCount > 0 && (
         <Link href="/practice/wrong" className="flex items-center justify-center gap-2 w-full py-3.5 rounded-xl mb-3 bg-amber-400 text-[#1e3a5f] font-black text-sm hover:bg-amber-300 transition-colors">
@@ -267,7 +288,7 @@ export default async function ResultPage({
       {/* 서술형 — 원고지 답안 + AI 채점 */}
       {essayQuestions.length > 0 && (
         <AiTrialProvider initialRemaining={aiTrial.remaining}>
-        <div className="mb-8">
+        <div id="essay-section" className="mb-8 scroll-mt-20">
           <div className="mb-4">
             <h2 className="text-base font-bold text-[#0f172a] flex items-center gap-2 flex-wrap">
               <span className="w-6 h-6 rounded-lg bg-amber-100 flex items-center justify-center text-amber-600 text-xs font-black">서</span>

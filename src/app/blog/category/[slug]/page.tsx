@@ -56,7 +56,7 @@ export default async function BlogCategoryPage({
 
       {/* 카테고리 색 히어로 */}
       <div className="relative overflow-hidden" style={{ background: `linear-gradient(135deg, ${cat.from}, ${cat.to})` }}>
-        <span className="pointer-events-none absolute -right-4 -top-4 text-[7rem] opacity-15 select-none">{cat.icon}</span>
+        <span aria-hidden className="pointer-events-none absolute -right-4 -top-4 text-[7rem] opacity-15 select-none">{cat.icon}</span>
         <div className="max-w-3xl mx-auto px-4 py-10 sm:py-12 relative">
           <nav className="text-sm text-white/70 mb-3">
             <Link href="/blog" className="hover:text-white">블로그</Link>

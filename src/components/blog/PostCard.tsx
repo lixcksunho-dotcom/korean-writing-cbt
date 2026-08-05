@@ -17,7 +17,7 @@ export default function PostCard({ post, featured = false }: { post: BlogPost; f
           className="relative px-6 py-10 sm:px-8 sm:py-12"
           style={{ background: `linear-gradient(135deg, ${t.from}, ${t.to})` }}
         >
-          <span className="absolute right-5 top-5 text-4xl opacity-30 select-none">{t.icon}</span>
+          <span aria-hidden className="absolute right-5 top-5 text-4xl opacity-30 select-none">{t.icon}</span>
           <span className="inline-flex items-center gap-1.5 text-xs font-bold text-white/90 bg-white/15 rounded-full px-3 py-1 backdrop-blur">
             {t.icon} {post.categoryLabel}
           </span>
