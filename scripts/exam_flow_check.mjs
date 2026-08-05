@@ -207,7 +207,7 @@ try {
       if (!px) continue
       const real = ratio(cheap.fl, lum(px))
       if (real >= barValue) continue
-      fails.push(`${real.toFixed(2)} (필요 ${barValue}) ${it.fs}px "${it.text}"`)
+      fails.push(`${real.toFixed(2)} (필요 ${barValue}) ${it.fs}px "${it.text}" 글자 ${it.color} / 배경 rgb(${px.join(",")})`)
     }
     if (fails.length) for (const f of fails.slice(0, 5)) bad('결과 화면 명암비', f)
     else ok('결과 화면 명암비', '기준 미달 0건')
