@@ -75,7 +75,8 @@ export default async function ResultPage({
     if (q.type === 'essay') earnedPoints += a.ai_score ?? 0
     else if (a.is_correct) earnedPoints += q.points ?? 0
   }
-  const essaysGraded = essayQuestions.every(q => answerMap.get(q.id)?.ai_score != null)
+  const gradedEssayCount = essayQuestions.filter(q => answerMap.get(q.id)?.ai_score != null).length
+  const essaysGraded = gradedEssayCount === essayQuestions.length
 
   const scaled = scaleToMax(earnedPoints, totalPoints, program)
   const tier = tierFor(scaled, program)
@@ -84,6 +85,19 @@ export default async function ResultPage({
   // 비구독자 무료 AI 체험 잔여 — 이미 받은 user에서 계산(추가 getUser 왕복 제거)
   const trialUsed = Number(user.app_metadata?.ai_trial_used ?? 0)
   const aiTrial = { remaining: subscription ? 0 : Math.max(0, FREE_AI_TRIAL - trialUsed) }
+
+  // 체험 3회를 9문항 어디에 쓸지 몰라 손을 안 대는 선택 마비가 관찰됨(완료 16명 중 체험 3명).
+  // 배점 상위 문항(체험 횟수만큼)을 데이터에서 뽑아 추천한다 — 회차마다 배점이 다를 수 있다.
+  const recommendedEssayIds = new Set(
+    [...essayQuestions]
+      .sort((a, b) => (b.points ?? 0) - (a.points ?? 0))
+      .slice(0, FREE_AI_TRIAL)
+      .map(q => q.id),
+  )
+  const recommendedPointsSum = essayQuestions
+    .filter(q => recommendedEssayIds.has(q.id))
+    .reduce((s, q) => s + (q.points ?? 0), 0)
+  const showEssayRecommend = !subscription && aiTrial.remaining > 0
 
   // 영역별 약점 분석(객관식 번호 구간 기준) — 시험별 영역 정의(programs.ts)
   // 약한 영역을 곧바로 이어 풀 수 있게, 영역별 연습으로 연결한다.
@@ -124,7 +138,9 @@ export default async function ResultPage({
               '미달'이라고 하면 사실과 다르다 — 객관식을 다 맞혀도 300점이라 늘 미달로 나온다. */}
           {!essaysGraded && essayQuestions.length > 0 ? (
             <div className="inline-flex items-center gap-1.5 px-5 py-2 rounded-full text-sm font-bold bg-white/20">
-              서술형 {essayQuestions.length}문항 채점 전 · 등급은 채점 후에 나와요
+              {gradedEssayCount > 0
+                ? `서술형 ${essayQuestions.length}문항 중 ${gradedEssayCount}문항 채점됨 · 모두 채점하면 등급이 나와요`
+                : `서술형 ${essayQuestions.length}문항을 모두 채점하면 등급이 나와요`}
             </div>
           ) : (
             <div className="inline-flex items-center gap-1.5 px-5 py-2 rounded-full text-sm font-bold bg-white/20">
@@ -296,6 +312,9 @@ export default async function ResultPage({
               <span className="text-xs font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">
                 {subscription ? 'AI 분석' : aiTrial.remaining > 0 ? `무료 체험 ${aiTrial.remaining}회 · AI 분석` : '구독 전용 · AI 분석'}
               </span>
+              <span className="text-xs font-bold text-[#64748b] bg-[#f1f5f9] px-2 py-0.5 rounded-full tabular-nums">
+                {essayQuestions.length}문항 중 {gradedEssayCount}문항 채점됨
+              </span>
             </h2>
             <p className="text-xs text-[#64748b] mt-1.5">
               내가 쓴 답안을 AI가 모범 답안과 비교해 <b className="text-amber-700">점수·첨삭</b>으로 분석해 드려요.
@@ -303,6 +322,11 @@ export default async function ResultPage({
                 ? ` 구독 없이 무료 ${aiTrial.remaining}회 체험할 수 있어요. 모범 답안은 언제나 무료예요.`
                 : ' (AI 분석은 구독 시 이용할 수 있어요. 모범 답안은 무료로 볼 수 있어요.)')}
             </p>
+            {showEssayRecommend && recommendedPointsSum > 0 && (
+              <p className="text-xs font-bold text-amber-700 mt-1">
+                무료 체험 {aiTrial.remaining}회는 배점이 큰 {recommendedEssayIds.size}문항(합계 {recommendedPointsSum}점)에 쓰는 게 가장 이득이에요. 아래 <span className="px-1.5 py-0.5 rounded-full bg-amber-400 text-[#1e3a5f] font-black">추천</span> 배지를 확인하세요.
+              </p>
+            )}
           </div>
           <div className="space-y-4">
             {essayQuestions.map((q, ei) => {
@@ -313,6 +337,9 @@ export default async function ResultPage({
                   <div className="flex items-center gap-2 mb-3">
                     <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-700">서술형 {ei + 1}번</span>
                     <span className="text-xs text-[#64748b]">{q.points}점</span>
+                    {showEssayRecommend && recommendedEssayIds.has(q.id) && (
+                      <span className="text-xs font-black px-2.5 py-0.5 rounded-full bg-amber-400 text-[#1e3a5f]">추천 · 배점 상위</span>
+                    )}
                   </div>
                   <p className="text-[#334155] text-sm font-medium mb-4 whitespace-pre-wrap leading-relaxed">{q.question}</p>
                   {a?.user_answer ? (
