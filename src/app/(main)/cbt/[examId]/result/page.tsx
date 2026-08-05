@@ -312,7 +312,7 @@ export default async function ResultPage({
               <span className="text-xs font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">
                 {subscription ? 'AI 분석' : aiTrial.remaining > 0 ? `무료 체험 ${aiTrial.remaining}회 · AI 분석` : '구독 전용 · AI 분석'}
               </span>
-              <span className="text-xs font-bold text-[#64748b] bg-[#f1f5f9] px-2 py-0.5 rounded-full tabular-nums">
+              <span className="text-xs font-bold text-[#475569] bg-[#f1f5f9] px-2 py-0.5 rounded-full tabular-nums">
                 {essayQuestions.length}문항 중 {gradedEssayCount}문항 채점됨
               </span>
             </h2>
