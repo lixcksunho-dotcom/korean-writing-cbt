@@ -130,7 +130,7 @@ export default function PaymentButton({
 
       {/* 약관·환불정책 동의 (결제 필수) */}
       <label className="flex items-start gap-2 text-xs text-[#475569] bg-[#f8fafc] border border-[#e2e8f0] rounded-xl px-3.5 py-3 cursor-pointer">
-        <input type="checkbox" checked={agreed} onChange={e => setAgreed(e.target.checked)} className="mt-0.5 h-4 w-4 accent-[#1e3a5f] shrink-0" />
+        <input type="checkbox" checked={agreed} onChange={e => setAgreed(e.target.checked)} className="h-6 w-6 accent-[#1e3a5f] shrink-0" />
         <span>
           <a href="/terms" target="_blank" className="text-[#1e3a5f] font-semibold underline">이용약관</a> 및{' '}
           <a href="/refund" target="_blank" className="text-[#1e3a5f] font-semibold underline">취소·환불 정책</a>을 확인했으며,

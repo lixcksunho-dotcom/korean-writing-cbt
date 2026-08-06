@@ -8,7 +8,7 @@ export default function LegalLayout({ children }: { children: React.ReactNode })
     <div className="min-h-screen flex flex-col bg-[#f8fafc]">
       <header className="bg-white border-b border-[#e2e8f0]">
         <div className="max-w-3xl mx-auto px-4 h-14 flex items-center">
-          <Link href="/" className="font-black text-[#0f172a] text-sm tracking-tight">
+          <Link href="/" className="inline-flex items-center h-full font-black text-[#0f172a] text-sm tracking-tight">
             {BUSINESS.serviceName}
           </Link>
         </div>

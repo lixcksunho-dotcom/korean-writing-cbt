@@ -106,7 +106,7 @@ export default function ReportRunner({
             <button
               key={question.id}
               onClick={() => go(i)}
-              className={`px-3 h-9 rounded-lg text-xs font-bold transition-all ${
+              className={`px-3 h-11 rounded-lg text-xs font-bold transition-all ${
                 i === idx ? 'bg-gradient-to-br from-[#1e3a5f] to-[#2d5488] text-white'
                   : grades[question.id] ? 'bg-emerald-100 text-emerald-700'
                   : answers[question.id] ? 'bg-amber-50 text-amber-700'
@@ -162,7 +162,7 @@ export default function ReportRunner({
         <div className="mt-4">
           {canUseAi ? (
             <>
-              <button onClick={grade_} disabled={isPending || !answer.trim()} className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold bg-gradient-to-r from-amber-500 to-[#d97706] text-[#0f172a] disabled:opacity-50">
+              <button onClick={grade_} disabled={isPending || !answer.trim()} className="flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-bold bg-gradient-to-r from-amber-500 to-[#d97706] text-[#0f172a] disabled:opacity-50">
                 {isPending ? <><Loader2 className="h-4 w-4 animate-spin" /> 분석 중...</> : <><Sparkles className="h-4 w-4" /> {hasSubscription ? 'AI 분석받기' : '무료로 AI 분석 체험'}</>}
               </button>
               {!hasSubscription && <p className="text-xs text-[#64748b] mt-1.5">구독 없이 <span className="font-semibold text-amber-700">무료 {trialLeft}회</span> 더 받아볼 수 있어요.</p>}
@@ -199,7 +199,7 @@ export default function ReportRunner({
 
         {/* 모범답안 */}
         <div className="mt-4">
-          <button onClick={() => setShowModel(v => !v)} className="py-2.5 text-xs font-semibold text-amber-700 hover:underline">
+          <button onClick={() => setShowModel(v => !v)} className="py-3.5 text-xs font-semibold text-amber-700 hover:underline">
             {showModel ? '모범 답안 숨기기' : '모범 답안 보기'}
           </button>
           {showModel && (
@@ -211,9 +211,9 @@ export default function ReportRunner({
 
         {/* 이동 */}
         <div className="flex items-center justify-between mt-7 pt-6 border-t border-[#f1f5f9]">
-          <button onClick={() => go(Math.max(0, idx - 1))} disabled={idx === 0} className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-semibold text-[#64748b] hover:bg-[#f1f5f9] disabled:opacity-30 transition-colors"><ChevronLeft className="h-4 w-4" /> 이전</button>
+          <button onClick={() => go(Math.max(0, idx - 1))} disabled={idx === 0} className="flex items-center gap-1.5 px-4 py-3 rounded-xl text-sm font-semibold text-[#64748b] hover:bg-[#f1f5f9] disabled:opacity-30 transition-colors"><ChevronLeft className="h-4 w-4" /> 이전</button>
           {answer.trim() && <span className="flex items-center gap-1 text-xs text-emerald-700 font-medium"><CheckCircle2 className="h-3.5 w-3.5" /> 작성됨</span>}
-          <button onClick={() => go(Math.min(questions.length - 1, idx + 1))} disabled={idx === questions.length - 1} className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-semibold text-[#64748b] hover:bg-[#f1f5f9] disabled:opacity-30 transition-colors">다음 <ChevronRight className="h-4 w-4" /></button>
+          <button onClick={() => go(Math.min(questions.length - 1, idx + 1))} disabled={idx === questions.length - 1} className="flex items-center gap-1.5 px-4 py-3 rounded-xl text-sm font-semibold text-[#64748b] hover:bg-[#f1f5f9] disabled:opacity-30 transition-colors">다음 <ChevronRight className="h-4 w-4" /></button>
         </div>
       </div>
       <CopyGuard />

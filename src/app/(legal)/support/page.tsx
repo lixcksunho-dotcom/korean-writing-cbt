@@ -49,12 +49,12 @@ export default function SupportPage() {
       {/* 연락처 카드 */}
       <div className="grid sm:grid-cols-3 gap-3 mb-10">
         <ContactCard icon={<Mail className="h-5 w-5" />} label="이메일">
-          <a href={`mailto:${BUSINESS.email}`} className="text-[#1e3a5f] font-semibold break-all hover:underline">
+          <a href={`mailto:${BUSINESS.email}`} className="inline-flex items-center min-h-11 text-[#1e3a5f] font-semibold break-all hover:underline">
             {BUSINESS.email}
           </a>
         </ContactCard>
         <ContactCard icon={<Phone className="h-5 w-5" />} label="전화">
-          <a href={`tel:${BUSINESS.phone.replace(/-/g, '')}`} className="text-[#1e3a5f] font-semibold hover:underline">
+          <a href={`tel:${BUSINESS.phone.replace(/-/g, '')}`} className="inline-flex items-center min-h-11 text-[#1e3a5f] font-semibold hover:underline">
             {biz(BUSINESS.phone)}
           </a>
         </ContactCard>
@@ -84,9 +84,9 @@ export default function SupportPage() {
 
       <div className="mt-10 pt-6 border-t border-[#e2e8f0] text-sm text-[#64748b]">
         관련 정책:{' '}
-        <Link href="/terms" className="text-[#1e3a5f] font-semibold hover:underline">이용약관</Link> ·{' '}
-        <Link href="/privacy" className="text-[#1e3a5f] font-semibold hover:underline">개인정보처리방침</Link> ·{' '}
-        <Link href="/refund" className="text-[#1e3a5f] font-semibold hover:underline">취소·환불 정책</Link>
+        <Link href="/terms" className="inline-flex items-center min-h-11 text-[#1e3a5f] font-semibold hover:underline">이용약관</Link> ·{' '}
+        <Link href="/privacy" className="inline-flex items-center min-h-11 text-[#1e3a5f] font-semibold hover:underline">개인정보처리방침</Link> ·{' '}
+        <Link href="/refund" className="inline-flex items-center min-h-11 text-[#1e3a5f] font-semibold hover:underline">취소·환불 정책</Link>
       </div>
     </div>
   )

@@ -234,7 +234,7 @@ export default async function AdminTrafficPage() {
                 style={{ height: `${Math.round((d.pv / maxPv) * 104)}px`, minHeight: d.pv ? 3 : 0 }}
                 title={`${d.label} · 방문자 ${d.uv} · 페이지뷰 ${d.pv}`}
               />
-              <span className="text-[10px] text-gray-600">{d.label}</span>
+              <span className="text-[11px] text-gray-600">{d.label}</span>
             </div>
           ))}
         </div>

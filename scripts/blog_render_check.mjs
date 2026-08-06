@@ -60,10 +60,22 @@ async function bgMedian(el) {
   return [mid(0), mid(1), mid(2)]
 }
 
+// 배포가 도는 중에는 미리 만들어 둔 글이 잠깐 404로 나온다. 실제로 55편을 전부
+// 확인했더니 전부 200이었는데, 배포 직후에 돌린 검사만 2편을 못 열었다고 했다.
+// 한 번 더 열어 보고도 안 되면 그때 진짜 문제로 본다.
+async function open(url) {
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const res = await page.goto(url, { waitUntil: 'load' }).catch(() => null)
+    if (res && res.status() < 400) return res
+    if (attempt === 0) await page.waitForTimeout(4000)
+    else return res
+  }
+}
+
 for (const slug of picked) {
   const url = `${BASE}/blog/${encodeURIComponent(slug)}`
-  const res = await page.goto(url, { waitUntil: 'load' }).catch(() => null)
-  if (!res || res.status() >= 400) { contrastFails.push({ real: 0, line: `${slug} — 열지 못함(${res?.status() ?? '응답 없음'})` }); continue }
+  const res = await open(url)
+  if (!res || res.status() >= 400) { contrastFails.push({ real: 0, line: `${slug} — 두 번 시도해도 열지 못함(${res?.status() ?? '응답 없음'})` }); continue }
   await page.addStyleTag({ content: '*,*::before,*::after{animation:none!important;transition:none!important}' }).catch(() => {})
   await page.waitForTimeout(500)
   const items = await page.evaluate(browserCollectText).catch(() => [])

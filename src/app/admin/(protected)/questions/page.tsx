@@ -1,12 +1,12 @@
-import { createClient } from '@/lib/supabase/server'
+import { questionBank } from '@/lib/questionBank'
 import Link from 'next/link'
 import { Plus, Edit2, BookOpen } from 'lucide-react'
 import DeleteButton from './DeleteButton'
 
 export default async function AdminQuestionsPage() {
-  const supabase = await createClient()
-
-  const { data: questions } = await supabase
+  // questions는 service_role로만 읽힌다(마이그레이션 033) — 사용자 클라이언트로 읽으면
+  // 관리자에게도 늘 0문항으로 보인다. 권한은 (protected) 레이아웃이 이미 확인했다.
+  const { data: questions } = await questionBank()
     .from('questions')
     .select('id, year, round, number, type, question')
     .order('year', { ascending: false })

@@ -181,7 +181,7 @@ export default async function CbtPage() {
                         )}
                         <Link
                           href={`/cbt/${formatExamId(program, year, round)}`}
-                          className="flex-1 btn-primary flex items-center justify-center gap-1.5 text-white font-semibold py-2.5 rounded-xl text-sm"
+                          className="flex-1 btn-primary flex items-center justify-center gap-1.5 text-white font-semibold py-3 rounded-xl text-sm"
                         >
                           {resumable.has(key) ? '이어풀기' : prev ? '다시 풀기' : '시작하기'}
                           <ChevronRight className="h-4 w-4" />

@@ -67,7 +67,7 @@ export default function RefineQuiz({ items }: { items: RefineItem[] }) {
                 <button
                   key={c}
                   onClick={() => setCat(c)}
-                  className={`px-3.5 py-2 rounded-xl text-sm font-semibold border-2 transition-all ${
+                  className={`px-3.5 py-3 rounded-xl text-sm font-semibold border-2 transition-all ${
                     cat === c ? 'border-[#1e3a5f] bg-[#1e3a5f]/5 text-[#1e3a5f]' : 'border-[#e2e8f0] text-[#64748b] hover:border-[#94a3b8]'
                   }`}
                 >
@@ -140,11 +140,11 @@ export default function RefineQuiz({ items }: { items: RefineItem[] }) {
         )}
 
         <div className="flex items-center justify-between mt-7 pt-6 border-t border-[#f1f5f9]">
-          <button onClick={() => setIdx(i => Math.max(0, i - 1))} disabled={idx === 0} className="px-4 py-2.5 rounded-xl text-sm font-semibold text-[#64748b] hover:bg-[#f1f5f9] disabled:opacity-30 transition-colors">이전</button>
+          <button onClick={() => setIdx(i => Math.max(0, i - 1))} disabled={idx === 0} className="px-4 py-3 rounded-xl text-sm font-semibold text-[#64748b] hover:bg-[#f1f5f9] disabled:opacity-30 transition-colors">이전</button>
           {!isLast ? (
-            <button onClick={() => setIdx(i => i + 1)} disabled={!answered} className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-sm font-semibold btn-primary text-white disabled:opacity-40">다음 <ChevronRight className="h-4 w-4" /></button>
+            <button onClick={() => setIdx(i => i + 1)} disabled={!answered} className="flex items-center gap-1.5 px-5 py-3 rounded-xl text-sm font-semibold btn-primary text-white disabled:opacity-40">다음 <ChevronRight className="h-4 w-4" /></button>
           ) : (
-            <button onClick={start} className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-sm font-semibold text-[#1e3a5f] border-2 border-[#1e3a5f] hover:bg-[#1e3a5f]/5"><RotateCcw className="h-4 w-4" /> 새 문제</button>
+            <button onClick={start} className="flex items-center gap-1.5 px-5 py-3 rounded-xl text-sm font-semibold text-[#1e3a5f] border-2 border-[#1e3a5f] hover:bg-[#1e3a5f]/5"><RotateCcw className="h-4 w-4" /> 새 문제</button>
           )}
         </div>
       </div>

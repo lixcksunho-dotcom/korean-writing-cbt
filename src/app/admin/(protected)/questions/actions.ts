@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { questionBank } from '@/lib/questionBank'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 
@@ -16,6 +17,9 @@ type QuestionInput = {
   explanation: string
 }
 
+// 권한 확인은 사용자 세션으로, 실제 읽기·쓰기는 questionBank(service_role)로 한다.
+// 마이그레이션 033이 questions의 공개 정책을 없앤 뒤로 사용자 클라이언트는 이 표를
+// 한 줄도 못 읽고 못 쓴다 — 관리자 화면이 조용히 '총 0문항'으로 굳어 있었다.
 async function requireAdmin() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -28,8 +32,8 @@ async function requireAdmin() {
 }
 
 export async function createQuestion(data: QuestionInput) {
-  const supabase = await requireAdmin()
-  const { error } = await supabase.from('questions').insert({
+  await requireAdmin()
+  const { error } = await questionBank().from('questions').insert({
     ...data,
     options: data.options ? JSON.stringify(data.options) : null,
   })
@@ -39,8 +43,8 @@ export async function createQuestion(data: QuestionInput) {
 }
 
 export async function updateQuestion(id: string, data: QuestionInput) {
-  const supabase = await requireAdmin()
-  const { error } = await supabase.from('questions').update({
+  await requireAdmin()
+  const { error } = await questionBank().from('questions').update({
     ...data,
     options: data.options ? JSON.stringify(data.options) : null,
   }).eq('id', id)
@@ -50,8 +54,8 @@ export async function updateQuestion(id: string, data: QuestionInput) {
 }
 
 export async function deleteQuestion(id: string) {
-  const supabase = await requireAdmin()
-  const { error } = await supabase.from('questions').delete().eq('id', id)
+  await requireAdmin()
+  const { error } = await questionBank().from('questions').delete().eq('id', id)
   if (error) throw new Error(error.message)
   revalidatePath('/admin/questions')
   revalidatePath('/cbt')

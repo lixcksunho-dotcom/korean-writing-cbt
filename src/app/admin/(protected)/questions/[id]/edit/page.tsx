@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { questionBank } from '@/lib/questionBank'
 import { redirect } from 'next/navigation'
 import QuestionForm from '@/components/admin/QuestionForm'
 import Link from 'next/link'
@@ -10,9 +10,7 @@ export default async function EditQuestionPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const supabase = await createClient()
-
-  const { data: q } = await supabase
+  const { data: q } = await questionBank()
     .from('questions')
     .select('id, year, round, number, type, passage, question, options, correct_answer, explanation')
     .eq('id', id)
