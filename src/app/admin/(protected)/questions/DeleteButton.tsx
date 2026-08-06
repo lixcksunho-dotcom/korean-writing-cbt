@@ -18,7 +18,7 @@ export default function DeleteButton({ id }: { id: string }) {
     <button
       onClick={handleDelete}
       disabled={isPending}
-      className="p-1.5 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+      className="p-1.5 text-gray-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
     >
       <Trash2 className="h-4 w-4" />
     </button>

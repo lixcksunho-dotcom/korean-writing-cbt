@@ -233,7 +233,7 @@ export default async function ResultPage({
                       <div className="flex items-center justify-between mb-1.5">
                         <span className="text-sm font-semibold text-[#334155] flex items-center gap-1.5">
                           {b.label}
-                          {isWeak && <span className="text-xs font-bold text-red-600 bg-red-50 px-1.5 py-0.5 rounded-full">약점</span>}
+                          {isWeak && <span className="text-xs font-bold text-red-700 bg-red-50 px-1.5 py-0.5 rounded-full">약점</span>}
                         </span>
                         <span className="text-xs font-bold text-[#64748b] tabular-nums">{b.correct}/{b.total} · {b.pct}%</span>
                       </div>
@@ -409,7 +409,7 @@ export default async function ResultPage({
                       {isCorrect ? <CheckCircle2 className="h-4 w-4 text-emerald-500" /> : <XCircle className="h-4 w-4 text-red-400" />}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <span className={`text-xs font-bold px-2 py-0.5 rounded-full mr-2 ${isCorrect ? 'bg-emerald-100 text-emerald-700' : 'bg-red-50 text-red-600'}`}>
+                      <span className={`text-xs font-bold px-2 py-0.5 rounded-full mr-2 ${isCorrect ? 'bg-emerald-100 text-emerald-700' : 'bg-red-50 text-red-700'}`}>
                         {q.number}번 {isCorrect ? '정답' : '오답'}
                       </span>
                       <span className="text-xs text-[#64748b]">{q.points}점</span>
@@ -419,7 +419,7 @@ export default async function ResultPage({
                   {!isCorrect && (
                     <div className="ml-10 space-y-1.5 text-sm">
                       <div className="flex gap-2 items-start">
-                        <span className="text-red-400 font-semibold shrink-0 text-xs">내 답변</span>
+                        <span className="text-red-700 font-semibold shrink-0 text-xs">내 답변</span>
                         <span className="text-[#64748b] text-xs">{userLabel}</span>
                       </div>
                       <div className="flex gap-2 items-start">

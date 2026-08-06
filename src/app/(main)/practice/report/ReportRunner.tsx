@@ -87,7 +87,7 @@ export default function ReportRunner({
           <ArrowLeft className="h-4 w-4" /> 연습 메뉴
         </Link>
         <div className={`flex items-center gap-1.5 font-mono font-bold text-sm px-3 py-1.5 rounded-xl ${
-          timeUp ? 'bg-red-100 text-red-600' : warning ? 'bg-red-50 text-red-600 animate-pulse' : 'bg-[#f1f5f9] text-[#334155]'
+          timeUp ? 'bg-red-100 text-red-700' : warning ? 'bg-red-50 text-red-700 animate-pulse' : 'bg-[#f1f5f9] text-[#334155]'
         }`}>
           <Clock className="h-3.5 w-3.5" />
           {timeUp ? '시간 종료' : `${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}`}

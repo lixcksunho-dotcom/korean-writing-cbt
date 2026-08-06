@@ -114,7 +114,7 @@ export default function PracticeMultiple({
             let cls = 'border-[#e2e8f0] text-[#334155] hover:border-[#94a3b8] hover:bg-[#f8fafc]'
             if (revealed) {
               if (isAnswer) cls = 'border-emerald-400 bg-emerald-50 text-emerald-800'
-              else if (isPicked) cls = 'border-red-300 bg-red-50 text-red-600'
+              else if (isPicked) cls = 'border-red-300 bg-red-50 text-red-700'
               else cls = 'border-[#e2e8f0] text-[#64748b]'
             }
             return (

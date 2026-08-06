@@ -261,7 +261,7 @@ export default function ExamPlayer({
           </div>
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             <div className={`flex items-center gap-1.5 font-mono font-bold text-sm px-3 py-1.5 rounded-xl ${
-              timerWarning ? 'bg-red-50 text-red-600 animate-pulse' : 'bg-[#f1f5f9] text-[#334155]'
+              timerWarning ? 'bg-red-50 text-red-700 animate-pulse' : 'bg-[#f1f5f9] text-[#334155]'
             }`}>
               <Clock className="h-3.5 w-3.5" />
               {String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
@@ -298,7 +298,7 @@ export default function ExamPlayer({
         {/* 제출이 실패하면 화면에 그대로 남는다. 왜 안 넘어갔는지 알려 주지 않으면
             사용자는 답안이 날아간 줄 알고 새로고침해 버린다. */}
         {submitError && (
-          <div className="mb-2 flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-3.5 py-2.5 text-xs text-red-600">
+          <div className="mb-2 flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-3.5 py-2.5 text-xs text-red-700">
             <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
             <span>{submitError} 작성한 답안은 그대로 남아 있어요.</span>
           </div>

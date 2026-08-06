@@ -104,7 +104,7 @@ function Row({ r }: { r: AdminReview }) {
           <button
             onClick={() => { if (confirm('이 후기를 삭제할까요? 인증 사진도 함께 삭제됩니다.')) run(() => deleteReview(r.id)) }}
             disabled={pending}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-red-600 hover:bg-red-50 transition-colors disabled:opacity-40"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-red-700 hover:bg-red-50 transition-colors disabled:opacity-40"
           >
             <Trash2 className="h-3.5 w-3.5" /> 삭제
           </button>

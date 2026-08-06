@@ -103,7 +103,7 @@ function Row({ m, onError }: { m: AdminMember; onError: (s: string) => void }) {
         )}
         <span className={`text-xs font-bold ${paid ? 'text-emerald-700' : 'text-gray-600'}`}>유료</span>
       </label>
-      <button onClick={remove} disabled={pending} className="text-red-600 hover:bg-red-50 p-1.5 rounded-lg disabled:opacity-40 justify-self-end">
+      <button onClick={remove} disabled={pending} className="text-red-700 hover:bg-red-50 p-1.5 rounded-lg disabled:opacity-40 justify-self-end">
         <Trash2 className="h-4 w-4" />
       </button>
     </div>

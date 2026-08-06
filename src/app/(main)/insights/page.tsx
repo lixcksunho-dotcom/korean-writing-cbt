@@ -167,7 +167,7 @@ export default async function InsightsPage() {
                   <div className="flex items-center justify-between mb-1.5">
                     <span className="text-sm font-semibold text-[#334155] flex items-center gap-1.5">
                       {b.label}
-                      {isWeak && <span className="text-xs font-bold text-red-600 bg-red-50 px-1.5 py-0.5 rounded-full">약점</span>}
+                      {isWeak && <span className="text-xs font-bold text-red-700 bg-red-50 px-1.5 py-0.5 rounded-full">약점</span>}
                     </span>
                     <span className="text-xs font-bold text-[#64748b] tabular-nums">{b.correct}/{b.total} · {b.pct}%</span>
                   </div>
@@ -191,7 +191,7 @@ export default async function InsightsPage() {
         <div className="flex items-center gap-2 mb-1 flex-wrap">
           <NotebookPen className="h-5 w-5 text-[#1e3a5f]" />
           <h2 className="text-base font-bold text-[#0f172a]">오답노트</h2>
-          <span className="text-xs font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded-full">{wrong.length}문항</span>
+          <span className="text-xs font-bold text-red-700 bg-red-50 px-2 py-0.5 rounded-full">{wrong.length}문항</span>
           {wrong.length > 0 && (
             <Link href="/practice/wrong" className="ml-auto inline-flex items-center gap-1 text-xs font-bold text-white bg-[#1e3a5f] hover:bg-[#2d5488] px-3 py-1.5 rounded-lg transition-colors">
               오답만 다시 풀기 <ChevronRight className="h-3.5 w-3.5" />

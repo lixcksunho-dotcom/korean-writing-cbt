@@ -55,7 +55,7 @@ function Row({ r }: { r: AdminReport }) {
           </Link>
         )}
         <button onClick={() => run(() => deleteReport(r.id))} disabled={pending}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-red-600 hover:bg-red-50 disabled:opacity-40 ml-auto">
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-red-700 hover:bg-red-50 disabled:opacity-40 ml-auto">
           <Trash2 className="h-3.5 w-3.5" /> 삭제
         </button>
       </div>

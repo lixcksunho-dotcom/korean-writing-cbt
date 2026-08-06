@@ -196,7 +196,7 @@ export default async function AdminTrafficPage() {
               ))}
             </div>
             {evPayFail > 0 && (
-              <p className="mt-3 rounded-lg bg-red-50 px-4 py-2.5 text-xs text-red-600">
+              <p className="mt-3 rounded-lg bg-red-50 px-4 py-2.5 text-xs text-red-700">
                 ⚠️ 결제 실패 {evPayFail.toLocaleString()}건 — 결제창까지 갔다가 실패한 사용자예요. 실패가 잦으면 결제수단·PG 설정을 점검하세요.
               </p>
             )}

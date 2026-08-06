@@ -113,15 +113,22 @@ try {
   // 실패하면 이유를 남긴다. 주소만 보고는 권한 문제인지 로그인 실패인지 구분이 안 돼서
   // 한참 헤맸다 — 마지막 주소와 화면에 뜬 글을 같이 던진다.
   async function login(page) {
-    await page.goto(`${BASE}/admin/login`, { waitUntil: 'domcontentloaded' })
-    await page.fill('input[type="email"]', acc.email)
-    await page.fill('input[type="password"]', acc.password)
-    await page.click('button[type="submit"]')
-    for (let i = 0; i < 30; i++) {
-      if (new URL(page.url()).pathname === '/admin') return null
-      // 권한 없음으로 튕기면 ADMIN_EMAILS가 안 먹은 것 — 계속 기다려도 소용없다
-      if (page.url().includes('error=forbidden')) break
-      await page.waitForTimeout(1000)
+    // 세션 쿠키가 서버에 닿기 전에 /admin으로 넘어가면 로그인 화면으로 되튕긴다.
+    // 이때 error 파라미터가 없어서 '권한 없음'과 구분되니, 되튕기면 그냥 다시 한다.
+    for (let attempt = 0; attempt < 3; attempt++) {
+      await page.goto(`${BASE}/admin/login`, { waitUntil: 'domcontentloaded' })
+      await page.fill('input[type="email"]', acc.email)
+      await page.fill('input[type="password"]', acc.password)
+      await page.click('button[type="submit"]')
+      let forbidden = false
+      for (let i = 0; i < 20; i++) {
+        if (new URL(page.url()).pathname === '/admin') return null
+        // 권한 없음으로 튕기면 ADMIN_EMAILS가 안 먹은 것 — 다시 해도 결과가 같다
+        if (page.url().includes('error=forbidden')) { forbidden = true; break }
+        await page.waitForTimeout(1000)
+      }
+      if (forbidden) break
+      await page.waitForTimeout(3000)
     }
     const shown = await page.evaluate(() => document.body.innerText.slice(0, 200).replace(/\s+/g, ' ')).catch(() => '')
     return `${page.url()} — 화면: ${shown}`

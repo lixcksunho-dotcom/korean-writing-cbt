@@ -123,7 +123,7 @@ export default function RefineQuiz({ items }: { items: RefineItem[] }) {
             <button onClick={() => answer(true)} className="flex items-center justify-center gap-2 py-5 rounded-2xl border-2 border-emerald-200 text-emerald-700 font-black text-xl hover:bg-emerald-50 transition-colors">
               <Check className="h-6 w-6" /> O
             </button>
-            <button onClick={() => answer(false)} className="flex items-center justify-center gap-2 py-5 rounded-2xl border-2 border-red-200 text-red-600 font-black text-xl hover:bg-red-50 transition-colors">
+            <button onClick={() => answer(false)} className="flex items-center justify-center gap-2 py-5 rounded-2xl border-2 border-red-200 text-red-700 font-black text-xl hover:bg-red-50 transition-colors">
               <X className="h-6 w-6" /> X
             </button>
           </div>

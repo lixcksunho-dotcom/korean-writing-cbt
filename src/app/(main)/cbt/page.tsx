@@ -145,7 +145,7 @@ export default async function CbtPage() {
                       <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-bold ${
                         pass ? 'bg-emerald-50 text-emerald-700' :
                         pct >= 60 ? 'bg-amber-50 text-amber-700' :
-                        'bg-red-50 text-red-600'
+                        'bg-red-50 text-red-700'
                       }`}>
                         <Trophy className="h-3.5 w-3.5" />
                         최고 {pct}점

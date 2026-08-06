@@ -557,7 +557,7 @@ export default async function DashboardPage() {
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     <span className="text-sm font-bold text-[#334155]">{s.score}/{s.total}</span>
-                    <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${pass ? "bg-emerald-100 text-emerald-700" : "bg-red-50 text-red-600"}`}>
+                    <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${pass ? "bg-emerald-100 text-emerald-700" : "bg-red-50 text-red-700"}`}>
                       {pct}점
                     </span>
                   </div>
