@@ -178,9 +178,21 @@ export function browserAuditMobile() {
     if (r.right > vw + 1 || r.left < -1) out.offscreen.push({ label: label(el), left: Math.round(r.left), right: Math.round(r.right) })
   }
 
+  // 체크박스·라디오는 상자 자체가 아니라 딸린 <label>이 실제로 누르는 자리다.
+  // 상자만 재면 이미 줄 전체가 눌리는 동의 항목까지 미달로 잡혀, 필요도 없는데
+  // 상자를 44px로 키우게 된다.
+  const tapRect = (el) => {
+    const r = el.getBoundingClientRect()
+    if (el.tagName !== 'INPUT' || !['checkbox', 'radio'].includes(el.type)) return r
+    const lab = el.closest('label') || (el.id && document.querySelector(`label[for="${CSS.escape(el.id)}"]`))
+    if (!lab) return r
+    const lr = lab.getBoundingClientRect()
+    return lr.width * lr.height > r.width * r.height ? lr : r
+  }
+
   const sized = tappables.filter((el) => !isInline(el))
   for (const el of sized) {
-    const r = el.getBoundingClientRect()
+    const r = tapRect(el)
     const w = Math.round(r.width), h = Math.round(r.height)
     if (w < 24 || h < 24) out.small.push({ label: label(el), w, h, hard: true })
     else if (w < 44 || h < 44) out.small.push({ label: label(el), w, h, hard: false })
@@ -255,6 +267,9 @@ export function browserAuditMobile() {
         if (ps === 'fixed' || ps === 'sticky') { pinned = true; break }
         anc = anc.parentElement
       }
+      // 떠 있는 단추가 본문 카드 모서리를 조금 무는 건 어느 앱에나 있다. 스크롤하면
+      // 비켜 주고 나머지 면적으로 누를 수 있어서, 20% 밑은 보고해도 고칠 게 없다.
+      if (!pinned && pct < 20) continue
       out.covered.push({ over: label(f).slice(0, 16), under: label(t).slice(0, 16), pct, pinned })
     }
   }

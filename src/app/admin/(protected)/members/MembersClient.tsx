@@ -99,7 +99,7 @@ function Row({ m, onError }: { m: AdminMember; onError: (s: string) => void }) {
       <span className="hidden sm:block text-xs text-gray-600 whitespace-nowrap">{new Date(m.createdAt).toLocaleDateString('ko-KR')}</span>
       <label className="flex items-center gap-1.5 cursor-pointer select-none">
         {pending ? <Loader2 className="h-4 w-4 animate-spin text-gray-600" /> : (
-          <input type="checkbox" checked={paid} onChange={togglePaid} className="h-6 w-6 accent-emerald-600 cursor-pointer" />
+          <input type="checkbox" checked={paid} onChange={togglePaid} className="h-4 w-4 accent-emerald-600 cursor-pointer" />
         )}
         <span className={`text-xs font-bold ${paid ? 'text-emerald-700' : 'text-gray-600'}`}>유료</span>
       </label>

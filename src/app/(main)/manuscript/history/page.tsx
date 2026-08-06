@@ -27,7 +27,7 @@ export default async function ManuscriptHistoryPage() {
   return (
     <div>
       <div className="flex items-center gap-3 mb-6">
-        <Link href="/manuscript" className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+        <Link href="/manuscript" aria-label="원고지 채점으로 돌아가기" className="p-3 text-gray-500 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
           <ChevronLeft className="h-5 w-5" />
         </Link>
         <div>

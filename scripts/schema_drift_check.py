@@ -130,6 +130,30 @@ def referenced_columns():
     return found
 
 
+def question_bank_leaks():
+    """questions를 사용자 클라이언트로 읽는 곳을 찾는다.
+
+    마이그레이션 033이 questions의 공개 SELECT 정책을 없앤 뒤로 anon·authenticated는
+    이 표를 한 줄도 못 읽는다. 그런데 supabase-js는 throw 대신 {error}를 주고 읽는 쪽은
+    보통 `?? []`라서, 잘못 쓰면 화면이 '문항 0개'로 조용히 멀쩡해 보인다. 실제로 관리자
+    문제 관리 세 화면이 그렇게 죽어 있었다(총 0문항 · 수정 열면 목록으로 되튕김).
+
+    판정은 `.from('questions')` 앞에서 가장 가까운 클라이언트 표현으로 한다.
+    """
+    client = re.compile(r"questionBank\(\)|createAdminClient\(\)|admin\s*\.|supabase\s*\.")
+    leaks = []
+    for f in sorted((ROOT / "src").rglob("*.ts*")):
+        lines = f.read_text(encoding="utf-8").splitlines()
+        for i, line in enumerate(lines):
+            if "from('questions')" not in line and 'from("questions")' not in line:
+                continue
+            window = "\n".join(lines[max(0, i - 6): i + 1])
+            hits = client.findall(window)
+            if not hits or hits[-1].strip().startswith("supabase"):
+                leaks.append(f"{f.relative_to(ROOT).as_posix()}:{i + 1}")
+    return leaks
+
+
 def main():
     env = load_env()
     live, live_cols = live_schema(env)
@@ -170,7 +194,14 @@ def main():
             for f in files:
                 print(f"      {f}")
 
-    if not broken and not unapplied and not bad_cols:
+    leaks = question_bank_leaks()
+    if leaks:
+        print(f"\n[치명] questions를 사용자 클라이언트로 읽는 곳 {len(leaks)}군데:")
+        for leak in leaks:
+            print(f"  - {leak}")
+        print("       => RLS가 막아 늘 0건이 된다. questionBank()로 읽을 것(마이그레이션 033).")
+
+    if not broken and not unapplied and not bad_cols and not leaks:
         print("불일치 없음 ✓")
         return 0
     return 1
