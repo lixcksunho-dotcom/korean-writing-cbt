@@ -62,6 +62,26 @@ PLAYWRIGHT_BASE_URL=http://localhost:3000 npm test
 PAGE_SWEEP_BASE=http://localhost:3000 npm run check:pages
 ```
 
+## 오류 경계
+
+세 단계다. `(main)/error.tsx`(로그인 뒤) · `error.tsx`(공개 면) · `global-error.tsx`(최후).
+공개 면 것이 없으면 global-error까지 올라가는데, 그건 html째로 갈아 끼우는 화면이라
+**사이트 안 어디로도 갈 수 없다**. 검색으로 처음 들어온 사람에게는 그게 곧 이탈이다.
+
+동작은 이렇게 확인했다(운영에 500 나는 주소를 남겨 둘 수 없으니 그때그때 로컬에서):
+
+```bash
+mkdir -p src/app/boundarytest
+printf 'export const dynamic = "force-dynamic"
+export default function P(): never { throw new Error("확인용") }
+'   > src/app/boundarytest/page.tsx
+npm run build && npx next start -p 3119   # 다른 창에서 http://127.0.0.1:3119/boundarytest
+rm -rf src/app/boundarytest && npm run build
+```
+
+2026-08-07 결과: 상태 500 · 한글 안내 · 빠져나갈 링크 3개(홈·학습자료·블로그) · 오류코드 표시.
+폴더 이름을 `_boundarytest`로 하면 Next가 비공개 폴더로 보고 라우팅하지 않는다(404가 나온다).
+
 ## 데이터베이스
 
 마이그레이션은 `supabase/migrations/`에 있고, **Supabase 대시보드 SQL Editor에서 사람이 실행**한다
