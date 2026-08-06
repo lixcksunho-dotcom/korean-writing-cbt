@@ -97,7 +97,7 @@ function Row({ m, onError }: { m: AdminMember; onError: (s: string) => void }) {
         <span className="text-xs text-gray-600 truncate block">{m.email}</span>
       </div>
       <span className="hidden sm:block text-xs text-gray-600 whitespace-nowrap">{new Date(m.createdAt).toLocaleDateString('ko-KR')}</span>
-      <label className="flex items-center gap-1.5 cursor-pointer select-none">
+      <label className="flex items-center gap-1.5 min-h-11 cursor-pointer select-none">
         {pending ? <Loader2 className="h-4 w-4 animate-spin text-gray-600" /> : (
           <input type="checkbox" checked={paid} onChange={togglePaid} className="h-4 w-4 accent-emerald-600 cursor-pointer" />
         )}
