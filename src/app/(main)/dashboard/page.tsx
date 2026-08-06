@@ -298,16 +298,16 @@ export default async function DashboardPage() {
             <div className="absolute top-0 right-0 w-40 h-40 bg-amber-300 rounded-full blur-3xl opacity-20 -translate-y-1/3 translate-x-1/3" />
             <div className="relative">
               <div className="flex items-center gap-2 mb-3">
-                <span className="text-xs font-bold text-white bg-amber-500 px-2 py-0.5 rounded-full">START</span>
+                <span className="text-xs font-bold text-[#0f172a] bg-amber-500 px-2 py-0.5 rounded-full">START</span>
                 <h2 className="text-base font-black text-amber-900">2분이면 끝나는 첫걸음</h2>
               </div>
               <div className="grid sm:grid-cols-2 gap-3 mb-4">
                 <div className="flex items-center gap-2.5 bg-white/70 rounded-xl px-3.5 py-2.5">
-                  <span className="w-6 h-6 rounded-full bg-amber-500 text-white text-xs font-black flex items-center justify-center shrink-0">1</span>
+                  <span className="w-6 h-6 rounded-full bg-amber-500 text-[#0f172a] text-xs font-black flex items-center justify-center shrink-0">1</span>
                   <span className="text-sm font-semibold text-amber-900">모의고사 한 문제 풀어보기</span>
                 </div>
                 <div className="flex items-center gap-2.5 bg-white/70 rounded-xl px-3.5 py-2.5">
-                  <span className="w-6 h-6 rounded-full bg-amber-500 text-white text-xs font-black flex items-center justify-center shrink-0">2</span>
+                  <span className="w-6 h-6 rounded-full bg-amber-500 text-[#0f172a] text-xs font-black flex items-center justify-center shrink-0">2</span>
                   <span className="text-sm font-semibold text-amber-900">
                     {cfg.hasManuscript ? <>내 답안 <b>무료 AI 첨삭</b> 받기</> : <>내 <b>영역별 약점</b> 확인하기</>}
                   </span>
@@ -332,11 +332,11 @@ export default async function DashboardPage() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-0.5">
                   <h2 className="text-base font-black text-amber-900">서술형 AI 첨삭, 무료 {aiTrial.remaining}회 남음</h2>
-                  <span className="text-xs font-bold text-white bg-amber-500 px-2 py-0.5 rounded-full">FREE</span>
+                  <span className="text-xs font-bold text-[#0f172a] bg-amber-500 px-2 py-0.5 rounded-full">FREE</span>
                 </div>
                 <p className="text-sm text-amber-800/80">내가 쓴 답안을 AI가 모범답안과 비교해 <b>점수·첨삭</b>으로 분석해 드려요. 지금 바로 무료로 받아보세요.</p>
               </div>
-              <ChevronRight className="h-5 w-5 text-amber-600 shrink-0 group-hover:translate-x-1 transition-transform" />
+              <ChevronRight className="h-5 w-5 text-amber-700 shrink-0 group-hover:translate-x-1 transition-transform" />
             </div>
           </Link>
         ) : (
@@ -354,7 +354,7 @@ export default async function DashboardPage() {
                 <h2 className="text-base font-black text-emerald-900 mb-0.5">유형별 집중 연습으로 약점 공략</h2>
                 <p className="text-sm text-emerald-800/80">고유어·한자성어·표준발음·맞춤법 등 <b>기출유형별</b>로 골라 풀며 자주 틀리는 유형을 잡으세요.</p>
               </div>
-              <ChevronRight className="h-5 w-5 text-emerald-600 shrink-0 group-hover:translate-x-1 transition-transform" />
+              <ChevronRight className="h-5 w-5 text-emerald-700 shrink-0 group-hover:translate-x-1 transition-transform" />
             </div>
           </Link>
         )
@@ -427,7 +427,7 @@ export default async function DashboardPage() {
                 <ScoreGauge predicted={previewScore} cuts={cfg.cuts} maxScore={cfg.maxScore} />
               </div>
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
-                <span className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-amber-100"><Lock className="h-4 w-4 text-amber-600" /></span>
+                <span className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-amber-100"><Lock className="h-4 w-4 text-amber-700" /></span>
                 <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-400 text-[#1e3a5f] text-xs font-black">구독하고 예상 점수 확인 <ChevronRight className="h-3.5 w-3.5" /></span>
               </div>
             </div>
@@ -557,7 +557,7 @@ export default async function DashboardPage() {
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     <span className="text-sm font-bold text-[#334155]">{s.score}/{s.total}</span>
-                    <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${pass ? "bg-emerald-100 text-emerald-700" : "bg-red-50 text-red-500"}`}>
+                    <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${pass ? "bg-emerald-100 text-emerald-700" : "bg-red-50 text-red-600"}`}>
                       {pct}점
                     </span>
                   </div>

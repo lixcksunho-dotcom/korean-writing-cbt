@@ -106,7 +106,7 @@ export default function RefineQuiz({ items }: { items: RefineItem[] }) {
         </button>
         <div className="flex items-center gap-3 text-sm">
           <span className="text-[#64748b]">{idx + 1} / {quiz.length}</span>
-          <span className="font-semibold text-emerald-600">정답 {right}<span className="text-[#cbd5e1]">/{solved}</span></span>
+          <span className="font-semibold text-emerald-700">정답 {right}<span className="text-[#cbd5e1]">/{solved}</span></span>
         </div>
       </div>
 
@@ -120,16 +120,16 @@ export default function RefineQuiz({ items }: { items: RefineItem[] }) {
 
         {!answered ? (
           <div className="grid grid-cols-2 gap-3">
-            <button onClick={() => answer(true)} className="flex items-center justify-center gap-2 py-5 rounded-2xl border-2 border-emerald-200 text-emerald-600 font-black text-xl hover:bg-emerald-50 transition-colors">
+            <button onClick={() => answer(true)} className="flex items-center justify-center gap-2 py-5 rounded-2xl border-2 border-emerald-200 text-emerald-700 font-black text-xl hover:bg-emerald-50 transition-colors">
               <Check className="h-6 w-6" /> O
             </button>
-            <button onClick={() => answer(false)} className="flex items-center justify-center gap-2 py-5 rounded-2xl border-2 border-red-200 text-red-500 font-black text-xl hover:bg-red-50 transition-colors">
+            <button onClick={() => answer(false)} className="flex items-center justify-center gap-2 py-5 rounded-2xl border-2 border-red-200 text-red-600 font-black text-xl hover:bg-red-50 transition-colors">
               <X className="h-6 w-6" /> X
             </button>
           </div>
         ) : (
           <div className={`rounded-2xl p-5 ${correct ? 'bg-emerald-50 border border-emerald-100' : 'bg-red-50 border border-red-100'}`}>
-            <p className={`text-base font-bold mb-2 ${correct ? 'text-emerald-700' : 'text-red-500'}`}>
+            <p className={`text-base font-bold mb-2 ${correct ? 'text-emerald-700' : 'text-red-600'}`}>
               {correct ? '정답이에요!' : '아쉬워요.'}
             </p>
             <div className="bg-white/70 rounded-xl px-4 py-3 text-sm text-[#334155]">
@@ -151,7 +151,7 @@ export default function RefineQuiz({ items }: { items: RefineItem[] }) {
 
       {allDone && (
         <div className="mt-5 bg-white rounded-2xl border border-emerald-200 p-5 text-center">
-          <p className="text-sm text-[#64748b]">완료! <span className="font-bold text-[#0f172a]">{quiz.length}</span>문항 중 <span className="font-bold text-emerald-600">{right}</span>문항 정답 ({Math.round((right / quiz.length) * 100)}%)</p>
+          <p className="text-sm text-[#64748b]">완료! <span className="font-bold text-[#0f172a]">{quiz.length}</span>문항 중 <span className="font-bold text-emerald-700">{right}</span>문항 정답 ({Math.round((right / quiz.length) * 100)}%)</p>
         </div>
       )}
     </div>

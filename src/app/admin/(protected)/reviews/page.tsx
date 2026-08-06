@@ -44,8 +44,8 @@ export default async function AdminReviewsPage() {
     <div>
       <div className="mb-6">
         <h1 className="text-xl font-bold text-gray-900">후기 관리</h1>
-        <p className="text-sm text-gray-500 mt-1">
-          총 {reviews.length}개 · 인증 대기 <span className="font-semibold text-amber-600">{pendingProof}</span>개
+        <p className="text-sm text-gray-600 mt-1">
+          총 {reviews.length}개 · 인증 대기 <span className="font-semibold text-amber-700">{pendingProof}</span>개
           (사진 첨부됐지만 미인증)
         </p>
       </div>

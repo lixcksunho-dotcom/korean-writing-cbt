@@ -37,7 +37,7 @@ export default async function AdminReportsPage() {
     <div>
       <div className="mb-6">
         <h1 className="text-xl font-bold text-gray-900">문제 오류 신고</h1>
-        <p className="text-sm text-gray-500 mt-1">총 {reports.length}건 · 미처리 <span className="font-semibold text-amber-600">{pending}</span>건</p>
+        <p className="text-sm text-gray-600 mt-1">총 {reports.length}건 · 미처리 <span className="font-semibold text-amber-700">{pending}</span>건</p>
       </div>
       <ReportsClient reports={reports} />
     </div>

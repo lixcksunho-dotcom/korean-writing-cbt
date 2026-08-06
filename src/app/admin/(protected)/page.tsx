@@ -31,9 +31,9 @@ export default async function AdminHome() {
 
   const stats = [
     { label: '활성 이용권', value: `${activePasses}`, sub: `누적 결제 ${totalOrders}건`, icon: CreditCard, color: 'text-blue-600 bg-blue-50' },
-    { label: '누적 매출', value: `${revenue.toLocaleString()}원`, sub: '결제 합계', icon: Wallet, color: 'text-emerald-600 bg-emerald-50' },
+    { label: '누적 매출', value: `${revenue.toLocaleString()}원`, sub: '결제 합계', icon: Wallet, color: 'text-emerald-700 bg-emerald-50' },
     { label: '등록 문제', value: `${qCount.count ?? 0}`, sub: '객관식+서술형', icon: BookOpen, color: 'text-indigo-600 bg-indigo-50' },
-    { label: '후기', value: `${reviewTotal}`, sub: `노출 ${reviewVisible} · 인증대기 ${reviewPending}`, icon: Star, color: 'text-amber-600 bg-amber-50' },
+    { label: '후기', value: `${reviewTotal}`, sub: `노출 ${reviewVisible} · 인증대기 ${reviewPending}`, icon: Star, color: 'text-amber-700 bg-amber-50' },
     { label: '완료한 시험', value: `${examDone.count ?? 0}`, sub: '제출 세션', icon: FileCheck2, color: 'text-violet-600 bg-violet-50' },
     { label: '원고지 제출', value: `${manuscriptCount.count ?? 0}`, sub: 'AI 채점 요청', icon: PenLine, color: 'text-rose-600 bg-rose-50' },
   ]
@@ -49,7 +49,7 @@ export default async function AdminHome() {
     <div>
       <div className="mb-6">
         <h1 className="text-xl font-bold text-gray-900">관리자 대시보드</h1>
-        <p className="text-sm text-gray-500 mt-1">서비스 핵심 지표를 한눈에 확인하세요.</p>
+        <p className="text-sm text-gray-600 mt-1">서비스 핵심 지표를 한눈에 확인하세요.</p>
       </div>
 
       {/* 지표 카드 */}
@@ -59,7 +59,7 @@ export default async function AdminHome() {
             <div className={`inline-flex p-2 rounded-lg mb-3 ${color}`}><Icon className="h-4 w-4" /></div>
             <div className="text-2xl font-black text-gray-900 tracking-tight">{value}</div>
             <div className="text-xs font-semibold text-gray-700 mt-0.5">{label}</div>
-            <div className="text-xs text-gray-400 mt-0.5">{sub}</div>
+            <div className="text-xs text-gray-600 mt-0.5">{sub}</div>
           </div>
         ))}
       </div>
@@ -76,9 +76,9 @@ export default async function AdminHome() {
                 <h2 className="font-bold text-gray-900">{title}</h2>
                 {badge && <span className="text-xs font-bold text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded-full">{badge}</span>}
               </div>
-              <p className="text-xs text-gray-500 mt-0.5">{desc}</p>
+              <p className="text-xs text-gray-600 mt-0.5">{desc}</p>
             </div>
-            <ChevronRight className="h-5 w-5 text-gray-300 group-hover:text-gray-500 group-hover:translate-x-0.5 transition-all" />
+            <ChevronRight className="h-5 w-5 text-gray-600 group-hover:text-gray-600 group-hover:translate-x-0.5 transition-all" />
           </Link>
         ))}
       </div>

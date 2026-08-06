@@ -26,7 +26,7 @@ const ROUTES = [
   '/dashboard', '/insights', '/cbt', '/manuscript', '/manuscript/history',
   '/practice', '/practice/areas', '/practice/bookmarks', '/practice/essay',
   '/practice/multiple', '/practice/refine', '/practice/report', '/practice/types',
-  '/practice/wrong', '/subscribe/history',
+  '/practice/wrong', '/practice/kbs-types', '/subscribe', '/subscribe/history',
 ]
 
 const admin = (p, init) => fetch(`${SB}${p}`, {

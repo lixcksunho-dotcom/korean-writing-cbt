@@ -115,7 +115,7 @@ export default function QuestionForm({ initial }: { initial?: Question }) {
 
       {/* 지문 */}
       <div>
-        <label className={labelCls}>지문 <span className="text-gray-400 font-normal">(선택 — 여러 문제가 공유하는 지문)</span></label>
+        <label className={labelCls}>지문 <span className="text-gray-600 font-normal">(선택 — 여러 문제가 공유하는 지문)</span></label>
         <textarea
           value={passage}
           onChange={e => setPassage(e.target.value)}
@@ -163,7 +163,7 @@ export default function QuestionForm({ initial }: { initial?: Question }) {
           <div className="space-y-2">
             {options.map((opt, i) => (
               <div key={i} className="flex items-center gap-2">
-                <span className="text-sm font-bold text-gray-400 w-5 shrink-0">{'①②③④⑤'[i]}</span>
+                <span className="text-sm font-bold text-gray-600 w-5 shrink-0">{'①②③④⑤'[i]}</span>
                 <input
                   value={opt}
                   onChange={e => setOption(i, e.target.value)}
@@ -180,7 +180,7 @@ export default function QuestionForm({ initial }: { initial?: Question }) {
       <div>
         <label className={labelCls}>
           {type === 'essay' ? '모범 답안' : '정답'}
-          <span className="ml-1 text-xs text-gray-400 font-normal">
+          <span className="ml-1 text-xs text-gray-600 font-normal">
             {type === 'multiple' ? '(1~5 숫자)' : type === 'essay' ? '' : '(단답형 정답 텍스트)'}
           </span>
         </label>
@@ -205,7 +205,7 @@ export default function QuestionForm({ initial }: { initial?: Question }) {
 
       {/* 해설 */}
       <div>
-        <label className={labelCls}>해설 <span className="text-gray-400 font-normal">(선택)</span></label>
+        <label className={labelCls}>해설 <span className="text-gray-600 font-normal">(선택)</span></label>
         <textarea
           value={explanation}
           onChange={e => setExplanation(e.target.value)}

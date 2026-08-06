@@ -68,7 +68,7 @@ export default function PracticeMultiple({
         </Link>
         <div className="flex items-center gap-3 text-sm">
           <span className="text-[#64748b]">{idx + 1} / {questions.length}</span>
-          <span className="font-semibold text-emerald-600">정답 {right}<span className="text-[#cbd5e1]">/{solved}</span></span>
+          <span className="font-semibold text-emerald-700">정답 {right}<span className="text-[#cbd5e1]">/{solved}</span></span>
         </div>
       </div>
 
@@ -136,7 +136,7 @@ export default function PracticeMultiple({
         {/* 즉시 채점 결과 + 해설 */}
         {revealed && (
           <div className={`mt-5 rounded-xl px-4 py-3.5 ${correct ? 'bg-emerald-50 border border-emerald-100' : 'bg-red-50 border border-red-100'}`}>
-            <p className={`text-sm font-bold flex items-center gap-1.5 ${correct ? 'text-emerald-700' : 'text-red-500'}`}>
+            <p className={`text-sm font-bold flex items-center gap-1.5 ${correct ? 'text-emerald-700' : 'text-red-600'}`}>
               {correct ? <><CheckCircle2 className="h-4 w-4" /> 정답이에요!</> : <><XCircle className="h-4 w-4" /> 아쉬워요. 정답은 {CIRCLE[parseInt(q.correct_answer) - 1]} 입니다.</>}
             </p>
             {q.explanation && <p className="text-xs text-[#475569] leading-relaxed mt-2 whitespace-pre-wrap">💡 {q.explanation}</p>}
@@ -156,7 +156,7 @@ export default function PracticeMultiple({
 
       {allDone && (
         <div className="mt-5 bg-white rounded-2xl border border-emerald-200 p-5 text-center">
-          <p className="text-sm text-[#64748b]">연습 완료! 총 <span className="font-bold text-[#0f172a]">{questions.length}</span>문항 중 <span className="font-bold text-emerald-600">{right}</span>문항 정답 ({Math.round((right / questions.length) * 100)}%)</p>
+          <p className="text-sm text-[#64748b]">연습 완료! 총 <span className="font-bold text-[#0f172a]">{questions.length}</span>문항 중 <span className="font-bold text-emerald-700">{right}</span>문항 정답 ({Math.round((right / questions.length) * 100)}%)</p>
         </div>
       )}
       <CopyGuard />

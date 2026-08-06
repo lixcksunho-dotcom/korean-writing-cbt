@@ -39,7 +39,7 @@ export default async function ManuscriptPage() {
         </div>
         <div className="flex items-center gap-3 shrink-0">
           {sub && (
-            <span className="text-xs text-emerald-600 font-semibold bg-emerald-50 border border-emerald-100 px-2.5 py-1 rounded-full">
+            <span className="text-xs text-emerald-700 font-semibold bg-emerald-50 border border-emerald-100 px-2.5 py-1 rounded-full">
               {daysUntilExpiry(sub.expires_at)}일 남음
             </span>
           )}
@@ -58,7 +58,7 @@ export default async function ManuscriptPage() {
             <div className="mb-5 flex flex-col sm:flex-row sm:items-center gap-3 rounded-2xl border border-amber-200 bg-gradient-to-br from-[#fffbeb] to-[#fff7ed] px-5 py-4">
               <div className="flex-1">
                 <p className="text-sm font-bold text-[#0f172a]">
-                  무료 체험 <span className="text-amber-600">{trial.remaining}회</span> 남았어요
+                  무료 체험 <span className="text-amber-700">{trial.remaining}회</span> 남았어요
                 </p>
                 <p className="text-xs text-[#64748b] mt-0.5">
                   결제 없이 지금 바로 채점받아 보세요. 마음에 들면 5,500원으로 30일 무제한.

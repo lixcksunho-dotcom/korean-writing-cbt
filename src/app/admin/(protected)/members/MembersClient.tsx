@@ -30,7 +30,7 @@ export default function MembersClient({ members }: { members: AdminMember[] }) {
       {/* 검색 + 추가 */}
       <div className="flex items-center gap-2 mb-4">
         <div className="relative flex-1">
-          <Search className="h-4 w-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          <Search className="h-4 w-4 text-gray-600 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             value={q}
             onChange={e => setQ(e.target.value)}
@@ -47,15 +47,15 @@ export default function MembersClient({ members }: { members: AdminMember[] }) {
       </div>
 
       {showAdd && <AddForm onClose={() => setShowAdd(false)} onError={setGlobalErr} />}
-      {globalErr && <p className="text-xs text-red-500 mb-3">{globalErr}</p>}
+      {globalErr && <p className="text-xs text-red-600 mb-3">{globalErr}</p>}
 
       {/* 목록 */}
       <div className="bg-white border rounded-xl overflow-hidden">
-        <div className="hidden sm:grid grid-cols-[1fr_auto_auto_auto] gap-3 px-4 py-2.5 bg-gray-50 text-xs font-bold text-gray-500 uppercase">
+        <div className="hidden sm:grid grid-cols-[1fr_auto_auto_auto] gap-3 px-4 py-2.5 bg-gray-50 text-xs font-bold text-gray-600 uppercase">
           <span>회원</span><span>가입</span><span>유료</span><span>삭제</span>
         </div>
         <div className="divide-y">
-          {filtered.length === 0 && <p className="text-sm text-gray-400 text-center py-10">검색 결과가 없습니다.</p>}
+          {filtered.length === 0 && <p className="text-sm text-gray-600 text-center py-10">검색 결과가 없습니다.</p>}
           {filtered.map(m => <Row key={m.id} m={m} onError={setGlobalErr} />)}
         </div>
       </div>
@@ -92,18 +92,18 @@ function Row({ m, onError }: { m: AdminMember; onError: (s: string) => void }) {
         <div className="flex items-center gap-1.5">
           <span className="font-semibold text-gray-900 truncate">{m.name || m.email.split('@')[0]}</span>
           {paid && <Crown className="h-3.5 w-3.5 text-amber-500 shrink-0" />}
-          {m.provider !== 'email' && <span className="text-xs text-gray-400 bg-gray-100 px-1.5 rounded">{m.provider}</span>}
+          {m.provider !== 'email' && <span className="text-xs text-gray-600 bg-gray-100 px-1.5 rounded">{m.provider}</span>}
         </div>
-        <span className="text-xs text-gray-400 truncate block">{m.email}</span>
+        <span className="text-xs text-gray-600 truncate block">{m.email}</span>
       </div>
-      <span className="hidden sm:block text-xs text-gray-500 whitespace-nowrap">{new Date(m.createdAt).toLocaleDateString('ko-KR')}</span>
+      <span className="hidden sm:block text-xs text-gray-600 whitespace-nowrap">{new Date(m.createdAt).toLocaleDateString('ko-KR')}</span>
       <label className="flex items-center gap-1.5 cursor-pointer select-none">
-        {pending ? <Loader2 className="h-4 w-4 animate-spin text-gray-400" /> : (
-          <input type="checkbox" checked={paid} onChange={togglePaid} className="h-4 w-4 accent-emerald-600 cursor-pointer" />
+        {pending ? <Loader2 className="h-4 w-4 animate-spin text-gray-600" /> : (
+          <input type="checkbox" checked={paid} onChange={togglePaid} className="h-6 w-6 accent-emerald-600 cursor-pointer" />
         )}
-        <span className={`text-xs font-bold ${paid ? 'text-emerald-600' : 'text-gray-400'}`}>유료</span>
+        <span className={`text-xs font-bold ${paid ? 'text-emerald-700' : 'text-gray-600'}`}>유료</span>
       </label>
-      <button onClick={remove} disabled={pending} className="text-red-500 hover:bg-red-50 p-1.5 rounded-lg disabled:opacity-40 justify-self-end">
+      <button onClick={remove} disabled={pending} className="text-red-600 hover:bg-red-50 p-1.5 rounded-lg disabled:opacity-40 justify-self-end">
         <Trash2 className="h-4 w-4" />
       </button>
     </div>
@@ -131,7 +131,7 @@ function AddForm({ onClose, onError }: { onClose: () => void; onError: (s: strin
 
   return (
     <form onSubmit={submit} className="bg-white border rounded-xl p-4 mb-4 relative">
-      <button type="button" onClick={onClose} className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"><X className="h-4 w-4" /></button>
+      <button type="button" onClick={onClose} className="absolute right-3 top-3 text-gray-600 hover:text-gray-600"><X className="h-4 w-4" /></button>
       <p className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-1.5"><Mail className="h-4 w-4" /> 새 회원 추가</p>
       <div className="grid sm:grid-cols-3 gap-2 mb-3">
         <input value={email} onChange={e => setEmail(e.target.value)} placeholder="이메일" type="email" required className="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gray-500" />
@@ -141,7 +141,7 @@ function AddForm({ onClose, onError }: { onClose: () => void; onError: (s: strin
       <button disabled={pending} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-bold bg-gray-900 text-white hover:bg-gray-700 disabled:opacity-50">
         {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : <UserPlus className="h-4 w-4" />} 추가하기
       </button>
-      <p className="text-xs text-gray-400 mt-2">이메일 인증 완료 상태로 즉시 생성됩니다. 비밀번호는 회원에게 직접 전달하세요.</p>
+      <p className="text-xs text-gray-600 mt-2">이메일 인증 완료 상태로 즉시 생성됩니다. 비밀번호는 회원에게 직접 전달하세요.</p>
     </form>
   )
 }

@@ -90,7 +90,7 @@ export default function LoginPage() {
             <p className="text-[#64748b] text-sm mb-7">계정에 로그인하여 학습을 이어가세요</p>
 
             <GoogleButton />
-            <p className="mt-2 text-center text-xs text-emerald-600 font-medium">✓ 인증 없이 바로 로그인</p>
+            <p className="mt-2 text-center text-xs text-emerald-700 font-medium">✓ 인증 없이 바로 로그인</p>
 
             <div className="relative my-6">
               <div className="absolute inset-0 flex items-center">

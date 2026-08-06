@@ -261,7 +261,7 @@ export default function ExamPlayer({
           </div>
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             <div className={`flex items-center gap-1.5 font-mono font-bold text-sm px-3 py-1.5 rounded-xl ${
-              timerWarning ? 'bg-red-50 text-red-500 animate-pulse' : 'bg-[#f1f5f9] text-[#334155]'
+              timerWarning ? 'bg-red-50 text-red-600 animate-pulse' : 'bg-[#f1f5f9] text-[#334155]'
             }`}>
               <Clock className="h-3.5 w-3.5" />
               {String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
@@ -485,9 +485,9 @@ export default function ExamPlayer({
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-semibold text-[#64748b]">
                     {isManuscriptQ(q) ? `원고지 (${ESSAY_COLS}칸) — 칸에 바로 입력하세요` : '답안 작성'}
-                    {qCharLimit != null && <span className="ml-1 text-amber-600">· 제한 {qCharLimit}자</span>}
+                    {qCharLimit != null && <span className="ml-1 text-amber-700">· 제한 {qCharLimit}자</span>}
                   </span>
-                  <span className={`text-xs tabular-nums font-semibold ${qOverLimit ? 'text-red-500' : 'text-[#64748b]'}`}>
+                  <span className={`text-xs tabular-nums font-semibold ${qOverLimit ? 'text-red-600' : 'text-[#64748b]'}`}>
                     {qCharCount}{qCharLimit != null ? ` / ${qCharLimit}` : ''}자{qOverLimit ? ' 초과' : ''}
                   </span>
                 </div>
@@ -528,7 +528,7 @@ export default function ExamPlayer({
                 이전
               </button>
               {answers[q.id] && (
-                <span className="flex items-center gap-1 text-xs text-emerald-600 font-medium">
+                <span className="flex items-center gap-1 text-xs text-emerald-700 font-medium">
                   <CheckCircle2 className="h-3.5 w-3.5" />
                   {q.type === 'essay' ? '답안 작성됨' : '답변 완료'}
                 </span>
@@ -573,7 +573,7 @@ export default function ExamPlayer({
                 </div>
               )}
               {answeredCount < questions.length && (
-                <p className="text-amber-600 text-xs font-medium pt-1">
+                <p className="text-amber-700 text-xs font-medium pt-1">
                   ⚠ {questions.length - answeredCount}문항이 미완료 상태입니다.
                 </p>
               )}

@@ -159,7 +159,7 @@ export default function GradingSample() {
               <p className="text-sm">
                 <span className="text-[#ef4444] line-through">{c.original}</span>
                 <span className="mx-1.5 text-[#64748b]">→</span>
-                <span className="font-bold text-emerald-600">{c.correction}</span>
+                <span className="font-bold text-emerald-700">{c.correction}</span>
               </p>
               <p className="mt-0.5 text-xs text-[#64748b]">{c.reason}</p>
             </div>

@@ -52,13 +52,13 @@ export default function EssayGrader({
           </span>
           <span className="text-sm font-black text-[#1e3a5f]">
             {grade.score} <span className="text-[#64748b] font-medium">/ {grade.maxScore}점</span>
-            <span className="ml-1.5 text-xs text-emerald-600">({pct}%)</span>
+            <span className="ml-1.5 text-xs text-emerald-700">({pct}%)</span>
           </span>
         </div>
         <p className="text-sm text-[#334155] leading-relaxed mb-3">{grade.feedback}</p>
         {grade.strengths?.length > 0 && (
           <div className="mb-2">
-            <p className="text-xs font-semibold text-emerald-600 mb-1">잘한 점</p>
+            <p className="text-xs font-semibold text-emerald-700 mb-1">잘한 점</p>
             <ul className="space-y-0.5">
               {grade.strengths.map((s, i) => (
                 <li key={i} className="flex gap-1.5 text-xs text-[#334155]">
@@ -70,7 +70,7 @@ export default function EssayGrader({
         )}
         {grade.improvements?.length > 0 && (
           <div>
-            <p className="text-xs font-semibold text-amber-600 mb-1">보완할 점</p>
+            <p className="text-xs font-semibold text-amber-700 mb-1">보완할 점</p>
             <ul className="space-y-0.5">
               {grade.improvements.map((s, i) => (
                 <li key={i} className="flex gap-1.5 text-xs text-[#334155]">
@@ -125,10 +125,10 @@ export default function EssayGrader({
         {isPending ? 'AI 분석 중...' : canUseTrial ? '무료로 AI 분석 체험' : 'AI 분석 받기'}
       </button>
       {canUseTrial && (
-        <p className="text-xs text-[#64748b] text-center mt-1.5">구독 없이 <span className="font-semibold text-amber-600">무료 {trial.remaining}회</span> 더 받아볼 수 있어요.</p>
+        <p className="text-xs text-[#64748b] text-center mt-1.5">구독 없이 <span className="font-semibold text-amber-700">무료 {trial.remaining}회</span> 더 받아볼 수 있어요.</p>
       )}
       {error && error !== 'SUBSCRIPTION_REQUIRED' && (
-        <p className="text-xs text-red-500 text-center mt-2">{error}</p>
+        <p className="text-xs text-red-600 text-center mt-2">{error}</p>
       )}
     </div>
   )

@@ -348,7 +348,7 @@ export default function TopicQuiz({ topic, ctaHref = '/signup?from=quiz' }: { to
                       className={`flex items-center justify-between gap-2 rounded-xl border px-3.5 py-3 text-left text-sm text-[#334155] transition-colors disabled:cursor-default ${tone}`}
                     >
                       <span>{opt}</span>
-                      {done && isAnswer && <Check className="h-4 w-4 shrink-0 text-emerald-600" />}
+                      {done && isAnswer && <Check className="h-4 w-4 shrink-0 text-emerald-700" />}
                       {done && isChosen && !isAnswer && <X className="h-4 w-4 shrink-0 text-red-400" />}
                     </button>
                   )

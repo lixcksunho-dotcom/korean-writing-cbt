@@ -22,7 +22,7 @@ export default function ReportButton({ questionId }: { questionId: string }) {
   }
 
   if (done) {
-    return <span className="inline-flex items-center gap-1 text-xs text-emerald-600 font-semibold px-2 py-1"><Check className="h-3.5 w-3.5" /> 신고 접수됨</span>
+    return <span className="inline-flex items-center gap-1 text-xs text-emerald-700 font-semibold px-2 py-1"><Check className="h-3.5 w-3.5" /> 신고 접수됨</span>
   }
 
   return (
@@ -51,7 +51,7 @@ export default function ReportButton({ questionId }: { questionId: string }) {
             <button disabled={pending || !custom.trim()} onClick={() => send(custom)}
               className="text-xs font-bold text-white bg-[#1e3a5f] px-2.5 rounded-lg disabled:opacity-40">전송</button>
           </div>
-          {err && <p className="text-xs text-red-500 px-1.5 pt-1">{err}</p>}
+          {err && <p className="text-xs text-red-600 px-1.5 pt-1">{err}</p>}
         </div>
       )}
     </div>

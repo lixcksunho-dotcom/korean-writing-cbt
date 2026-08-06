@@ -184,7 +184,7 @@ export default function PracticeEssay({
               <Link
                 href="/subscribe"
                 title="저장하고 나가기는 구독 회원 전용이에요"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-[#f1f5f9] text-[#475569] border border-[#e2e8f0] cursor-not-allowed hover:text-amber-600 hover:border-amber-200"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-[#f1f5f9] text-[#475569] border border-[#e2e8f0] cursor-not-allowed hover:text-amber-700 hover:border-amber-200"
               >
                 <Lock className="h-3.5 w-3.5" /> 저장하고 나가기 <span className="text-xs font-bold text-amber-500">유료</span>
               </Link>
@@ -223,7 +223,7 @@ export default function PracticeEssay({
           </div>
         </div>
       )}
-      {saveError && <p className="mb-3 text-xs text-red-500">{saveError}</p>}
+      {saveError && <p className="mb-3 text-xs text-red-600">{saveError}</p>}
 
       {/* 번호 그리드 */}
       <div className="bg-white rounded-2xl border border-[#e2e8f0] p-3 mb-4">
@@ -269,9 +269,9 @@ export default function PracticeEssay({
         <div className="flex items-center justify-between mb-2">
           <span className="text-xs font-semibold text-[#64748b]">
             {isManuscript ? `원고지 (${COLS}칸) — 칸에 바로 입력하세요` : '답안 작성'}
-            {charLimit != null && <span className="ml-1 text-amber-600">· 제한 {charLimit}자</span>}
+            {charLimit != null && <span className="ml-1 text-amber-700">· 제한 {charLimit}자</span>}
           </span>
-          <span className={`text-xs tabular-nums font-semibold ${overLimit ? 'text-red-500' : 'text-[#64748b]'}`}>
+          <span className={`text-xs tabular-nums font-semibold ${overLimit ? 'text-red-600' : 'text-[#64748b]'}`}>
             {charCount}{charLimit != null ? ` / ${charLimit}` : ''}자{overLimit ? ' 초과' : ''}
           </span>
         </div>
@@ -305,7 +305,7 @@ export default function PracticeEssay({
                 {isPending ? <><Loader2 className="h-4 w-4 animate-spin" /> 분석 중...</> : <><Sparkles className="h-4 w-4" /> {hasSubscription ? 'AI 분석받기' : '무료로 AI 분석 체험'}</>}
               </button>
               {!hasSubscription && (
-                <p className="text-xs text-[#64748b] mt-1.5">구독 없이 <span className="font-semibold text-amber-600">무료 {trialLeft}회</span> 더 AI 첨삭을 받아볼 수 있어요.</p>
+                <p className="text-xs text-[#64748b] mt-1.5">구독 없이 <span className="font-semibold text-amber-700">무료 {trialLeft}회</span> 더 AI 첨삭을 받아볼 수 있어요.</p>
               )}
             </>
           ) : (
@@ -313,7 +313,7 @@ export default function PracticeEssay({
               <Lock className="h-4 w-4" /> {(aiTrialRemaining > 0 || trialUsedLocal > 0) ? '무료 체험 모두 사용 · 구독하고 무제한' : '구독하고 AI 분석받기'}
             </Link>
           )}
-          {errors[q.id] && <p className="text-xs text-red-500 mt-2">{errors[q.id]}</p>}
+          {errors[q.id] && <p className="text-xs text-red-600 mt-2">{errors[q.id]}</p>}
         </div>
 
         {/* 채점 결과 */}
@@ -332,7 +332,7 @@ export default function PracticeEssay({
             )}
             {grade.improvements?.length > 0 && (
               <div>
-                <p className="text-xs font-bold text-red-500 mb-1">보완할 점</p>
+                <p className="text-xs font-bold text-red-600 mb-1">보완할 점</p>
                 <ul className="text-xs text-[#475569] space-y-0.5 list-disc list-inside">{grade.improvements.map((s, i) => <li key={i}>{s}</li>)}</ul>
               </div>
             )}

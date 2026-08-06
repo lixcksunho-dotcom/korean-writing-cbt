@@ -25,10 +25,39 @@ export const dismissIntros = () => {
  * 글자색 + 조상에서 찾은 배경을 뽑고, 나중에 다시 잡을 표식(data-cc)을 붙인다.
  * 요소 자신의 backgroundColor는 대개 transparent라, 그냥 흰색으로 가정하면
  * 어두운 배경 위 흰 글자가 전부 미달로 잡힌다.
+ *
+ * 색은 반드시 캔버스로 sRGB 바이트까지 환산해서 넘긴다. Tailwind 4의 팔레트 색
+ * (text-gray-500 등)은 계산값이 rgb()가 아니라 lab()으로 나온다. 문자열을 그냥
+ * 믿으면 두 가지가 조용히 어긋난다 — 글자색은 rgb가 아니라고 통째로 건너뛰고,
+ * 배경은 lab(65.9 -0.8 -8.1)에서 숫자만 긁어 rgb(65.9,-0.8,-8.1)로 오독한다.
+ * 관리자 화면을 재 보니 글자 12개 중 1개만 검사되고 있었다.
  */
 export function browserCollectText() {
   const res = []
   let i = 0
+  const cv = document.createElement('canvas')
+  cv.width = cv.height = 1
+  const cx = cv.getContext('2d', { willReadFrequently: true })
+  const rgbaCache = new Map()
+  /** 브라우저가 아는 모든 색 표기 → [r,g,b,투명도]. 못 읽으면 null. */
+  const toRgba = (css) => {
+    if (rgbaCache.has(css)) return rgbaCache.get(css)
+    let out = null
+    cx.clearRect(0, 0, 1, 1)
+    cx.fillStyle = '#000'
+    cx.fillStyle = css
+    cx.fillRect(0, 0, 1, 1)
+    try {
+      const d = cx.getImageData(0, 0, 1, 1).data
+      out = [d[0], d[1], d[2], d[3] / 255]
+    } catch { /* 캔버스가 막힌 환경 */ }
+    rgbaCache.set(css, out)
+    return out
+  }
+  // 그러데이션 안의 색 토큰. color-mix처럼 괄호가 겹치는 표기는 여기서 안 잡히는데,
+  // 그건 stops가 비면 판정을 건너뛰므로 오탐이 아니라 미검출로 남는다.
+  const COLOR_TOKEN = /(?:rgba?|hsla?|oklch|oklab|lab|lch|color)\([^()]*\)|#[0-9a-fA-F]{3,8}\b/g
+
   for (const el of document.querySelectorAll('body *')) {
     // 자기 글자를 직접 가진 요소만 본다. 예전엔 자식 요소가 하나라도 있으면 건너뛰었는데,
     // 그러면 아이콘+글자 버튼(<button><svg/>글자</button>)이 통째로 빠진다.
@@ -41,7 +70,9 @@ export function browserCollectText() {
     if (!ownText) continue
     const txt = ownText
     const cs = getComputedStyle(el)
-    if (cs.visibility === 'hidden' || cs.opacity === '0' || !cs.color.startsWith('rgb')) continue
+    if (cs.visibility === 'hidden' || cs.opacity === '0') continue
+    const fg = toRgba(cs.color)
+    if (!fg) continue
     if (cs.webkitBackgroundClip === 'text' || cs.backgroundClip === 'text') continue
     // 장식으로 표시한 것(aria-hidden)은 읽으라고 둔 글자가 아니다 — 명암비 대상이 아니다
     if (el.closest('[aria-hidden="true"]')) continue
@@ -51,18 +82,23 @@ export function browserCollectText() {
     let p = el, bg = null
     while (p && p !== document.documentElement) {
       const s = getComputedStyle(p)
-      if (s.backgroundImage.includes('gradient')) { bg = { kind: 'grad', raw: s.backgroundImage }; break }
-      const m = s.backgroundColor.match(/[\d.]+/g)
-      if (m && (m.length < 4 || Number(m[3]) > 0.9)) { bg = { kind: 'solid', raw: s.backgroundColor }; break }
+      if (s.backgroundImage.includes('gradient')) {
+        const stops = (s.backgroundImage.match(COLOR_TOKEN) ?? [])
+          .map(toRgba).filter((c) => c && c[3] > 0.9).map((c) => c.slice(0, 3))
+        if (stops.length) { bg = { kind: 'grad', stops, raw: s.backgroundImage }; break }
+      }
+      const solid = toRgba(s.backgroundColor)
+      if (solid && solid[3] > 0.9) { bg = { kind: 'solid', stops: [solid.slice(0, 3)], raw: s.backgroundColor }; break }
       p = p.parentElement
     }
-    if (!bg) bg = { kind: 'solid', raw: 'rgb(255,255,255)' }
+    if (!bg) bg = { kind: 'solid', stops: [[255, 255, 255]], raw: 'rgb(255,255,255)' }
 
     el.setAttribute('data-cc', String(i))
     res.push({
       id: i++,
       text: txt.slice(0, 26),
-      color: cs.color,
+      color: `rgb(${fg[0]}, ${fg[1]}, ${fg[2]})`,
+      rgb: fg.slice(0, 3),
       fs: parseFloat(cs.fontSize),
       bold: parseInt(cs.fontWeight) >= 700,
       bg,
@@ -74,14 +110,11 @@ export function browserCollectText() {
 
 /** 조상 배경만으로 판정한 값(싸게 거르는 1단). 실제 배경은 픽셀로 확증해야 한다. */
 export function cheapContrast(item) {
-  const fg = item.color.match(/[\d.]+/g).slice(0, 3).map(Number)
-  const fl = lum(fg)
-  const stops = item.bg.kind === 'grad'
-    ? [...item.bg.raw.matchAll(/rgba?\(([^)]+)\)/g)].map((m) => m[1].split(',').map(Number)).filter((s) => s.length < 4 || s[3] > 0.9)
-    : [item.bg.raw.match(/[\d.]+/g).slice(0, 3).map(Number)]
-  if (!stops.length) return null
+  const fl = lum(item.rgb)
+  const stops = item.bg.stops
+  if (!stops?.length) return null
   let worst = Infinity
-  for (const s of stops) worst = Math.min(worst, ratio(fl, lum(s.slice(0, 3))))
+  for (const s of stops) worst = Math.min(worst, ratio(fl, lum(s)))
   return { worst, fl }
 }
 
@@ -93,12 +126,22 @@ export function browserAuditMobile() {
   const vw = document.documentElement.clientWidth
   const out = { overflow: null, tiny: [], small: [], crowded: [], offscreen: [], covered: [], escaped: [] }
 
+  // 가로로 넘길 수 있게 감싼 것(표 등) 안의 자식은 화면 밖으로 나가는 게 정상이라 뺀다.
+  // 안 빼면 overflow-x-auto로 이미 처리한 표가 매번 '가장 넓은 것'으로 올라온다.
+  const inScroller = (el) => {
+    for (let p = el.parentElement; p && p !== document.documentElement; p = p.parentElement) {
+      const ox = getComputedStyle(p).overflowX
+      if (ox === 'auto' || ox === 'scroll' || ox === 'hidden') return true
+    }
+    return false
+  }
+
   if (document.documentElement.scrollWidth > vw + 1) {
     const wide = []
     for (const el of document.querySelectorAll('body *')) {
       const r = el.getBoundingClientRect()
       if (r.width < 1 || r.height < 1) continue
-      if (r.right > vw + 1 && getComputedStyle(el).position !== 'fixed') {
+      if (r.right > vw + 1 && getComputedStyle(el).position !== 'fixed' && !inScroller(el)) {
         wide.push({ tag: el.tagName.toLowerCase(), right: Math.round(r.right), text: (el.textContent ?? '').trim().slice(0, 20) })
       }
     }

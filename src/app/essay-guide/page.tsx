@@ -127,7 +127,7 @@ export default function EssayGuidePage() {
             <div className="space-y-2.5">
               {MISTAKES.map((m) => (
                 <div key={m.bad} className="rounded-xl border border-[#e2e8f0] bg-white p-4">
-                  <p className="font-black text-red-500 text-sm">✕ {m.bad}</p>
+                  <p className="font-black text-red-600 text-sm">✕ {m.bad}</p>
                   <p className="mt-1 text-sm text-[#475569] leading-relaxed">{m.fix}</p>
                 </div>
               ))}

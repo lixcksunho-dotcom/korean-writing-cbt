@@ -26,9 +26,9 @@ function refererLabel(ref: string | null): string {
 function StatCard({ label, pv, uv }: { label: string; pv: number; uv: number }) {
   return (
     <div className="rounded-xl border border-gray-200 bg-white p-5">
-      <p className="text-xs font-semibold text-gray-500">{label}</p>
-      <p className="mt-1 text-3xl font-black text-gray-900">{uv.toLocaleString()}<span className="ml-1 text-sm font-bold text-gray-400">명</span></p>
-      <p className="mt-0.5 text-xs text-gray-500">페이지뷰 {pv.toLocaleString()}</p>
+      <p className="text-xs font-semibold text-gray-600">{label}</p>
+      <p className="mt-1 text-3xl font-black text-gray-900">{uv.toLocaleString()}<span className="ml-1 text-sm font-bold text-gray-600">명</span></p>
+      <p className="mt-0.5 text-xs text-gray-600">페이지뷰 {pv.toLocaleString()}</p>
     </div>
   )
 }
@@ -59,7 +59,7 @@ export default async function AdminTrafficPage() {
           <BarChart3 className="h-5 w-5 text-amber-500" />
           <h1 className="text-xl font-black text-gray-900">방문 통계</h1>
         </div>
-        <p className="text-sm text-red-500">
+        <p className="text-sm text-red-600">
           데이터를 불러오지 못했습니다: {error.message}
           <br />
           마이그레이션 <code>022_page_views.sql</code>이 적용됐는지 확인해 주세요.
@@ -148,7 +148,7 @@ export default async function AdminTrafficPage() {
         <BarChart3 className="h-5 w-5 text-amber-500" />
         <h1 className="text-xl font-black text-gray-900">방문 통계</h1>
       </div>
-      <p className="mb-6 text-sm text-gray-500">
+      <p className="mb-6 text-sm text-gray-600">
         실제 브라우저 방문 기준(관리자·봇성 요청 제외). 숫자는 순방문자, 작은 글씨는 페이지뷰입니다. (KST 기준)
       </p>
 
@@ -162,13 +162,13 @@ export default async function AdminTrafficPage() {
       {/* 전환 퍼널 */}
       <div className="mb-8 rounded-xl border border-gray-200 bg-white p-5">
         <h2 className="mb-1 text-sm font-bold text-gray-900">전환 퍼널 (30일)</h2>
-        <p className="mb-4 text-xs text-gray-500">방문 → 구독 페이지 → 결제까지 얼마나 이어지는지. 전체 전환율 {pct(conversions, month.uv)}.</p>
+        <p className="mb-4 text-xs text-gray-600">방문 → 구독 페이지 → 결제까지 얼마나 이어지는지. 전체 전환율 {pct(conversions, month.uv)}.</p>
         <div className="grid grid-cols-3 gap-3">
           {funnel.map((f, i) => (
             <div key={f.label} className={`rounded-lg p-4 text-center ${i === 2 ? 'bg-emerald-50' : 'bg-gray-50'}`}>
-              <p className="text-xs font-semibold text-gray-500">{f.label}</p>
-              <p className={`mt-1 text-2xl font-black ${i === 2 ? 'text-emerald-600' : 'text-gray-900'}`}>{f.value.toLocaleString()}</p>
-              <p className="mt-0.5 text-xs text-gray-400">{f.sub}</p>
+              <p className="text-xs font-semibold text-gray-600">{f.label}</p>
+              <p className={`mt-1 text-2xl font-black ${i === 2 ? 'text-emerald-700' : 'text-gray-900'}`}>{f.value.toLocaleString()}</p>
+              <p className="mt-0.5 text-xs text-gray-600">{f.sub}</p>
             </div>
           ))}
         </div>
@@ -177,11 +177,11 @@ export default async function AdminTrafficPage() {
       {/* 결제 이벤트 퍼널 */}
       <div className="mb-8 rounded-xl border border-gray-200 bg-white p-5">
         <h2 className="mb-1 text-sm font-bold text-gray-900">결제 퍼널 (30일 · 이벤트 기반)</h2>
-        <p className="mb-4 text-xs text-gray-500">
+        <p className="mb-4 text-xs text-gray-600">
           이용권 페이지 진입 → 실제 결제창 진입 → 결제 완료까지. 결제창 진입·실패는 이 트래킹으로만 보이는 값이에요.
         </p>
         {!hasEvents ? (
-          <p className="rounded-lg bg-gray-50 p-4 text-xs text-gray-400">
+          <p className="rounded-lg bg-gray-50 p-4 text-xs text-gray-600">
             아직 이벤트 데이터가 없습니다. 방문자가 구독 페이지·결제를 거치면 여기에 쌓입니다.
           </p>
         ) : (
@@ -189,9 +189,9 @@ export default async function AdminTrafficPage() {
             <div className="grid grid-cols-3 gap-3">
               {payFunnel.map((f, i) => (
                 <div key={f.label} className={`rounded-lg p-4 text-center ${i === 2 ? 'bg-emerald-50' : 'bg-gray-50'}`}>
-                  <p className="text-xs font-semibold text-gray-500">{f.label}</p>
-                  <p className={`mt-1 text-2xl font-black ${i === 2 ? 'text-emerald-600' : 'text-gray-900'}`}>{f.value.toLocaleString()}</p>
-                  <p className="mt-0.5 text-xs text-gray-400">{f.sub}</p>
+                  <p className="text-xs font-semibold text-gray-600">{f.label}</p>
+                  <p className={`mt-1 text-2xl font-black ${i === 2 ? 'text-emerald-700' : 'text-gray-900'}`}>{f.value.toLocaleString()}</p>
+                  <p className="mt-0.5 text-xs text-gray-600">{f.sub}</p>
                 </div>
               ))}
             </div>
@@ -208,15 +208,15 @@ export default async function AdminTrafficPage() {
       {hasEvents && (
         <div className="mb-8 rounded-xl border border-gray-200 bg-white p-5">
           <h2 className="mb-1 text-sm font-bold text-gray-900">학습 활동 (30일)</h2>
-          <p className="mb-4 text-xs text-gray-500">가입 후 실제로 써보는지 — 모의고사 완료와 AI 첨삭 무료 체험 사용량. 여기가 많을수록 구독으로 이어질 확률이 큽니다.</p>
+          <p className="mb-4 text-xs text-gray-600">가입 후 실제로 써보는지 — 모의고사 완료와 AI 첨삭 무료 체험 사용량. 여기가 많을수록 구독으로 이어질 확률이 큽니다.</p>
           <div className="grid grid-cols-2 gap-3">
             <div className="rounded-lg bg-gray-50 p-4 text-center">
-              <p className="text-xs font-semibold text-gray-500">모의고사 완료</p>
-              <p className="mt-1 text-2xl font-black text-gray-900">{evCount('exam_completed').toLocaleString()}<span className="ml-1 text-sm font-bold text-gray-400">건</span></p>
+              <p className="text-xs font-semibold text-gray-600">모의고사 완료</p>
+              <p className="mt-1 text-2xl font-black text-gray-900">{evCount('exam_completed').toLocaleString()}<span className="ml-1 text-sm font-bold text-gray-600">건</span></p>
             </div>
             <div className="rounded-lg bg-gray-50 p-4 text-center">
-              <p className="text-xs font-semibold text-gray-500">AI 첨삭 무료체험 사용</p>
-              <p className="mt-1 text-2xl font-black text-gray-900">{evCount('ai_trial_used').toLocaleString()}<span className="ml-1 text-sm font-bold text-gray-400">건</span></p>
+              <p className="text-xs font-semibold text-gray-600">AI 첨삭 무료체험 사용</p>
+              <p className="mt-1 text-2xl font-black text-gray-900">{evCount('ai_trial_used').toLocaleString()}<span className="ml-1 text-sm font-bold text-gray-600">건</span></p>
             </div>
           </div>
         </div>
@@ -228,13 +228,13 @@ export default async function AdminTrafficPage() {
         <div className="flex items-end gap-1.5" style={{ height: 140 }}>
           {days.map(d => (
             <div key={d.label} className="flex flex-1 flex-col items-center justify-end gap-1">
-              <span className="text-xs font-semibold text-gray-500">{d.pv || ''}</span>
+              <span className="text-xs font-semibold text-gray-600">{d.pv || ''}</span>
               <div
                 className="w-full rounded-t bg-amber-400"
                 style={{ height: `${Math.round((d.pv / maxPv) * 104)}px`, minHeight: d.pv ? 3 : 0 }}
                 title={`${d.label} · 방문자 ${d.uv} · 페이지뷰 ${d.pv}`}
               />
-              <span className="text-[9px] text-gray-400">{d.label}</span>
+              <span className="text-[10px] text-gray-600">{d.label}</span>
             </div>
           ))}
         </div>
@@ -245,7 +245,7 @@ export default async function AdminTrafficPage() {
         <div className="rounded-xl border border-gray-200 bg-white p-5">
           <h2 className="mb-3 text-sm font-bold text-gray-900">인기 페이지 (30일)</h2>
           {topPaths.length === 0 ? (
-            <p className="text-xs text-gray-400">아직 데이터가 없습니다.</p>
+            <p className="text-xs text-gray-600">아직 데이터가 없습니다.</p>
           ) : (
             <table className="w-full text-left text-xs">
               <tbody>
@@ -264,7 +264,7 @@ export default async function AdminTrafficPage() {
         <div className="rounded-xl border border-gray-200 bg-white p-5">
           <h2 className="mb-3 text-sm font-bold text-gray-900">유입 경로 (30일)</h2>
           {topRefs.length === 0 ? (
-            <p className="text-xs text-gray-400">아직 데이터가 없습니다.</p>
+            <p className="text-xs text-gray-600">아직 데이터가 없습니다.</p>
           ) : (
             <table className="w-full text-left text-xs">
               <tbody>

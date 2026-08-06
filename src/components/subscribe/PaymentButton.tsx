@@ -153,7 +153,7 @@ export default function PaymentButton({
       ))}
 
       {error && (
-        <p className="text-xs text-red-500 text-center pt-1">{error}</p>
+        <p className="text-xs text-red-600 text-center pt-1">{error}</p>
       )}
 
       <p className="text-center text-xs text-[#64748b] pt-1">

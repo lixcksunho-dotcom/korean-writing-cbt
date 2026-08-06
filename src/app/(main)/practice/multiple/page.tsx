@@ -67,7 +67,7 @@ export default async function MultiplePracticePage({
                 <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${locked ? 'bg-[#f1f5f9]' : 'bg-[#1e3a5f]/8'}`}>
                   {locked ? <Lock className="h-5 w-5 text-[#64748b]" /> : <ListChecks className="h-5 w-5 text-[#1e3a5f]" />}
                 </div>
-                <p className="font-bold text-[#0f172a]">모의고사 {round}회 객관식 {locked && <span className="text-xs font-semibold text-amber-600 ml-1">이용권</span>}</p>
+                <p className="font-bold text-[#0f172a]">모의고사 {round}회 객관식 {locked && <span className="text-xs font-semibold text-amber-700 ml-1">이용권</span>}</p>
               </div>
               <ChevronRight className="h-5 w-5 text-[#64748b] group-hover:translate-x-1 transition-transform" />
             </Link>

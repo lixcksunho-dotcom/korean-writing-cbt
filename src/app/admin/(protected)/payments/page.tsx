@@ -67,7 +67,7 @@ export default async function AdminPaymentsPage() {
         <CreditCard className="h-5 w-5 text-amber-500" />
         <h1 className="text-xl font-black text-gray-900">결제 복구</h1>
       </div>
-      <p className="mb-6 text-sm text-gray-500">
+      <p className="mb-6 text-sm text-gray-600">
         결제는 됐는데 구독이 발급되지 않은 건을 재발급합니다. 평상시엔 포트원 웹훅이 자동 처리하며,
         여기는 누락·과거 사고를 수동 복구하는 안전망입니다.
       </p>

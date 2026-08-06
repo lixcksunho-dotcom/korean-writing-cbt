@@ -376,13 +376,13 @@ export default async function HomePage() {
               <p className="text-xs text-[#64748b] mt-1">1회 응시 기준</p>
             </div>
             <div className="rounded-2xl border border-[#e2e8f0] bg-white p-5 text-center">
-              <div className="inline-flex p-2.5 rounded-xl bg-red-50 mb-3"><RotateCcw className="h-5 w-5 text-red-500" /></div>
+              <div className="inline-flex p-2.5 rounded-xl bg-red-50 mb-3"><RotateCcw className="h-5 w-5 text-red-600" /></div>
               <p className="text-sm font-bold text-[#334155] mb-1">불합격 후 재응시</p>
-              <p className="text-2xl font-black text-red-500">+2~3만 원</p>
+              <p className="text-2xl font-black text-red-600">+2~3만 원</p>
               <p className="text-xs text-[#64748b] mt-1">떨어질 때마다 반복</p>
             </div>
             <div className="rounded-2xl border-2 border-amber-300 bg-gradient-to-br from-amber-50 to-white p-5 text-center shadow-[0_4px_20px_rgba(217,119,6,0.10)]">
-              <div className="inline-flex p-2.5 rounded-xl bg-amber-100 mb-3"><Sparkles className="h-5 w-5 text-amber-600" /></div>
+              <div className="inline-flex p-2.5 rounded-xl bg-amber-100 mb-3"><Sparkles className="h-5 w-5 text-amber-700" /></div>
               <p className="text-sm font-bold text-[#334155] mb-1">실글패스 이용권</p>
               <p className="text-2xl font-black text-[#0f172a]">5,500원</p>
               <p className="text-xs text-[#b45309] font-semibold mt-1">합격 전까지 무제한 연습</p>

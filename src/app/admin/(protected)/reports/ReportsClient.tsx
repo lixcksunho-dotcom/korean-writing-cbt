@@ -18,7 +18,7 @@ export type AdminReport = {
 
 export default function ReportsClient({ reports }: { reports: AdminReport[] }) {
   if (reports.length === 0) {
-    return <p className="text-sm text-gray-500 bg-white border rounded-xl p-8 text-center">접수된 신고가 없습니다.</p>
+    return <p className="text-sm text-gray-600 bg-white border rounded-xl p-8 text-center">접수된 신고가 없습니다.</p>
   }
   return <div className="space-y-3">{reports.map(r => <Row key={r.id} r={r} />)}</div>
 }
@@ -39,9 +39,9 @@ function Row({ r }: { r: AdminReport }) {
         {r.resolved
           ? <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-full">처리됨</span>
           : <span className="text-xs font-bold text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded-full">미처리</span>}
-        <span className="text-xs text-gray-400 ml-auto">{new Date(r.createdAt).toLocaleDateString('ko-KR')}</span>
+        <span className="text-xs text-gray-600 ml-auto">{new Date(r.createdAt).toLocaleDateString('ko-KR')}</span>
       </div>
-      {r.questionText && <p className="text-xs text-gray-500 line-clamp-2 mb-1.5">{r.questionText}</p>}
+      {r.questionText && <p className="text-xs text-gray-600 line-clamp-2 mb-1.5">{r.questionText}</p>}
       <p className="text-sm text-gray-800 bg-red-50 border border-red-100 rounded-lg px-3 py-2 mb-3">🚩 {r.reason}</p>
       <div className="flex items-center gap-2">
         <button onClick={() => run(() => setReportResolved(r.id, !r.resolved))} disabled={pending}
@@ -59,7 +59,7 @@ function Row({ r }: { r: AdminReport }) {
           <Trash2 className="h-3.5 w-3.5" /> 삭제
         </button>
       </div>
-      {err && <p className="text-xs text-red-500 mt-2">{err}</p>}
+      {err && <p className="text-xs text-red-600 mt-2">{err}</p>}
     </div>
   )
 }

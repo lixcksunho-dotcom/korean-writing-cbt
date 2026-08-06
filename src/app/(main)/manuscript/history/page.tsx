@@ -32,7 +32,7 @@ export default async function ManuscriptHistoryPage() {
         </Link>
         <div>
           <h1 className="text-xl font-bold text-gray-900">원고지 채점 기록</h1>
-          <p className="text-gray-400 text-xs mt-0.5">총 {submissions?.length ?? 0}건</p>
+          <p className="text-gray-500 text-xs mt-0.5">총 {submissions?.length ?? 0}건</p>
         </div>
       </div>
 

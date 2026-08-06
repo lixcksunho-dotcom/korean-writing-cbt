@@ -53,9 +53,9 @@ export default async function EssayPracticePage({
             <Link key={`${year}-${round}`} href={locked ? '/subscribe' : `/practice/essay?set=${year}-${round}`} className="card-hover group flex items-center justify-between bg-white border border-[#e2e8f0] rounded-2xl p-5 shadow-[0_4px_16px_rgba(15,31,61,0.06)]">
               <div className="flex items-center gap-3">
                 <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${locked ? 'bg-[#f1f5f9]' : 'bg-amber-100'}`}>
-                  {locked ? <Lock className="h-5 w-5 text-[#64748b]" /> : <FileText className="h-5 w-5 text-amber-600" />}
+                  {locked ? <Lock className="h-5 w-5 text-[#64748b]" /> : <FileText className="h-5 w-5 text-amber-700" />}
                 </div>
-                <p className="font-bold text-[#0f172a]">모의고사 {round}회 서술형 {locked && <span className="text-xs font-semibold text-amber-600 ml-1">이용권</span>}</p>
+                <p className="font-bold text-[#0f172a]">모의고사 {round}회 서술형 {locked && <span className="text-xs font-semibold text-amber-700 ml-1">이용권</span>}</p>
               </div>
               <ChevronRight className="h-5 w-5 text-[#64748b] group-hover:translate-x-1 transition-transform" />
             </Link>

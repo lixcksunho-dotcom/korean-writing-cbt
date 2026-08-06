@@ -16,7 +16,7 @@ export type PaymentRow = {
 function Result({ r }: { r: { ok: boolean; message: string } | null }) {
   if (!r) return null
   return (
-    <span className={`ml-2 text-xs font-semibold ${r.ok ? 'text-emerald-600' : 'text-red-500'}`}>
+    <span className={`ml-2 text-xs font-semibold ${r.ok ? 'text-emerald-700' : 'text-red-600'}`}>
       {r.message}
     </span>
   )
@@ -49,7 +49,7 @@ export default function PaymentsAdmin({ rows, listError }: { rows: PaymentRow[];
       {/* 수동 재발급 — paymentId 핀포인트 복구(과거 사고 등) */}
       <section className="rounded-xl border border-gray-200 bg-white p-5">
         <h2 className="mb-1 text-sm font-bold text-gray-900">paymentId로 직접 재발급</h2>
-        <p className="mb-3 text-xs text-gray-500">
+        <p className="mb-3 text-xs text-gray-600">
           포트원 콘솔에서 결제는 PAID인데 구독이 안 나간 건의 결제번호(paymentId)를 입력해 재발급합니다.
         </p>
         <div className="flex flex-wrap items-center gap-2">
@@ -74,15 +74,15 @@ export default function PaymentsAdmin({ rows, listError }: { rows: PaymentRow[];
       <section className="rounded-xl border border-gray-200 bg-white p-5">
         <h2 className="mb-3 text-sm font-bold text-gray-900">최근 결제 (최대 20건)</h2>
         {listError ? (
-          <p className="text-xs text-red-500">
+          <p className="text-xs text-red-600">
             결제 목록을 불러오지 못했습니다: {listError}. 위 수동 재발급은 정상 동작합니다.
           </p>
         ) : rows.length === 0 ? (
-          <p className="text-xs text-gray-500">최근 결제 내역이 없습니다.</p>
+          <p className="text-xs text-gray-600">최근 결제 내역이 없습니다.</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="text-gray-500">
+              <thead className="text-gray-600">
                 <tr className="border-b border-gray-200">
                   <th className="py-2 pr-3">결제일</th>
                   <th className="py-2 pr-3">paymentId</th>
@@ -102,16 +102,16 @@ export default function PaymentsAdmin({ rows, listError }: { rows: PaymentRow[];
                       </td>
                       <td className="py-2 pr-3 font-mono text-xs text-gray-700">{p.id}</td>
                       <td className="py-2 pr-3">
-                        <span className={p.status === 'PAID' ? 'text-emerald-600 font-semibold' : 'text-gray-500'}>{p.status}</span>
+                        <span className={p.status === 'PAID' ? 'text-emerald-700 font-semibold' : 'text-gray-600'}>{p.status}</span>
                       </td>
                       <td className="py-2 pr-3 text-gray-700">{p.amount != null ? `${p.amount.toLocaleString()}원` : '-'}</td>
                       <td className="py-2 pr-3">
                         {p.granted
-                          ? <span className="text-emerald-600 font-semibold">발급됨</span>
-                          : <span className="text-red-500 font-semibold">미발급</span>}
+                          ? <span className="text-emerald-700 font-semibold">발급됨</span>
+                          : <span className="text-red-600 font-semibold">미발급</span>}
                       </td>
                       <td className="py-2 pr-3">
-                        {needGrant ? <RegrantButton paymentId={p.id} onDone={() => location.reload()} /> : <span className="text-gray-300">—</span>}
+                        {needGrant ? <RegrantButton paymentId={p.id} onDone={() => location.reload()} /> : <span className="text-gray-600">—</span>}
                       </td>
                     </tr>
                   )

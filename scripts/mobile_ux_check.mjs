@@ -14,6 +14,7 @@ const PAGES = [
   '/manuscript-guide', '/essay-guide', '/word-counter', '/exam-info',
   '/kbs-korean', '/exam-compare', '/guides', '/proverbs', '/expressions',
   '/refined-words', '/honorifics', '/standard-words', '/loanword-spelling',
+  '/privacy', '/terms', '/refund', '/support',
 ]
 
 const browser = await chromium.launch()

@@ -5,7 +5,7 @@ import { ChevronLeft } from 'lucide-react'
 export default function NewQuestionPage() {
   return (
     <div className="max-w-2xl">
-      <Link href="/admin/questions" className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 mb-5 transition-colors">
+      <Link href="/admin/questions" className="inline-flex items-center gap-1 py-2.5 text-sm text-gray-600 hover:text-gray-700 mb-3 transition-colors">
         <ChevronLeft className="h-4 w-4" />
         문제 목록으로
       </Link>

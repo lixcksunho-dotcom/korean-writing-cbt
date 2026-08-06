@@ -79,7 +79,7 @@ export default function ManuscriptResult({
             {result.corrections.map((c, i) => (
               <div key={i} className="bg-gray-50 rounded-lg p-3 text-sm">
                 <div className="flex flex-wrap gap-x-2 gap-y-1 mb-1">
-                  <span className="text-red-500 line-through font-medium">{c.original}</span>
+                  <span className="text-red-600 line-through font-medium">{c.original}</span>
                   <span className="text-gray-400">→</span>
                   <span className="text-green-600 font-medium">{c.correction}</span>
                 </div>

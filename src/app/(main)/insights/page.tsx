@@ -167,7 +167,7 @@ export default async function InsightsPage() {
                   <div className="flex items-center justify-between mb-1.5">
                     <span className="text-sm font-semibold text-[#334155] flex items-center gap-1.5">
                       {b.label}
-                      {isWeak && <span className="text-xs font-bold text-red-500 bg-red-50 px-1.5 py-0.5 rounded-full">약점</span>}
+                      {isWeak && <span className="text-xs font-bold text-red-600 bg-red-50 px-1.5 py-0.5 rounded-full">약점</span>}
                     </span>
                     <span className="text-xs font-bold text-[#64748b] tabular-nums">{b.correct}/{b.total} · {b.pct}%</span>
                   </div>
@@ -191,7 +191,7 @@ export default async function InsightsPage() {
         <div className="flex items-center gap-2 mb-1 flex-wrap">
           <NotebookPen className="h-5 w-5 text-[#1e3a5f]" />
           <h2 className="text-base font-bold text-[#0f172a]">오답노트</h2>
-          <span className="text-xs font-bold text-red-500 bg-red-50 px-2 py-0.5 rounded-full">{wrong.length}문항</span>
+          <span className="text-xs font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded-full">{wrong.length}문항</span>
           {wrong.length > 0 && (
             <Link href="/practice/wrong" className="ml-auto inline-flex items-center gap-1 text-xs font-bold text-white bg-[#1e3a5f] hover:bg-[#2d5488] px-3 py-1.5 rounded-lg transition-colors">
               오답만 다시 풀기 <ChevronRight className="h-3.5 w-3.5" />
@@ -223,7 +223,7 @@ export default async function InsightsPage() {
                   </summary>
                   <div className="px-4 pb-4 pt-1 text-sm space-y-1.5">
                     <div className="flex gap-2"><span className="text-red-400 font-semibold text-xs shrink-0">내 답</span><span className="text-[#64748b] text-xs">{mineLabel}</span></div>
-                    <div className="flex gap-2"><span className="text-emerald-600 font-semibold text-xs shrink-0">정답</span><span className="text-[#334155] font-medium text-xs">{correctLabel}</span></div>
+                    <div className="flex gap-2"><span className="text-emerald-700 font-semibold text-xs shrink-0">정답</span><span className="text-[#334155] font-medium text-xs">{correctLabel}</span></div>
                     {q.explanation ? (
                       <div className="mt-2 bg-[#f0f7ff] border border-blue-100 rounded-lg px-3 py-2 text-xs text-[#1e4a8f] leading-relaxed">💡 {q.explanation as string}</div>
                     ) : null}

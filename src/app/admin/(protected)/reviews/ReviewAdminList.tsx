@@ -20,7 +20,7 @@ export type AdminReview = {
 
 export default function ReviewAdminList({ reviews }: { reviews: AdminReview[] }) {
   if (reviews.length === 0) {
-    return <p className="text-sm text-gray-500 bg-white border rounded-xl p-8 text-center">등록된 후기가 없습니다.</p>
+    return <p className="text-sm text-gray-600 bg-white border rounded-xl p-8 text-center">등록된 후기가 없습니다.</p>
   }
   return (
     <div className="space-y-3">
@@ -53,9 +53,9 @@ function Row({ r }: { r: AdminReview }) {
             </span>
           </a>
         ) : (
-          <div className="w-24 h-24 rounded-lg border bg-gray-50 flex flex-col items-center justify-center text-gray-300 gap-1">
+          <div className="w-24 h-24 rounded-lg border bg-gray-50 flex flex-col items-center justify-center text-gray-600 gap-1">
             <ImageOff className="h-5 w-5" />
-            <span className="text-xs text-gray-400">사진 없음</span>
+            <span className="text-xs text-gray-600">사진 없음</span>
           </div>
         )}
       </div>
@@ -72,10 +72,10 @@ function Row({ r }: { r: AdminReview }) {
               <BadgeCheck className="h-3 w-3" /> 점수 인증
             </span>
           )}
-          {!r.isVisible && <span className="text-xs font-bold text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded-full">숨김</span>}
+          {!r.isVisible && <span className="text-xs font-bold text-gray-600 bg-gray-100 px-1.5 py-0.5 rounded-full">숨김</span>}
         </div>
         <p className="text-sm text-gray-700 leading-relaxed mb-1.5 whitespace-pre-wrap">{r.content}</p>
-        <div className="flex items-center gap-3 text-xs text-gray-400">
+        <div className="flex items-center gap-3 text-xs text-gray-600">
           {r.examScore != null && <span>점수 <b className="text-gray-600">{r.examScore}점</b></span>}
           {r.examDate && <span>시험일 {r.examDate}</span>}
           <span>{new Date(r.createdAt).toLocaleDateString('ko-KR')}</span>
@@ -108,7 +108,7 @@ function Row({ r }: { r: AdminReview }) {
           >
             <Trash2 className="h-3.5 w-3.5" /> 삭제
           </button>
-          {err && <span className="text-xs text-red-500">{err}</span>}
+          {err && <span className="text-xs text-red-600">{err}</span>}
         </div>
       </div>
     </div>

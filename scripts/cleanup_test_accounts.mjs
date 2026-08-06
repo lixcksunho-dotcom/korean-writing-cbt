@@ -21,7 +21,9 @@ const SVC = ENV.SUPABASE_SERVICE_ROLE_KEY
 const H = { apikey: SVC, Authorization: `Bearer ${SVC}`, 'Content-Type': 'application/json' }
 
 // 검증 스크립트들이 쓰는 주소 패턴. 실제 사용자 주소와 겹칠 수 없는 형태여야 한다.
-const TEST_PATTERN = /^(uicheck|kbscheck)\+\d+@kptest\.cloud$/
+// 숫자 뒤 알파벳 한 글자까지 받는다 — check:ui-authed는 구간마다 계정을 나누려고
+// uicheck+<시각>d / +<시각>m 처럼 꼬리를 붙이는데, 그게 안 잡혀서 회원 목록에 쌓여 있었다.
+const TEST_PATTERN = /^(uicheck|kbscheck|admincheck)\+\d+[a-z]?@kptest\.cloud$/
 const apply = process.argv.includes('--yes')
 
 const users = (await (await fetch(`${SB}/auth/v1/admin/users?per_page=500`, { headers: H })).json()).users ?? []

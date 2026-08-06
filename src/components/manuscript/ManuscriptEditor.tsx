@@ -70,7 +70,7 @@ export default function ManuscriptEditor({
           >
             <span className="text-sm text-[#334155]">
               {remaining > 0
-                ? <>무료 체험 <b className="text-amber-600">{remaining}회</b> 남았어요 · 이용권을 열면 <b>30일 무제한</b></>
+                ? <>무료 체험 <b className="text-amber-700">{remaining}회</b> 남았어요 · 이용권을 열면 <b>30일 무제한</b></>
                 : <>무료 체험을 모두 썼어요 · <b>30일 무제한</b>으로 계속 첨삭받기</>}
             </span>
             <span className="shrink-0 text-sm font-black text-[#1e3a5f] whitespace-nowrap">5,500원 →</span>
@@ -120,7 +120,7 @@ export default function ManuscriptEditor({
           <p className="text-sm font-semibold text-gray-700">원고지 — 50자부터 채점돼요</p>
           <span className={[
             'text-xs font-medium tabular-nums',
-            charCount > 380 ? 'text-red-500' : charCount > 300 ? 'text-amber-500' : 'text-gray-400',
+            charCount > 380 ? 'text-red-600' : charCount > 300 ? 'text-amber-700' : 'text-gray-500',
           ].join(' ')}>
             {charCount} / 400자
           </span>

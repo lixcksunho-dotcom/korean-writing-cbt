@@ -80,7 +80,7 @@ export default function SignupPage() {
               className="mt-5 w-full btn-primary text-white font-bold py-3.5 rounded-xl text-sm">
               인증 후 로그인하기
             </button>
-            <p className="mt-3 text-xs text-[#64748b]">메일 인증이 번거롭다면 <button onClick={() => window.location.assign("/signup")} className="text-emerald-600 font-semibold hover:underline">구글로 다시 시작</button>하면 인증 없이 바로 이용할 수 있어요.</p>
+            <p className="mt-3 text-xs text-[#64748b]">메일 인증이 번거롭다면 <button onClick={() => window.location.assign("/signup")} className="text-emerald-700 font-semibold hover:underline">구글로 다시 시작</button>하면 인증 없이 바로 이용할 수 있어요.</p>
           </div>
         </div>
       </div>
@@ -143,7 +143,7 @@ export default function SignupPage() {
             )}
 
             <GoogleButton />
-            <p className="mt-2 text-center text-xs text-emerald-600 font-medium">✓ 가장 빠른 방법 · 인증 메일 없이 바로 시작</p>
+            <p className="mt-2 text-center text-xs text-emerald-700 font-medium">✓ 가장 빠른 방법 · 인증 메일 없이 바로 시작</p>
 
             <div className="relative my-6">
               <div className="absolute inset-0 flex items-center">

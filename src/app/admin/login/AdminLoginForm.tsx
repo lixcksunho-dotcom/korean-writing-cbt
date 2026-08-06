@@ -34,7 +34,7 @@ export default function AdminLoginForm({ forbidden }: { forbidden: boolean }) {
     window.location.assign('/admin/login')
   }
 
-  const inputCls = 'w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-amber-400 transition-all placeholder:text-gray-500'
+  const inputCls = 'w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-amber-400 transition-all placeholder:text-gray-400'
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 px-6">
@@ -44,7 +44,7 @@ export default function AdminLoginForm({ forbidden }: { forbidden: boolean }) {
             <Shield className="h-7 w-7 text-amber-400" />
           </div>
           <h1 className="text-2xl font-black text-white tracking-tight">관리자 로그인</h1>
-          <p className="text-gray-500 text-sm mt-1">권한이 있는 계정만 접근할 수 있습니다.</p>
+          <p className="text-gray-400 text-sm mt-1">권한이 있는 계정만 접근할 수 있습니다.</p>
         </div>
 
         <div className="bg-gray-900 border border-gray-800 rounded-2xl p-7 shadow-2xl">
@@ -60,7 +60,7 @@ export default function AdminLoginForm({ forbidden }: { forbidden: boolean }) {
                 <input type={showPw ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)}
                   placeholder="비밀번호" required autoComplete="current-password" className={`${inputCls} pr-11`} />
                 <button type="button" onClick={() => setShowPw(v => !v)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300 transition-colors">
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:text-gray-200 transition-colors">
                   {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
@@ -87,7 +87,8 @@ export default function AdminLoginForm({ forbidden }: { forbidden: boolean }) {
           )}
         </div>
 
-        <p className="text-center text-xs text-gray-600 mt-6">실글패스 · 관리자 전용</p>
+        {/* 어두운 배경이라 gray-600은 2.48까지 떨어진다 — 밝은 쪽으로 올린다 */}
+        <p className="text-center text-xs text-gray-400 mt-6">실글패스 · 관리자 전용</p>
       </div>
     </div>
   )

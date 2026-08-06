@@ -46,7 +46,7 @@ export default async function PaymentHistoryPage() {
             const badge = active
               ? { icon: <CheckCircle2 className="h-3.5 w-3.5" />, text: '이용 중', cls: 'bg-emerald-100 text-emerald-700' }
               : cancelled
-                ? { icon: <XCircle className="h-3.5 w-3.5" />, text: '해지됨', cls: 'bg-red-50 text-red-500' }
+                ? { icon: <XCircle className="h-3.5 w-3.5" />, text: '해지됨', cls: 'bg-red-50 text-red-600' }
                 : expired
                   ? { icon: <Clock className="h-3.5 w-3.5" />, text: '만료됨', cls: 'bg-[#f1f5f9] text-[#475569]' }
                   : { icon: <Clock className="h-3.5 w-3.5" />, text: s.status as string, cls: 'bg-[#f1f5f9] text-[#475569]' }

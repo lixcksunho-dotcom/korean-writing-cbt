@@ -37,8 +37,8 @@ export default async function AdminMembersPage() {
     <div>
       <div className="mb-6">
         <h1 className="text-xl font-bold text-gray-900">회원 관리</h1>
-        <p className="text-sm text-gray-500 mt-1">
-          총 {members.length}명 · 유료 <span className="font-semibold text-emerald-600">{members.filter(m => m.paid).length}</span>명
+        <p className="text-sm text-gray-600 mt-1">
+          총 {members.length}명 · 유료 <span className="font-semibold text-emerald-700">{members.filter(m => m.paid).length}</span>명
         </p>
       </div>
       <MembersClient members={members} />

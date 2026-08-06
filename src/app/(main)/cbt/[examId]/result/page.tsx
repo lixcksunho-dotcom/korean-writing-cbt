@@ -233,7 +233,7 @@ export default async function ResultPage({
                       <div className="flex items-center justify-between mb-1.5">
                         <span className="text-sm font-semibold text-[#334155] flex items-center gap-1.5">
                           {b.label}
-                          {isWeak && <span className="text-xs font-bold text-red-500 bg-red-50 px-1.5 py-0.5 rounded-full">약점</span>}
+                          {isWeak && <span className="text-xs font-bold text-red-600 bg-red-50 px-1.5 py-0.5 rounded-full">약점</span>}
                         </span>
                         <span className="text-xs font-bold text-[#64748b] tabular-nums">{b.correct}/{b.total} · {b.pct}%</span>
                       </div>
@@ -267,7 +267,7 @@ export default async function ResultPage({
                 ))}
               </div>
               <div className="absolute inset-0 flex flex-col items-center justify-center text-center gap-2.5">
-                <span className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-amber-100"><Lock className="h-4 w-4 text-amber-600" /></span>
+                <span className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-amber-100"><Lock className="h-4 w-4 text-amber-700" /></span>
                 <p className="text-sm font-bold text-[#334155]">내 약점 영역, 구독하면 바로 확인</p>
                 <Link href="/subscribe" className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-400 text-[#1e3a5f] text-xs font-black hover:bg-amber-300 transition-colors">
                   구독하고 약점 분석 보기 <ChevronRight className="h-3.5 w-3.5" />
@@ -307,7 +307,7 @@ export default async function ResultPage({
         <div id="essay-section" className="mb-8 scroll-mt-20">
           <div className="mb-4">
             <h2 className="text-base font-bold text-[#0f172a] flex items-center gap-2 flex-wrap">
-              <span className="w-6 h-6 rounded-lg bg-amber-100 flex items-center justify-center text-amber-600 text-xs font-black">서</span>
+              <span className="w-6 h-6 rounded-lg bg-amber-100 flex items-center justify-center text-amber-700 text-xs font-black">서</span>
               서술형 ({essayQuestions.length}문항)
               <span className="text-xs font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">
                 {subscription ? 'AI 분석' : aiTrial.remaining > 0 ? `무료 체험 ${aiTrial.remaining}회 · AI 분석` : '구독 전용 · AI 분석'}
@@ -409,7 +409,7 @@ export default async function ResultPage({
                       {isCorrect ? <CheckCircle2 className="h-4 w-4 text-emerald-500" /> : <XCircle className="h-4 w-4 text-red-400" />}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <span className={`text-xs font-bold px-2 py-0.5 rounded-full mr-2 ${isCorrect ? 'bg-emerald-100 text-emerald-700' : 'bg-red-50 text-red-500'}`}>
+                      <span className={`text-xs font-bold px-2 py-0.5 rounded-full mr-2 ${isCorrect ? 'bg-emerald-100 text-emerald-700' : 'bg-red-50 text-red-600'}`}>
                         {q.number}번 {isCorrect ? '정답' : '오답'}
                       </span>
                       <span className="text-xs text-[#64748b]">{q.points}점</span>
@@ -423,7 +423,7 @@ export default async function ResultPage({
                         <span className="text-[#64748b] text-xs">{userLabel}</span>
                       </div>
                       <div className="flex gap-2 items-start">
-                        <span className="text-emerald-600 font-semibold shrink-0 text-xs">정 답</span>
+                        <span className="text-emerald-700 font-semibold shrink-0 text-xs">정 답</span>
                         <span className="text-[#334155] font-medium text-xs">{correctLabel}</span>
                       </div>
                     </div>
