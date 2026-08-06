@@ -12,7 +12,7 @@
 //            알 수 없는 배경이 여기서 드러난다.
 //            (가장자리에 섞여 든 색에 흔들리지 않도록 최솟값이 아니라 중앙값을 쓴다)
 import { chromium } from 'playwright'
-import { lum, ratio, contrastBar, browserCollectText, cheapContrast, dismissIntros } from './ui_audit_rules.mjs'
+import { lum, ratio, contrastBar, browserCollectText, cheapContrast, dismissIntros , browserAuditGraphics, graphicsProblemLines } from './ui_audit_rules.mjs'
 
 const BASE = process.env.CONTRAST_BASE ?? 'https://kptest.cloud'
 const PAGES = [
@@ -30,7 +30,8 @@ const page = await browser.newPage({ viewport: { width: 1280, height: 900 } })
 await page.addInitScript(dismissIntros)
 const decoder = await browser.newPage()
 const fails = []
-let checked = 0, verified = 0, cleared = 0
+const graphicFails = []
+let checked = 0, verified = 0, cleared = 0, graphicsChecked = 0
 
 // 요소 자리의 배경 픽셀 중앙값 — 글자를 지우고 찍는다.
 async function bgMedian(el) {
@@ -68,6 +69,9 @@ for (const path of PAGES) {
   await page.addStyleTag({ content: '*,*::before,*::after{animation:none!important;transition:none!important}' })
   await page.waitForTimeout(600)
   const items = await page.evaluate(browserCollectText)
+  const gitems = await page.evaluate(browserAuditGraphics).catch(() => [])
+  graphicsChecked += gitems.length
+  graphicFails.push(...graphicsProblemLines(path, gitems))
   const seen = new Set()
 
   for (const it of items) {
@@ -108,3 +112,9 @@ if (fails.length === 0) {
   for (const f of fails) console.log('  ' + f.line)
   process.exitCode = 1
 }
+
+// 글자가 아닌 것(아이콘만 있는 단추·입력칸 안내글)은 위 수집에 구조적으로 안 잡힌다.
+// 몇 개를 봤는지 같이 적는다 — 0건이 '문제 없음'인지 '안 봤음'인지 구분되게.
+console.log(`\n아이콘·안내글 — ${graphicsChecked}개 중 기준 미달 ${graphicFails.length}건`)
+for (const l of graphicFails) console.log('  ' + l)
+if (graphicFails.length) process.exitCode = 1

@@ -108,6 +108,111 @@ export function browserCollectText() {
   return res
 }
 
+/**
+ * 글자가 아닌 것의 명암비 — 아이콘만 있는 단추와 입력칸 안내글(placeholder).
+ * 둘 다 browserCollectText가 구조적으로 못 본다: 아이콘은 텍스트 노드가 없고,
+ * placeholder는 DOM에 글자로 존재하지 않는다. 실제로 원고지 기록의 뒤로 가기
+ * 화살표가 2.60이었는데 어느 검사에도 안 걸렸다.
+ *
+ * 기준은 WCAG 1.4.11(사용자 인터페이스 구성요소·그래픽 3:1). 안내글은 글자라
+ * 4.5를 쓴다. 배경은 조상에서 찾은 값만 쓴다 — 입력칸과 아이콘 단추는 배경이
+ * 자기 자신이거나 바로 위 카드라 픽셀 확증 없이도 어긋나지 않는다.
+ */
+export function browserAuditGraphics() {
+  const cv = document.createElement('canvas')
+  cv.width = cv.height = 1
+  const cx = cv.getContext('2d', { willReadFrequently: true })
+  const cache = new Map()
+  const toRgba = (css) => {
+    if (cache.has(css)) return cache.get(css)
+    let out = null
+    cx.clearRect(0, 0, 1, 1)
+    cx.fillStyle = '#000'
+    cx.fillStyle = css
+    cx.fillRect(0, 0, 1, 1)
+    try { const d = cx.getImageData(0, 0, 1, 1).data; out = [d[0], d[1], d[2], d[3] / 255] } catch { /* 막힌 환경 */ }
+    cache.set(css, out)
+    return out
+  }
+  const COLOR_TOKEN = /(?:rgba?|hsla?|oklch|oklab|lab|lch|color)\([^()]*\)|#[0-9a-fA-F]{3,8}\b/g
+  const bgOf = (start) => {
+    for (let p = start; p && p !== document.documentElement; p = p.parentElement) {
+      const s = getComputedStyle(p)
+      if (s.backgroundImage.includes('gradient')) {
+        const stops = (s.backgroundImage.match(COLOR_TOKEN) ?? []).map(toRgba).filter((c) => c && c[3] > 0.9)
+        if (stops.length) return { stops: stops.map((c) => c.slice(0, 3)), raw: s.backgroundImage }
+      }
+      const solid = toRgba(s.backgroundColor)
+      if (solid && solid[3] > 0.9) return { stops: [solid.slice(0, 3)], raw: s.backgroundColor }
+    }
+    return { stops: [[255, 255, 255]], raw: 'rgb(255,255,255)' }
+  }
+  const visible = (el) => {
+    const cs = getComputedStyle(el)
+    if (cs.display === 'none' || cs.visibility === 'hidden' || cs.opacity === '0') return false
+    const r = el.getBoundingClientRect()
+    return r.width >= 8 && r.height >= 8
+  }
+
+  const out = []
+  // 1) 아이콘만 있는 단추·링크. 글자가 같이 있으면 아이콘은 장식이라 대상이 아니다.
+  for (const el of document.querySelectorAll('a[href], button, [role="button"]')) {
+    if (!visible(el)) continue
+    if ((el.textContent ?? '').trim()) continue
+    // 사진을 감싼 링크는 아이콘 단추가 아니다 — 보이는 내용은 사진 쪽이다.
+    if (el.querySelector('img')) continue
+    const svg = el.querySelector('svg')
+    if (!svg || el.closest('[aria-hidden="true"]')) continue
+    // 겹쳐 둔 덮개 안의 아이콘은 평소 opacity:0으로 숨어 있다(마우스를 올려야 뜬다).
+    // 숨은 상태로 재면 뒤 배경과 비교하게 돼 '흰 바탕에 흰 아이콘 1.00' 같은 게 나온다.
+    let hidden = false
+    for (let p = svg; p && p !== el.parentElement; p = p.parentElement) {
+      if (parseFloat(getComputedStyle(p).opacity) === 0) { hidden = true; break }
+    }
+    if (hidden) continue
+    const cs = getComputedStyle(svg)
+    // lucide 아이콘은 stroke="currentColor"라 color가 실제 칠하는 색이다
+    const src = cs.stroke && cs.stroke !== 'none' ? cs.stroke : cs.fill && cs.fill !== 'none' ? cs.fill : cs.color
+    const fg = toRgba(src)
+    if (!fg || fg[3] < 0.5) continue
+    out.push({
+      kind: '아이콘',
+      name: (el.getAttribute('aria-label') || el.getAttribute('title') || '이름 없음').slice(0, 24),
+      rgb: fg.slice(0, 3), bg: bgOf(el), bar: 3,
+    })
+  }
+  // 2) 입력칸 안내글
+  for (const el of document.querySelectorAll('input[placeholder], textarea[placeholder]')) {
+    if (!visible(el)) continue
+    const ph = getComputedStyle(el, '::placeholder')
+    const fg = toRgba(ph.color || getComputedStyle(el).color)
+    if (!fg || fg[3] < 0.5) continue
+    out.push({
+      kind: '안내글',
+      name: (el.getAttribute('placeholder') || '').slice(0, 24),
+      rgb: fg.slice(0, 3), bg: bgOf(el), bar: parseFloat(ph.fontSize || '14') >= 24 ? 3 : 4.5,
+    })
+  }
+  return out
+}
+
+/** browserAuditGraphics 결과를 사람이 읽는 줄로 바꾼다. 기준 미달만 남긴다. */
+export function graphicsProblemLines(path, items) {
+  const lines = []
+  const seen = new Set()
+  for (const it of items) {
+    const fl = lum(it.rgb)
+    let worst = Infinity
+    for (const s of it.bg.stops) worst = Math.min(worst, ratio(fl, lum(s)))
+    if (worst >= it.bar) continue
+    const key = it.kind + it.name + it.rgb.join()
+    if (seen.has(key)) continue
+    seen.add(key)
+    lines.push(`${path}  ${it.kind} ${worst.toFixed(2)} (필요 ${it.bar})  "${it.name}"  색 rgb(${it.rgb.join(',')}) / 배경 ${it.bg.raw}`)
+  }
+  return lines
+}
+
 /** 조상 배경만으로 판정한 값(싸게 거르는 1단). 실제 배경은 픽셀로 확증해야 한다. */
 export function cheapContrast(item) {
   const fl = lum(item.rgb)

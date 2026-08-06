@@ -11,6 +11,7 @@ import { chromium, devices } from 'playwright'
 import {
   lum, ratio, contrastBar, browserCollectText, cheapContrast,
   browserAuditMobile, mobileProblemLines, dismissIntros,
+  browserAuditGraphics, graphicsProblemLines,
 } from './ui_audit_rules.mjs'
 
 const ENV = Object.fromEntries(
@@ -52,6 +53,8 @@ async function makeAccount(tag) {
 }
 
 const contrastFails = []
+const graphicFails = []
+let graphicsChecked = 0
 const mobileProblems = []
 let textChecked = 0
 
@@ -127,6 +130,9 @@ try {
       if (!res || res.status() >= 400) continue
       await settle(page)
       await page.addStyleTag({ content: '*,*::before,*::after{animation:none!important;transition:none!important}' }).catch(() => {})
+      const gitems = await page.evaluate(browserAuditGraphics).catch(() => [])
+      graphicsChecked += gitems.length
+      graphicFails.push(...graphicsProblemLines(`${mode} ${route}`, gitems))
       const items = await page.evaluate(browserCollectText).catch(() => null)
       if (!items) continue
       const seen = new Set()
@@ -195,12 +201,17 @@ const softMobile = mobileProblems.filter((p) => !p.hard)
 
 console.log(`\n로그인 뒤 화면 점검 — ${ROUTES.length}면 × 2모드`)
 console.log(`명암비: 텍스트 ${textChecked}개 중 기준 미달 ${contrastFails.length}건`)
+console.log(`아이콘·안내글: ${graphicsChecked}개 중 기준 미달 ${graphicFails.length}건`)
 console.log(`휴대폰: 기준 미달 ${hardMobile.length}건 · 권장 미달 ${softMobile.length}건`)
 
 if (contrastFails.length) {
   console.log('\n[명암비 기준 미달]')
   contrastFails.sort((a, b) => a.real - b.real)
   for (const f of contrastFails) console.log('  ' + f.line)
+}
+if (graphicFails.length) {
+  console.log('\n[아이콘·안내글 기준 미달]')
+  for (const l of graphicFails) console.log('  ' + l)
 }
 if (hardMobile.length) {
   console.log('\n[휴대폰 기준 미달]')
@@ -210,4 +221,4 @@ if (softMobile.length) {
   console.log(`\n[휴대폰 권장 미달 — 44px] ${softMobile.length}건 중 앞 20건`)
   for (const p of softMobile.slice(0, 20)) console.log('  ' + p.line)
 }
-if (contrastFails.length || hardMobile.length) process.exitCode = 1
+if (contrastFails.length || graphicFails.length || hardMobile.length) process.exitCode = 1
