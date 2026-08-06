@@ -13,6 +13,33 @@ function startOfTodayKST(): Date {
   return new Date(kst.getTime() - 9 * 3600 * 1000)
 }
 
+/**
+ * 검사 스크립트가 남긴 방문자를 골라낸다. 사람은 90초 안에 서로 다른 화면 8개를
+ * 훑지 않는다 — 검사는 그렇게 훑는다.
+ *
+ * 2026-08-04부터 트래커가 navigator.webdriver를 보고 아예 안 남기지만, 그 전 기록은
+ * 여기서 걸러야 한다. 안 거르면 30일 창이 지날 때까지 순방문자가 봇으로 부풀어 있다
+ * (실제로 150명·3471뷰가 내 검사였다). npm run funnel과 같은 기준을 쓴다.
+ */
+function automatedVisitors(rows: Row[]): Set<string> {
+  const byVisitor = new Map<string, { t: number; path: string }[]>()
+  for (const r of rows) {
+    const vid = r.visitor_id ?? '?'
+    if (!byVisitor.has(vid)) byVisitor.set(vid, [])
+    byVisitor.get(vid)!.push({ t: new Date(r.created_at).getTime(), path: r.path })
+  }
+  const bots = new Set<string>()
+  for (const [vid, items] of byVisitor) {
+    items.sort((a, b) => a.t - b.t)
+    for (let i = 0; i < items.length; i++) {
+      const paths = new Set<string>()
+      for (let j = i; j < items.length && items[j].t - items[i].t <= 90_000; j++) paths.add(items[j].path)
+      if (paths.size >= 8) { bots.add(vid); break }
+    }
+  }
+  return bots
+}
+
 function refererLabel(ref: string | null): string {
   if (!ref) return '직접 유입 / 앱'
   try {
@@ -68,7 +95,9 @@ export default async function AdminTrafficPage() {
     )
   }
 
-  const allRows = (data ?? []) as Row[]
+  const rawRows = (data ?? []) as Row[]
+  const bots = automatedVisitors(rawRows.filter(r => !r.path.startsWith('#event/')))
+  const allRows = rawRows.filter(r => !bots.has(r.visitor_id ?? '?'))
   // 퍼널 이벤트(#event/*)는 방문통계 집계에서 분리 — 페이지뷰/인기페이지 오염 방지
   const rows = allRows.filter(r => !r.path.startsWith('#event/'))
   const eventRows = allRows.filter(r => r.path.startsWith('#event/'))
@@ -149,7 +178,8 @@ export default async function AdminTrafficPage() {
         <h1 className="text-xl font-black text-gray-900">방문 통계</h1>
       </div>
       <p className="mb-6 text-sm text-gray-600">
-        실제 브라우저 방문 기준(관리자·봇성 요청 제외). 숫자는 순방문자, 작은 글씨는 페이지뷰입니다. (KST 기준)
+        실제 브라우저 방문 기준. 숫자는 순방문자, 작은 글씨는 페이지뷰입니다. (KST 기준)
+        {bots.size > 0 && <> · 90초 안에 화면 8개 이상을 훑은 <b>{bots.size}명</b>은 검사 스크립트로 보고 뺐습니다.</>}
       </p>
 
       {/* 요약 카드 */}
