@@ -143,6 +143,18 @@ try {
   })
 
   // ── 제출 ─────────────────────────────────────────────────────────────────
+  // 실패하면 화면에는 "회선이 끊겼는지…"라는 일반 문구만 뜬다(비한국어 오류의 대체 문구).
+  // 그것만 봐서는 서버가 500을 냈는지 정말 회선인지 알 수 없어서, 실제 응답을 받아 둔다.
+  const submitFailures = []
+  page.on('response', (r) => {
+    if (r.status() < 400) return
+    if (!r.url().includes('/cbt/')) return
+    submitFailures.push(`${r.status()} ${r.request().method()} ${new URL(r.url()).pathname}`)
+  })
+  page.on('requestfailed', (r) => {
+    if (r.url().includes('/cbt/')) submitFailures.push(`끊김 ${r.method()} ${new URL(r.url()).pathname} — ${r.failure()?.errorText ?? ''}`)
+  })
+
   await page.locator('button').filter({ hasText: /^제출하기$/ }).first().click().catch(() => {})
   await page.waitForTimeout(1200)
   await page.locator('button').filter({ hasText: /^제출하기$/ }).last().click().catch(() => {})
@@ -152,7 +164,8 @@ try {
   }
   if (!/\/result/.test(page.url())) {
     const t = await page.evaluate(() => document.body.innerText.slice(0, 200).replace(/\s+/g, ' ')).catch(() => '')
-    bad('제출', `결과 화면으로 못 넘어감 — ${t}`)
+    const why = submitFailures.length ? ` [서버 응답: ${[...new Set(submitFailures)].join(' / ')}]` : ' [실패한 요청 없음 — 화면 쪽 문제]'
+    bad('제출', `결과 화면으로 못 넘어감${why} — ${t}`)
     throw new Error('제출 실패')
   }
   ok('제출', '결과 화면으로 넘어감')
