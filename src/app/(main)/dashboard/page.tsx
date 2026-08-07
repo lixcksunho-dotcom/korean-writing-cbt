@@ -26,7 +26,9 @@ export default async function DashboardPage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const displayName = user.user_metadata?.name || user.email?.split("@")[0] || "회원";
+  // 후기 닉네임은 DB에서 20자로 제한된다(reviews CHECK). 메일 앞부분이 그보다 길면
+  // 후기 등록이 통째로 실패하는데 화면엔 "제출 중 오류"만 뜬다 — 여기서 잘라서 넘긴다.
+  const displayName = (user.user_metadata?.name || user.email?.split("@")[0] || "회원").slice(0, 20);
 
   // 활성 시험 모드(실글/KBS) — 이 대시보드의 통계·예상점수는 모두 이 모드 기준.
   const program = await getActiveProgram();

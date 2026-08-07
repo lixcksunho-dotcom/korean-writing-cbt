@@ -72,8 +72,11 @@ export default function ReviewWriteModal({ defaultName }: { defaultName: string 
           proofPath: path,
         })
         setDone(true)
-      } catch {
-        setError('제출 중 오류가 발생했습니다.')
+      } catch (e) {
+        // 서버가 왜 거절했는지 안 보여 주면(예전엔 '제출 중 오류'만 떴다) 사용자는
+        // 뭘 고쳐야 할지 알 수 없고, 나도 재현할 때까지 원인을 모른다.
+        const raw = e instanceof Error ? e.message : ''
+        setError(/[가-힣]/.test(raw) ? raw : `제출 중 오류가 발생했습니다.${raw ? ` (${raw.slice(0, 80)})` : ''}`)
       }
     })
   }

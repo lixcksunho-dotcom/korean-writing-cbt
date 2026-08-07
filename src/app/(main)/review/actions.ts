@@ -24,7 +24,7 @@ export async function submitReview(data: {
 
   const { error } = await supabase.from('reviews').insert({
     user_id: user.id,
-    display_name: data.displayName.trim(),
+    display_name: data.displayName.trim().slice(0, 20) || '회원',
     content: data.content.trim(),
     rating: data.rating,
     exam_date: data.examDate || null,
