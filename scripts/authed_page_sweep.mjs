@@ -92,9 +92,23 @@ try {
         continue
       }
       await page.waitForTimeout(1200)
+      // 페이월·모드 때문에 클라이언트에서 한 번 더 넘기는 화면이 있다. 이동 중에 재면
+      // "Execution context was destroyed"로 검사가 통째로 죽는다 — 실제로 13번째
+      // 화면에서 그렇게 끝났다. 주소가 멎을 때까지 기다리고, 그래도 죽으면 한 번 더 본다.
+      let last = page.url()
+      for (let i = 0; i < 8; i++) {
+        await page.waitForTimeout(300)
+        if (page.url() === last) break
+        last = page.url()
+      }
       const ms = Date.now() - t0
       if (ms > slowest.ms) slowest = { route: `${mode} ${route}`, ms }
-      const text = await page.evaluate(() => document.body.innerText)
+      let text = await page.evaluate(() => document.body.innerText).catch(() => null)
+      if (text === null) {
+        await page.waitForTimeout(1500)
+        text = await page.evaluate(() => document.body.innerText).catch(() => null)
+      }
+      if (text === null) { problems.push(`${mode} ${route} — 화면을 읽지 못함(이동 중)`); continue }
       visited++
       if (status !== 200) problems.push(`${mode} ${route} → HTTP ${status}`)
       if (/Application error|Internal Server Error|문제가 발생/.test(text)) problems.push(`${mode} ${route} → 오류 화면`)
@@ -107,17 +121,40 @@ try {
 
   // ── 페이월: 무료 계정이 URL로 유료 콘텐츠에 닿으면 안 된다.
   // 뚫려도 화면은 멀쩡해 보이고, 그대로 매출이 샌다.
-  await ctx.addCookies([{ name: 'kptest_mode', value: 'silyong', domain: new URL(BASE).hostname, path: '/' }])
-  for (const paid of ['/cbt/2025-5', '/cbt/2025-9', '/practice/multiple?set=2025-5', '/practice/essay?set=2025-5']) {
-    await page.goto(`${BASE}${paid}`, { waitUntil: 'networkidle', timeout: 40000 }).catch(() => {})
-    await page.waitForTimeout(800)
-    const landed = new URL(page.url()).pathname
-    const choices = await page.locator('label, button').filter({ hasText: /^\s*[①②③④⑤]/ }).count()
-    visited++
-    if (landed !== '/subscribe' || choices > 0) {
-      problems.push(`페이월 뚫림: ${paid} → ${landed} (선택지 ${choices}개)`)
+  //
+  // 두 모드를 다 본다. 잠기는 회차가 서로 달라서(실글 무료 2회차, KBS 무료 1회차)
+  // 한쪽만 보면 다른 쪽 구멍이 그대로 남는다.
+  const PAID_BY_MODE = {
+    silyong: ['/cbt/2025-5', '/cbt/2025-9', '/practice/multiple?set=2025-5', '/practice/essay?set=2025-5'],
+    kbs: ['/cbt/kbs-2025-2', '/cbt/kbs-2025-3', '/practice/multiple?set=2025-2'],
+  }
+  for (const [mode, paidRoutes] of Object.entries(PAID_BY_MODE)) {
+    await ctx.addCookies([{ name: 'kptest_mode', value: mode, domain: new URL(BASE).hostname, path: '/' }])
+    for (const paid of paidRoutes) {
+      await page.goto(`${BASE}${paid}`, { waitUntil: 'networkidle', timeout: 40000 }).catch(() => {})
+      await page.waitForTimeout(800)
+      const landed = new URL(page.url()).pathname
+      const choices = await page.locator('label, button').filter({ hasText: /^\s*[①②③④⑤]/ }).count()
+      visited++
+      if (landed !== '/subscribe' || choices > 0) {
+        problems.push(`페이월 뚫림: ${mode} ${paid} → ${landed} (선택지 ${choices}개)`)
+      }
     }
   }
+  // 반대쪽도 본다. 무료 회차까지 /subscribe로 가 버리면 위 검사는 전부 통과하는데
+  // 정작 아무도 못 푸는 상태가 된다 — 통과가 통과인지 확인하는 대조군이다.
+  // 시험 화면은 자동저장이 계속 돌아 networkidle이 안 온다 — 여기선 주소만 보면 된다.
+  const FREE_BY_MODE = { silyong: '/cbt/2025-1', kbs: '/cbt/kbs-2025-1' }
+  for (const [mode, free] of Object.entries(FREE_BY_MODE)) {
+    await ctx.addCookies([{ name: 'kptest_mode', value: mode, domain: new URL(BASE).hostname, path: '/' }])
+    await page.goto(`${BASE}${free}`, { waitUntil: 'domcontentloaded', timeout: 40000 }).catch(() => {})
+    await page.waitForTimeout(1500)
+    const landed = new URL(page.url()).pathname
+    visited++
+    if (landed === '/subscribe') problems.push(`무료 회차가 막혔다: ${mode} ${free} → ${landed}`)
+  }
+
+  await ctx.addCookies([{ name: 'kptest_mode', value: 'silyong', domain: new URL(BASE).hostname, path: '/' }])
   // '전체 모아 풀기'는 접근은 되지만 무료 회차 분량만 실려야 한다(무료 2회차 = 60문항).
   await page.goto(`${BASE}/practice/multiple?set=all`, { waitUntil: 'networkidle', timeout: 40000 }).catch(() => {})
   await page.waitForTimeout(800)
