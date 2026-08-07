@@ -87,6 +87,22 @@ rm -rf src/app/boundarytest && npm run build
 2026-08-07 결과: 상태 500 · 한글 안내 · 빠져나갈 링크 3개(홈·학습자료·블로그) · 오류코드 표시.
 폴더 이름을 `_boundarytest`로 하면 Next가 비공개 폴더로 보고 라우팅하지 않는다(404가 나온다).
 
+## 서버 액션이 실패했을 때
+
+운영 빌드는 이유를 가린다 — 화면에도 로그에도 `An error occurred in the Server Components
+render. The specific message is omitted in production builds`만 남는다. 진짜 이유는
+**로컬 운영빌드를 띄워 서버 로그**를 봐야 나온다.
+
+```bash
+npm run build && node node_modules/next/dist/bin/next start -p 3123 > srv.log 2>&1 &
+# 재현한 뒤
+grep -i error srv.log
+```
+
+이 방법으로 `permission denied for table reviews`를 찾았다. **RLS 정책과 테이블 권한은
+다른 층이다** — `reviews`에는 본인 삭제 정책이 있지만(003) `authenticated`에 DELETE 권한이
+없어서, 정책만 보고 코드를 쓰면 런타임에 막힌다. 정책 파일만 읽고 판단하지 말 것.
+
 ## 데이터베이스
 
 마이그레이션은 `supabase/migrations/`에 있고, **Supabase 대시보드 SQL Editor에서 사람이 실행**한다
