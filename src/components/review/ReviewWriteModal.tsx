@@ -15,6 +15,7 @@ export default function ReviewWriteModal({ defaultName }: { defaultName: string 
   const [content, setContent] = useState('')
   const [examDate, setExamDate] = useState('')
   const [examScore, setExamScore] = useState('')
+  const [withProof, setWithProof] = useState(false)
   const [file, setFile] = useState<File | null>(null)
   const [preview, setPreview] = useState<string>('')
   const [done, setDone] = useState(false)
@@ -34,10 +35,16 @@ export default function ReviewWriteModal({ defaultName }: { defaultName: string 
     e.preventDefault()
     setError('')
     if (content.trim().length < 10) { setError('후기를 10자 이상 작성해주세요.'); return }
-    if (!examDate) { setError('시험 날짜를 입력해주세요.'); return }
-    const score = Number(examScore)
-    if (!examScore || isNaN(score) || score < 0 || score > 1000) { setError('시험 점수를 0~1000 사이로 입력해주세요.'); return }
-    if (!file) { setError('점수 인증용 사진을 첨부해주세요.'); return }
+    // 점수 인증은 환급이 걸린 길이라 셋(날짜·점수·사진)을 모두 받는다. 일부만 받으면
+    // 확인할 수 없는 점수가 남는다. 인증을 안 켰으면 여기서 요구하지 않는다.
+    let score: number | null = null
+    if (withProof) {
+      if (!examDate) { setError('시험 날짜를 입력해주세요.'); return }
+      const n = Number(examScore)
+      if (!examScore || isNaN(n) || n < 0 || n > 1000) { setError('시험 점수를 0~1000 사이로 입력해주세요.'); return }
+      if (!file) { setError('점수 인증용 사진을 첨부해주세요.'); return }
+      score = n
+    }
 
     startTransition(async () => {
       try {
@@ -45,20 +52,23 @@ export default function ReviewWriteModal({ defaultName }: { defaultName: string 
         const { data: { user } } = await supabase.auth.getUser()
         if (!user) { setError('로그인이 필요합니다.'); return }
 
-        // 인증 사진을 비공개 버킷의 본인 폴더에 업로드
-        const ext = (file.name.split('.').pop() || 'jpg').toLowerCase()
-        const path = `${user.id}/${crypto.randomUUID()}.${ext}`
-        const { error: upErr } = await supabase.storage
-          .from('review-proofs')
-          .upload(path, file, { upsert: false, contentType: file.type })
-        if (upErr) { setError('사진 업로드에 실패했어요. 잠시 후 다시 시도해주세요.'); return }
+        // 인증 사진은 비공개 버킷의 본인 폴더에. 인증을 안 켰으면 올릴 것도 없다.
+        let path: string | null = null
+        if (withProof && file) {
+          const ext = (file.name.split('.').pop() || 'jpg').toLowerCase()
+          path = `${user.id}/${crypto.randomUUID()}.${ext}`
+          const { error: upErr } = await supabase.storage
+            .from('review-proofs')
+            .upload(path, file, { upsert: false, contentType: file.type })
+          if (upErr) { setError('사진 업로드에 실패했어요. 잠시 후 다시 시도해주세요.'); return }
+        }
 
         await submitReview({
           displayName,
           content,
           rating,
-          examDate,
-          examScore: score,
+          examDate: withProof ? examDate : null,
+          examScore: withProof ? score : null,
           proofPath: path,
         })
         setDone(true)
@@ -72,7 +82,7 @@ export default function ReviewWriteModal({ defaultName }: { defaultName: string 
     setOpen(false)
     setTimeout(() => {
       setDone(false); setContent(''); setError('')
-      setExamDate(''); setExamScore(''); setFile(null); setPreview('')
+      setExamDate(''); setExamScore(''); setFile(null); setPreview(''); setWithProof(false)
     }, 300)
   }
 
@@ -97,7 +107,12 @@ export default function ReviewWriteModal({ defaultName }: { defaultName: string 
                   <CheckCircle2 className="h-8 w-8 text-emerald-500" />
                 </div>
                 <h3 className="text-lg font-black text-[#0f172a] mb-2">후기가 등록됐어요!</h3>
-                <p className="text-sm text-[#64748b] mb-6">소중한 후기 감사합니다. 인증 확인 후 환급이 진행됩니다.</p>
+                {/* 환급은 점수 인증까지 한 후기에만 걸린 약속이다 — 아닌 사람에게 말하면 안 된다 */}
+                <p className="text-sm text-[#64748b] mb-6">
+                  {withProof
+                    ? '소중한 후기 감사합니다. 인증 확인 후 환급이 진행됩니다.'
+                    : '소중한 후기 감사합니다. 다른 수험생에게 큰 도움이 돼요.'}
+                </p>
                 <button
                   onClick={handleClose}
                   className="w-full btn-primary text-white font-bold py-3 rounded-xl text-sm"
@@ -109,8 +124,8 @@ export default function ReviewWriteModal({ defaultName }: { defaultName: string 
               <>
                 <div className="flex items-center justify-between mb-5">
                   <div>
-                    <h3 className="text-lg font-black text-[#0f172a]">합격 후기 남기기</h3>
-                    <p className="text-xs text-[#64748b] mt-0.5">합격 후기를 남기고 5,000원 환급 받으세요</p>
+                    <h3 className="text-lg font-black text-[#0f172a]">후기 남기기</h3>
+                    <p className="text-xs text-[#64748b] mt-0.5">공부하며 느낀 점을 남겨 주세요 · 1분이면 돼요</p>
                   </div>
                   <button onClick={handleClose} className="p-1.5 rounded-lg hover:bg-[#f1f5f9] transition-colors text-[#64748b]">
                     <X className="h-5 w-5" />
@@ -144,7 +159,8 @@ export default function ReviewWriteModal({ defaultName }: { defaultName: string 
                     </div>
                   </div>
 
-                  {/* 시험 날짜 · 점수 */}
+                  {/* 시험 날짜 · 점수 — 인증을 켰을 때만 */}
+                  {withProof && (
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className="flex items-center gap-1 text-xs font-semibold text-[#334155] mb-1.5">
@@ -175,6 +191,7 @@ export default function ReviewWriteModal({ defaultName }: { defaultName: string 
                       />
                     </div>
                   </div>
+                  )}
 
                   {/* 닉네임 */}
                   <div>
@@ -195,7 +212,7 @@ export default function ReviewWriteModal({ defaultName }: { defaultName: string 
                     <textarea
                       value={content}
                       onChange={e => setContent(e.target.value.slice(0, 150))}
-                      placeholder="합격까지의 경험과 도움이 된 점을 자유롭게 남겨주세요"
+                      placeholder="어떤 점이 도움이 됐는지 자유롭게 남겨주세요"
                       className="w-full bg-[#f8fafc] border-2 border-[#e2e8f0] rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#1e3a5f] transition-colors resize-none h-24"
                       required
                     />
@@ -207,7 +224,22 @@ export default function ReviewWriteModal({ defaultName }: { defaultName: string 
                     </div>
                   </div>
 
-                  {/* 점수 인증 사진 */}
+                  {/* 점수 인증 — 시험을 이미 본 사람만 해당한다. 예전에는 이 셋(날짜·점수·사진)이
+                      전부 필수라, 아직 시험을 안 본 대다수는 후기를 남길 길이 아예 없었다. */}
+                  <label className="flex items-start gap-2.5 bg-amber-50/60 border border-amber-200 rounded-xl px-3.5 py-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={withProof}
+                      onChange={e => setWithProof(e.target.checked)}
+                      className="mt-0.5 h-4 w-4 accent-[#1e3a5f] shrink-0"
+                    />
+                    <span className="text-xs text-[#334155] leading-relaxed">
+                      <b className="text-[#0f172a]">시험을 보고 점수를 인증할래요</b><br />
+                      성적을 확인해 드리고 <b>5,000원 환급</b>해 드려요. 후기에 <b>점수 인증</b> 배지가 붙습니다.
+                    </span>
+                  </label>
+
+                  {withProof && (
                   <div>
                     <label className="block text-xs font-semibold text-[#334155] mb-1.5">점수 인증 사진</label>
                     <label className="flex items-center gap-3 w-full bg-[#f8fafc] border-2 border-dashed border-[#cbd5e1] rounded-xl px-4 py-3 text-sm cursor-pointer hover:border-[#1e3a5f] transition-colors">
@@ -231,6 +263,7 @@ export default function ReviewWriteModal({ defaultName }: { defaultName: string 
                     </label>
                     <p className="text-xs text-[#64748b] mt-1">인증 사진은 공개되지 않으며, 점수 확인·환급 용도로만 사용됩니다.</p>
                   </div>
+                  )}
 
                   {error && (
                     <div className="bg-red-50 border border-red-100 rounded-xl px-4 py-2.5 text-xs text-red-700">
@@ -243,7 +276,7 @@ export default function ReviewWriteModal({ defaultName }: { defaultName: string 
                     disabled={isPending}
                     className="w-full btn-gold font-bold py-3.5 rounded-xl text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {isPending ? '등록 중...' : '합격 후기 등록하기'}
+                    {isPending ? '등록 중...' : withProof ? '합격 후기 등록하기' : '후기 등록하기'}
                   </button>
                 </form>
               </>
