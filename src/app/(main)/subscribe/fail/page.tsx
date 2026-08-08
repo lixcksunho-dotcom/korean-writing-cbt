@@ -52,7 +52,7 @@ export default async function FailPage({
   const icon =
     view.kind === 'pending' ? <Clock className="h-10 w-10 text-amber-500" />
     : view.kind === 'support' ? <AlertTriangle className="h-10 w-10 text-amber-500" />
-    : <XCircle className="h-10 w-10 text-red-400" />
+    : <XCircle className="h-10 w-10 text-red-600" />
   const iconBg = view.kind === 'retry' ? 'bg-red-50' : 'bg-amber-50'
 
   return (

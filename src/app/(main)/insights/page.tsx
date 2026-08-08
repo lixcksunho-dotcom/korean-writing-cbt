@@ -104,7 +104,7 @@ export default async function InsightsPage() {
     .sort((x, y) => ((x.q.round as number) - (y.q.round as number)) || ((x.q.number as number) - (y.q.number as number)))
 
   const trendIcon = delta > 2 ? <TrendingUp className="h-4 w-4 text-emerald-500" />
-    : delta < -2 ? <TrendingDown className="h-4 w-4 text-red-400" />
+    : delta < -2 ? <TrendingDown className="h-4 w-4 text-red-600" />
     : <Minus className="h-4 w-4 text-[#64748b]" />
 
   return (
@@ -214,7 +214,7 @@ export default async function InsightsPage() {
               return (
                 <details key={q.id as string} className="group bg-[#f8fafc] border border-[#e2e8f0] rounded-xl overflow-hidden">
                   <summary className="cursor-pointer list-none px-4 py-3 flex items-start gap-2.5 hover:bg-[#f1f5f9] transition-colors">
-                    <XCircle className="h-4 w-4 text-red-400 shrink-0 mt-0.5" />
+                    <XCircle className="h-4 w-4 text-red-600 shrink-0 mt-0.5" />
                     <div className="flex-1 min-w-0">
                       <span className="text-xs font-bold text-[#64748b]">모의고사 {q.round}회 {q.number}번</span>
                       <p className="text-sm text-[#334155] font-medium leading-snug line-clamp-2">{q.question as string}</p>
@@ -222,7 +222,7 @@ export default async function InsightsPage() {
                     <ChevronRight className="h-4 w-4 text-[#64748b] group-open:rotate-90 transition-transform shrink-0 mt-0.5" />
                   </summary>
                   <div className="px-4 pb-4 pt-1 text-sm space-y-1.5">
-                    <div className="flex gap-2"><span className="text-red-400 font-semibold text-xs shrink-0">내 답</span><span className="text-[#64748b] text-xs">{mineLabel}</span></div>
+                    <div className="flex gap-2"><span className="text-red-600 font-semibold text-xs shrink-0">내 답</span><span className="text-[#64748b] text-xs">{mineLabel}</span></div>
                     <div className="flex gap-2"><span className="text-emerald-700 font-semibold text-xs shrink-0">정답</span><span className="text-[#334155] font-medium text-xs">{correctLabel}</span></div>
                     {q.explanation ? (
                       <div className="mt-2 bg-[#f0f7ff] border border-blue-100 rounded-lg px-3 py-2 text-xs text-[#1e4a8f] leading-relaxed">💡 {q.explanation as string}</div>

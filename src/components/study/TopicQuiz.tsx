@@ -349,7 +349,7 @@ export default function TopicQuiz({ topic, ctaHref = '/signup?from=quiz' }: { to
                     >
                       <span>{opt}</span>
                       {done && isAnswer && <Check className="h-4 w-4 shrink-0 text-emerald-700" />}
-                      {done && isChosen && !isAnswer && <X className="h-4 w-4 shrink-0 text-red-400" />}
+                      {done && isChosen && !isAnswer && <X className="h-4 w-4 shrink-0 text-red-600" />}
                     </button>
                   )
                 })}

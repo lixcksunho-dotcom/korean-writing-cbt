@@ -127,7 +127,7 @@ export default function PracticeMultiple({
                 <span className="font-bold">{CIRCLE[i]}</span>
                 <span className="flex-1"><MarkedText text={option} /></span>
                 {revealed && isAnswer && <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />}
-                {revealed && isPicked && !isAnswer && <XCircle className="h-4 w-4 text-red-400 shrink-0" />}
+                {revealed && isPicked && !isAnswer && <XCircle className="h-4 w-4 text-red-600 shrink-0" />}
               </button>
             )
           })}

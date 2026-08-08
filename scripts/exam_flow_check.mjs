@@ -226,6 +226,38 @@ try {
     else ok('결과 화면 명암비', '기준 미달 0건')
   }
 
+  // 오답이 있어야만 그려지는 화면들. 갓 만든 계정으로 도는 check:ui-authed는
+  // 여기가 늘 비어 있어서 '오답' 색을 한 번도 못 봤다 — 실제로 /insights의
+  // '내 답'이 명암비 2.89로 남아 있었다. 방금 푼 세션이 있는 지금이 볼 기회다.
+  for (const route of ['/insights', '/practice/wrong']) {
+    const res = await page.goto(`${BASE}${route}`, { waitUntil: 'load', timeout: 40000 }).catch(() => null)
+    if (!res || res.status() >= 400) { bad(`${route} 명암비`, `열지 못함(${res?.status() ?? '이동 실패'})`); continue }
+    await page.waitForTimeout(1200)
+    await page.addStyleTag({ content: '*,*::before,*::after{animation:none!important;transition:none!important}' }).catch(() => {})
+    const items = await page.evaluate(browserCollectText).catch(() => [])
+    const seen = new Set()
+    const fails = []
+    for (const it of items) {
+      const key = it.text + it.color + it.bg.raw
+      if (seen.has(key)) continue
+      seen.add(key)
+      const cheap = cheapContrast(it)
+      if (!cheap) continue
+      const barValue = contrastBar(it.fs, it.bold)
+      if (cheap.worst >= barValue) continue
+      const el = page.locator(`[data-cc="${it.id}"]`)
+      await el.scrollIntoViewIfNeeded({ timeout: 3000 }).catch(() => {})
+      await page.waitForTimeout(100)
+      const px = await bgMedian(page, el)
+      if (!px) continue
+      const real = ratio(cheap.fl, lum(px))
+      if (real >= barValue) continue
+      fails.push(`${real.toFixed(2)} (필요 ${barValue}) ${it.fs}px "${it.text}" 글자 ${it.color} / 배경 rgb(${px.join(",")})`)
+    }
+    if (fails.length) for (const f of fails.slice(0, 5)) bad(`${route} 명암비`, f)
+    else ok(`${route} 명암비`, `글자 ${items.length}개 · 기준 미달 0건`)
+  }
+
   if (!view.essayPending) bad('등급 판정', '서술형 채점 전인데 "채점 전" 안내가 없다')
   else if (view.verdict) bad('등급 판정', '채점 전인데도 등급(미달/합격권)을 말한다')
   else ok('등급 판정', '채점 전에는 등급을 말하지 않는다')

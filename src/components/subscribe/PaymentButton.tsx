@@ -117,7 +117,7 @@ export default function PaymentButton({
     <div className="space-y-3">
       {/* 휴대폰 번호 (KG이니시스 결제 필수) */}
       <div>
-        <label className="block text-xs font-semibold text-[#475569] mb-1.5">휴대폰 번호 <span className="text-red-400">*</span></label>
+        <label className="block text-xs font-semibold text-[#475569] mb-1.5">휴대폰 번호 <span className="text-red-600">*</span></label>
         <input
           type="tel"
           inputMode="numeric"

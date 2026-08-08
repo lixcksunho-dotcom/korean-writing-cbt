@@ -406,7 +406,7 @@ export default async function ResultPage({
                 <div key={q.id} className={`bg-white rounded-2xl border-2 p-5 ${isCorrect ? 'border-emerald-200' : 'border-red-100'}`}>
                   <div className="flex items-start gap-3 mb-3">
                     <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${isCorrect ? 'bg-emerald-100' : 'bg-red-50'}`}>
-                      {isCorrect ? <CheckCircle2 className="h-4 w-4 text-emerald-500" /> : <XCircle className="h-4 w-4 text-red-400" />}
+                      {isCorrect ? <CheckCircle2 className="h-4 w-4 text-emerald-500" /> : <XCircle className="h-4 w-4 text-red-600" />}
                     </div>
                     <div className="flex-1 min-w-0">
                       <span className={`text-xs font-bold px-2 py-0.5 rounded-full mr-2 ${isCorrect ? 'bg-emerald-100 text-emerald-700' : 'bg-red-50 text-red-700'}`}>
