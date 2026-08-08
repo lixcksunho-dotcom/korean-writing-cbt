@@ -62,7 +62,7 @@ export default async function PaymentHistoryPage() {
                     {new Date(s.started_at as string).toLocaleDateString('ko-KR')} ~ {new Date(s.expires_at as string).toLocaleDateString('ko-KR')}
                   </span>
                 </div>
-                <p className="text-xs text-[#cbd5e1] mt-2 truncate">주문번호 {s.order_id as string}</p>
+                <p className="text-xs text-[#64748b] mt-2 truncate">주문번호 {s.order_id as string}</p>
               </div>
             )
           })}

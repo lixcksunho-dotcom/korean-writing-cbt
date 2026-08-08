@@ -195,9 +195,9 @@ export default async function SubscribePage() {
           {/* 약관·정책 링크 (심사·고지) */}
           <div className="mt-3 flex items-center justify-center gap-3 text-xs text-[#64748b]">
             <Link href="/terms" className="inline-block py-3.5 underline hover:text-[#1e3a5f]">이용약관</Link>
-            <span className="text-[#cbd5e1]">·</span>
+            <span aria-hidden className="text-[#cbd5e1]">·</span>
             <Link href="/refund" className="inline-block py-3.5 underline hover:text-[#1e3a5f]">취소·환불 정책</Link>
-            <span className="text-[#cbd5e1]">·</span>
+            <span aria-hidden className="text-[#cbd5e1]">·</span>
             <Link href="/privacy" className="inline-block py-3.5 underline hover:text-[#1e3a5f]">개인정보처리방침</Link>
           </div>
 

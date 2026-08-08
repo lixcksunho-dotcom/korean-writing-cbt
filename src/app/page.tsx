@@ -289,7 +289,7 @@ export default async function HomePage() {
                 <h3 className="font-bold text-[#0f172a] text-lg mb-1.5">{title}</h3>
                 <p className="text-[#64748b] text-sm leading-relaxed">{desc}</p>
                 {i < steps.length - 1 && (
-                  <ArrowRight className="hidden sm:block absolute top-1/2 -right-3.5 h-5 w-5 text-[#cbd5e1] -translate-y-1/2" />
+                  <ArrowRight aria-hidden className="hidden sm:block absolute top-1/2 -right-3.5 h-5 w-5 text-[#cbd5e1] -translate-y-1/2" />
                 )}
               </div>
             ))}

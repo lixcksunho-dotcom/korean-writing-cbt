@@ -106,7 +106,7 @@ export default function RefineQuiz({ items }: { items: RefineItem[] }) {
         </button>
         <div className="flex items-center gap-3 text-sm">
           <span className="text-[#64748b]">{idx + 1} / {quiz.length}</span>
-          <span className="font-semibold text-emerald-700">정답 {right}<span className="text-[#cbd5e1]">/{solved}</span></span>
+          <span className="font-semibold text-emerald-700">정답 {right}<span className="text-[#64748b]">/{solved}</span></span>
         </div>
       </div>
 
