@@ -13,8 +13,11 @@
 """
 import re
 import sys
+import urllib.request
 from collections import defaultdict
 from pathlib import Path
+
+sys.stdout.reconfigure(encoding="utf-8")
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
@@ -34,7 +37,7 @@ def label(q: dict) -> str:
 
 def main() -> None:
     rows = get(
-        "questions?select=id,program,year,round,number,type,question,options,correct_answer,explanation,passage"
+        "questions?select=id,program,year,round,number,type,question,options,correct_answer,explanation,passage,audio_url"
         "&order=program,year,round,number"
     )
     issues: dict[str, list[str]] = defaultdict(list)
@@ -85,6 +88,29 @@ def main() -> None:
             issues["문항 중복"].append(f"{label(q)} ↔ {seen_question[key]}")
         else:
             seen_question[key] = label(q)
+
+    # 듣기 문항은 음성 파일이 열려야 풀 수 있다. 파일이 사라지면 화면은 멀쩡한데
+    # 그 문항만 답을 고를 수 없게 된다 — 어떤 화면 검사로도 안 잡힌다.
+    audio = {}
+    for q in rows:
+        url = q.get("audio_url")
+        if url:
+            audio.setdefault(url, []).append(label(q))
+    if audio:
+        import urllib.error
+        broken = 0
+        for url, uses in audio.items():
+            try:
+                req = urllib.request.Request(url, method="HEAD")
+                code = urllib.request.urlopen(req, timeout=20).status
+            except urllib.error.HTTPError as e:
+                code = e.code
+            except Exception as e:  # 연결 자체가 안 되는 경우
+                code = f"연결 실패({type(e).__name__})"
+            if code != 200:
+                broken += 1
+                issues["듣기 음성이 열리지 않음"].append(f"{uses[0]} 외 {len(uses) - 1}문항 — {code} {url[:80]}")
+        print(f"듣기 음성 {len(audio)}개 확인 — 열리지 않음 {broken}개")
 
     out = HERE / "_question_audit.txt"
     lines = [f"검사 문항 {len(rows)}개\n"]

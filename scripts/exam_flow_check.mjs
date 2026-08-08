@@ -34,6 +34,13 @@ const mk = await admin('/auth/v1/admin/users', { method: 'POST', body: JSON.stri
 if (!mk.ok) { console.error('검증용 계정을 만들지 못했습니다:', await mk.text()); process.exit(1) }
 const uid = (await mk.json()).id
 
+// 실글·KBS를 계정 하나로 잇달아 로그인하면 기기 등록 제한에 걸린다 — 따로 만든다.
+const kbsEmail = `uicheck+${stamp}k@kptest.cloud`
+const kbsPassword = `Chk-${stamp}k-aA1!`
+const kmk = await admin('/auth/v1/admin/users', { method: 'POST', body: JSON.stringify({ email: kbsEmail, password: kbsPassword, email_confirm: true }) })
+if (!kmk.ok) { console.error('KBS 검증용 계정을 만들지 못했습니다:', await kmk.text()); process.exit(1) }
+const kbsUid = (await kmk.json()).id
+
 const results = []
 const ok = (n, d) => results.push({ ok: true, n, d })
 const bad = (n, d) => results.push({ ok: false, n, d })
@@ -279,14 +286,101 @@ try {
     else if (row.score === null || row.total === null) bad('세션 기록', `완료는 됐지만 점수가 비어 있다(score ${row.score}, total ${row.total})`)
     else ok('세션 기록', `완료 기록 + ${row.score}/${row.total}점`)
   }
+  // ── KBS 모드도 한 회차 푼다 ──────────────────────────────────────────────
+  // 같은 시험 화면을 쓰지만 생김새가 전혀 다르다: 100문항 전부 객관식이고 15문항은
+  // 듣기(음성)다. 실글만 돌면 이쪽이 깨져도 아무도 모른다.
+  {
+    const kctx = await browser.newContext({ ...devices['iPhone 13'] })
+    await kctx.addInitScript(dismissIntros)
+    await kctx.addCookies([{ name: 'kptest_mode', value: 'kbs', domain: new URL(BASE).hostname, path: '/' }])
+    const kpage = await kctx.newPage()
+    let klogged = false
+    for (let a = 0; a < 3 && !klogged; a++) {
+      await kpage.goto(`${BASE}/login`, { waitUntil: 'domcontentloaded' })
+      await kpage.fill('input[type="email"]', kbsEmail)
+      await kpage.fill('input[type="password"]', kbsPassword)
+      await kpage.click('button[type="submit"]')
+      for (let i = 0; i < 30; i++) {
+        if (!new URL(kpage.url()).pathname.includes('/login')) { klogged = true; break }
+        await kpage.waitForTimeout(1000)
+      }
+      if (!klogged) await kpage.waitForTimeout(4000)
+    }
+    if (!klogged) bad('KBS 로그인', '들어가지 못함')
+    else {
+      await kpage.goto(`${BASE}/cbt/kbs-2025-1`, { waitUntil: 'domcontentloaded' })
+      await kpage.waitForTimeout(4000)
+      const ktotal = await kpage.evaluate(() => Number(/\d+\s*\/\s*(\d+)\s*완료/.exec(document.body.innerText)?.[1] ?? 0))
+      if (ktotal !== 100) bad('KBS 시험 시작', `100문항이어야 하는데 ${ktotal}문항으로 열렸다`)
+      else ok('KBS 시험 시작', '100문항 · /cbt/kbs-2025-1')
+
+      // 듣기 문항의 음성이 실제로 재생 가능한 상태인지. 파일이 사라지면 그 문항만
+      // 답을 고를 수 없게 되는데 화면은 멀쩡해 보인다.
+      const audio = await kpage.evaluate(async () => {
+        const el = document.querySelector('audio')
+        if (!el) return { has: false }
+        const src = el.currentSrc || el.src || el.querySelector('source')?.src || ''
+        if (!src) return { has: true, src: '', status: '주소 없음' }
+        try {
+          const r = await fetch(src, { method: 'HEAD' })
+          return { has: true, src, status: r.status }
+        } catch { return { has: true, src, status: '연결 실패' } }
+      })
+      if (!audio.has) bad('KBS 듣기 음성', '1번 문항에 audio 요소가 없다')
+      else if (audio.status !== 200) bad('KBS 듣기 음성', `${audio.status} — ${String(audio.src).slice(0, 90)}`)
+      else ok('KBS 듣기 음성', '1번 문항 음성이 열린다')
+
+      let kguard = 0
+      while (kguard++ < ktotal + 20) {
+        const done = await kpage.evaluate(() => Number(/(\d+)\s*\/\s*\d+\s*완료/.exec(document.body.innerText)?.[1] ?? 0))
+        if (done >= ktotal) break
+        const opt = kpage.locator('button').filter({ hasText: /^[①②③④⑤]/ }).first()
+        if (await opt.count()) await opt.click().catch(() => {})
+        await kpage.waitForTimeout(120)
+        const next = kpage.locator('button').filter({ hasText: /^다음$/ }).first()
+        if (await next.count()) await next.click().catch(() => {})
+        await kpage.waitForTimeout(120)
+      }
+      const kdone = await kpage.evaluate(() => Number(/(\d+)\s*\/\s*\d+\s*완료/.exec(document.body.innerText)?.[1] ?? 0))
+      if (kdone >= ktotal) ok('KBS 문항 풀이', `${kdone}/${ktotal} 완료`)
+      else bad('KBS 문항 풀이', `${kdone}/${ktotal}만 채워짐`)
+
+      await kpage.locator('button').filter({ hasText: /^제출하기$/ }).first().click().catch(() => {})
+      await kpage.waitForTimeout(1200)
+      await kpage.locator('button').filter({ hasText: /^제출하기$/ }).last().click().catch(() => {})
+      for (let i = 0; i < 30 && !/\/result/.test(kpage.url()); i++) await kpage.waitForTimeout(1000)
+      if (!/\/result/.test(kpage.url())) {
+        const t = await kpage.evaluate(() => document.body.innerText.slice(0, 160).replace(/\s+/g, ' ')).catch(() => '')
+        bad('KBS 제출', `결과 화면으로 못 넘어감 — ${t}`)
+      } else {
+        ok('KBS 제출', '결과 화면으로 넘어감')
+        await kpage.waitForTimeout(2500)
+        const kscore = await kpage.evaluate(() => /(\d+)\s*점/.exec(document.body.innerText)?.[1] ?? null)
+        if (kscore) ok('KBS 결과 점수', `${kscore}점 표시`)
+        else bad('KBS 결과 점수', '점수를 찾지 못함')
+        const ksess = await (await admin(`/rest/v1/quiz_sessions?user_id=eq.${kbsUid}&select=id,completed_at,score,total`)).json().catch(() => [])
+        const krow = Array.isArray(ksess) && ksess.length ? ksess[0] : null
+        if (!krow?.completed_at) bad('KBS 세션 기록', '완료로 기록되지 않았다')
+        else {
+          const krows = await (await admin(`/rest/v1/quiz_answers?session_id=eq.${krow.id}&select=question_id`)).json().catch(() => [])
+          const kn = Array.isArray(krows) ? krows.length : 0
+          if (kn >= ktotal) ok('KBS 답안 저장', `quiz_answers ${kn}행 (문항 ${ktotal}개)`)
+          else bad('KBS 답안 저장', `quiz_answers ${kn}행뿐 — 문항 ${ktotal}개`)
+        }
+      }
+    }
+    await kctx.close()
+  }
 } catch (e) {
   bad('검사 진행', String(e).slice(0, 140))
 } finally {
   await browser.close()
-  for (const t of ['quiz_answers', 'quiz_sessions', 'device_usage', 'manuscript_submissions']) {
-    await admin(`/rest/v1/${t}?user_id=eq.${uid}`, { method: 'DELETE' }).catch(() => {})
+  for (const who of [uid, kbsUid]) {
+    for (const t of ['quiz_answers', 'quiz_sessions', 'device_usage', 'manuscript_submissions']) {
+      await admin(`/rest/v1/${t}?user_id=eq.${who}`, { method: 'DELETE' }).catch(() => {})
+    }
+    await admin(`/auth/v1/admin/users/${who}`, { method: 'DELETE' }).catch(() => {})
   }
-  await admin(`/auth/v1/admin/users/${uid}`, { method: 'DELETE' }).catch(() => {})
 }
 
 console.log('\n시험 한 회차 끝까지 풀기\n')
