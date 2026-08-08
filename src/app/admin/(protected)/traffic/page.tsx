@@ -40,6 +40,9 @@ function automatedVisitors(rows: Row[]): Set<string> {
   return bots
 }
 
+// 결제창에서 사용자가 스스로 닫은 경우 — 고칠 게 없는 정상 이탈이다.
+const PAY_CANCELLED = new Set(['PAY_CANCELLED', 'USER_CANCEL', 'CANCEL', 'PAY_PROCESS_CANCELED'])
+
 function refererLabel(ref: string | null): string {
   if (!ref) return '직접 유입 / 앱'
   try {
@@ -149,7 +152,15 @@ export default async function AdminTrafficPage() {
   const evSubView = evUv('subscribe_view')
   const evPayStart = evUv('payment_started')
   const evPaySuccess = evCount('purchase_success')
-  const evPayFail = evCount('payment_fail')
+  // 사유는 trackEvent의 meta로 실려 page_views.referrer에 저장된다.
+  const payFailRows = eventRows.filter(r => r.path === '#event/payment_fail')
+  const payFailByReason = [...payFailRows.reduce((m, r) => {
+    const key = r.referrer || '사유없음'
+    if (!m.has(key)) m.set(key, [])
+    m.get(key)!.push(r.created_at.slice(0, 10))
+    return m
+  }, new Map<string, string[]>())].map(([k, v]) => [k, v.sort()] as const).sort((a, b) => b[1].length - a[1].length)
+  const payFailCancelled = payFailRows.filter(r => PAY_CANCELLED.has(r.referrer || '')).length
   const hasEvents = eventRows.length > 0
   const payFunnel = [
     { label: '구독페이지 진입', value: evSubView, sub: '이용권 페이지 순방문자' },
@@ -225,10 +236,33 @@ export default async function AdminTrafficPage() {
                 </div>
               ))}
             </div>
-            {evPayFail > 0 && (
-              <p className="mt-3 rounded-lg bg-red-50 px-4 py-2.5 text-xs text-red-700">
-                ⚠️ 결제 실패 {evPayFail.toLocaleString()}건 — 결제창까지 갔다가 실패한 사용자예요. 실패가 잦으면 결제수단·PG 설정을 점검하세요.
-              </p>
+            {/* 사유를 나눠서 본다. 사용자가 결제창을 스스로 닫은 것과 정말 깨진 것을
+                한 숫자로 묶으면 없는 불을 끄러 가게 된다. */}
+            {payFailRows.length > 0 && (
+              <div className="mt-3 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3">
+                <p className="text-xs font-bold text-gray-900">
+                  결제 실패 {payFailRows.length}건 — 사용자 취소 {payFailCancelled}건 · 확인 필요 {payFailRows.length - payFailCancelled}건
+                </p>
+                <ul className="mt-2 space-y-1">
+                  {payFailByReason.map(([reason, items]) => (
+                    <li key={reason} className="flex items-center justify-between gap-3 text-xs">
+                      <span className="font-mono text-gray-700">{reason}</span>
+                      <span className="text-gray-600">
+                        {items.length}건 · {items[0]}
+                        {items.length > 1 && items[0] !== items[items.length - 1] && `~${items[items.length - 1]}`}
+                        <span className={`ml-2 font-bold ${PAY_CANCELLED.has(reason) ? 'text-gray-600' : 'text-red-700'}`}>
+                          {PAY_CANCELLED.has(reason) ? '사용자 취소' : '확인 필요'}
+                        </span>
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+                {payFailRows.length - payFailCancelled > 0 && (
+                  <p className="mt-2 text-xs text-red-700">
+                    ‘확인 필요’가 여러 날에 걸쳐 있으면 결제수단·PG 설정을 점검하세요. 하루에 몰려 있으면 대개 실패 화면을 눌러 본 흔적이에요.
+                  </p>
+                )}
+              </div>
             )}
           </>
         )}

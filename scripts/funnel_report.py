@@ -121,7 +121,7 @@ def main():
     print(f"  체험 없이 결제      {len(paid - trial)}명 / {len(paid)}명")
 
     # 이벤트 쪽(사람 수 기준). 결제창 앞단에서 막힌 시도는 payment_blocked로 남는다.
-    rows = page_all("page_views?select=path,visitor_id,created_at&order=created_at.asc")
+    rows = page_all("page_views?select=path,visitor_id,created_at,referrer&order=created_at.asc")
     bots = automated_visitors(rows)
     if bots:
         rows = [r for r in rows if r["visitor_id"] not in bots]
@@ -143,6 +143,34 @@ def main():
     for name in sorted(set(uniq) - {"signup", "exam_completed", "ai_trial_used", "subscribe_view",
                                     "payment_blocked", "payment_started", "purchase_success", "payment_fail"}):
         print(f"  {name:<18}{uniq[name]:>4}")
+
+    # 결제 실패는 사유를 나눠서 봐야 한다. 사용자가 결제창에서 스스로 닫은 것(PAY_CANCELLED)과
+    # 정말 깨진 것을 한 숫자로 묶으면 "실패율 33%"처럼 읽혀서 없는 불을 끄러 가게 된다.
+    # 사유는 trackEvent의 meta에 실려 page_views.referrer로 저장된다.
+    CANCELLED = {"PAY_CANCELLED", "USER_CANCEL", "CANCEL", "PAY_PROCESS_CANCELED"}
+    fails = [r for r in events if r["path"] == "#event/payment_fail"]
+    if fails:
+        by_reason = Counter((r.get("referrer") or "사유없음") for r in fails)
+        cancelled = sum(n for k, n in by_reason.items() if k in CANCELLED)
+        print(f"\n결제 실패 {len(fails)}건 — 사용자 취소 {cancelled} · 그 외 {len(fails) - cancelled}")
+        print("─" * 52)
+        # 날짜를 같이 찍는다. 한 날 한 분에 여러 사유가 몰려 있으면 그건 대개
+        # 실패 화면을 눌러 본 것이지 실제 사고가 아니다 — 날짜 없이는 구분이 안 된다.
+        when = defaultdict(list)
+        for r in fails:
+            when[r.get("referrer") or "사유없음"].append(r["created_at"][:10])
+        for reason, n in by_reason.most_common():
+            days = sorted(set(when[reason]))
+            span = days[0] if len(days) == 1 else f"{days[0]}~{days[-1]}"
+            mark = "사용자 취소" if reason in CANCELLED else "확인 필요"
+            print(f"  {reason:<22}{n:>3}   {mark}   {span}")
+
+    blocked = [r for r in events if r["path"] == "#event/payment_blocked"]
+    if blocked:
+        print("\n결제 전 막힘 — 화면이 요구한 것을 안 채워서 결제창까지 못 간 경우")
+        print("─" * 52)
+        for reason, n in Counter((r.get("referrer") or "사유없음") for r in blocked).most_common():
+            print(f"  {reason:<22}{n:>3}")
 
     if events:
         print(f"\n  기간: {events[0]['created_at'][:10]} ~ {events[-1]['created_at'][:10]}")
