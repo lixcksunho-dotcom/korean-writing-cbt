@@ -38,6 +38,43 @@ try {
   console.log('가입 후 URL:', page.url())
   console.log('화면:', (await page.evaluate(() => document.body.innerText.slice(0, 180).replace(/\s+/g, ' '))))
 
+  // ── 구글로 시작하기 ──────────────────────────────────────────────────────
+  // 이메일 폼만 확인하면, 소셜 로그인이 꺼져 있거나 리디렉션 주소가 어긋나도 모른다.
+  // 구글 로그인 화면이 뜨고 거기에 우리 Supabase 프로젝트 이름이 찍히면, 구글이 이
+  // 앱을 알고 있다는 뜻이다 — 설정이 어긋나면 거기서 오류 화면이 나온다.
+  //
+  // 여기까지만 한다. 자격증명은 어디에도 넣지 않는다.
+  const SB_HOST = new URL(ENV.NEXT_PUBLIC_SUPABASE_URL).hostname
+  for (const path of ['/login', '/signup']) {
+    const octx = await browser.newContext()
+    const op = await octx.newPage()
+    await op.goto(`${BASE}${path}`, { waitUntil: 'load' })
+    await op.locator('button', { hasText: /Google/ }).first().click().catch(() => {})
+    let landed = ''
+    for (let i = 0; i < 30; i++) {
+      landed = op.url()
+      if (/accounts\.google\.com/.test(landed)) break
+      await op.waitForTimeout(500)
+    }
+    // 주소가 바뀌자마자 읽으면 본문이 아직 비어 있다 — 글이 찍힐 때까지 기다린다.
+    let shown = ''
+    for (let i = 0; i < 20; i++) {
+      shown = await op.evaluate(() => document.body.innerText.replace(/\s+/g, ' ').slice(0, 160)).catch(() => '')
+      if (shown.length > 20) break
+      await op.waitForTimeout(500)
+    }
+    if (!/accounts\.google\.com/.test(landed)) {
+      console.log(`× ${path} 구글로 시작하기 — 구글로 넘어가지 않았다: ${shown}`)
+      process.exitCode = 1
+    } else if (!shown.includes(SB_HOST)) {
+      console.log(`× ${path} 구글로 시작하기 — 구글까지 갔지만 우리 앱을 못 알아본다: ${shown}`)
+      process.exitCode = 1
+    } else {
+      console.log(`○ ${path} 구글로 시작하기 — 구글 로그인 화면까지 정상 도달`)
+    }
+    await octx.close()
+  }
+
   const list = await (await admin('/auth/v1/admin/users?page=1&per_page=200')).json()
   const u = (list.users ?? []).find((x) => x.email === email)
   uid = u?.id ?? null
