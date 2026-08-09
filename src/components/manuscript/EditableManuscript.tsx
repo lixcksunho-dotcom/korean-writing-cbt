@@ -170,8 +170,10 @@ const EditableManuscript = forwardRef<EditableManuscriptHandle, {
           </div>
         )}
 
-        {/* 입력(투명) — 글자·커서는 위에서 직접 그리므로 여기선 보이지 않게 */}
+        {/* 입력(투명) — 글자·커서는 위에서 직접 그리므로 여기선 보이지 않게.
+            보이지 않는다고 이름까지 없으면 낭독기에는 '편집란'으로만 들린다. */}
         <textarea
+          aria-label="원고지 답안"
           ref={taRef}
           value={value}
           onChange={(e) => { onChange(e.target.value); syncSel() }}

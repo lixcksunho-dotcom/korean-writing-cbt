@@ -284,6 +284,7 @@ export default function PracticeEssay({
           <EditableManuscript ref={essayEmRef} value={answer} onChange={setEssayAnswer} cols={COLS} rows={mRows} cell={28} maxHeightVh={55} />
         ) : (
           <textarea
+            aria-label="서술형 답안"
             ref={essayTaRef}
             value={answer}
             onChange={e => setEssayAnswer(e.target.value)}
