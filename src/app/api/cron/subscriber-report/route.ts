@@ -23,9 +23,13 @@ export async function GET(req: Request) {
 
   // 미리보기: 텔레그램으로 보내지 않고 결과만 돌려준다. 매일 아침을 기다리지 않고
   // 숫자와 그림을 확인할 수 있어야 고칠 수 있다(npm run report:subs).
-  const preview = new URL(req.url).searchParams.get('preview')
+  const url = new URL(req.url)
+  const preview = url.searchParams.get('preview')
 
-  const now = Date.now()
+  // 미리보기일 때만 '지금'을 지정할 수 있다. 주 경계·KST 날짜 계산은 오늘 날짜에 따라
+  // 답이 달라져서, 고정된 시각 없이는 맞는지 확인할 방법이 없다(check:report).
+  const at = preview ? Number(url.searchParams.get('now')) : NaN
+  const now = Number.isFinite(at) && at > 0 ? at : Date.now()
   const r = await buildSubscriberReport(now)
   const asOf = kstDay(now)
 
