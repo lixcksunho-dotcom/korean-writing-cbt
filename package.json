@@ -23,6 +23,7 @@
     "check:keyboard": "node scripts/keyboard_desktop_check.mjs",
     "check:recovery": "node scripts/error_recovery_check.mjs",
     "check:exam-flow": "node scripts/exam_flow_check.mjs",
+    "check:manuscript": "node scripts/manuscript_check.mjs",
     "check:sub-gate": "node scripts/subscription_gate_check.mjs",
     "check:report": "node scripts/report_check.mjs",
     "check:admin": "node scripts/admin_ui_check.mjs",

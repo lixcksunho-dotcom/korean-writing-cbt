@@ -132,8 +132,12 @@ try {
       await settle(page)
       await page.addStyleTag({ content: '*,*::before,*::after{animation:none!important;transition:none!important}' }).catch(() => {})
       // 갓 만든 계정으로 도니 여기가 곧 '빈 화면'이다. 빈 화면이 막다른 길이 아닌지 본다.
-      const way = await page.evaluate(browserCountWayForward).catch(() => null)
-      if (way && way.n === 0) deadEnds.push(`${mode} ${route}  본문에 누를 것이 없다 (글자 ${way.textLen}자)`)
+      // 다른 곳으로 넘긴 경우(모드 전용 화면 등)는 건너뛴다 — 도착한 화면은 자기 차례에
+      // 따로 검사받고, 넘어가는 중에 재면 본문이 0자라 무조건 막다른 길로 잡힌다.
+      if (new URL(page.url()).pathname === route.split('?')[0]) {
+        const way = await page.evaluate(browserCountWayForward).catch(() => null)
+        if (way && way.n === 0) deadEnds.push(`${mode} ${route}  본문에 누를 것이 없다 (글자 ${way.textLen}자)`)
+      }
 
       const gitems = await page.evaluate(browserAuditGraphics).catch(() => [])
       graphicsChecked += gitems.length
