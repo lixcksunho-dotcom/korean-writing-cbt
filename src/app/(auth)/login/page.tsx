@@ -43,7 +43,7 @@ export default function LoginPage() {
   const inputCls = "w-full bg-[#f8fafc] border-2 border-[#e2e8f0] rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#1e3a5f] focus:bg-white transition-all placeholder:text-[#64748b]";
 
   return (
-    <div className="min-h-screen flex">
+    <main className="min-h-screen flex">
       {/* 왼쪽 패널 (데스크탑) */}
       <div className="hidden lg:flex lg:w-5/12 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-[#080f1e] via-[#0f1f3d] to-[#1e3a5f]" />
@@ -103,17 +103,21 @@ export default function LoginPage() {
 
             <form onSubmit={handleLogin} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-[#334155] mb-1.5">이메일</label>
+                {/* 눈에 보이는 이름표는 있었지만 입력칸과 묶여 있지 않았다 — 낭독기에는
+                    그냥 '편집란'으로만 들린다. 가입·로그인은 모든 것의 입구다. */}
+                <label htmlFor="login-email" className="block text-xs font-semibold text-[#334155] mb-1.5">이메일</label>
                 <input
+                  id="login-email"
                   type="email" value={email} onChange={e => setEmail(e.target.value)}
                   placeholder="example@email.com" required autoComplete="email"
                   className={inputCls}
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-[#334155] mb-1.5">비밀번호</label>
+                <label htmlFor="login-password" className="block text-xs font-semibold text-[#334155] mb-1.5">비밀번호</label>
                 <div className="relative">
                   <input
+                    id="login-password"
                     type={showPw ? "text" : "password"} value={password} onChange={e => setPassword(e.target.value)}
                     placeholder="비밀번호를 입력하세요" required autoComplete="current-password"
                     className={`${inputCls} pr-14`}
@@ -149,6 +153,6 @@ export default function LoginPage() {
           </div>
         </div>
       </div>
-    </div>
+    </main>
   );
 }

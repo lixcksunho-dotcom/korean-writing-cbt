@@ -50,14 +50,14 @@ export default function AdminLoginForm({ forbidden }: { forbidden: boolean }) {
         <div className="bg-gray-900 border border-gray-800 rounded-2xl p-7 shadow-2xl">
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
-              <label className="block text-xs font-semibold text-gray-400 mb-1.5">이메일</label>
-              <input type="email" value={email} onChange={e => setEmail(e.target.value)}
+              <label htmlFor="admin-email" className="block text-xs font-semibold text-gray-400 mb-1.5">이메일</label>
+              <input id="admin-email" type="email" value={email} onChange={e => setEmail(e.target.value)}
                 placeholder="admin@example.com" required autoComplete="email" className={inputCls} />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-gray-400 mb-1.5">비밀번호</label>
+              <label htmlFor="admin-password" className="block text-xs font-semibold text-gray-400 mb-1.5">비밀번호</label>
               <div className="relative">
-                <input type={showPw ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)}
+                <input id="admin-password" type={showPw ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)}
                   placeholder="비밀번호" required autoComplete="current-password" className={`${inputCls} pr-11`} />
                 <button type="button" onClick={() => setShowPw(v => !v)}
                   className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:text-gray-200 transition-colors">

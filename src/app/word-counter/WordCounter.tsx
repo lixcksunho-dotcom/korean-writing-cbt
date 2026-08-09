@@ -36,7 +36,10 @@ export default function WordCounter() {
 
   return (
     <div className="space-y-5">
+      {/* 안내글(placeholder)은 이름표가 아니다 — 글자를 넣는 순간 사라져서
+          낭독기에는 '편집란'만 남는다. */}
       <textarea
+        aria-label="글자수를 셀 글"
         value={text}
         onChange={(e) => setText(e.target.value)}
         placeholder="여기에 글을 입력하거나 붙여넣으세요. 글자수가 실시간으로 계산됩니다."

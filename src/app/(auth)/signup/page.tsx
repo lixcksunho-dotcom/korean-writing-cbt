@@ -88,7 +88,7 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="min-h-screen flex">
+    <main className="min-h-screen flex">
       {/* 왼쪽 패널 */}
       <div className="hidden lg:flex lg:w-5/12 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-[#080f1e] via-[#0f1f3d] to-[#1e3a5f]" />
@@ -156,19 +156,19 @@ export default function SignupPage() {
 
             <form onSubmit={handleSignup} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-[#334155] mb-1.5">이름</label>
-                <input type="text" value={name} onChange={e => setName(e.target.value)}
+                <label htmlFor="signup-name" className="block text-xs font-semibold text-[#334155] mb-1.5">이름</label>
+                <input id="signup-name" type="text" value={name} onChange={e => setName(e.target.value)}
                   placeholder="홍길동" required className={inputCls} />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-[#334155] mb-1.5">이메일</label>
-                <input type="email" value={email} onChange={e => setEmail(e.target.value)}
+                <label htmlFor="signup-email" className="block text-xs font-semibold text-[#334155] mb-1.5">이메일</label>
+                <input id="signup-email" type="email" value={email} onChange={e => setEmail(e.target.value)}
                   placeholder="example@email.com" required autoComplete="email" className={inputCls} />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-[#334155] mb-1.5">비밀번호</label>
+                <label htmlFor="signup-password" className="block text-xs font-semibold text-[#334155] mb-1.5">비밀번호</label>
                 <div className="relative">
-                  <input type={showPw ? "text" : "password"} value={password} onChange={e => setPassword(e.target.value)}
+                  <input id="signup-password" type={showPw ? "text" : "password"} value={password} onChange={e => setPassword(e.target.value)}
                     placeholder="6자리 이상" required autoComplete="new-password" className={`${inputCls} pr-14`} />
                   <button type="button" onClick={() => setShowPw(v => !v)}
                     aria-label={showPw ? "비밀번호 숨기기" : "비밀번호 보기"}
@@ -196,6 +196,6 @@ export default function SignupPage() {
           </div>
         </div>
       </div>
-    </div>
+    </main>
   );
 }

@@ -134,6 +134,10 @@ export default async function HomePage() {
         </div>
       </header>
 
+      {/* 학습자료·블로그 면에는 다 있는데 정작 첫 화면에만 main이 없었다.
+          낭독기가 '본문'으로 건너뛸 자리가 사라진다. */}
+      <main id="main">
+
       {/* 히어로 */}
       <section className="relative pt-16 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-[#080f1e] via-[#0f1f3d] to-[#1e3a5f]" />
@@ -500,6 +504,8 @@ export default async function HomePage() {
           </Link>
         </div>
       </section>
+
+      </main>
 
       <SiteFooter />
       <ScheduleModal />
