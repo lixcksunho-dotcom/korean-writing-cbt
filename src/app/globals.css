@@ -36,6 +36,11 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", "Noto Sans CJK KR", "Segoe UI", Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* 한국어는 기본이 글자 단위 줄바꿈이라 좁은 폭에서 낱말이 쪼개진다
+     (대시보드 이용권 카드가 '30일 무제' + '한'으로 잘려 있었다).
+     낱말 단위로 끊되, 끊을 데가 없는 긴 토막(주소·메일)은 그대로 넘치지 않게 둔다. */
+  word-break: keep-all;
+  overflow-wrap: break-word;
 }
 
 * {

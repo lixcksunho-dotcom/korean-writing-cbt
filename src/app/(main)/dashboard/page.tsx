@@ -518,9 +518,11 @@ export default async function DashboardPage() {
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-amber-500 flex items-center justify-center shrink-0">
               <Sparkles className="h-5 w-5 text-white" />
             </div>
-            <div>
+            {/* 좁은 폭에서 '무제한'이 '무제'+'한'으로 잘려 나왔다 — 한국어는 기본이
+                글자 단위 줄바꿈이라 단어가 쪼개진다. 낱말 단위로 끊게 한다. */}
+            <div className="min-w-0">
               <p className="font-bold text-amber-900 text-sm">{cfg.hasManuscript ? 'AI 원고지 채점 이용권' : '프리미엄 플랜 이용권'}</p>
-              <p className="text-amber-700 text-xs">
+              <p className="text-amber-700 text-xs [word-break:keep-all]">
                 {cfg.hasManuscript ? '5,500원 1회 결제로 30일 무제한' : '5,500원 1회 결제 · 전 회차 무제한 + 영역별 분석'}
               </p>
             </div>

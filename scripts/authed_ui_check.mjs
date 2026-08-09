@@ -215,6 +215,10 @@ if (contrastFails.length) {
   contrastFails.sort((a, b) => a.real - b.real)
   for (const f of contrastFails) console.log('  ' + f.line)
 }
+if (deadEnds.length) {
+  console.log('\n[막다른 화면 — 본문에서 다음으로 갈 길이 없다]')
+  for (const l of deadEnds) console.log('  ' + l)
+}
 if (graphicFails.length) {
   console.log('\n[아이콘·안내글 기준 미달]')
   for (const l of graphicFails) console.log('  ' + l)
