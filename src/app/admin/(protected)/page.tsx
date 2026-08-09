@@ -1,7 +1,8 @@
 import Link from 'next/link'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { isActivePass } from '@/lib/subscription'
-import { BookOpen, Star, CreditCard, Wallet, FileCheck2, PenLine, ChevronRight, BadgeCheck, Users, Flag } from 'lucide-react'
+import { checkAiKey } from '@/lib/aiKeyStatus'
+import { BookOpen, Star, CreditCard, Wallet, FileCheck2, PenLine, ChevronRight, BadgeCheck, Users, Flag, AlertTriangle, CheckCircle2 } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
 
@@ -9,7 +10,8 @@ export default async function AdminHome() {
   // 관리자 권한은 admin/layout.tsx에서 이미 검증됨. 통계는 service_role로 집계.
   const admin = createAdminClient()
 
-  const [qCount, reviewRows, subRows, examDone, manuscriptCount, reportRows] = await Promise.all([
+  const [aiKey, qCount, reviewRows, subRows, examDone, manuscriptCount, reportRows] = await Promise.all([
+    checkAiKey(),
     admin.from('questions').select('*', { count: 'exact', head: true }),
     admin.from('reviews').select('proof_path, verified, is_visible'),
     admin.from('subscriptions').select('amount, status, expires_at'),
@@ -50,6 +52,22 @@ export default async function AdminHome() {
       <div className="mb-6">
         <h1 className="text-xl font-bold text-gray-900">관리자 대시보드</h1>
         <p className="text-sm text-gray-600 mt-1">서비스 핵심 지표를 한눈에 확인하세요.</p>
+      </div>
+
+      {/* AI 채점 연결 상태 — 키가 빠지면 채점이 전부 실패하는데 사용자 화면에만 뜬다.
+          요금이 붙지 않는 모델 조회로 확인한다(잔액은 이 방법으로 알 수 없다). */}
+      <div
+        className={`mb-6 flex items-start gap-2.5 rounded-xl border p-3.5 ${
+          aiKey.ok ? 'border-gray-200 bg-white' : 'border-red-200 bg-red-50'
+        }`}
+      >
+        {aiKey.ok
+          ? <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5 text-emerald-700" aria-hidden />
+          : <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5 text-red-700" aria-hidden />}
+        <div className="min-w-0">
+          <div className={`text-sm font-bold ${aiKey.ok ? 'text-gray-900' : 'text-red-800'}`}>{aiKey.title}</div>
+          <p className={`text-xs mt-0.5 ${aiKey.ok ? 'text-gray-600' : 'text-red-800'}`}>{aiKey.detail}</p>
+        </div>
       </div>
 
       {/* 지표 카드 */}

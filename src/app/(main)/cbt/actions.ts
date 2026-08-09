@@ -6,6 +6,7 @@ import { getActiveSubscription } from '@/lib/subscription'
 import { consumeAiTrial, refundAiTrial, FREE_AI_TRIAL, readTrialUsed } from '@/lib/aiTrial'
 import { enforcePaidUsage, recordPaidGrade } from '@/lib/antiSharing'
 import { assertWithinGradingLimit, MAX_ANSWER_CHARS } from '@/lib/aiGradingLimits'
+import { describeGradingFailure, truncatedFailure, alertGradingFailure } from '@/lib/aiGradingFailure'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { trackServerEvent } from '@/lib/analytics/trackServerEvent'
 import { formatExamId } from '@/lib/examId'
@@ -19,6 +20,10 @@ export type EssayGrade = {
   strengths: string[]
   improvements: string[]
 }
+
+// 한국어 채점 JSON은 대략 1.5자당 1토큰(count_tokens 실측). 서술형 응답은 총평·장점·
+// 보완점뿐이라 원고지보다 짧지만, 잘리면 파싱이 반드시 실패하므로 여유를 둔다.
+const ESSAY_MAX_TOKENS = 2500
 
 const ESSAY_SYSTEM_PROMPT = `당신은 국가공인 한국실용글쓰기검정 서술형 채점위원입니다.
 제시된 [문제/조건], [모범답안], [수험자 답안]을 보고 채점하세요.
@@ -94,12 +99,14 @@ export async function gradeExamEssay(
     await recordPaidGrade(user.id) // 구독자 일일 사용량 기록
   }
 
-  const client = new Anthropic()
+  // new Anthropic()도 try 안에 둔다. 키가 비어 있으면 생성자가 던지는데,
+  // 밖에 두면 차감만 되고 환불이 안 된 채 사용자가 체험 1회를 잃는다.
   let response
   try {
+    const client = new Anthropic()
     response = await client.messages.create({
       model: 'claude-sonnet-4-6',
-      max_tokens: 1500,
+      max_tokens: ESSAY_MAX_TOKENS,
       system: [
         { type: 'text', text: ESSAY_SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } },
       ],
@@ -108,11 +115,23 @@ export async function gradeExamEssay(
         content: `[배점] ${question.points}점\n\n[문제/조건]\n${question.question}\n\n[모범답안]\n${question.correct_answer}\n\n[수험자 답안]\n${answerRow.user_answer || '(미작성)'}`,
       }],
     })
-  } catch {
-    // 응답 자체를 못 받았다(통신 끊김·5xx·타임아웃). 우리 쪽 사정이니 차감을 되돌린다.
+  } catch (err) {
+    // 응답 자체를 못 받았다(설정·잔액·통신·5xx·타임아웃). 우리 쪽 사정이니 차감을 되돌린다.
     // 파싱 실패는 되돌리지 않는다 — 그건 입력을 골라 공짜로 무한 호출하는 통로가 된다.
+    const f = describeGradingFailure(err)
+    console.error(f.operator, { userId: user.id })
+    await alertGradingFailure('서술형(시험)', f)
+    if (usingTrial && f.refund) await refundAiTrial(user.id, trialUsed + 1)
+    throw new Error(f.userMessage)
+  }
+
+  // 길이 제한에 걸려 잘렸으면 JSON이 중간에서 끊겨 파싱이 반드시 실패한다.
+  if (response.stop_reason === 'max_tokens') {
+    const f = truncatedFailure(ESSAY_MAX_TOKENS)
+    console.error(f.operator, { userId: user.id })
+    await alertGradingFailure('서술형(시험)', f)
     if (usingTrial) await refundAiTrial(user.id, trialUsed + 1)
-    throw new Error('AI 채점 서버에 연결하지 못했어요. 잠시 후 다시 시도해 주세요.')
+    throw new Error(f.userMessage)
   }
 
   const block = response.content[0]

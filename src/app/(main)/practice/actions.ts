@@ -3,14 +3,19 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@/lib/supabase/server'
 import { getActiveSubscription } from '@/lib/subscription'
-import { consumeAiTrial, FREE_AI_TRIAL, readTrialUsed } from '@/lib/aiTrial'
+import { consumeAiTrial, refundAiTrial, FREE_AI_TRIAL, readTrialUsed } from '@/lib/aiTrial'
 import { enforcePaidUsage, recordPaidGrade } from '@/lib/antiSharing'
 import { assertWithinGradingLimit, MAX_ANSWER_CHARS } from '@/lib/aiGradingLimits'
+import { describeGradingFailure, truncatedFailure, alertGradingFailure } from '@/lib/aiGradingFailure'
 import type { EssayGrade } from '@/app/(main)/cbt/actions'
 import { questionBank } from '@/lib/questionBank'
 
 // 서술형 '연습' 채점: 정식 시험 세션과 무관하게 단일 문항을 즉시 채점한다.
 // (시험 세션 기반 채점은 cbt/actions.ts 의 gradeExamEssay 사용)
+//
+// 한국어 채점 JSON은 대략 1.5자당 1토큰(count_tokens 실측). 잘리면 파싱이 반드시 실패한다.
+const PRACTICE_MAX_TOKENS = 2500
+
 const PRACTICE_ESSAY_PROMPT = `당신은 국가공인 한국실용글쓰기검정 서술형 채점위원입니다.
 제시된 [문제/조건], [모범답안], [수험자 답안]을 보고 채점하세요.
 
@@ -73,18 +78,37 @@ export async function gradeEssayPractice(
     .single()
   if (!question) throw new Error('Question not found')
 
-  const client = new Anthropic()
-  const response = await client.messages.create({
-    model: 'claude-sonnet-4-6',
-    max_tokens: 1500,
-    system: [
-      { type: 'text', text: PRACTICE_ESSAY_PROMPT, cache_control: { type: 'ephemeral' } },
-    ],
-    messages: [{
-      role: 'user',
-      content: `[배점] ${question.points}점\n\n[문제/조건]\n${question.question}\n\n[모범답안]\n${question.correct_answer}\n\n[수험자 답안]\n${userAnswer || '(미작성)'}`,
-    }],
-  })
+  // 여기엔 원래 try가 없었다. 그래서 호출이 어떤 이유로든 실패하면 차감만 되고
+  // 환불도 기록도 없이 사용자가 체험 1회를 잃었다. new Anthropic()도 함께 감싼다.
+  let response
+  try {
+    const client = new Anthropic()
+    response = await client.messages.create({
+      model: 'claude-sonnet-4-6',
+      max_tokens: PRACTICE_MAX_TOKENS,
+      system: [
+        { type: 'text', text: PRACTICE_ESSAY_PROMPT, cache_control: { type: 'ephemeral' } },
+      ],
+      messages: [{
+        role: 'user',
+        content: `[배점] ${question.points}점\n\n[문제/조건]\n${question.question}\n\n[모범답안]\n${question.correct_answer}\n\n[수험자 답안]\n${userAnswer || '(미작성)'}`,
+      }],
+    })
+  } catch (err) {
+    const f = describeGradingFailure(err)
+    console.error(f.operator, { userId: user.id })
+    await alertGradingFailure('서술형(연습)', f)
+    if (usingTrial && f.refund) await refundAiTrial(user.id, trialUsed + 1)
+    throw new Error(f.userMessage)
+  }
+
+  if (response.stop_reason === 'max_tokens') {
+    const f = truncatedFailure(PRACTICE_MAX_TOKENS)
+    console.error(f.operator, { userId: user.id })
+    await alertGradingFailure('서술형(연습)', f)
+    if (usingTrial) await refundAiTrial(user.id, trialUsed + 1)
+    throw new Error(f.userMessage)
+  }
 
   const block = response.content[0]
   if (block.type !== 'text') throw new Error('Unexpected response type')
