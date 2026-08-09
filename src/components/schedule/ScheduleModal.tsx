@@ -133,8 +133,13 @@ export default function ScheduleModal({ program = 'silyong' }: { program?: strin
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <div className="text-lg font-black">{primary.round}</div>
+                  {/* 일정 표(examSchedule.ts)는 손으로 채운다. 다 지나가면 화면은 안 깨지고
+                      지난 회차를 계속 보여 주는데, 방문자에게는 그게 그냥 틀린 정보다.
+                      남은 회차가 없을 때는 그렇다고 말하고 공식 일정으로 보낸다. */}
                   <div className="text-white/60 text-sm">
-                    {primaryStatus === 'open' ? '접수 진행 중' : primaryStatus === 'upcoming' ? '접수 예정' : '접수 마감'}
+                    {upcoming.length === 0
+                      ? '다음 회차 일정이 아직 안 나왔어요'
+                      : primaryStatus === 'open' ? '접수 진행 중' : primaryStatus === 'upcoming' ? '접수 예정' : '접수 마감'}
                   </div>
                 </div>
                 {primaryStatus !== 'closed' && (
@@ -156,13 +161,20 @@ export default function ScheduleModal({ program = 'silyong' }: { program?: strin
               <Row label="시험일" value={fmt(primary.examDate)} />
               <Row label="합격발표" value={fmt(primary.resultDate)} />
 
+              {upcoming.length === 0 && (
+                <p className="mt-3 text-xs text-[#64748b] leading-relaxed">
+                  위는 <b className="text-[#334155]">지난 회차</b>예요. 다음 회차가 공지되면 여기에 올려 둘게요 —
+                  그전에는 공식 일정에서 확인해 주세요.
+                </p>
+              )}
+
               <a
                 href={applyUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="btn-gold mt-4 w-full flex items-center justify-center gap-2 font-bold py-3.5 rounded-xl text-sm"
               >
-                원서접수 바로가기 <ArrowRight className="h-4 w-4" />
+                {upcoming.length === 0 ? '공식 일정 확인하기' : '원서접수 바로가기'} <ArrowRight className="h-4 w-4" />
               </a>
             </div>
 
