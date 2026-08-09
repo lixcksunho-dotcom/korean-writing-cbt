@@ -104,6 +104,36 @@ grep -i error srv.log
 다른 층이다** — `reviews`에는 본인 삭제 정책이 있지만(003) `authenticated`에 DELETE 권한이
 없어서, 정책만 보고 코드를 쓰면 런타임에 막힌다. 정책 파일만 읽고 판단하지 말 것.
 
+## 아침 보고 (텔레그램)
+
+매일 **09:00 KST**에 신규 구독 유입을 그래프로 보낸다. Vercel Cron이
+`/api/cron/subscriber-report`를 부른다(`vercel.json`, 크론은 UTC라 `0 0 * * *`).
+
+| 필요한 환경변수 | 어디에 | 없으면 |
+|---|---|---|
+| `CRON_SECRET` | Vercel (Production) | 라우트가 401로 닫힌다 — 열어 두는 것보다 안 도는 게 낫다 |
+| `TELEGRAM_BOT_TOKEN` | Vercel (Production) | 503, 보고가 안 온다 |
+| `TELEGRAM_CHAT_ID` | Vercel (Production) | 〃 |
+
+토큰·chat id 만드는 법은 `src/lib/questionReportAlert.ts` 맨 위 주석에 적혀 있다
+(문제 오류 신고 알림과 같은 봇을 쓰면 된다).
+
+**아침을 기다리지 않고 지금 확인하기:**
+
+```bash
+npm run report:subs           # 숫자 + 그림(scripts/_subscriber_report.png)만, 전송 안 함
+npm run report:subs -- --send # 실제로 텔레그램까지 보내 본다(.env.local에 토큰 필요)
+```
+
+그림 안 글자가 전부 영어인 이유: PNG를 next/og(Satori)로 만드는데 한글 글꼴이 없어서
+한글을 넣으면 네모로 나온다. 글꼴을 실어 나르면 매일 도는 작업에 수 MB가 붙는다 →
+**숫자·날짜만 그림에 넣고 읽는 말은 텔레그램 캡션에 싣는다.**
+
+방문자 수는 **2026-08-04부터만** 센다. 그 전 기록에는 내 검사 트래픽이 섞여 있다
+(8/3 하루가 페이지뷰 3020·방문자 492인데, 한 명이 40~53쪽씩 보고 238명은 1쪽만 봤다 —
+브라우저 컨텍스트마다 새 visitor_id가 생긴 것이다). '90초에 8쪽' 규칙은 1쪽짜리를
+못 걸러서 깨끗하게 갈라낼 수 없다. 2026-08-11부터 7일 비교가 온전해진다.
+
 ## 데이터베이스
 
 마이그레이션은 `supabase/migrations/`에 있고, **Supabase 대시보드 SQL Editor에서 사람이 실행**한다

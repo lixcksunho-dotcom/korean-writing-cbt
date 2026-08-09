@@ -14,6 +14,7 @@
     "check:pages": "node scripts/authed_page_sweep.mjs",
     "check:blog": "python scripts/blog_keyword_overlap.py 0.35",
     "funnel": "python scripts/funnel_report.py",
+    "report:subs": "node scripts/subscriber_report_preview.mjs",
     "cleanup:test": "node scripts/cleanup_test_accounts.mjs",
     "check:contrast": "node scripts/contrast_check.mjs",
     "check:mobile": "node scripts/mobile_ux_check.mjs",
