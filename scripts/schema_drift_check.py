@@ -130,6 +130,51 @@ def referenced_columns():
     return found
 
 
+def anon_exposure(env: dict, live: set):
+    """anon 키로 실제로 뭐가 읽히는지 직접 확인한다.
+
+    anon 키는 클라이언트 번들에 들어가는 **공개값**이다. 로그인 없이 누구나
+    PostgREST를 직접 부를 수 있으므로, '화면에 안 보인다'는 보호가 아니다.
+    이 방법으로 예전에 questions 전면 유출(767행, 정답·해설 포함)을 찾았다.
+
+    마이그레이션 파일만 읽고 판단하면 안 된다 — 정책이 적용됐는지, 열 단위
+    GRANT가 살아 있는지는 실제로 불러 봐야 안다.
+    """
+    base = env["NEXT_PUBLIC_SUPABASE_URL"].rstrip("/")
+    key = env.get("NEXT_PUBLIC_SUPABASE_ANON_KEY")
+    if not key:
+        return ["anon 키가 .env.local에 없어 노출 점검을 건너뜀"]
+
+    def call(path):
+        try:
+            r = requests.get(
+                f"{base}/rest/v1/{path}",
+                headers={"apikey": key, "Authorization": "Bearer " + key},
+                timeout=30,
+            )
+            return r.status_code, (r.json() if r.status_code == 200 else None)
+        except Exception as ex:
+            return f"연결 실패({type(ex).__name__})", None
+
+    bad = []
+    # 1) 사용자 자료는 로그인 없이 한 줄도 나오면 안 된다.
+    for t in sorted(live - {"reviews"}):
+        code, rows = call(f"{t}?select=*&limit=3")
+        if code == 200 and isinstance(rows, list) and rows:
+            bad.append(f"{t} — anon이 {len(rows)}행 이상 읽는다(전면 노출)")
+
+    # 2) reviews는 열 단위로 갈린다(마이그레이션 034). 화면이 쓰는 열은 열리고,
+    #    계정 식별자·인증 사진 경로·응시일은 막혀야 한다. 양쪽 다 확인한다.
+    code, _ = call("reviews?select=id,display_name,content,rating,created_at,exam_score,verified&limit=1")
+    if code != 200:
+        bad.append(f"reviews — 화면이 쓰는 열이 막혔다({code}). 랜딩 후기가 조용히 빈다")
+    for col in ("user_id", "proof_path", "exam_date"):
+        code, rows = call(f"reviews?select={col}&limit=1")
+        if code == 200:
+            bad.append(f"reviews.{col} — anon이 읽는다(가려야 하는 열)")
+    return bad
+
+
 def question_bank_leaks():
     """questions를 사용자 클라이언트로 읽는 곳을 찾는다.
 
@@ -194,6 +239,13 @@ def main():
             for f in files:
                 print(f"      {f}")
 
+    exposed = anon_exposure(env, live)
+    if exposed:
+        print(f"\n[치명] anon 키로 읽히면 안 되는 것 {len(exposed)}건:")
+        for x in exposed:
+            print(f"  - {x}")
+        print("       => anon 키는 클라이언트 번들에 들어가는 공개값이다. 화면에 안 보이는 건 보호가 아니다.")
+
     leaks = question_bank_leaks()
     if leaks:
         print(f"\n[치명] questions를 사용자 클라이언트로 읽는 곳 {len(leaks)}군데:")
@@ -201,7 +253,7 @@ def main():
             print(f"  - {leak}")
         print("       => RLS가 막아 늘 0건이 된다. questionBank()로 읽을 것(마이그레이션 033).")
 
-    if not broken and not unapplied and not bad_cols and not leaks:
+    if not broken and not unapplied and not bad_cols and not leaks and not exposed:
         print("불일치 없음 ✓")
         return 0
     return 1
