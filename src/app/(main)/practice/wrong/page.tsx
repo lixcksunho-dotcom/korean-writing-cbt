@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, CheckCircle2 } from 'lucide-react'
+import { ArrowLeft, CheckCircle2, BookOpen, ChevronRight } from 'lucide-react'
 import PracticeMultiple, { type PracticeQuestion } from '../multiple/PracticeMultiple'
 import { getActiveProgram } from '@/lib/programContext'
 import { questionBank } from '@/lib/questionBank'
@@ -54,15 +54,36 @@ export default async function WrongPracticePage() {
   const questions = (rows ?? []) as unknown as PracticeQuestion[]
 
   if (questions.length === 0) {
+    // 빈 화면이 두 가지인데 하나로 뭉뚱그리면 안 된다. 아직 한 번도 안 푼 사람에게
+    // 초록 체크와 함께 '틀리는 게 없어요!'라고 하면 칭찬으로 읽힌다 — 맞힌 게 아니라
+    // 시작을 안 한 것이다. 게다가 나갈 링크가 없어서 뒤로가기 말고는 길이 없었다.
+    const neverSolved = (sessions ?? []).length === 0
     return (
       <div className="animate-fade-up max-w-2xl mx-auto">
         <Link href="/insights" className="inline-flex items-center gap-1.5 py-3 text-sm text-[#64748b] hover:text-[#1e3a5f] mb-5">
           <ArrowLeft className="h-4 w-4" /> 학습 리포트
         </Link>
-        <div className="flex flex-col items-center justify-center py-20 text-center bg-white rounded-2xl border border-[#e2e8f0]">
-          <div className="bg-emerald-50 p-5 rounded-2xl mb-4"><CheckCircle2 className="h-10 w-10 text-emerald-500" /></div>
-          <p className="text-[#334155] text-sm font-semibold">지금 틀리는 객관식이 없어요!</p>
-          <p className="text-[#64748b] text-xs mt-1">모의고사를 더 풀면 약점이 자동으로 모입니다.</p>
+        <div className="flex flex-col items-center justify-center px-6 py-16 text-center bg-white rounded-2xl border border-[#e2e8f0]">
+          <div className={`p-5 rounded-2xl mb-4 ${neverSolved ? 'bg-[#f1f5f9]' : 'bg-emerald-50'}`}>
+            {neverSolved
+              ? <BookOpen className="h-10 w-10 text-[#1e3a5f]" />
+              : <CheckCircle2 className="h-10 w-10 text-emerald-500" />}
+          </div>
+          <p className="text-[#334155] text-sm font-semibold">
+            {neverSolved ? '아직 푼 문제가 없어요' : '지금 틀리는 객관식이 없어요!'}
+          </p>
+          <p className="text-[#64748b] text-xs mt-1 leading-relaxed">
+            {neverSolved
+              ? '모의고사를 한 회차 풀면 틀린 문항이 여기 자동으로 모여요.'
+              : '모의고사를 더 풀면 약점이 자동으로 모입니다.'}
+          </p>
+          <Link
+            href="/cbt"
+            className="mt-6 inline-flex items-center justify-center gap-1.5 btn-primary text-white font-semibold px-6 py-3.5 rounded-xl text-sm"
+          >
+            {neverSolved ? '첫 모의고사 풀기' : '모의고사 더 풀기'}
+            <ChevronRight className="h-4 w-4" />
+          </Link>
         </div>
       </div>
     )

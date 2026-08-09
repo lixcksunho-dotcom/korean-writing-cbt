@@ -224,6 +224,32 @@ export function cheapContrast(item) {
 }
 
 /**
+ * 이 화면에서 다음으로 갈 길이 있는가 — 본문 안에 누를 것이 하나라도 있는지 본다.
+ *
+ * 갓 만든 계정으로 도는 검사는 늘 '빈 화면'을 보는데, 빈 화면이야말로 막다른 길이
+ * 되기 쉽다. 실제로 오답노트·즐겨찾기가 그랬다: 안내 문구만 있고 버튼이 없어서
+ * 뒤로가기 말고는 나갈 데가 없었다. 글자 수만 세는 검사(120자 이상)는 이걸 못 잡는다
+ * — 머리글과 꼬리글만으로도 수백 자가 나오기 때문이다.
+ *
+ * 머리글·꼬리글·모드 전환은 빼고 센다. 어느 화면에나 있어서 '길이 있다'는 근거가 못 된다.
+ */
+export function browserCountWayForward() {
+  const main = document.querySelector('main') ?? document.body
+  let n = 0
+  const seen = []
+  for (const el of main.querySelectorAll('a[href], button, [role="button"]')) {
+    if (el.closest('footer, nav, header')) continue
+    const cs = getComputedStyle(el)
+    if (cs.display === 'none' || cs.visibility === 'hidden' || cs.opacity === '0') continue
+    const r = el.getBoundingClientRect()
+    if (r.width < 8 || r.height < 8) continue
+    n++
+    if (seen.length < 3) seen.push((el.textContent ?? el.getAttribute('aria-label') ?? '').trim().slice(0, 18))
+  }
+  return { n, seen, textLen: (main.innerText ?? '').trim().length }
+}
+
+/**
  * 휴대폰 화면에서 쓸 수 있는 상태인지. 반환값은 항목별 배열이고 판정은 바깥에서 한다.
  * 기준은 WCAG 2.5.8(누름 대상 24px, 문장 속 링크는 예외)과 손가락 크기 권장 44px.
  */
