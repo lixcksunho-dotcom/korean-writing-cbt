@@ -3,7 +3,7 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@/lib/supabase/server'
 import { getActiveSubscription } from '@/lib/subscription'
-import { consumeAiTrial, refundAiTrial, FREE_AI_TRIAL } from '@/lib/aiTrial'
+import { consumeAiTrial, refundAiTrial, FREE_AI_TRIAL, readTrialUsed } from '@/lib/aiTrial'
 import { enforcePaidUsage, recordPaidGrade } from '@/lib/antiSharing'
 import { assertWithinGradingLimit, MAX_ANSWER_CHARS, MAX_TOPIC_CHARS } from '@/lib/aiGradingLimits'
 import { trackServerEvent } from '@/lib/analytics/trackServerEvent'
@@ -68,7 +68,7 @@ export async function gradeManuscript(text: string, topic: string): Promise<Grad
   // 유료 기능이지만 비구독자에게도 무료 체험 횟수를 허용한다(서술형 AI 채점과 같은 잔여 횟수 공유).
   // 서버에서도 한도를 강제해야 액션 직접 호출로 무료 AI(유료 API)를 쓰는 것을 막을 수 있다.
   const subscription = await getActiveSubscription(user.id)
-  const trialUsed = Number(user.app_metadata?.ai_trial_used ?? 0)
+  const trialUsed = await readTrialUsed(user.id, Number(user.app_metadata?.ai_trial_used ?? 0))
   const usingTrial = !subscription
   if (usingTrial && trialUsed >= FREE_AI_TRIAL) throw new Error('SUBSCRIPTION_REQUIRED')
 

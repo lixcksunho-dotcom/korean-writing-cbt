@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { CheckCircle2, XCircle, Trophy, RotateCcw, LayoutDashboard, Star, Target, Sparkles, ChevronRight, Lock } from 'lucide-react'
 import { getActiveSubscription } from '@/lib/subscription'
-import { FREE_AI_TRIAL } from '@/lib/aiTrial'
+import { FREE_AI_TRIAL, readTrialUsed } from '@/lib/aiTrial'
 import { scaleToMax, tierFor } from '@/lib/grade'
 import { getProgram, type ProgramId } from '@/lib/programs'
 import ManuscriptGrid from '@/components/manuscript/ManuscriptGrid'
@@ -83,7 +83,7 @@ export default async function ResultPage({
   const isPass = tier.name !== cfg.belowLabel
 
   // 비구독자 무료 AI 체험 잔여 — 이미 받은 user에서 계산(추가 getUser 왕복 제거)
-  const trialUsed = Number(user.app_metadata?.ai_trial_used ?? 0)
+  const trialUsed = await readTrialUsed(user.id, Number(user.app_metadata?.ai_trial_used ?? 0))
   const aiTrial = { remaining: subscription ? 0 : Math.max(0, FREE_AI_TRIAL - trialUsed) }
 
   // 체험 3회를 9문항 어디에 쓸지 몰라 손을 안 대는 선택 마비가 관찰됨(완료 16명 중 체험 3명).

@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { getActiveSubscription } from '@/lib/subscription'
-import { FREE_AI_TRIAL } from '@/lib/aiTrial'
+import { FREE_AI_TRIAL, readTrialUsed } from '@/lib/aiTrial'
 import { getActiveProgram } from '@/lib/programContext'
 import { getProgram } from '@/lib/programs'
 import ReportRunner, { type ReportQuestion } from './ReportRunner'
@@ -43,7 +43,7 @@ export default async function ReportPracticePage() {
 
   if (!questions.length) redirect('/practice')
 
-  const trialUsed = Number(user.app_metadata?.ai_trial_used ?? 0)
+  const trialUsed = await readTrialUsed(user.id, Number(user.app_metadata?.ai_trial_used ?? 0))
   const trialRemaining = subscription ? 0 : Math.max(0, FREE_AI_TRIAL - trialUsed)
 
   return <ReportRunner questions={questions} hasSubscription={!!subscription} aiTrialRemaining={trialRemaining} />

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { BookOpen, PenLine, Trophy, Clock, ChevronRight, ArrowUpRight, Sparkles, CheckCircle2, Gift, TrendingUp, Lock, Gauge } from "lucide-react";
 import ReviewWriteModal from "@/components/review/ReviewWriteModal";
 import { getActiveSubscription, daysUntilExpiry } from "@/lib/subscription";
-import { FREE_AI_TRIAL } from "@/lib/aiTrial";
+import { FREE_AI_TRIAL, readTrialUsed } from "@/lib/aiTrial";
 import { tierFor } from "@/lib/grade";
 import { getActiveProgram } from "@/lib/programContext";
 import { getProgram, type GradeCut } from "@/lib/programs";
@@ -53,7 +53,7 @@ export default async function DashboardPage() {
   const manuscriptCount = manuscripts?.length ?? 0;
 
   // 무료 AI 첨삭 체험 잔여 — 이미 받아온 user의 app_metadata에서 바로 계산(추가 getUser 왕복 제거)
-  const trialUsed = Number(user.app_metadata?.ai_trial_used ?? 0);
+  const trialUsed = await readTrialUsed(user.id, Number(user.app_metadata?.ai_trial_used ?? 0));
   const aiTrial = { remaining: sub ? 0 : Math.max(0, FREE_AI_TRIAL - trialUsed) };
 
   // 재구독 유도: 활성 구독이 없지만 과거 결제 이력(만료)이 있으면 '이어가기' 대상

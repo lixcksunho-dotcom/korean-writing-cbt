@@ -3,7 +3,7 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@/lib/supabase/server'
 import { getActiveSubscription } from '@/lib/subscription'
-import { consumeAiTrial, FREE_AI_TRIAL } from '@/lib/aiTrial'
+import { consumeAiTrial, FREE_AI_TRIAL, readTrialUsed } from '@/lib/aiTrial'
 import { enforcePaidUsage, recordPaidGrade } from '@/lib/antiSharing'
 import { assertWithinGradingLimit, MAX_ANSWER_CHARS } from '@/lib/aiGradingLimits'
 import type { EssayGrade } from '@/app/(main)/cbt/actions'
@@ -51,7 +51,7 @@ export async function gradeEssayPractice(
 
   // 서술형 AI 채점은 유료 기능. 단, 비구독자는 평생 1회 무료 체험 허용.
   const subscription = await getActiveSubscription(user.id)
-  const trialUsed = Number(user.app_metadata?.ai_trial_used ?? 0)
+  const trialUsed = await readTrialUsed(user.id, Number(user.app_metadata?.ai_trial_used ?? 0))
   const usingTrial = !subscription
   if (usingTrial && trialUsed >= FREE_AI_TRIAL) throw new Error('SUBSCRIPTION_REQUIRED')
 

@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, FileText, ChevronRight, Lock } from 'lucide-react'
 import { getActiveSubscription } from '@/lib/subscription'
-import { FREE_AI_TRIAL } from '@/lib/aiTrial'
+import { FREE_AI_TRIAL, readTrialUsed } from '@/lib/aiTrial'
 import { isRoundLocked } from '@/lib/examAccess'
 import { getActiveProgram } from '@/lib/programContext'
 import PracticeEssay, { type PracticeEssayQuestion } from './PracticeEssay'
@@ -86,7 +86,7 @@ export default async function EssayPracticePage({
     .order('number')
   if (!questions?.length) redirect('/practice/essay')
 
-  const trialUsed = Number(user.app_metadata?.ai_trial_used ?? 0)
+  const trialUsed = await readTrialUsed(user.id, Number(user.app_metadata?.ai_trial_used ?? 0))
   const trialRemaining = subscription ? 0 : Math.max(0, FREE_AI_TRIAL - trialUsed)
 
   return (
