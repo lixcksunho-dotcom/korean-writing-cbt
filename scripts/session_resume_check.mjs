@@ -11,6 +11,7 @@
 import fs from 'node:fs'
 import { chromium } from 'playwright'
 import { dismissIntros } from './ui_audit_rules.mjs'
+import { assertFreshLocalServer } from './stale_server_guard.mjs'
 
 const BASE = process.env.RESUME_BASE ?? 'http://127.0.0.1:3210'
 const YEAR = 2025
@@ -37,6 +38,10 @@ const stamp = String(Date.now())
 const results = []
 const ok = (n, d = '') => results.push({ ok: true, n, d })
 const bad = (n, d = '') => results.push({ ok: false, n, d })
+
+// 낡은 서버를 때리며 초록불을 내는 일이 실제로 있었다 — 먼저 확인한다.
+const fresh = await assertFreshLocalServer(BASE)
+console.log(fresh.checked ? `  서버 빌드 확인됨 (${fresh.buildId})` : `  서버 빌드 비교 안 함 — ${fresh.reason}`)
 
 const browser = await chromium.launch()
 let uid = null

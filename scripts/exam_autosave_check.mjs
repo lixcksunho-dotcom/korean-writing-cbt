@@ -13,6 +13,7 @@
 import fs from 'node:fs'
 import { chromium } from 'playwright'
 import { dismissIntros } from './ui_audit_rules.mjs'
+import { assertFreshLocalServer } from './stale_server_guard.mjs'
 
 const BASE = process.env.AUTOSAVE_BASE ?? 'http://127.0.0.1:3000'
 // 자동 저장 주기는 60초. 한 번은 확실히 지나가도록 여유를 둔다.
@@ -96,6 +97,10 @@ async function cleanup(uid) {
   await admin(`/rest/v1/subscriptions?user_id=eq.${uid}`, { method: 'DELETE' }).catch(() => {})
   await admin(`/auth/v1/admin/users/${uid}`, { method: 'DELETE' }).catch(() => {})
 }
+
+// 낡은 서버를 때리며 초록불을 내는 일이 실제로 있었다 — 먼저 확인한다.
+const fresh = await assertFreshLocalServer(BASE)
+console.log(fresh.checked ? `  서버 빌드 확인됨 (${fresh.buildId})` : `  서버 빌드 비교 안 함 — ${fresh.reason}`)
 
 const browser = await chromium.launch()
 const made = []
