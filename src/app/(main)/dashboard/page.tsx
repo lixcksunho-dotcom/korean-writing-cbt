@@ -1,11 +1,11 @@
 import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { BookOpen, PenLine, Trophy, Clock, ChevronRight, ArrowUpRight, Sparkles, CheckCircle2, Gift, TrendingUp, Lock, Gauge } from "lucide-react";
 import ReviewWriteModal from "@/components/review/ReviewWriteModal";
 import { getActiveSubscription, daysUntilExpiry } from "@/lib/subscription";
 import { FREE_AI_TRIAL, readTrialUsed } from "@/lib/aiTrial";
+import { hasAbandonedCheckout } from "@/lib/abandonedCheckout";
 import { tierFor } from "@/lib/grade";
 import { getActiveProgram } from "@/lib/programContext";
 import { getProgram, type GradeCut } from "@/lib/programs";
@@ -34,7 +34,18 @@ export default async function DashboardPage() {
   const program = await getActiveProgram();
   const cfg = getProgram(program);
 
-  const [{ data: sessions }, { data: manuscripts }, sub] = await Promise.all([
+  // 로그인 뒤 첫 화면이라 왕복 수가 곧 체감이다(실측 3957ms — 훑은 화면 50개 중 가장 느렸다).
+  // 예전엔 이 아래로 체험횟수 → 지난 이용권 → 결제이탈 흔적이 줄줄이 순차 실행됐다.
+  // 셋 다 user.id만 있으면 되는 조회라 여기서 함께 던진다. 유료 회원에게는 뒤 두 개가
+  // 쓰이지 않고 버려지지만, 둘 다 한 행짜리 조회이고 무료 회원이 대부분이라 이 편이 빠르다.
+  const [
+    { data: sessions },
+    { data: manuscripts },
+    sub,
+    trialUsed,
+    { data: lastSub },
+    startedRecently,
+  ] = await Promise.all([
     supabase
       .from("quiz_sessions")
       .select("id, year, round, score, total, started_at, completed_at")
@@ -49,49 +60,26 @@ export default async function DashboardPage() {
       .select("created_at")
       .eq("user_id", user.id),
     getActiveSubscription(user.id),
-  ]);
-  const manuscriptCount = manuscripts?.length ?? 0;
-
-  // 무료 AI 첨삭 체험 잔여 — 이미 받아온 user의 app_metadata에서 바로 계산(추가 getUser 왕복 제거)
-  const trialUsed = await readTrialUsed(user.id, Number(user.app_metadata?.ai_trial_used ?? 0));
-  const aiTrial = { remaining: sub ? 0 : Math.max(0, FREE_AI_TRIAL - trialUsed) };
-
-  // 재구독 유도: 활성 구독이 없지만 과거 결제 이력(만료)이 있으면 '이어가기' 대상
-  let lapsedSub = false;
-  if (!sub) {
-    const { data: lastSub } = await supabase
+    readTrialUsed(user.id, Number(user.app_metadata?.ai_trial_used ?? 0)),
+    supabase
       .from("subscriptions")
       .select("expires_at")
       .eq("user_id", user.id)
       .order("expires_at", { ascending: false })
       .limit(1)
-      .maybeSingle();
-    lapsedSub = !!lastSub;
-  }
+      .maybeSingle(),
+    hasAbandonedCheckout(user.id),
+  ]);
+  const manuscriptCount = manuscripts?.length ?? 0;
 
-  // 결제중단(abandoned cart) 유도: 구독 이력이 아예 없는데 결제창은 열었던(payment_started)
-  // 흔적이 있으면 — 10분~14일 사이(방금 이탈은 제외, 너무 오래된 건 노출 안 함) '이어서 결제' 넛지.
-  // ⚠️page_views는 RLS만 켜져 있고 정책이 없어 service_role(admin 클라이언트)로만 조회 가능.
-  let abandonedCart = false;
-  if (!sub && !lapsedSub) {
-    try {
-      const admin = createAdminClient();
-      const { data: started } = await admin
-        .from("page_views")
-        .select("created_at")
-        .eq("path", "#event/payment_started")
-        .eq("visitor_id", `u:${user.id}`)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      if (started?.created_at) {
-        const ageMs = Date.now() - new Date(started.created_at).getTime();
-        abandonedCart = ageMs > 10 * 60_000 && ageMs < 14 * 24 * 60 * 60_000;
-      }
-    } catch {
-      // 조용히 실패 — 대시보드 렌더링을 막지 않음
-    }
-  }
+  const aiTrial = { remaining: sub ? 0 : Math.max(0, FREE_AI_TRIAL - trialUsed) };
+
+  // 재구독 유도: 활성 구독이 없지만 과거 결제 이력(만료)이 있으면 '이어가기' 대상
+  const lapsedSub = !sub && !!lastSub;
+
+  // 결제중단(abandoned cart) 유도: 구독 이력이 아예 없는데 결제창은 열었던 흔적이 있으면
+  // '이어서 결제' 넛지. 기간 판정은 위 조회 안에서 끝냈다.
+  const abandonedCart = !sub && !lapsedSub && startedRecently;
 
   const completedSessions = sessions ?? [];
   const totalAnswered = completedSessions.reduce((sum, s) => sum + (s.total ?? 0), 0);
