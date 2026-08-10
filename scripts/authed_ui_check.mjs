@@ -55,6 +55,9 @@ async function makeAccount(tag) {
 const contrastFails = []
 const graphicFails = []
 const deadEnds = []
+// 아예 못 본 화면. '기준 미달 0건'과 '안 봤다'는 다르다 — 구분하지 않으면
+// 로그인이 깨진 날 가장 깨끗한 결과가 나온다.
+const unseen = []
 let graphicsChecked = 0
 const mobileProblems = []
 let textChecked = 0
@@ -128,7 +131,7 @@ try {
     await dctx.addCookies([{ name: 'kptest_mode', value: mode, domain: new URL(BASE).hostname, path: '/' }])
     for (const route of ROUTES) {
       const res = await page.goto(`${BASE}${route}`, { waitUntil: 'load', timeout: 40000 }).catch(() => null)
-      if (!res || res.status() >= 400) continue
+      if (!res || res.status() >= 400) { unseen.push(`${mode} ${route} — 열지 못함 (${res?.status() ?? '이동 실패'})`); continue }
       await settle(page)
       await page.addStyleTag({ content: '*,*::before,*::after{animation:none!important;transition:none!important}' }).catch(() => {})
       // 갓 만든 계정으로 도니 여기가 곧 '빈 화면'이다. 빈 화면이 막다른 길이 아닌지 본다.
@@ -143,7 +146,7 @@ try {
       graphicsChecked += gitems.length
       graphicFails.push(...graphicsProblemLines(`${mode} ${route}`, gitems))
       const items = await page.evaluate(browserCollectText).catch(() => null)
-      if (!items) continue
+      if (!items) { unseen.push(`${mode} ${route} — 글자를 읽지 못함`); continue }
       const seen = new Set()
       for (const it of items) {
         const key = it.text + it.color + it.bg.raw
@@ -180,7 +183,7 @@ try {
     await mctx.addCookies([{ name: 'kptest_mode', value: mode, domain: new URL(BASE).hostname, path: '/' }])
     for (const route of ROUTES) {
       const res = await mpage.goto(`${BASE}${route}`, { waitUntil: 'load', timeout: 40000 }).catch(() => null)
-      if (!res || res.status() >= 400) continue
+      if (!res || res.status() >= 400) { unseen.push(`휴대폰 ${mode} ${route} — 열지 못함 (${res?.status() ?? '이동 실패'})`); continue }
       await settle(mpage)
       await mpage.evaluate(async () => {
         for (let y = 0; y < document.body.scrollHeight; y += 800) { window.scrollTo(0, y); await new Promise((r) => setTimeout(r, 60)) }
@@ -188,7 +191,7 @@ try {
       }).catch(() => {})
       await mpage.waitForTimeout(250)
       const r = await mpage.evaluate(browserAuditMobile).catch(() => null)
-      if (!r) continue
+      if (!r) { unseen.push(`휴대폰 ${mode} ${route} — 화면을 읽지 못함`); continue }
       mobileProblems.push(...mobileProblemLines(`${mode} ${route}`, r))
     }
   }
@@ -235,4 +238,8 @@ if (softMobile.length) {
   console.log(`\n[휴대폰 권장 미달 — 44px] ${softMobile.length}건 중 앞 20건`)
   for (const p of softMobile.slice(0, 20)) console.log('  ' + p.line)
 }
-if (contrastFails.length || graphicFails.length || deadEnds.length || hardMobile.length) process.exitCode = 1
+if (unseen.length) {
+  console.log('\n[보지 못한 화면 — 통과가 아니다]')
+  for (const l of unseen) console.log('  ' + l)
+}
+if (contrastFails.length || graphicFails.length || deadEnds.length || hardMobile.length || unseen.length) process.exitCode = 1

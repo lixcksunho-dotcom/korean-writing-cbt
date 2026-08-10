@@ -101,7 +101,8 @@ await wctx.addInitScript(dismissIntros)
 const wpage = await wctx.newPage()
 for (const path of PAGES) {
   const res = await wpage.goto(BASE + path, { waitUntil: 'load' }).catch(() => null)
-  if (!res || res.status() >= 400) continue
+  // 조용히 넘기면 '못 봤다'가 '문제없다'로 둔갑한다 — 위 구간과 같은 규칙으로 기록한다.
+  if (!res || res.status() >= 400) { problems.push(`${path} 열지 못함(넓은 화면)`); continue }
   await wpage.waitForTimeout(400)
   const wide = await wpage.evaluate(() => {
     const bad = []

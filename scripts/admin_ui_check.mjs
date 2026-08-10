@@ -105,6 +105,7 @@ async function waitForServer() {
 
 const contrastFails = []
 const graphicFails = []
+const unseen = [] // 아예 못 본 화면 — 0건과 '깨끗함'은 다르다
 let graphicsChecked = 0
 const mobileProblems = []
 let textChecked = 0
@@ -171,17 +172,26 @@ try {
   if (dfail) throw new Error(`관리자로 들어가지 못했습니다 — ${dfail}`)
 
   // 화면마다 몇 개를 실제로 쟀는지 남긴다. 0이면 "통과"가 아니라 "안 봤다"인데
-  // 합계만 찍으면 그 둘이 구분되지 않는다.
+  // 합계만 찍으면 그 둘이 구분되지 않는다. 못 본 화면은 모아서 실패로 친다 —
+  // 로그인이 깨지면 10면 전부 못 열고도 '기준 미달 0건'으로 깨끗해 보인다.
   for (const route of ROUTES) {
     const res = await page.goto(`${BASE}${route}`, { waitUntil: 'load', timeout: 40000 }).catch(() => null)
-    if (!res || res.status() >= 400) { console.log(`  ${route}  열리지 않음 (${res?.status() ?? '이동 실패'})`); continue }
+    if (!res || res.status() >= 400) {
+      console.log(`  ${route}  열리지 않음 (${res?.status() ?? '이동 실패'})`)
+      unseen.push(`${route} — 열리지 않음 (${res?.status() ?? '이동 실패'})`)
+      continue
+    }
     await page.waitForTimeout(400)
     await page.addStyleTag({ content: '*,*::before,*::after{animation:none!important;transition:none!important}' }).catch(() => {})
     const gitems = await page.evaluate(browserAuditGraphics).catch(() => [])
     graphicsChecked += gitems.length
     graphicFails.push(...graphicsProblemLines(route, gitems))
     const items = await page.evaluate(browserCollectText).catch(() => null)
-    if (!items) { console.log(`  ${route}  글자를 읽지 못함`); continue }
+    if (!items) {
+      console.log(`  ${route}  글자를 읽지 못함`)
+      unseen.push(`${route} — 글자를 읽지 못함`)
+      continue
+    }
     console.log(`  ${route}  글자 ${items.length}개 (${new URL(page.url()).pathname})`)
     const seen = new Set()
     for (const it of items) {
@@ -241,7 +251,7 @@ try {
 const hardMobile = mobileProblems.filter((p) => p.hard)
 const softMobile = mobileProblems.filter((p) => !p.hard)
 
-console.log(`\n관리자 화면 점검 — ${ROUTES.length}면`)
+console.log(`\n관리자 화면 점검 — ${ROUTES.length}면 중 ${ROUTES.length - unseen.length}면을 실제로 봄`)
 console.log(`명암비: 텍스트 ${textChecked}개 중 기준 미달 ${contrastFails.length}건`)
 console.log(`아이콘·안내글: ${graphicsChecked}개 중 기준 미달 ${graphicFails.length}건`)
 console.log(`휴대폰: 기준 미달 ${hardMobile.length}건 · 권장 미달 ${softMobile.length}건`)
@@ -263,4 +273,11 @@ if (softMobile.length) {
   for (const p of softMobile) console.log('  ' + p.line)
 }
 
-process.exit(contrastFails.length || graphicFails.length || hardMobile.length ? 1 : 0)
+// 못 본 화면도 실패다. 로그인이 깨지거나 라우트가 죽으면 10면을 다 못 열고도
+// '기준 미달 0건'이 찍혀 가장 깨끗한 결과처럼 보인다 — 안 본 것과 문제없는 것은 다르다.
+if (unseen.length) {
+  console.log('\n[보지 못한 화면 — 통과가 아니다]')
+  for (const l of unseen) console.log('  ' + l)
+}
+
+process.exit(contrastFails.length || graphicFails.length || hardMobile.length || unseen.length ? 1 : 0)
