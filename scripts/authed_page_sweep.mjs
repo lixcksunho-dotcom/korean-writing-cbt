@@ -43,7 +43,9 @@ const password = `Chk-${stamp}-aA1!`
 let userId = null
 const problems = []
 let visited = 0
-let slowest = { route: '-', ms: 0 }
+// 가장 느린 하나만 찍으면 '이상치 하나'인지 '전반적으로 느린지'를 구분할 수 없다.
+// 실제로 그 한 자리가 실행마다 바뀌어서, 고쳐도 나아졌는지 알기 어려웠다.
+const timings = []
 
 try {
   const created = await (await api('/auth/v1/admin/users', {
@@ -102,7 +104,7 @@ try {
         last = page.url()
       }
       const ms = Date.now() - t0
-      if (ms > slowest.ms) slowest = { route: `${mode} ${route}`, ms }
+      timings.push({ route: `${mode} ${route}`, ms })
       let text = await page.evaluate(() => document.body.innerText).catch(() => null)
       if (text === null) {
         await page.waitForTimeout(1500)
@@ -180,7 +182,16 @@ try {
 }
 
 console.log(`${BASE} · 훑은 화면 ${visited}개 (실글/KBS 두 모드)`)
-console.log(`가장 느린 화면: ${slowest.route} ${slowest.ms}ms`)
+{
+  const sorted = [...timings].sort((a, b) => a.ms - b.ms)
+  const at = (q) => sorted[Math.min(sorted.length - 1, Math.floor(sorted.length * q))]?.ms ?? 0
+  // 주의: 이 값은 브라우저 조작·대기까지 포함한 '검사 기준' 시간이라 사용자 체감보다 크다.
+  // 체감은 navigation timing으로 따로 재야 한다(실측: /dashboard 1260ms · /exam-info 145ms).
+  // 여기서 볼 것은 절대값이 아니라 화면 사이의 차이와, 고친 뒤 분포가 내려가는지다.
+  console.log(`응답 시간(검사 기준) — 중앙값 ${at(0.5)}ms · 상위10% ${at(0.9)}ms · 최대 ${sorted.at(-1)?.ms ?? 0}ms`)
+  console.log('느린 화면 3개:')
+  for (const t of sorted.slice(-3).reverse()) console.log(`  ${t.ms}ms  ${t.route}`)
+}
 if (problems.length) {
   console.log(`\n문제 ${problems.length}건`)
   problems.forEach((p) => console.log('  ' + p))
