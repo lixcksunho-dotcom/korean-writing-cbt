@@ -89,6 +89,11 @@ export default function ExamPlayer({
   const [draftDismissed, setDraftDismissed] = useState(false)
   const answeredCount = Object.keys(answers).length
   const showDraftBanner = !!draft && !draftDismissed && answeredCount === 0
+  // 초안의 제한 시간이 이미 지났는지는 '불러오기'를 누른 순간에 판정한다.
+  // 렌더 본문에서 Date.now()를 부르면 순수성 규칙에 걸리고, 이펙트에서 setState하면
+  // 연쇄 렌더 규칙에 걸린다. 이벤트 핸들러가 두 규칙 모두에서 자유롭고, 의미도 맞다 —
+  // 시간이 지났는지는 누르는 그 시점의 문제다.
+  const [expiredNotice, setExpiredNotice] = useState(false)
 
   // 마감 시각을 함께 저장한다. 자리를 비운 동안에도 시험 시계는 흘러야 하므로,
   // 복구할 때 남은 시간을 여기서 다시 계산한다(시계를 멈추는 건 유료 기능 그대로다).
@@ -116,6 +121,12 @@ export default function ExamPlayer({
 
   function restoreDraft() {
     if (!draft) return
+    // 시간이 다 됐으면 불러오는 순간 자동 제출이 돈다. 말없이 제출해 버리면
+    // 사용자는 '이어서 풀려고' 눌렀다가 결과 화면으로 튕긴다 — 먼저 물어본다.
+    if (draft.deadline !== null && draft.deadline <= Date.now() && !expiredNotice) {
+      setExpiredNotice(true)
+      return
+    }
     setAnswers(draft.answers)
     if (draft.deadline !== null) {
       setTimeLeft(Math.max(0, Math.round((draft.deadline - Date.now()) / 1000)))
@@ -219,7 +230,9 @@ export default function ExamPlayer({
             작성하던 답안 {Object.keys(draft!.answers).length}문항이 남아 있어요
           </p>
           <p className="mt-0.5 text-xs text-[#64748b]">
-            불러오면 이어서 풀 수 있어요. 시험 시간은 그동안에도 흘렀습니다.
+            {expiredNotice
+              ? '제한 시간이 이미 지났어요. 이어서 풀 수는 없고, 지금까지 쓴 답안으로 제출만 할 수 있어요.'
+              : '불러오면 이어서 풀 수 있어요. 시험 시간은 그동안에도 흘렀습니다.'}
           </p>
           <div className="mt-2.5 flex gap-2">
             <button
@@ -227,7 +240,7 @@ export default function ExamPlayer({
               onClick={restoreDraft}
               className="rounded-xl bg-[#1e3a5f] px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-[#2d5488]"
             >
-              불러오기
+              {expiredNotice ? '지금까지 쓴 답안으로 제출' : '불러오기'}
             </button>
             <button
               type="button"
