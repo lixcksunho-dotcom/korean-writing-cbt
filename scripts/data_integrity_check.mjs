@@ -83,7 +83,25 @@ try {
   const overScore = sessions.filter((s) => s.completed_at && (s.score ?? 0) > (s.total ?? 0))
   if (overScore.length) problems.push(`점수가 총점보다 큰 세션 ${overScore.length}건 — 채점 계산 오류`)
 
-  // 4) 미처리 신고는 사고가 아니라 할 일이다. 쌓이면 알려 준다.
+  // 4) 랜딩의 '9회분 351문항'은 쿼리가 실패했을 때 쓰는 폴백이다. 문항을 추가하면
+  //    이 값이 낡는데, 낡은 채로 쿼리가 한 번 실패하면 옛 숫자가 사실처럼 노출된다.
+  //    소스에 박힌 값과 실제를 대조해 어긋나면 알린다.
+  {
+    const src = fs.readFileSync('src/app/page.tsx', 'utf-8')
+    const roundFb = Number(/const roundCount = [^|]*\|\| (\d+)/.exec(src)?.[1])
+    const qFb = Number(/const questionCount = [^|]*\|\| (\d+)/.exec(src)?.[1])
+    const landing = await all('questions?select=round&program=eq.silyong&year=lt.9000', 'id')
+    const realRounds = new Set(landing.map((q) => q.round)).size
+    if (Number.isFinite(roundFb) && roundFb !== realRounds) {
+      problems.push(`랜딩 폴백 회차 ${roundFb} ≠ 실제 ${realRounds} — 쿼리가 한 번 실패하면 옛 숫자가 노출된다 (src/app/page.tsx)`)
+    }
+    if (Number.isFinite(qFb) && qFb !== landing.length) {
+      problems.push(`랜딩 폴백 문항 ${qFb} ≠ 실제 ${landing.length} — 쿼리가 한 번 실패하면 옛 숫자가 노출된다 (src/app/page.tsx)`)
+    }
+    if (Number.isFinite(qFb) && qFb === landing.length) notes.push(`랜딩 폴백 수치 일치 (${realRounds}회분 ${landing.length}문항)`)
+  }
+
+  // 5) 미처리 신고는 사고가 아니라 할 일이다. 쌓이면 알려 준다.
   const pending = reports.filter((r) => !r.resolved).length
   if (pending) notes.push(`미처리 문제 신고 ${pending}건 — /admin/reports`)
 } catch (e) {
