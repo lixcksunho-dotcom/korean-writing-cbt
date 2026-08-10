@@ -4,8 +4,8 @@ import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@/lib/supabase/server'
 import { getActiveSubscription } from '@/lib/subscription'
 import { consumeAiTrial, refundAiTrial, FREE_AI_TRIAL, readTrialUsed } from '@/lib/aiTrial'
-import { enforcePaidUsage, recordPaidGrade } from '@/lib/antiSharing'
-import { assertWithinGradingLimit, MAX_ANSWER_CHARS } from '@/lib/aiGradingLimits'
+import { paidUsageBlock, recordPaidGrade } from '@/lib/antiSharing'
+import { gradingLimitError, MAX_ANSWER_CHARS } from '@/lib/aiGradingLimits'
 import { describeGradingFailure, truncatedFailure, alertGradingFailure } from '@/lib/aiGradingFailure'
 import { trackServerEvent } from '@/lib/analytics/trackServerEvent'
 import { SUBSCRIPTION_REQUIRED, type GradingError } from '@/lib/aiGradingMessage'
@@ -54,7 +54,8 @@ export async function gradeEssayPractice(
   if (!user) throw new Error('Unauthorized')
 
   // 이 액션은 브라우저에서 직접 호출 가능하고 userAnswer가 그대로 유료 API로 들어간다 → 길이 상한 필수.
-  assertWithinGradingLimit(userAnswer, MAX_ANSWER_CHARS, '답안')
+  const tooLong = gradingLimitError(userAnswer, MAX_ANSWER_CHARS, '답안')
+  if (tooLong) return { error: tooLong }
 
   // 서술형 AI 채점은 유료 기능. 단, 비구독자는 평생 1회 무료 체험 허용.
   const subscription = await getActiveSubscription(user.id)
@@ -63,7 +64,10 @@ export async function gradeEssayPractice(
   if (usingTrial && trialUsed >= FREE_AI_TRIAL) return { error: SUBSCRIPTION_REQUIRED }
 
   // 유료(구독) 사용 시 계정 공유 방지: 기기 수·일일 한도 검사
-  if (subscription) await enforcePaidUsage(user.id)
+  if (subscription) {
+    const blocked = await paidUsageBlock(user.id)
+    if (blocked) return { error: blocked }
+  }
 
   // 사용량 차감은 API 호출 '전'에 한다. 성공 후에 차감하면 응답 파싱이 실패하는 입력을
   // 골라 무한 재시도할 수 있고, 그때마다 요금은 실제로 발생한다.

@@ -4,7 +4,9 @@ import { createAdminClient } from '@/lib/supabase/admin'
 // 계정 돌려쓰기(공유) 방지 — 유료 이용 시에만 적용.
 //  - 기기 수 제한: 한 계정이 사용할 수 있는 활성 기기는 최대 DEVICE_LIMIT 대
 //  - 일일 한도: 하루 AI 첨삭 횟수는 DAILY_GRADE_LIMIT 회까지
-// 위반 시 사람이 읽을 수 있는 한국어 메시지를 throw → UI가 그대로 노출.
+// 위반 시 사람이 읽을 수 있는 한국어 사유를 '돌려준다'(던지지 않는다).
+// 던지면 Next.js 운영 빌드가 message를 지워서, 기기 한도에 걸린 사람이 이유를 모른 채
+// "오류가 발생했습니다"만 보고 무한히 다시 누르게 된다.
 export const DEVICE_LIMIT = 3
 export const DAILY_GRADE_LIMIT = 30
 // 기기 한도 계산 시 '최근 활동'만 센다(일수). 쿠키를 지워 생긴 옛 기기ID는 이 기간이 지나면
@@ -36,10 +38,10 @@ function todayKey(): string {
 }
 
 /**
- * 유료 AI 기능 사용 전 호출. 기기 한도·일일 한도를 검사하고,
- * 위반 시 throw 한다. 통과하면 현재 기기를 등록(갱신)한다.
+ * 유료 AI 기능 사용 전 호출. 기기 한도·일일 한도를 검사한다.
+ * 막아야 하면 사유 문장을, 통과하면 null을 돌려준다. 통과 시 현재 기기를 등록(갱신)한다.
  */
-export async function enforcePaidUsage(userId: string): Promise<void> {
+export async function paidUsageBlock(userId: string): Promise<string | null> {
   const admin = createAdminClient()
   const deviceId = await getDeviceId()
 
@@ -52,9 +54,7 @@ export async function enforcePaidUsage(userId: string): Promise<void> {
     .gte('last_seen', activeSince)
   const ids = new Set((devices ?? []).map(d => d.device_id as string))
   if (!ids.has(deviceId) && ids.size >= DEVICE_LIMIT) {
-    throw new Error(
-      `계정 공유가 의심되어 이용이 제한되었습니다. 한 계정은 기기 ${DEVICE_LIMIT}대까지만 사용할 수 있어요. 본인 계정이 맞다면 고객센터로 문의해 주세요.`
-    )
+    return `계정 공유가 의심되어 이용이 제한되었습니다. 한 계정은 기기 ${DEVICE_LIMIT}대까지만 사용할 수 있어요. 본인 계정이 맞다면 고객센터로 문의해 주세요.`
   }
   // 이 등록이 조용히 실패하면 기기 수가 영영 늘지 않아 제한 자체가 무력해진다.
   // 사용자를 막을 일은 아니라 던지지는 않지만, 모르고 지나가서도 안 된다.
@@ -78,10 +78,10 @@ export async function enforcePaidUsage(userId: string): Promise<void> {
     .maybeSingle()
   const used = (row?.grade_count as number | undefined) ?? 0
   if (used >= DAILY_GRADE_LIMIT) {
-    throw new Error(
-      `오늘 AI 첨삭 한도(${DAILY_GRADE_LIMIT}회)를 모두 사용했어요. 내일 다시 이용해 주세요.`
-    )
+    return `오늘 AI 첨삭 한도(${DAILY_GRADE_LIMIT}회)를 모두 사용했어요. 내일 다시 이용해 주세요.`
   }
+
+  return null
 }
 
 /**

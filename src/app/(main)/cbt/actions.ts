@@ -4,8 +4,8 @@ import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@/lib/supabase/server'
 import { getActiveSubscription } from '@/lib/subscription'
 import { consumeAiTrial, refundAiTrial, FREE_AI_TRIAL, readTrialUsed } from '@/lib/aiTrial'
-import { enforcePaidUsage, recordPaidGrade } from '@/lib/antiSharing'
-import { assertWithinGradingLimit, MAX_ANSWER_CHARS } from '@/lib/aiGradingLimits'
+import { paidUsageBlock, recordPaidGrade } from '@/lib/antiSharing'
+import { gradingLimitError, MAX_ANSWER_CHARS } from '@/lib/aiGradingLimits'
 import { describeGradingFailure, truncatedFailure, alertGradingFailure } from '@/lib/aiGradingFailure'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { SUBSCRIPTION_REQUIRED, type GradingError } from '@/lib/aiGradingMessage'
@@ -59,7 +59,10 @@ export async function gradeExamEssay(
   if (usingTrial && trialUsed >= FREE_AI_TRIAL) return { error: SUBSCRIPTION_REQUIRED }
 
   // 유료(구독) 사용 시 계정 공유 방지: 기기 수·일일 한도 검사
-  if (subscription) await enforcePaidUsage(user.id)
+  if (subscription) {
+    const blocked = await paidUsageBlock(user.id)
+    if (blocked) return { error: blocked }
+  }
 
   // 본인 세션의 답안인지 확인
   const { data: session } = await supabase
@@ -89,7 +92,8 @@ export async function gradeExamEssay(
   if (answerRow.ai_feedback) return answerRow.ai_feedback as EssayGrade
 
   // 답안은 사용자가 넣은 값이라 그대로 유료 API로 보내면 길이가 곧 비용이 된다.
-  assertWithinGradingLimit(answerRow.user_answer ?? '', MAX_ANSWER_CHARS, '답안')
+  const tooLong = gradingLimitError(answerRow.user_answer ?? '', MAX_ANSWER_CHARS, '답안')
+  if (tooLong) return { error: tooLong }
 
   // 사용량 차감은 API 호출 '전'에. 성공 후에 차감하면 파싱이 실패하는 입력으로
   // 무한 재시도가 가능하고, 실패해도 요금은 이미 발생한 뒤다.
