@@ -8,7 +8,14 @@ export const SCHEDULE_URL = 'https://www.klata.or.kr/test/schedule'
 export type Round = {
   round: string
   applyStart: string
+  /** 정기접수 마감 */
   applyEnd: string
+  /**
+   * 추가접수 마감(있는 시험만). KBS는 정기접수가 끝난 다음 날부터 9일간 더 받는데,
+   * 이 값이 없으면 화면이 그 기간에도 '접수 마감'이라고 말한다 — 아직 낼 수 있는
+   * 사람을 돌려보내는 셈이다.
+   */
+  addonEnd?: string
   examDate: string
   resultDate: string
 }
@@ -23,13 +30,17 @@ export const SCHEDULE: Round[] = [
   { round: '제123회', applyStart: '2026-12-14', applyEnd: '2027-01-04', examDate: '2027-01-16', resultDate: '2027-02-16' },
 ]
 
-// ── KBS한국어능력시험 일정 (출처: KBS한국어진흥원 공식 접수 목록, 2026-07-19 대조 확인) ──
+// ── KBS한국어능력시험 일정 (출처: KBS한국어진흥원 공식 접수 목록, 2026-08-10 대조 확인) ──
+// applyEnd는 '정기접수' 마감이다. 공식 목록은 추가접수 마감(정기 +9일)도 함께 보여 주는데,
+// 92·93회가 정기 기준으로 들어가 있어 94회도 같은 기준으로 맞췄다 — 섞으면 회차마다
+// 안내가 달라진다.
 // https://www.kbskorean.org/klt/exam-apply/list · 변경 시 이 배열 갱신.
 export const KBS_APPLY_URL = 'https://www.kbskorean.org/klt/exam-apply/list'
 export const KBS_SCHEDULE_URL = 'https://www.kbskorean.org/klt/exam-apply/list'
 export const KBS_SCHEDULE: Round[] = [
-  { round: '제92회', applyStart: '2026-07-06', applyEnd: '2026-08-07', examDate: '2026-08-23', resultDate: '2026-09-03' },
-  { round: '제93회', applyStart: '2026-09-07', applyEnd: '2026-10-02', examDate: '2026-10-18', resultDate: '2026-10-29' },
+  { round: '제92회', applyStart: '2026-07-06', applyEnd: '2026-08-07', addonEnd: '2026-08-16', examDate: '2026-08-23', resultDate: '2026-09-03' },
+  { round: '제93회', applyStart: '2026-09-07', applyEnd: '2026-10-02', addonEnd: '2026-10-11', examDate: '2026-10-18', resultDate: '2026-10-29' },
+  { round: '제94회', applyStart: '2026-11-02', applyEnd: '2026-12-04', addonEnd: '2026-12-13', examDate: '2026-12-20', resultDate: '2026-12-31' },
 ]
 
 export type ProgramSchedule = { title: string; rounds: Round[]; applyUrl: string; scheduleUrl: string }

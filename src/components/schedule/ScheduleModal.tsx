@@ -24,15 +24,32 @@ function todayKey() {
   return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`
 }
 
-type Status = 'open' | 'upcoming' | 'closed'
+// 접수 마감(closed)과 시험 종료(done)는 다르다. 예전엔 접수가 끝나면 회차를 화면에서
+// 통째로 뺐는데, 그러면 **이미 접수한 사람이 자기 시험일을 못 본다** — 접수 마감 뒤에도
+// 시험까지 2~3주가 남는다. 그 사람에게는 그게 지금 가장 중요한 날짜다.
+type Status = 'open' | 'addon' | 'upcoming' | 'closed' | 'done'
 function statusOf(r: Round): Status {
   const today = startOfToday().getTime()
   const start = new Date(`${r.applyStart}T00:00:00`).getTime()
   const end = new Date(`${r.applyEnd}T23:59:59`).getTime()
+  const addon = r.addonEnd ? new Date(`${r.addonEnd}T23:59:59`).getTime() : null
+  const exam = new Date(`${r.examDate}T23:59:59`).getTime()
   if (today < start) return 'upcoming'
   if (today <= end) return 'open'
-  return 'closed'
+  if (addon !== null && today <= addon) return 'addon'
+  if (today <= exam) return 'closed'
+  return 'done'
 }
+
+/** 추가접수는 정기접수 마감 다음 날 시작한다. 'YYYY-MM-DD 다음날'로 적으면 읽기 나쁘다. */
+function dayAfter(ymd: string): string {
+  const d = new Date(`${ymd}T00:00:00`)
+  d.setDate(d.getDate() + 1)
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
+/** 아직 낼 수 있는가(정기 또는 추가접수 중) */
+const canApply = (st: Status) => st === 'open' || st === 'addon'
 
 // 시험을 푸는 화면(시간 제한 CBT·연습 풀이)에서는 어떤 것도 답안 위를 덮으면 안 된다.
 const QUIET_ROUTES = [/^\/cbt\/[^/]+$/, /^\/practice\/(multiple|essay|types|refine|wrong|bookmarks)/, /^\/manuscript$/, /^\/subscribe/]
@@ -77,16 +94,21 @@ export default function ScheduleModal({ program = 'silyong' }: { program?: strin
     }
   }, [open])
 
-  // 접수중이면 그 회차, 아니면 다음 접수예정 회차를 대표로
-  const upcoming = rounds.filter(r => statusOf(r) !== 'closed')
-  const primary = upcoming.find(r => statusOf(r) === 'open') ?? upcoming[0] ?? rounds[rounds.length - 1]
+  // 접수중이면 그 회차, 아니면 가장 가까운 회차를 대표로(배열은 날짜순).
+  // 접수만 마감된 회차도 남긴다 — 시험이 아직 안 지났으면 그게 제일 급한 날짜다.
+  const upcoming = rounds.filter(r => statusOf(r) !== 'done')
+  const primary = upcoming.find(r => canApply(statusOf(r))) ?? upcoming[0] ?? rounds[rounds.length - 1]
   const primaryStatus = statusOf(primary)
   const dday =
     primaryStatus === 'open'
       ? daysBetween(primary.applyEnd)
-      : primaryStatus === 'upcoming'
-        ? daysBetween(primary.applyStart)
-        : 0
+      : primaryStatus === 'addon'
+        ? daysBetween(primary.addonEnd!)
+        : primaryStatus === 'upcoming'
+          ? daysBetween(primary.applyStart)
+          : primaryStatus === 'closed'
+            ? daysBetween(primary.examDate)
+            : 0
 
   if (quiet) return null
 
@@ -139,16 +161,22 @@ export default function ScheduleModal({ program = 'silyong' }: { program?: strin
                   <div className="text-white/60 text-sm">
                     {upcoming.length === 0
                       ? '다음 회차 일정이 아직 안 나왔어요'
-                      : primaryStatus === 'open' ? '접수 진행 중' : primaryStatus === 'upcoming' ? '접수 예정' : '접수 마감'}
+                      : primaryStatus === 'open' ? '접수 진행 중'
+                        : primaryStatus === 'addon' ? '추가접수 진행 중'
+                          : primaryStatus === 'upcoming' ? '접수 예정'
+                            : primaryStatus === 'closed' ? '접수 마감 · 시험 준비 기간'
+                              : '접수 마감'}
                   </div>
                 </div>
-                {primaryStatus !== 'closed' && (
+                {primaryStatus !== 'done' && (
                   <div className="text-right">
                     <div className="text-3xl font-black text-[#f59e0b] leading-none">
                       D{dday === 0 ? '-DAY' : dday > 0 ? `-${dday}` : `+${-dday}`}
                     </div>
                     <div className="text-white/50 text-xs mt-1">
-                      {primaryStatus === 'open' ? '접수 마감까지' : '접수 시작까지'}
+                      {primaryStatus === 'open' ? '접수 마감까지'
+                        : primaryStatus === 'addon' ? '추가접수 마감까지'
+                          : primaryStatus === 'closed' ? '시험까지' : '접수 시작까지'}
                     </div>
                   </div>
                 )}
@@ -158,6 +186,9 @@ export default function ScheduleModal({ program = 'silyong' }: { program?: strin
             {/* 대표 회차 상세 */}
             <div className="px-6 py-5 border-b border-[#eef2f7]">
               <Row label="접수기간" value={`${fmt(primary.applyStart)} ~ ${fmt(primary.applyEnd)}`} highlight={primaryStatus === 'open'} />
+              {primary.addonEnd && (
+                <Row label="추가접수" value={`${fmt(dayAfter(primary.applyEnd))} ~ ${fmt(primary.addonEnd)}`} highlight={primaryStatus === 'addon'} />
+              )}
               <Row label="시험일" value={fmt(primary.examDate)} />
               <Row label="합격발표" value={fmt(primary.resultDate)} />
 
@@ -245,7 +276,10 @@ function StatusBadge({ status }: { status: Status }) {
   const map = {
     open: { t: '접수중', c: 'bg-emerald-100 text-emerald-700' },
     upcoming: { t: '예정', c: 'bg-slate-100 text-slate-500' },
-    closed: { t: '마감', c: 'bg-slate-100 text-slate-400' },
+    // '마감'만 보이면 시험도 끝난 걸로 읽힌다. 접수만 끝난 회차는 그렇게 말해 준다.
+    addon: { t: '추가접수', c: 'bg-emerald-100 text-emerald-700' },
+    closed: { t: '접수마감', c: 'bg-amber-100 text-amber-700' },
+    done: { t: '종료', c: 'bg-slate-100 text-slate-500' },
   }[status]
   return <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${map.c}`}>{map.t}</span>
 }
