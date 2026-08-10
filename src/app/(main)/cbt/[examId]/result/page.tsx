@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { redirectToLogin } from '@/lib/loginRedirect'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { CheckCircle2, XCircle, Trophy, RotateCcw, LayoutDashboard, Star, Target, Sparkles, ChevronRight, Lock } from 'lucide-react'
@@ -30,7 +31,7 @@ export default async function ResultPage({
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  if (!user) redirectToLogin(`/cbt/${examId}/result?session=${sessionId}`)
 
   const { data: session } = await supabase
     .from('quiz_sessions')

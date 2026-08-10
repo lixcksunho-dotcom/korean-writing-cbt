@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
+import { redirectToLogin } from '@/lib/loginRedirect'
 import Link from 'next/link'
 import { PenLine, ChevronLeft, Trophy, Clock } from 'lucide-react'
 import type { GradeResult } from '@/app/(main)/manuscript/actions'
@@ -16,7 +16,7 @@ const BD_LABELS: Record<string, string> = {
 export default async function ManuscriptHistoryPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  if (!user) redirectToLogin('/manuscript/history')
 
   const { data: submissions } = await supabase
     .from('manuscript_submissions')

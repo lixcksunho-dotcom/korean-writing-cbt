@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { redirectToLogin } from '@/lib/loginRedirect'
 import { redirect } from 'next/navigation'
 import { getActiveSubscription } from '@/lib/subscription'
 import { FREE_AI_TRIAL, readTrialUsed } from '@/lib/aiTrial'
@@ -11,7 +12,7 @@ import { questionBank } from '@/lib/questionBank'
 export default async function ReportPracticePage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  if (!user) redirectToLogin('/practice/report')
 
   const program = await getActiveProgram()
   const cfg = getProgram(program)

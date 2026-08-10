@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
+import { redirectToLogin } from '@/lib/loginRedirect'
 import Link from 'next/link'
 import { ArrowLeft, Receipt, CheckCircle2, XCircle, Clock } from 'lucide-react'
 import { isActivePass } from '@/lib/subscription'
@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic'
 export default async function PaymentHistoryPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  if (!user) redirectToLogin('/subscribe/history')
 
   const { data: rows } = await supabase
     .from('subscriptions')

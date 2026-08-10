@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
+import { redirectToLogin } from '@/lib/loginRedirect'
 import Link from 'next/link'
 import { ArrowLeft, Bookmark, ChevronRight } from 'lucide-react'
 import PracticeMultiple, { type PracticeQuestion } from '../multiple/PracticeMultiple'
@@ -12,7 +12,7 @@ export const dynamic = 'force-dynamic'
 export default async function BookmarksPracticePage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  if (!user) redirectToLogin('/practice/bookmarks')
 
   const { data: marks } = await supabase
     .from('bookmarks')

@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
+import { redirectToLogin } from '@/lib/loginRedirect'
 import Link from 'next/link'
 import { BookOpen, ChevronRight, Clock, FileQuestion, Trophy, Lock } from 'lucide-react'
 import { getActiveSubscription } from '@/lib/subscription'
@@ -13,7 +13,7 @@ import { questionBank } from '@/lib/questionBank'
 export default async function CbtPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  if (!user) redirectToLogin('/cbt')
 
   // 활성 시험 모드 — 이 목록은 해당 모드의 시험만 보여준다.
   const program = await getActiveProgram()

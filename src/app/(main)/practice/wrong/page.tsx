@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
+import { redirectToLogin } from '@/lib/loginRedirect'
 import Link from 'next/link'
 import { ArrowLeft, CheckCircle2, BookOpen, ChevronRight } from 'lucide-react'
 import PracticeMultiple, { type PracticeQuestion } from '../multiple/PracticeMultiple'
@@ -12,7 +12,7 @@ export const dynamic = 'force-dynamic'
 export default async function WrongPracticePage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  if (!user) redirectToLogin('/practice/wrong')
 
   // 현재 보고 있는 시험의 오답만 — 두 시험 문항이 한 묶음에 섞이지 않게.
   const program = await getActiveProgram()

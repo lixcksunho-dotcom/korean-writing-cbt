@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { redirectToLogin } from '@/lib/loginRedirect'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, ListChecks, ChevronRight, Lock } from 'lucide-react'
@@ -17,7 +18,7 @@ export default async function MultiplePracticePage({
   const { set } = await searchParams
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  if (!user) redirectToLogin('/practice/multiple')
 
   const program = await getActiveProgram()
   const cfg = getProgram(program)

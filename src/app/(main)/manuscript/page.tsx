@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
+import { redirectToLogin } from '@/lib/loginRedirect'
 import ManuscriptEditor from '@/components/manuscript/ManuscriptEditor'
 import GradingSample from '@/components/manuscript/GradingSample'
 import Link from 'next/link'
@@ -10,7 +10,7 @@ import { getAiTrialStatus } from '@/lib/aiTrial'
 export default async function ManuscriptPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  if (!user) redirectToLogin('/manuscript')
 
   const [sub, { count }, trial] = await Promise.all([
     getActiveSubscription(user.id),

@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { redirect } from "next/navigation";
+import { redirectToLogin } from '@/lib/loginRedirect'
 import Link from "next/link";
 import { BookOpen, PenLine, Trophy, Clock, ChevronRight, ArrowUpRight, Sparkles, CheckCircle2, Gift, TrendingUp, Lock, Gauge } from "lucide-react";
 import ReviewWriteModal from "@/components/review/ReviewWriteModal";
@@ -24,7 +24,7 @@ function getGreeting() {
 export default async function DashboardPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
+  if (!user) redirectToLogin("/dashboard");
 
   // 후기 닉네임은 DB에서 20자로 제한된다(reviews CHECK). 메일 앞부분이 그보다 길면
   // 후기 등록이 통째로 실패하는데 화면엔 "제출 중 오류"만 뜬다 — 여기서 잘라서 넘긴다.

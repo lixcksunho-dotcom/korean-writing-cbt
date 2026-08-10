@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { redirectToLogin } from '@/lib/loginRedirect'
 import { redirect } from 'next/navigation'
 import ExamPlayer, { type Question } from '@/components/cbt/ExamPlayer'
 import { getOrCreateExamSession } from '@/app/(main)/cbt/actions'
@@ -19,7 +20,7 @@ export default async function ExamPage({
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  if (!user) redirectToLogin(`/cbt/${examId}`)
 
   // 3회분부터는 구독 필요 — 비구독자가 잠긴 회차를 직접 열면 결제로 보낸다.
   const subscription = await getActiveSubscription(user.id)

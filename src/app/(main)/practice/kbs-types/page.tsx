@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { redirectToLogin } from '@/lib/loginRedirect'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, ChevronRight, Target } from 'lucide-react'
@@ -56,7 +57,7 @@ export default async function KbsTypesPracticePage({
   const { t } = await searchParams
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  if (!user) redirectToLogin('/practice/kbs-types')
 
   const program = await getActiveProgram()
   const cfg = getProgram(program)

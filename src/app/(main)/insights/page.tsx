@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
+import { redirectToLogin } from '@/lib/loginRedirect'
 import Link from 'next/link'
 import { ArrowLeft, TrendingUp, TrendingDown, Minus, Target, NotebookPen, ChevronRight, CheckCircle2, XCircle, BarChart3 } from 'lucide-react'
 import { getActiveProgram } from '@/lib/programContext'
@@ -11,7 +11,7 @@ export const dynamic = 'force-dynamic'
 export default async function InsightsPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  if (!user) redirectToLogin('/insights')
 
   // 리포트는 현재 보고 있는 시험 기준 — 두 시험의 기록이 한 그래프에 섞이면 추이가 무의미해진다.
   const program = await getActiveProgram()

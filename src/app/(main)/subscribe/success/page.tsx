@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { redirectToLogin } from '@/lib/loginRedirect'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { CheckCircle2, PenLine } from 'lucide-react'
@@ -25,7 +26,7 @@ export default async function SuccessPage({
   // 1. 인증 확인
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  if (!user) redirectToLogin(`/subscribe/success?paymentId=${paymentId}`)
 
   // 2. 검증 + 구독 발급은 공용 함수에 위임(웹훅·관리자 복구와 동일 로직).
   //    expectedUserId로 결제 customerId와 로그인 사용자가 같은지 교차검증한다.

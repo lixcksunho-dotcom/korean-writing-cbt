@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { redirectToLogin } from '@/lib/loginRedirect'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, ChevronRight, SpellCheck, Globe, Link2, FileText, MessageCircle, BadgeCheck, AlignLeft } from 'lucide-react'
@@ -29,7 +30,7 @@ export default async function TypesPracticePage({
   const { set } = await searchParams
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  if (!user) redirectToLogin('/practice/types')
 
   const program = await getActiveProgram()
 
