@@ -44,6 +44,7 @@ export default async function SuccessPage({
     // reason → 기존 실패 페이지 매핑 유지
     const reasonMap: Record<string, string> = {
       not_found: 'confirm',
+      lookup_failed: 'save',   // 결제는 됐을 수 있다 → 재결제 유도 금지, '처리 중' 안내
       status: 'status',
       amount: 'amount',
       no_user: 'confirm',

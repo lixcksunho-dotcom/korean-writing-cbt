@@ -14,7 +14,8 @@ export type PortonePayment = {
 }
 
 export type GrantReason =
-  | 'not_found'   // 포트원에 해당 결제건 없음 / 조회 실패
+  | 'not_found'     // 포트원에 그런 주문번호가 없음(404) — 사용자가 넣은 값이 틀린 경우 포함
+  | 'lookup_failed' // 조회 자체가 실패(5xx·401 등) — 포트원 장애·키 문제
   | 'status'      // 결제 상태가 PAID 아님
   | 'amount'      // 결제 금액이 정가와 불일치
   | 'no_user'     // 결제건에 customerId(=userId)가 없음
@@ -23,10 +24,20 @@ export type GrantReason =
 
 export type GrantResult =
   | { ok: true; alreadyGranted: boolean; userId: string; expiresAt: string }
-  | { ok: false; reason: GrantReason; status?: string; amount?: number }
+  | { ok: false; reason: GrantReason; status?: string; amount?: number; httpStatus?: number }
 
-/** 포트원 단건조회 — 실제 결제 사실을 서버에서 확인(브라우저 정보 불신). */
-export async function fetchPortonePayment(paymentId: string): Promise<PortonePayment | null> {
+/**
+ * 포트원 단건조회 — 실제 결제 사실을 서버에서 확인(브라우저 정보 불신).
+ *
+ * 404(그런 주문번호 없음)와 5xx·401(포트원 장애·인증 문제)을 구분해서 돌려준다.
+ * 예전엔 둘 다 null이라 '없는 주문번호'와 '조회 자체가 실패'가 같은 값이 됐다.
+ * 그러면 아무 문자열이나 넣어 만든 실패와 진짜 장애를 가릴 수 없어, 운영자에게
+ * 알릴지 말지 정할 수가 없다(알리면 누구나 알림을 무한히 만들 수 있고,
+ * 안 알리면 장애로 결제가 막힌 걸 모른다).
+ */
+export async function fetchPortonePayment(
+  paymentId: string,
+): Promise<{ payment: PortonePayment | null; httpStatus: number }> {
   const res = await fetch(
     `https://api.portone.io/payments/${encodeURIComponent(paymentId)}`,
     {
@@ -34,8 +45,8 @@ export async function fetchPortonePayment(paymentId: string): Promise<PortonePay
       cache: 'no-store',
     },
   )
-  if (!res.ok) return null
-  return (await res.json()) as PortonePayment
+  if (!res.ok) return { payment: null, httpStatus: res.status }
+  return { payment: (await res.json()) as PortonePayment, httpStatus: res.status }
 }
 
 /**
@@ -48,8 +59,10 @@ export async function grantSubscriptionForPayment(
   paymentId: string,
   opts: { expectedUserId?: string } = {},
 ): Promise<GrantResult> {
-  const payment = await fetchPortonePayment(paymentId)
-  if (!payment) return { ok: false, reason: 'not_found' }
+  const { payment, httpStatus } = await fetchPortonePayment(paymentId)
+  if (!payment) {
+    return { ok: false, reason: httpStatus === 404 ? 'not_found' : 'lookup_failed', httpStatus }
+  }
 
   if (payment.status !== 'PAID') {
     return { ok: false, reason: 'status', status: payment.status }

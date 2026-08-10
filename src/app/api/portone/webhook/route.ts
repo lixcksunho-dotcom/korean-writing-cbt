@@ -44,7 +44,7 @@ export async function POST(req: Request) {
       // 일시적 실패(API 지연으로 아직 조회 안 됨 / 아직 PAID 반영 전 / DB 일시오류)는
       // 500을 반환해 포트원 재시도(0→1→4→16→256분, 최대 5회)로 자동 복구되게 한다.
       // 영구 실패(금액 불일치·사용자 식별 불가)는 재시도해도 같으므로 200으로 종료.
-      const transient = result.reason === 'not_found' || result.reason === 'status' || result.reason === 'save'
+      const transient = result.reason === 'not_found' || result.reason === 'lookup_failed' || result.reason === 'status' || result.reason === 'save'
       // 재시도로 낫는 것(transient)은 포트원이 다시 부른다. 그렇지 않은 것은 여기서
       // 영영 사라지므로 — 사용자는 돈을 냈는데 이용권이 없다 — 즉시 알린다.
       if (!transient) {

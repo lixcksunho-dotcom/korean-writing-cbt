@@ -13,7 +13,8 @@ async function assertAdmin() {
 }
 
 const REASON_MSG: Record<GrantReason, string> = {
-  not_found: '포트원에서 결제건을 찾을 수 없습니다. (paymentId 확인)',
+  not_found: '포트원에 그런 주문번호가 없습니다. (paymentId 확인)',
+  lookup_failed: '포트원 조회에 실패했습니다. 잠시 후 다시 시도하세요(장애·API 키 확인).',
   status: '결제 상태가 PAID(완료)가 아닙니다.',
   amount: '결제 금액이 정가와 일치하지 않습니다.',
   no_user: '결제건에 사용자 정보(customerId)가 없습니다.',
