@@ -7,6 +7,7 @@ import { consumeAiTrial, refundAiTrial, FREE_AI_TRIAL, readTrialUsed } from '@/l
 import { enforcePaidUsage, recordPaidGrade } from '@/lib/antiSharing'
 import { assertWithinGradingLimit, MAX_ANSWER_CHARS } from '@/lib/aiGradingLimits'
 import { describeGradingFailure, truncatedFailure, alertGradingFailure } from '@/lib/aiGradingFailure'
+import { trackServerEvent } from '@/lib/analytics/trackServerEvent'
 import type { EssayGrade } from '@/app/(main)/cbt/actions'
 import { questionBank } from '@/lib/questionBank'
 
@@ -67,6 +68,9 @@ export async function gradeEssayPractice(
   // 골라 무한 재시도할 수 있고, 그때마다 요금은 실제로 발생한다.
   if (usingTrial) {
     if (!(await consumeAiTrial(user.id, trialUsed))) throw new Error('SUBSCRIPTION_REQUIRED')
+    // 여기만 이벤트를 안 남기고 있었다. 그래서 app_metadata 기준 체험 사용자는 3명인데
+    // 퍼널에는 2건만 잡혔다 — '체험을 몇 명이 썼나'가 계속 어긋나는 값이 된다.
+    await trackServerEvent('ai_trial_used', user.id, `practice_${trialUsed + 1}/${FREE_AI_TRIAL}`)
   } else {
     await recordPaidGrade(user.id)
   }
