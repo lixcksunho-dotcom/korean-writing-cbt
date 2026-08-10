@@ -6,6 +6,8 @@
 //  - 초점 함정: 다음으로 못 넘어가면 그 자리에 갇힌다
 //  - 건너뛰기 링크: 매 페이지 메뉴를 다 지나야 본문에 닿으면 화면 낭독기 사용자가 지친다
 //  - 넓은 화면: 본문이 끝까지 늘어나면 한 줄이 너무 길어 읽기 어렵다(최대 폭 제한 확인)
+//  - 대화상자: 열었을 때 초점이 안으로 들어가는가, Tab이 밖으로 새지 않는가, ESC로 닫히는가.
+//    셋 다 없으면 눈에는 멀쩡한데 키보드로는 모달을 아예 다룰 수 없다(실제로 셋 다 없었다).
 import { chromium } from 'playwright'
 import { dismissIntros } from './ui_audit_rules.mjs'
 
@@ -14,6 +16,9 @@ const PAGES = ['/', '/subscribe', '/login', '/spelling', '/word-counter', '/blog
 
 const browser = await chromium.launch()
 const problems = []
+
+// 로그인 없이 열 수 있는 대화상자. [주소, 여는 버튼의 글자]
+const DIALOGS = [['/', '시험일정']]
 
 // ── 1) 키보드 ────────────────────────────────────────────────────────────
 const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 } })
@@ -118,9 +123,50 @@ for (const path of PAGES) {
   for (const b of wide) problems.push(`${path}  2560px에서 한 줄 ${b.perLine}자(폭 ${b.w}px) — "${b.text}"`)
 }
 await wctx.close()
+
+// ── 3) 대화상자 안의 키보드 ──────────────────────────────────────────────
+{
+  const dctx = await browser.newContext({ viewport: { width: 1280, height: 900 } })
+  await dctx.addInitScript(dismissIntros)
+  const dpage = await dctx.newPage()
+  for (const [path, openText] of DIALOGS) {
+    const res = await dpage.goto(BASE + path, { waitUntil: 'load' }).catch(() => null)
+    if (!res || res.status() >= 400) { problems.push(`${path} 열지 못함(대화상자)`); continue }
+    await dpage.waitForTimeout(1200)
+    const opener = dpage.locator('button, a').filter({ hasText: openText }).first()
+    if (!await opener.count()) { problems.push(`${path}  "${openText}" 버튼을 찾지 못함`); continue }
+    await opener.click().catch(() => {})
+    await dpage.waitForTimeout(900)
+
+    const inside = () => dpage.evaluate(() => {
+      const root = document.querySelector('[role="dialog"]')
+      return !!root && !!document.activeElement && root.contains(document.activeElement)
+    })
+
+    // (a) 열자마자 초점이 대화상자 안에 있어야 한다
+    if (!await inside()) problems.push(`${path}  "${openText}" 대화상자 — 열어도 초점이 안으로 안 들어간다`)
+
+    // (b) Tab을 넉넉히 눌러도 밖으로 새면 안 된다
+    let escaped = false
+    for (let i = 0; i < 25; i++) {
+      await dpage.keyboard.press('Tab')
+      if (!await inside()) { escaped = true; break }
+    }
+    if (escaped) problems.push(`${path}  "${openText}" 대화상자 — Tab으로 초점이 바깥으로 새어 나간다`)
+
+    // (c) ESC로 닫혀야 한다
+    await dpage.keyboard.press('Escape')
+    await dpage.waitForTimeout(700)
+    if (await dpage.evaluate(() => !!document.querySelector('[role="dialog"]'))) {
+      problems.push(`${path}  "${openText}" 대화상자 — ESC로 닫히지 않는다`)
+    }
+  }
+  await dctx.close()
+}
+
 await browser.close()
 
-console.log(`\n키보드·넓은 화면 점검 — ${PAGES.length}면`)
+console.log(`\n키보드·넓은 화면 점검 — ${PAGES.length}면 · 대화상자 ${DIALOGS.length}개`)
 if (!problems.length) {
   console.log('문제 0건')
 } else {

@@ -1,16 +1,18 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useRef, useState, useTransition } from 'react'
 import { Star, X, MessageSquarePlus, CheckCircle2, Upload, Calendar, Award } from 'lucide-react'
 
 const RATING_WORDS = ['', '별로예요', '그저 그래요', '괜찮아요', '좋아요', '최고예요']
 import { submitReview } from '@/app/(main)/review/actions'
 import { createClient } from '@/lib/supabase/client'
+import { useDialogFocus } from '@/components/ui/dialogFocus'
 
 const MAX_MB = 5
 
 export default function ReviewWriteModal({ defaultName }: { defaultName: string }) {
   const [open, setOpen] = useState(false)
+  const dialogRef = useRef<HTMLDivElement>(null)
   const [rating, setRating] = useState(5)
   const [hoverRating, setHoverRating] = useState(0)
   const [displayName, setDisplayName] = useState(defaultName)
@@ -91,6 +93,8 @@ export default function ReviewWriteModal({ defaultName }: { defaultName: string 
     }, 300)
   }
 
+  useDialogFocus(open, dialogRef, handleClose)
+
   const inputCls = 'w-full bg-[#f8fafc] border-2 border-[#e2e8f0] rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#1e3a5f] transition-colors'
 
   return (
@@ -107,6 +111,7 @@ export default function ReviewWriteModal({ defaultName }: { defaultName: string 
         <div className="fixed inset-0 bg-[#0f172a]/60 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 sm:px-4">
           {/* role/aria-modal이 없으면 낭독기가 대화상자로 알리지 못해, 뒤 화면과 구분이 안 된다 */}
           <div
+            ref={dialogRef}
             role="dialog"
             aria-modal="true"
             aria-labelledby="review-modal-title"

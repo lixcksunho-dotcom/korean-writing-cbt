@@ -1,9 +1,10 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { usePathname } from 'next/navigation'
 import { CalendarDays, X, ExternalLink, ArrowRight } from 'lucide-react'
+import { useDialogFocus } from '@/components/ui/dialogFocus'
 import { getSchedule, type Round } from '@/lib/examSchedule'
 
 const WD = ['일', '월', '화', '수', '목', '금', '토']
@@ -56,6 +57,8 @@ const QUIET_ROUTES = [/^\/cbt\/[^/]+$/, /^\/practice\/(multiple|essay|types|refi
 
 export default function ScheduleModal({ program = 'silyong' }: { program?: string }) {
   const [open, setOpen] = useState(false)
+  const dialogRef = useRef<HTMLDivElement>(null)
+  const closeDialog = useCallback(() => setOpen(false), [])
   const pathname = usePathname()
   const quiet = QUIET_ROUTES.some(re => re.test(pathname))
   // 활성 시험(실글/KBS)에 맞는 일정·제목·링크
@@ -110,6 +113,8 @@ export default function ScheduleModal({ program = 'silyong' }: { program?: strin
             ? daysBetween(primary.examDate)
             : 0
 
+  useDialogFocus(open, dialogRef, closeDialog)
+
   if (quiet) return null
 
   return (
@@ -135,6 +140,7 @@ export default function ScheduleModal({ program = 'silyong' }: { program?: strin
           onClick={() => setOpen(false)}
         >
           <div
+            ref={dialogRef}
             role="dialog"
             aria-modal="true"
             aria-labelledby="schedule-modal-title"

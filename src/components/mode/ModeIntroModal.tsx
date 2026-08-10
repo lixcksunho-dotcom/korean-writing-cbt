@@ -1,11 +1,12 @@
 'use client'
 
 // 첫 방문 시 1회 뜨는 안내 팝업 — KBS한국어능력시험 추가를 알리고 모드를 고르게 한다.
-import { useState, useSyncExternalStore, useTransition } from 'react'
+import { useRef, useState, useSyncExternalStore, useTransition } from 'react'
 import { createPortal } from 'react-dom'
 import { useRouter } from 'next/navigation'
 import { setActiveProgram } from '@/app/(main)/mode-actions'
 import { PROGRAMS, type ProgramId } from '@/lib/programs'
+import { useDialogFocus } from '@/components/ui/dialogFocus'
 import { BookOpen, GraduationCap, X } from 'lucide-react'
 
 const SEEN_KEY = 'kptest_mode_intro_v1'
@@ -25,6 +26,7 @@ export default function ModeIntroModal({ current }: { current: ProgramId }) {
   const alreadySeen = useSyncExternalStore(noSubscribe, readSeen, () => true)
   const [dismissed, setDismissed] = useState(false)
   const open = !alreadySeen && !dismissed
+  const dialogRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
   const [pending, startTransition] = useTransition()
 
@@ -40,6 +42,9 @@ export default function ModeIntroModal({ current }: { current: ProgramId }) {
     seen()
     setDismissed(true)
   }
+
+  // 훅은 조건부 return 앞에 있어야 한다(렌더마다 호출 순서가 같아야 함).
+  useDialogFocus(open, dialogRef, dismiss)
 
   function choose(id: ProgramId) {
     seen()
@@ -72,6 +77,7 @@ export default function ModeIntroModal({ current }: { current: ProgramId }) {
       aria-modal="true"
     >
       <div
+        ref={dialogRef}
         className="relative bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl animate-fade-up"
         onClick={(e) => e.stopPropagation()}
       >
