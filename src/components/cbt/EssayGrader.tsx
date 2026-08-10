@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Sparkles, CheckCircle2, AlertCircle, Lock } from 'lucide-react'
 import { gradeExamEssay, type EssayGrade } from '@/app/(main)/cbt/actions'
 import { useAiTrial } from '@/components/cbt/AiTrialContext'
+import { gradingErrorText, isGradingError } from '@/lib/aiGradingMessage'
 
 export default function EssayGrader({
   sessionId,
@@ -32,11 +33,15 @@ export default function EssayGrader({
     startTransition(async () => {
       try {
         const result = await gradeExamEssay(sessionId, questionId)
+        // 실패는 값으로 온다(운영 빌드가 throw 메시지를 지우기 때문).
+        if (isGradingError(result)) {
+          setError(gradingErrorText(result, '분석 중 오류가 발생했습니다.'))
+          return
+        }
         setGrade(result)
         if (!hasSubscription) trial.spend() // 무료 체험 1회 소진 → 다른 문항도 잠금
-      } catch (e) {
-        const msg = e instanceof Error ? e.message : ''
-        setError(msg === 'SUBSCRIPTION_REQUIRED' ? 'SUBSCRIPTION_REQUIRED' : '분석 중 오류가 발생했습니다.')
+      } catch {
+        setError('분석 중 오류가 발생했습니다.')
       }
     })
   }

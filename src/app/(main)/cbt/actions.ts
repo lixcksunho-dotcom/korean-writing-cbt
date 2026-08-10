@@ -8,6 +8,7 @@ import { enforcePaidUsage, recordPaidGrade } from '@/lib/antiSharing'
 import { assertWithinGradingLimit, MAX_ANSWER_CHARS } from '@/lib/aiGradingLimits'
 import { describeGradingFailure, truncatedFailure, alertGradingFailure } from '@/lib/aiGradingFailure'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { SUBSCRIPTION_REQUIRED, type GradingError } from '@/lib/aiGradingMessage'
 import { trackServerEvent } from '@/lib/analytics/trackServerEvent'
 import { formatExamId } from '@/lib/examId'
 import { type ProgramId } from '@/lib/programs'
@@ -46,7 +47,7 @@ const ESSAY_SYSTEM_PROMPT = `당신은 국가공인 한국실용글쓰기검정 
 export async function gradeExamEssay(
   sessionId: string,
   questionId: string
-): Promise<EssayGrade> {
+): Promise<EssayGrade | GradingError> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Unauthorized')
@@ -55,7 +56,7 @@ export async function gradeExamEssay(
   const subscription = await getActiveSubscription(user.id)
   const trialUsed = await readTrialUsed(user.id, Number(user.app_metadata?.ai_trial_used ?? 0))
   const usingTrial = !subscription
-  if (usingTrial && trialUsed >= FREE_AI_TRIAL) throw new Error('SUBSCRIPTION_REQUIRED')
+  if (usingTrial && trialUsed >= FREE_AI_TRIAL) return { error: SUBSCRIPTION_REQUIRED }
 
   // 유료(구독) 사용 시 계정 공유 방지: 기기 수·일일 한도 검사
   if (subscription) await enforcePaidUsage(user.id)
@@ -93,7 +94,7 @@ export async function gradeExamEssay(
   // 사용량 차감은 API 호출 '전'에. 성공 후에 차감하면 파싱이 실패하는 입력으로
   // 무한 재시도가 가능하고, 실패해도 요금은 이미 발생한 뒤다.
   if (usingTrial) {
-    if (!(await consumeAiTrial(user.id, trialUsed))) throw new Error('SUBSCRIPTION_REQUIRED')
+    if (!(await consumeAiTrial(user.id, trialUsed))) return { error: SUBSCRIPTION_REQUIRED }
     await trackServerEvent('ai_trial_used', user.id, `used_${trialUsed + 1}/${FREE_AI_TRIAL}`)
   } else {
     await recordPaidGrade(user.id) // 구독자 일일 사용량 기록
@@ -122,7 +123,7 @@ export async function gradeExamEssay(
     console.error(f.operator, { userId: user.id })
     await alertGradingFailure('서술형(시험)', f)
     if (usingTrial && f.refund) await refundAiTrial(user.id, trialUsed + 1)
-    throw new Error(f.userMessage)
+    return { error: f.userMessage }
   }
 
   // 길이 제한에 걸려 잘렸으면 JSON이 중간에서 끊겨 파싱이 반드시 실패한다.
@@ -131,7 +132,7 @@ export async function gradeExamEssay(
     console.error(f.operator, { userId: user.id })
     await alertGradingFailure('서술형(시험)', f)
     if (usingTrial) await refundAiTrial(user.id, trialUsed + 1)
-    throw new Error(f.userMessage)
+    return { error: f.userMessage }
   }
 
   const block = response.content[0]
@@ -142,7 +143,7 @@ export async function gradeExamEssay(
     const cleaned = block.text.replace(/```json\n?|\n?```/g, '').trim()
     result = JSON.parse(cleaned)
   } catch {
-    throw new Error('AI 응답을 파싱할 수 없습니다.')
+    return { error: 'AI 응답을 읽지 못했어요. 잠시 후 다시 시도해 주세요.' }
   }
   // 배점 범위 보정
   result.maxScore = question.points
@@ -235,9 +236,10 @@ export async function saveExamProgress(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Unauthorized')
 
-  // 저장하고 나가기는 유료 전용
+  // 저장하고 나가기는 유료 전용. 여기는 채점이 아니라 화면이 결과를 안 그리므로
+  // 예전처럼 던진다(값 반환은 채점 액션에만 해당).
   const subscription = await getActiveSubscription(user.id)
-  if (!subscription) throw new Error('SUBSCRIPTION_REQUIRED')
+  if (!subscription) throw new Error(SUBSCRIPTION_REQUIRED)
 
   const { error } = await supabase
     .from('quiz_sessions')

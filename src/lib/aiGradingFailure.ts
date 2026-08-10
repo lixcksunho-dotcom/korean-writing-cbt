@@ -41,8 +41,10 @@ export function describeGradingFailure(err: unknown): GradingFailure {
 
   const base = `status=${status ?? '-'} type=${kind} ${message.slice(0, 200)}`
 
-  // 키가 아예 없으면 SDK 생성자가 던진다. 상태코드가 없고 문구로만 알 수 있다.
-  if (!status && /ANTHROPIC_API_KEY/i.test(message)) {
+  // 키가 아예 없으면 SDK 생성자가 던진다. 상태코드가 없고 문구로만 알 수 있는데,
+  // SDK가 내는 실제 문구는 'Could not resolve authentication method…'다(로컬 운영빌드로 확인).
+  // ANTHROPIC_API_KEY라는 말은 나오지 않아서, 그것만 찾다가 '통신 실패'로 잘못 분류했다.
+  if (!status && /ANTHROPIC_API_KEY|Could not resolve authentication method/i.test(message)) {
     return {
       userMessage: 'AI 채점을 지금 이용할 수 없어요. 체험 횟수는 차감되지 않았으니 잠시 후 다시 시도해 주세요.',
       operator: `[AI채점] API 키가 설정되지 않았다 — ${base}`,

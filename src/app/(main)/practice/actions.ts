@@ -8,6 +8,7 @@ import { enforcePaidUsage, recordPaidGrade } from '@/lib/antiSharing'
 import { assertWithinGradingLimit, MAX_ANSWER_CHARS } from '@/lib/aiGradingLimits'
 import { describeGradingFailure, truncatedFailure, alertGradingFailure } from '@/lib/aiGradingFailure'
 import { trackServerEvent } from '@/lib/analytics/trackServerEvent'
+import { SUBSCRIPTION_REQUIRED, type GradingError } from '@/lib/aiGradingMessage'
 import type { EssayGrade } from '@/app/(main)/cbt/actions'
 import { questionBank } from '@/lib/questionBank'
 
@@ -47,7 +48,7 @@ const PRACTICE_ESSAY_PROMPT = `당신은 국가공인 한국실용글쓰기검�
 export async function gradeEssayPractice(
   questionId: string,
   userAnswer: string
-): Promise<EssayGrade> {
+): Promise<EssayGrade | GradingError> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Unauthorized')
@@ -59,7 +60,7 @@ export async function gradeEssayPractice(
   const subscription = await getActiveSubscription(user.id)
   const trialUsed = await readTrialUsed(user.id, Number(user.app_metadata?.ai_trial_used ?? 0))
   const usingTrial = !subscription
-  if (usingTrial && trialUsed >= FREE_AI_TRIAL) throw new Error('SUBSCRIPTION_REQUIRED')
+  if (usingTrial && trialUsed >= FREE_AI_TRIAL) return { error: SUBSCRIPTION_REQUIRED }
 
   // 유료(구독) 사용 시 계정 공유 방지: 기기 수·일일 한도 검사
   if (subscription) await enforcePaidUsage(user.id)
@@ -67,7 +68,7 @@ export async function gradeEssayPractice(
   // 사용량 차감은 API 호출 '전'에 한다. 성공 후에 차감하면 응답 파싱이 실패하는 입력을
   // 골라 무한 재시도할 수 있고, 그때마다 요금은 실제로 발생한다.
   if (usingTrial) {
-    if (!(await consumeAiTrial(user.id, trialUsed))) throw new Error('SUBSCRIPTION_REQUIRED')
+    if (!(await consumeAiTrial(user.id, trialUsed))) return { error: SUBSCRIPTION_REQUIRED }
     // 여기만 이벤트를 안 남기고 있었다. 그래서 app_metadata 기준 체험 사용자는 3명인데
     // 퍼널에는 2건만 잡혔다 — '체험을 몇 명이 썼나'가 계속 어긋나는 값이 된다.
     await trackServerEvent('ai_trial_used', user.id, `practice_${trialUsed + 1}/${FREE_AI_TRIAL}`)
@@ -103,7 +104,7 @@ export async function gradeEssayPractice(
     console.error(f.operator, { userId: user.id })
     await alertGradingFailure('서술형(연습)', f)
     if (usingTrial && f.refund) await refundAiTrial(user.id, trialUsed + 1)
-    throw new Error(f.userMessage)
+    return { error: f.userMessage }
   }
 
   if (response.stop_reason === 'max_tokens') {
@@ -111,7 +112,7 @@ export async function gradeEssayPractice(
     console.error(f.operator, { userId: user.id })
     await alertGradingFailure('서술형(연습)', f)
     if (usingTrial) await refundAiTrial(user.id, trialUsed + 1)
-    throw new Error(f.userMessage)
+    return { error: f.userMessage }
   }
 
   const block = response.content[0]
@@ -122,7 +123,7 @@ export async function gradeEssayPractice(
     const cleaned = block.text.replace(/```json\n?|\n?```/g, '').trim()
     result = JSON.parse(cleaned)
   } catch {
-    throw new Error('AI 응답을 파싱할 수 없습니다.')
+    return { error: 'AI 응답을 읽지 못했어요. 잠시 후 다시 시도해 주세요.' }
   }
   result.maxScore = question.points
   result.score = Math.max(0, Math.min(question.points, Math.round(result.score)))
@@ -168,9 +169,10 @@ export async function savePracticeProgress(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Unauthorized')
 
-  // 저장하고 나가기는 유료 전용
+  // 저장하고 나가기는 유료 전용. 여기는 채점이 아니라 화면이 결과를 안 그리므로
+  // 예전처럼 던진다(값 반환은 채점 액션에만 해당).
   const subscription = await getActiveSubscription(user.id)
-  if (!subscription) throw new Error('SUBSCRIPTION_REQUIRED')
+  if (!subscription) throw new Error(SUBSCRIPTION_REQUIRED)
 
   const { data: existing } = await supabase
     .from('quiz_sessions')

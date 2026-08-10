@@ -7,6 +7,7 @@ import EditableManuscript from '@/components/manuscript/EditableManuscript'
 import PassageView from '@/components/cbt/PassageView'
 import CopyGuard from '@/components/cbt/CopyGuard'
 import { gradeEssayPractice } from '../actions'
+import { gradingErrorText, isGradingError, SUBSCRIPTION_REQUIRED } from '@/lib/aiGradingMessage'
 import { parseCharLimit, manuscriptRows } from '@/lib/charLimit'
 import type { EssayGrade } from '@/app/(main)/cbt/actions'
 
@@ -70,11 +71,16 @@ export default function ReportRunner({
     startTransition(async () => {
       try {
         const result = await gradeEssayPractice(q.id, answer)
+        // 실패는 값으로 온다(운영 빌드가 throw 메시지를 지우기 때문).
+        if (isGradingError(result)) {
+          const msg = gradingErrorText(result, '채점 중 오류가 발생했어요.')
+          setErrors(e => ({ ...e, [q.id]: msg === SUBSCRIPTION_REQUIRED ? '서술형 AI 분석은 구독 후 이용할 수 있어요.' : msg }))
+          return
+        }
         setGrades(g => ({ ...g, [q.id]: result }))
         if (!hasSubscription) setTrialUsedLocal(n => n + 1)
-      } catch (err) {
-        const msg = err instanceof Error ? err.message : '채점 중 오류가 발생했어요.'
-        setErrors(e => ({ ...e, [q.id]: msg === 'SUBSCRIPTION_REQUIRED' ? '서술형 AI 분석은 구독 후 이용할 수 있어요.' : msg }))
+      } catch {
+        setErrors(e => ({ ...e, [q.id]: '채점 중 오류가 발생했어요.' }))
       }
     })
   }

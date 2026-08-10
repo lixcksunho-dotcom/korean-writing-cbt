@@ -8,6 +8,7 @@ import { enforcePaidUsage, recordPaidGrade } from '@/lib/antiSharing'
 import { assertWithinGradingLimit, MAX_ANSWER_CHARS, MAX_TOPIC_CHARS } from '@/lib/aiGradingLimits'
 import { describeGradingFailure, truncatedFailure, alertGradingFailure } from '@/lib/aiGradingFailure'
 import { trackServerEvent } from '@/lib/analytics/trackServerEvent'
+import { SUBSCRIPTION_REQUIRED, type GradingError } from '@/lib/aiGradingMessage'
 
 // 한국어 채점 JSON은 대략 1.5자당 1토큰이다(count_tokens로 실측: 1,628자 = 1,102토큰).
 // 원고지 채점은 맞춤법 오류를 corrections에 '빠짐없이' 적으라고 요구하므로 응답이 길어진다.
@@ -62,7 +63,7 @@ const SYSTEM_PROMPT = `당신은 한국실용글쓰기 검정 서술형(원고�
   ]
 }`
 
-export async function gradeManuscript(text: string, topic: string): Promise<GradeResult> {
+export async function gradeManuscript(text: string, topic: string): Promise<GradeResult | GradingError> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Unauthorized')
@@ -76,7 +77,7 @@ export async function gradeManuscript(text: string, topic: string): Promise<Grad
   const subscription = await getActiveSubscription(user.id)
   const trialUsed = await readTrialUsed(user.id, Number(user.app_metadata?.ai_trial_used ?? 0))
   const usingTrial = !subscription
-  if (usingTrial && trialUsed >= FREE_AI_TRIAL) throw new Error('SUBSCRIPTION_REQUIRED')
+  if (usingTrial && trialUsed >= FREE_AI_TRIAL) return { error: SUBSCRIPTION_REQUIRED }
 
   // 계정 공유 방지: 기기 수·일일 한도 검사 (구독자만 해당)
   if (subscription) await enforcePaidUsage(user.id)
@@ -85,7 +86,7 @@ export async function gradeManuscript(text: string, topic: string): Promise<Grad
   // 무한 재시도할 수 있고, 실패해도 요금은 이미 나간 뒤다.
   // 단, 응답 자체를 못 받은 경우(통신·5xx)는 아래에서 refundAiTrial로 되돌린다.
   if (usingTrial) {
-    if (!(await consumeAiTrial(user.id, trialUsed))) throw new Error('SUBSCRIPTION_REQUIRED')
+    if (!(await consumeAiTrial(user.id, trialUsed))) return { error: SUBSCRIPTION_REQUIRED }
     await trackServerEvent('ai_trial_used', user.id, `manuscript_${trialUsed + 1}/${FREE_AI_TRIAL}`)
   } else {
     await recordPaidGrade(user.id)
@@ -120,7 +121,7 @@ export async function gradeManuscript(text: string, topic: string): Promise<Grad
     console.error(f.operator, { userId: user.id })
     await alertGradingFailure('원고지', f)
     if (usingTrial && f.refund) await refundAiTrial(user.id, trialUsed + 1)
-    throw new Error(f.userMessage)
+    return { error: f.userMessage }
   }
 
   // 길이 제한에 걸려 잘렸으면 JSON이 중간에서 끊겨 파싱이 반드시 실패한다.
@@ -130,7 +131,7 @@ export async function gradeManuscript(text: string, topic: string): Promise<Grad
     console.error(f.operator, { userId: user.id, chars: text.length })
     await alertGradingFailure('원고지', f)
     if (usingTrial) await refundAiTrial(user.id, trialUsed + 1)
-    throw new Error(f.userMessage)
+    return { error: f.userMessage }
   }
 
   const block = response.content[0]
@@ -141,7 +142,7 @@ export async function gradeManuscript(text: string, topic: string): Promise<Grad
     const cleaned = block.text.replace(/```json\n?|\n?```/g, '').trim()
     result = JSON.parse(cleaned)
   } catch {
-    throw new Error('AI 응답을 파싱할 수 없습니다.')
+    return { error: 'AI 응답을 읽지 못했어요. 잠시 후 다시 시도해 주세요.' }
   }
 
   // 저장 실패를 삼키면 안 된다: 사용량은 이미 차감됐고 유료 API 요금도 나간 뒤라,

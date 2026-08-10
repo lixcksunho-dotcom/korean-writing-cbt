@@ -13,6 +13,7 @@ import { parseCharLimit, manuscriptRows, clampToCharLimit } from '@/lib/charLimi
 import { extractCircledLabels, insertAtTextareaCursor } from '@/lib/circledSymbols'
 import type { EssayGrade } from '@/app/(main)/cbt/actions'
 import { readDraftRaw, parseDraft, saveDraft, clearDraft } from '@/lib/examDraft'
+import { gradingErrorText, isGradingError, SUBSCRIPTION_REQUIRED } from '@/lib/aiGradingMessage'
 
 // localStorage는 구독할 게 없다 — 마운트 시점 값만 필요하다.
 const noSubscribe = () => () => {}
@@ -154,11 +155,16 @@ export default function PracticeEssay({
     startTransition(async () => {
       try {
         const result = await gradeEssayPractice(q.id, answer)
+        // 실패는 값으로 온다(운영 빌드가 throw 메시지를 지우기 때문).
+        if (isGradingError(result)) {
+          const msg = gradingErrorText(result, '채점 중 오류가 발생했어요.')
+          setErrors(e => ({ ...e, [q.id]: msg === SUBSCRIPTION_REQUIRED ? '서술형 AI 분석은 구독 후 이용할 수 있어요.' : msg }))
+          return
+        }
         setGrades(g => ({ ...g, [q.id]: result }))
         if (!hasSubscription) setTrialUsedLocal(n => n + 1) // 무료 체험 1회 소진
-      } catch (err) {
-        const msg = err instanceof Error ? err.message : '채점 중 오류가 발생했어요.'
-        setErrors(e => ({ ...e, [q.id]: msg === 'SUBSCRIPTION_REQUIRED' ? '서술형 AI 분석은 구독 후 이용할 수 있어요.' : msg }))
+      } catch {
+        setErrors(e => ({ ...e, [q.id]: '채점 중 오류가 발생했어요.' }))
       }
     })
   }

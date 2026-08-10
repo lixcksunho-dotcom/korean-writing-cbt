@@ -7,6 +7,7 @@ import { gradeManuscript, type GradeResult } from '@/app/(main)/manuscript/actio
 import ManuscriptResult from './ManuscriptResult'
 import EditableManuscript from './EditableManuscript'
 import { readManuscriptDraftRaw, parseManuscriptDraft, saveManuscriptDraft, clearManuscriptDraft } from '@/lib/manuscriptDraft'
+import { gradingErrorText, isGradingError, SUBSCRIPTION_REQUIRED } from '@/lib/aiGradingMessage'
 
 const noSubscribe = () => () => {}
 
@@ -78,17 +79,21 @@ export default function ManuscriptEditor({
     startTransition(async () => {
       try {
         const data = await gradeManuscript(text, topic)
+        // 실패는 값으로 온다(운영 빌드가 throw 메시지를 지우기 때문).
+        if (isGradingError(data)) {
+          const t = gradingErrorText(data, '채점 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.')
+          setError(t === SUBSCRIPTION_REQUIRED
+            ? '무료 체험을 모두 사용했어요. 이용권을 열면 무제한으로 채점받을 수 있어요.'
+            : t)
+          return
+        }
         setResult(data)
         clearManuscriptDraft()
         if (!hasSubscription) setRemaining(r => Math.max(0, r - 1))
         window.scrollTo({ top: 0, behavior: 'smooth' })
-      } catch (e) {
-        const msg = e instanceof Error ? e.message : ''
-        setError(
-          msg === 'SUBSCRIPTION_REQUIRED'
-            ? '무료 체험을 모두 사용했어요. 이용권을 열면 무제한으로 채점받을 수 있어요.'
-            : '채점 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.',
-        )
+      } catch {
+        // 여기까지 오는 건 예상 못 한 오류다(운영 빌드는 메시지를 지운다).
+        setError('채점 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.')
       }
     })
   }
