@@ -208,7 +208,32 @@ def main():
     print(f"운영 DB 노출 테이블 {len(live)}개: {', '.join(sorted(live))}\n")
 
     # 코드가 쓰는데 DB에 없는 것 — 조용히 실패 중인 기능이다.
-    broken = {t: fs for t, fs in code.items() if t not in live}
+    #
+    # 다만 '없을 때를 대비해 둔' 경우가 있다. 마이그레이션이 사람 손을 기다리는 동안에도
+    # 서비스는 돌아야 하니, 코드가 오류를 받고 옛 경로로 되돌아가게 짜 둔 것들이다.
+    # 그걸 [치명]으로 찍으면 이 검사는 승인 날까지 계속 빨간불이고, 빨간불이 상수가 되면
+    # 아무도 안 본다 — 정작 진짜 어긋남이 생겨도 같이 묻힌다.
+    #
+    # 그래서 '알고 있고 대비도 돼 있다'만 따로 뺀다. 대비돼 있다는 말을 그냥 믿지 않고
+    # 그 파일에 폴백 표시가 실제로 있는지 본다. 표시가 사라지면 다시 [치명]이 된다.
+    HANDLED_MISSING = {
+        'ai_trial_usage': ('035 미적용', 'src/lib/aiTrial.ts'),
+    }
+
+    def has_fallback(rel_path: str) -> bool:
+        f = ROOT / rel_path
+        return f.exists() and '미적용' in f.read_text(encoding='utf-8')
+
+    broken, handled = {}, {}
+    for t, fs in code.items():
+        if t in live:
+            continue
+        note = HANDLED_MISSING.get(t)
+        if note and has_fallback(note[1]):
+            handled[t] = note
+        else:
+            broken[t] = fs
+
     # 마이그레이션은 있는데 적용 안 된 것
     unapplied = mig - live
 
@@ -218,8 +243,13 @@ def main():
             print(f"  - {t}")
             for f in sorted(fs):
                 print(f"      {f}")
-    if unapplied:
-        print(f"\n[경고] 마이그레이션에만 있고 DB에 없는 테이블: {', '.join(sorted(unapplied))}")
+    if handled:
+        print(f"[대기] 아직 DB에 없지만 코드가 대비해 둔 테이블 {len(handled)}개:")
+        for t, (why, where) in sorted(handled.items()):
+            print(f"  - {t}  ({why}) — {where}에 폴백이 있다")
+        print("       => 승인 후 SQL Editor에서 실행하면 이 줄이 사라진다.")
+    if unapplied - set(handled):
+        print(f"\n[경고] 마이그레이션에만 있고 DB에 없는 테이블: {', '.join(sorted(unapplied - set(handled)))}")
         print("       => Supabase SQL Editor에서 해당 마이그레이션을 실행해야 한다.")
 
     # 컬럼 단위. 테이블이 있어도 없는 컬럼을 고르면 결과가 통째로 비어 돌아온다.
@@ -253,8 +283,10 @@ def main():
             print(f"  - {leak}")
         print("       => RLS가 막아 늘 0건이 된다. questionBank()로 읽을 것(마이그레이션 033).")
 
-    if not broken and not unapplied and not bad_cols and not leaks and not exposed:
-        print("불일치 없음 ✓")
+    # [대기]는 실패로 세지 않는다 — 사람의 승인을 기다리는 중이고 코드는 대비돼 있다.
+    # 다만 화면에서 지우지는 않는다. 조용해지면 잊히고, 잊힌 마이그레이션이 다음 사고다.
+    if not broken and not (unapplied - set(handled)) and not bad_cols and not leaks and not exposed:
+        print("불일치 없음 ✓" if not handled else f"불일치 없음 ✓ (대기 {len(handled)}건은 위 참고)")
         return 0
     return 1
 
