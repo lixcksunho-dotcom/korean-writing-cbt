@@ -3,6 +3,7 @@
 import { useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { readNextPath } from "@/lib/nextPath";
 import { CheckCircle, Eye, EyeOff } from "lucide-react";
 import LogoGlyph from "@/components/layout/LogoGlyph";
 import GoogleButton from "@/components/ui/GoogleButton";
@@ -54,7 +55,7 @@ export default function SignupPage() {
     // 가입은 여기서 이미 끝났다. 인증 메일을 언제 누를지는 사람마다 달라서
     // /auth/callback 쪽 '생성 2분 이내' 판정으로는 대부분 놓친다(계정 48개 중 이벤트 4건이었다).
     trackEvent("signup", "email");
-    if (data.session) { window.location.assign("/dashboard"); return; }
+    if (data.session) { window.location.assign(readNextPath("/dashboard")); return; }
     setSuccess(true);
     setLoading(false);
   }

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { readNextPath } from "@/lib/nextPath";
 
 export default function GoogleButton() {
   const [loading, setLoading] = useState(false);
@@ -12,7 +13,9 @@ export default function GoogleButton() {
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        // 로그인 벽에 막히기 전 가려던 곳을 콜백까지 들고 간다. 안 그러면 구글로
+        // 들어온 사람만 /dashboard로 떨어져, 방금 누른 화면과 다른 곳이 뜬다.
+        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(readNextPath('/dashboard'))}`,
       },
     });
   }

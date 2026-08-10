@@ -52,7 +52,12 @@ export async function proxy(request: NextRequest) {
   );
 
   if (isProtected && !user) {
-    return NextResponse.redirect(new URL("/login", request.url));
+    // 가려던 곳을 남긴다. 안 남기면 로그인 후 무조건 /dashboard로 가서, 방금 누른 것과
+    // 다른 화면이 뜬다. 공개 학습자료 15곳이 "무료 CBT 모의고사"로 /cbt를 가리키는데
+    // 그게 전부 여기로 들어온다 — 유입의 맨 앞에서 의도가 통째로 버려지고 있었다.
+    const to = new URL("/login", request.url);
+    to.searchParams.set("next", pathname + request.nextUrl.search);
+    return NextResponse.redirect(to);
   }
 
   if (user && (pathname === "/login" || pathname === "/signup")) {
