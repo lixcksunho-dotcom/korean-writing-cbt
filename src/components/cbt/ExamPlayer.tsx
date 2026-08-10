@@ -119,6 +119,31 @@ export default function ExamPlayer({
     return () => window.removeEventListener('pagehide', flush)
   }, [sessionId])
 
+  // ── 서버 자동 저장 (유료) ──────────────────────────────────────────────
+  // '저장하고 나가기'를 눌러야만 서버에 남았다. 사람은 그 단추를 누르고 나가지 않는다 —
+  // 전화가 오고, 배터리가 죽고, 그냥 탭을 닫는다. 실제로 미완료 세션 73건 중 서버에
+  // 기록이 있는 건 5건뿐이었다.
+  //
+  // 브라우저 임시 보관(위)은 그 기기 그 브라우저에서만 살아난다. 출퇴근길에 휴대폰으로
+  // 풀다가 집에서 노트북을 켜면 아무것도 없다.
+  //
+  // 유료 기능의 문을 넓히지는 않는다 — 저장은 원래대로 유료고, 누르지 않아도 될 뿐이다.
+  const lastSavedRef = useRef('')
+  useEffect(() => {
+    if (!hasSubscription) return
+    const id = setInterval(() => {
+      const snapshot = JSON.stringify(answersRef.current)
+      if (snapshot === '{}' || snapshot === lastSavedRef.current) return
+      lastSavedRef.current = snapshot
+      // 실패해도 알리지 않는다. 브라우저 보관본이 남아 있고, 시험 중에 뜨는 경고는
+      // 도움보다 방해가 된다. 대신 다음 차례에 다시 시도한다.
+      saveExamProgress(sessionId, answersRef.current, timeLeftRef.current).catch(() => {
+        lastSavedRef.current = ''
+      })
+    }, 60_000)
+    return () => clearInterval(id)
+  }, [hasSubscription, sessionId])
+
   function restoreDraft() {
     if (!draft) return
     // 시간이 다 됐으면 불러오는 순간 자동 제출이 돈다. 말없이 제출해 버리면
