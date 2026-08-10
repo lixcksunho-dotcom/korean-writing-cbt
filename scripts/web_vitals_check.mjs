@@ -4,6 +4,11 @@
 // 빠른 회선에서 재면 전부 0으로 나와 아무것도 못 잡는다. 실제 사용자는 지하철에서
 // 4G가 잘 안 잡히는 채로 들어온다. 그 조건으로 재야 의미가 있다.
 //
+// 한 번만 재면 안 된다. TBT는 실행마다 100ms 가까이 흔들려서, 같은 코드로 돌려도
+// 매번 다른 페이지가 기준을 넘는다(실측: /spelling 529→624, /blog 627→580).
+// 그러면 검사가 신호가 아니라 소음이 되고, 결국 아무도 안 본다.
+// => 페이지마다 여러 번 재서 중앙값으로 판단한다.
+//
 // 재기 전에 빌드에 폰트가 들어 있는지 먼저 확인할 것(.next/static/media/*.woff2).
 // 폰트가 빠진 빌드로 재면 글꼴 교체가 없어 CLS가 0으로 나오는데, 이걸 개선으로
 // 착각해 잘못된 결론을 낸 적이 있다.
@@ -15,10 +20,18 @@ const PAGES = (process.env.VITALS_PAGES ?? '/,/spelling,/blog,/subscribe,/exam-i
 // 4G가 잘 안 잡히는 상황에 가까운 값
 const NET = { offline: false, downloadThroughput: (1.6 * 1024 * 1024) / 8, uploadThroughput: (750 * 1024) / 8, latency: 150 }
 
+const RUNS = Number(process.env.VITALS_RUNS ?? 3)
+const median = (xs) => {
+  const a = [...xs].sort((x, y) => x - y)
+  return a.length % 2 ? a[(a.length - 1) / 2] : Math.round((a[a.length / 2 - 1] + a[a.length / 2]) / 2)
+}
+
 const browser = await chromium.launch()
 const rows = []
 
 for (const path of PAGES) {
+ const samples = []
+ for (let run = 0; run < RUNS; run++) {
   const ctx = await browser.newContext({ ...devices['iPhone 13'] })
   await ctx.addInitScript(() => {
     try {
@@ -78,8 +91,21 @@ for (const path of PAGES) {
     const nav = performance.getEntriesByType('navigation')[0]
     return { ...window.__v, ttfb: Math.round(nav?.responseStart ?? 0), fcp: Math.round(performance.getEntriesByName('first-contentful-paint')[0]?.startTime ?? 0) }
   })
-  rows.push({ path, ...v, lcp: Math.round(v.lcp), tbt: Math.round(v.tbt ?? 0), inp: Math.round(v.inp ?? 0) })
+  samples.push({ ...v, lcp: Math.round(v.lcp), tbt: Math.round(v.tbt ?? 0), inp: Math.round(v.inp ?? 0) })
   await ctx.close()
+ }
+ // 중앙값으로 합친다. shifts는 가장 흔들림이 컸던 회차 것을 남긴다(원인 추적용).
+ const worst = samples.reduce((a, b) => (b.cls > a.cls ? b : a), samples[0])
+ rows.push({
+   path,
+   ttfb: median(samples.map(s => s.ttfb)),
+   fcp: median(samples.map(s => s.fcp)),
+   lcp: median(samples.map(s => s.lcp)),
+   cls: median(samples.map(s => s.cls)),
+   tbt: median(samples.map(s => s.tbt)),
+   inp: median(samples.map(s => s.inp)),
+   shifts: worst.shifts ?? [],
+ })
 }
 await browser.close()
 
