@@ -21,7 +21,8 @@ export default function SymbolPalette({
           type="button"
           onMouseDown={e => e.preventDefault()}
           onClick={() => onInsert(s)}
-          className="min-w-8 h-8 px-2 rounded-lg border border-[#cbd5e1] bg-white text-sm font-semibold text-[#1e3a5f] hover:border-[#1e3a5f] hover:bg-[#1e3a5f]/5 active:scale-95 transition"
+          // 서술형 답안을 쓰는 도중 누르는 단추다 — 32px면 엄지로 옆칸을 누른다
+          className="min-w-11 h-11 px-2 rounded-lg border border-[#cbd5e1] bg-white text-sm font-semibold text-[#1e3a5f] hover:border-[#1e3a5f] hover:bg-[#1e3a5f]/5 active:scale-95 transition"
           aria-label={`${s} 삽입`}
         >
           {s}

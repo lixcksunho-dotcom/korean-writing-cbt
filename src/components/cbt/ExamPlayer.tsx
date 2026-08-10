@@ -302,7 +302,7 @@ export default function ExamPlayer({
                 onClick={handleSaveExit}
                 disabled={saving || isPending}
                 title="답안을 저장하고 나중에 이어서 풀 수 있어요"
-                className="flex items-center gap-1.5 text-[#1e3a5f] bg-[#1e3a5f]/8 hover:bg-[#1e3a5f]/15 px-3 py-2 rounded-xl text-sm font-semibold transition-colors disabled:opacity-50"
+                className="flex min-h-11 min-w-11 items-center justify-center gap-1.5 text-[#1e3a5f] bg-[#1e3a5f]/8 hover:bg-[#1e3a5f]/15 px-3 py-2 rounded-xl text-sm font-semibold transition-colors disabled:opacity-50"
               >
                 <Save className="h-3.5 w-3.5" />
                 <span className="hidden sm:inline">{saving ? '저장 중...' : '저장하고 나가기'}</span>
@@ -311,7 +311,7 @@ export default function ExamPlayer({
               <Link
                 href="/subscribe"
                 title="저장하고 나가기는 구독 회원 전용이에요"
-                className="flex items-center gap-1.5 text-[#475569] bg-[#f1f5f9] hover:bg-[#e2e8f0] px-3 py-2 rounded-xl text-sm font-semibold transition-colors"
+                className="flex min-h-11 min-w-11 items-center justify-center gap-1.5 text-[#475569] bg-[#f1f5f9] hover:bg-[#e2e8f0] px-3 py-2 rounded-xl text-sm font-semibold transition-colors"
               >
                 <Lock className="h-3.5 w-3.5" />
                 <span className="hidden sm:inline">저장하고 나가기</span>
@@ -319,7 +319,7 @@ export default function ExamPlayer({
             )}
             <button
               onClick={() => setShowConfirm(true)}
-              className="btn-primary flex shrink-0 items-center gap-1.5 text-white px-4 py-2 rounded-xl text-sm font-semibold whitespace-nowrap ml-auto sm:ml-0"
+              className="btn-primary flex min-h-11 shrink-0 items-center gap-1.5 text-white px-4 py-2 rounded-xl text-sm font-semibold whitespace-nowrap ml-auto sm:ml-0"
             >
               <Send className="h-3.5 w-3.5" />
               제출하기
@@ -390,7 +390,7 @@ export default function ExamPlayer({
               type="button"
               onClick={() => setShowGrid(v => !v)}
               aria-expanded={showGrid}
-              className="flex w-full items-center justify-between py-2.5 text-xs font-bold text-[#1e3a5f]"
+              className="flex min-h-11 w-full items-center justify-between py-2.5 text-xs font-bold text-[#1e3a5f]"
             >
               <span>문제 목록 {answeredCount}/{questions.length}</span>
               <span className="flex items-center gap-1 text-[#64748b] font-semibold">
@@ -557,7 +557,7 @@ export default function ExamPlayer({
               <button
                 onClick={() => setCurrentIdx(i => Math.max(0, i - 1))}
                 disabled={currentIdx === 0}
-                className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-semibold text-[#64748b] hover:bg-[#f1f5f9] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                className="flex min-h-11 items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-semibold text-[#64748b] hover:bg-[#f1f5f9] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
               >
                 <ChevronLeft className="h-4 w-4" />
                 이전
@@ -571,7 +571,7 @@ export default function ExamPlayer({
               <button
                 onClick={() => setCurrentIdx(i => Math.min(questions.length - 1, i + 1))}
                 disabled={currentIdx === questions.length - 1}
-                className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-semibold text-[#64748b] hover:bg-[#f1f5f9] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                className="flex min-h-11 items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-semibold text-[#64748b] hover:bg-[#f1f5f9] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
               >
                 다음
                 <ChevronRight className="h-4 w-4" />
