@@ -30,7 +30,8 @@
     "check:report": "node scripts/report_check.mjs",
     "check:admin": "node scripts/admin_ui_check.mjs",
     "check:blog-render": "node scripts/blog_render_check.mjs",
-    "check:signup": "node scripts/signup_flow_check.mjs"
+    "check:signup": "node scripts/signup_flow_check.mjs",
+    "check:data": "node scripts/data_integrity_check.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.100.1",
