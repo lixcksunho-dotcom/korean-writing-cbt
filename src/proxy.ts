@@ -67,8 +67,15 @@ export async function proxy(request: NextRequest) {
   return supabaseResponse;
 }
 
+// 필요한 경로에만 돌린다.
+//
+// 예전엔 사실상 모든 요청에 걸려 있었다. 여기서 getUser()를 부르므로, 공개 페이지까지
+// 인증 왕복을 한 번씩 더 치르게 된다 — 공개 페이지는 그럴 이유가 없다.
+// 게다가 이 미들웨어는 배포 환경에서 실행된 적이 없어(next.config.ts의 root 참고)
+// 넓은 matcher가 실제로 쓰인 적도 없다. 켜는 김에 범위를 맞춘다.
+//
+//   보호 경로   : 로그인 확인 + 가려던 곳(next) 기록
+//   /login·/signup : 이미 로그인한 사람을 대시보드로
 export const config = {
-  matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
-  ],
+  matcher: ["/dashboard/:path*", "/cbt/:path*", "/manuscript", "/manuscript/:path*", "/login", "/signup"],
 };
