@@ -210,8 +210,9 @@ export default function ReviewWriteModal({ defaultName }: { defaultName: string 
 
                   {/* 닉네임 */}
                   <div>
-                    <label className="block text-xs font-semibold text-[#334155] mb-1.5">닉네임</label>
+                    <label htmlFor="review-nickname" className="block text-xs font-semibold text-[#334155] mb-1.5">닉네임</label>
                     <input
+                      id="review-nickname"
                       value={displayName}
                       onChange={e => setDisplayName(e.target.value)}
                       maxLength={20}
@@ -223,8 +224,9 @@ export default function ReviewWriteModal({ defaultName }: { defaultName: string 
 
                   {/* 내용 */}
                   <div>
-                    <label className="block text-xs font-semibold text-[#334155] mb-1.5">후기</label>
+                    <label htmlFor="review-content" className="block text-xs font-semibold text-[#334155] mb-1.5">후기</label>
                     <textarea
+                      id="review-content"
                       value={content}
                       onChange={e => setContent(e.target.value.slice(0, 150))}
                       placeholder="어떤 점이 도움이 됐는지 자유롭게 남겨주세요"
