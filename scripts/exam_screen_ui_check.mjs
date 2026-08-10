@@ -21,6 +21,12 @@ import { assertFreshLocalServer } from './stale_server_guard.mjs'
 
 const BASE = process.env.EXAM_UI_BASE ?? 'https://kptest.cloud'
 const ROUND = process.env.EXAM_UI_ROUND ?? '2025-1'
+// 시험마다 문항 구성이 다르다 — 실글은 객관식+서술형+원고지, KBS는 전부 객관식(듣기 포함).
+// 어느 쪽을 보는지는 쿠키가 정한다.
+const MODE = process.env.EXAM_UI_MODE ?? 'silyong'
+// 시험을 정하는 건 쿠키가 아니라 주소다 — parseExamId가 'kbs-2025-1'처럼 앞머리를 읽고,
+// 앞머리가 없으면 실글로 본다. 쿠키만 바꿔 놓고 KBS를 봤다고 착각했다.
+const EXAM_PATH = MODE === 'silyong' ? ROUND : `${MODE}-${ROUND}`
 
 const ENV = Object.fromEntries(
   fs.readFileSync('.env.local', 'utf-8').split('\n')
@@ -104,11 +110,12 @@ try {
 
   // ── 휴대폰 폭: 사용성 ───────────────────────────────────────────────────
   const mctx = await browser.newContext({ ...devices['iPhone 13'] })
+  await mctx.addCookies([{ name: 'kptest_mode', value: MODE, domain: new URL(BASE).hostname, path: '/' }])
   await mctx.addInitScript(dismissIntros)
   const mpage = await mctx.newPage()
   if (!await login(mpage)) throw new Error('로그인이 되지 않음')
 
-  const res = await mpage.goto(`${BASE}/cbt/${ROUND}`, { waitUntil: 'load', timeout: 60000 }).catch(() => null)
+  const res = await mpage.goto(`${BASE}/cbt/${EXAM_PATH}`, { waitUntil: 'load', timeout: 60000 }).catch(() => null)
   if (!res || res.status() >= 400) throw new Error(`시험 화면을 열지 못함 (${res?.status() ?? '이동 실패'})`)
   await mpage.locator('button').filter({ hasText: /^[①②③④⑤]/ }).first().waitFor({ timeout: 30000 })
   await mpage.addStyleTag({ content: '*,*::before,*::after{animation:none!important;transition:none!important}' }).catch(() => {})
@@ -128,11 +135,15 @@ try {
   await mpage.locator('button', { hasText: /문제 목록/ }).first().click()
   await mpage.waitForTimeout(300)
 
-  const spots = [
-    { name: '객관식', label: null },
-    { name: '서술형', label: essayLabels[0] ?? null },
-    { name: '원고지', label: essayLabels[essayLabels.length - 1] ?? null },
-  ]
+  const spots = [{ name: '객관식', label: null }]
+  if (essayLabels.length > 0) {
+    spots.push({ name: '서술형', label: essayLabels[0] })
+    // 배점이 큰 마지막 서술형이 원고지 문항이다. 서술형이 하나뿐이면 같은 곳을 두 번
+    // 재게 되므로 그때는 넣지 않는다.
+    if (essayLabels.length > 1) spots.push({ name: '원고지', label: essayLabels[essayLabels.length - 1] })
+  } else {
+    console.log(`  이 회차(${MODE} ${ROUND})엔 서술형이 없다 — 객관식만 본다`)
+  }
 
   for (const spot of spots) {
     if (spot.label && !(await goToQuestion(mpage, spot.label))) {
@@ -153,6 +164,7 @@ try {
 
   // ── 데스크톱 폭: 명암비·아이콘 ──────────────────────────────────────────
   const dctx = await browser.newContext({ viewport: { width: 1280, height: 900 } })
+  await dctx.addCookies([{ name: 'kptest_mode', value: MODE, domain: new URL(BASE).hostname, path: '/' }])
   await dctx.addInitScript(dismissIntros)
   const page = await dctx.newPage()
   const decoder = await browser.newPage()
@@ -182,7 +194,7 @@ try {
     return [mid(0), mid(1), mid(2)]
   }
 
-  const dres = await page.goto(`${BASE}/cbt/${ROUND}`, { waitUntil: 'load', timeout: 60000 }).catch(() => null)
+  const dres = await page.goto(`${BASE}/cbt/${EXAM_PATH}`, { waitUntil: 'load', timeout: 60000 }).catch(() => null)
   if (!dres || dres.status() >= 400) throw new Error(`데스크톱 폭에서 시험 화면을 열지 못함 (${dres?.status() ?? '이동 실패'})`)
   await page.locator('button').filter({ hasText: /^[①②③④⑤]/ }).first().waitFor({ timeout: 30000 })
   await page.addStyleTag({ content: '*,*::before,*::after{animation:none!important;transition:none!important}' }).catch(() => {})
@@ -244,7 +256,7 @@ try {
 const hardMobile = mobileProblems.filter((p) => p.hard)
 const softMobile = mobileProblems.filter((p) => !p.hard)
 
-console.log(`\n시험 화면 점검 — ${ROUND} · 객관식·서술형·원고지`)
+console.log(`\n시험 화면 점검 — ${MODE} ${ROUND} (/cbt/${EXAM_PATH})`)
 console.log(`명암비: 텍스트 ${textChecked}개 중 기준 미달 ${contrastFails.length}건`)
 console.log(`아이콘·안내글: ${graphicsChecked}개 중 기준 미달 ${graphicFails.length}건`)
 console.log(`휴대폰: 기준 미달 ${hardMobile.length}건 · 권장 미달 ${softMobile.length}건`)
