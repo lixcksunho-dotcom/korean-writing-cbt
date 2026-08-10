@@ -9,6 +9,19 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
   useEffect(() => {
     // 콘솔/모니터링에 남겨 추후 원인 추적(digest로 서버로그 매칭 가능)
     console.error('[page-error]', error?.digest, error?.message)
+
+    // 콘솔은 브라우저에만 남는다 — 운영자가 볼 수 있는 곳으로도 보낸다.
+    // 실패해도 무시한다(오류 화면이 또 터지면 안 된다).
+    fetch('/api/client-error', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        digest: error?.digest,
+        message: error?.message,
+        path: typeof window !== 'undefined' ? window.location.pathname : '',
+      }),
+      keepalive: true,
+    }).catch(() => {})
   }, [error])
 
   return (
