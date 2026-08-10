@@ -76,17 +76,19 @@ export default async function EssayPracticePage({
   // 3회분부터는 이용권 필요
   if (y < 9000 && isRoundLocked(r, !!subscription, program)) redirect('/subscribe')
 
-  const { data: questions } = await questionBank()
-    .from('questions')
-    .select('id, number, points, question, passage, correct_answer')
-    .eq('program', program)
-    .eq('type', 'essay')
-    .eq('year', y)
-    .eq('round', r)
-    .order('number')
+  // 문항과 체험 잔여는 서로 무관하다 — 함께 던진다.
+  const [{ data: questions }, trialUsed] = await Promise.all([
+    questionBank()
+      .from('questions')
+      .select('id, number, points, question, passage, correct_answer')
+      .eq('program', program)
+      .eq('type', 'essay')
+      .eq('year', y)
+      .eq('round', r)
+      .order('number'),
+    readTrialUsed(user.id, Number(user.app_metadata?.ai_trial_used ?? 0)),
+  ])
   if (!questions?.length) redirect('/practice/essay')
-
-  const trialUsed = await readTrialUsed(user.id, Number(user.app_metadata?.ai_trial_used ?? 0))
   const trialRemaining = subscription ? 0 : Math.max(0, FREE_AI_TRIAL - trialUsed)
 
   return (

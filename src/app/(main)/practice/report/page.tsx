@@ -16,7 +16,8 @@ export default async function ReportPracticePage() {
   const program = await getActiveProgram()
   const cfg = getProgram(program)
 
-  const [{ data: rows }, subscription] = await Promise.all([
+  // trialUsed는 user.id만 있으면 되는 조회다. 뒤에 따로 await하면 왕복이 하나 더 는다.
+  const [{ data: rows }, subscription, trialUsed] = await Promise.all([
     questionBank()
       .from('questions')
       .select('id, year, round, points, question, passage, correct_answer')
@@ -27,6 +28,7 @@ export default async function ReportPracticePage() {
       .order('year', { ascending: true })
       .order('round', { ascending: true }),
     getActiveSubscription(user.id),
+    readTrialUsed(user.id, Number(user.app_metadata?.ai_trial_used ?? 0)),
   ])
 
   // 비구독자는 무료 회차 보고서만
@@ -43,7 +45,6 @@ export default async function ReportPracticePage() {
 
   if (!questions.length) redirect('/practice')
 
-  const trialUsed = await readTrialUsed(user.id, Number(user.app_metadata?.ai_trial_used ?? 0))
   const trialRemaining = subscription ? 0 : Math.max(0, FREE_AI_TRIAL - trialUsed)
 
   return <ReportRunner questions={questions} hasSubscription={!!subscription} aiTrialRemaining={trialRemaining} />

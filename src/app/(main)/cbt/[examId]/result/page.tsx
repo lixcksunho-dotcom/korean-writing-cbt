@@ -45,13 +45,15 @@ export default async function ResultPage({
   const program = (session.program as ProgramId) ?? 'silyong'
   const cfg = getProgram(program)
 
-  const [{ data: answers }, { data: questions }, subscription, { data: bookmarkRows }, { data: allRounds }] = await Promise.all([
+  const [{ data: answers }, { data: questions }, subscription, { data: bookmarkRows }, { data: allRounds }, trialUsed] = await Promise.all([
     supabase.from('quiz_answers').select('question_id, user_answer, is_correct, ai_score, ai_feedback').eq('session_id', sessionId),
     questionBank().from('questions').select('id, number, type, points, question, options, correct_answer, explanation').eq('program', program).eq('year', session.year).eq('round', session.round).order('number'),
     getActiveSubscription(user.id),
     supabase.from('bookmarks').select('question_id').eq('user_id', user.id),
     // 업셀 문구의 '몇 회분이 열리는지'를 실제 보유 회차에서 뽑는다(하드코딩 수치가 낡는 것 방지)
     questionBank().from('questions').select('round').eq('program', program).lt('year', 9000),
+    // user.id만 있으면 되는 조회 — 뒤에 따로 await하면 왕복이 하나 더 는다.
+    readTrialUsed(user.id, Number(user.app_metadata?.ai_trial_used ?? 0)),
   ])
   const lockedRoundCount = Math.max(
     0,
@@ -82,8 +84,6 @@ export default async function ResultPage({
   const tier = tierFor(scaled, program)
   const isPass = tier.name !== cfg.belowLabel
 
-  // 비구독자 무료 AI 체험 잔여 — 이미 받은 user에서 계산(추가 getUser 왕복 제거)
-  const trialUsed = await readTrialUsed(user.id, Number(user.app_metadata?.ai_trial_used ?? 0))
   const aiTrial = { remaining: subscription ? 0 : Math.max(0, FREE_AI_TRIAL - trialUsed) }
 
   // 체험 3회를 9문항 어디에 쓸지 몰라 손을 안 대는 선택 마비가 관찰됨(완료 16명 중 체험 3명).
