@@ -139,4 +139,24 @@ if (hardMobile.length) {
   console.log('\n[휴대폰 기준 미달]')
   for (const p of hardMobile) console.log('  ' + p.line)
 }
+// 권장 미달은 숫자만 찍고 내용을 안 보여 주고 있었다 — 그러면 고칠 수가 없다.
+// 실패로 만들지는 않되(권장이니까) 무엇이 걸렸는지는 알려 준다.
+// 같은 종류가 여러 편에 걸치므로 묶어서 센다.
+if (softMobile.length) {
+  const byKind = new Map()
+  for (const p of softMobile) {
+    // 앞의 슬러그와 뒤의 크기·본문을 떼어 '무엇이 문제인지'만 남긴다
+    const tail = p.line.split('  ').slice(1).join('  ') || p.line
+    const kind = tail.replace(/\s+\d+x\d+.*$/, '').trim()
+    const cur = byKind.get(kind) ?? { n: 0, sample: p.line }
+    cur.n += 1
+    byKind.set(kind, cur)
+  }
+  console.log('\n[휴대폰 권장 미달 — 실패는 아니지만 알아 둘 것]')
+  for (const [kind, v] of [...byKind.entries()].sort((a, b) => b[1].n - a[1].n)) {
+    console.log(`  ${String(v.n).padStart(3)}건  ${kind}`)
+    console.log(`        예: ${v.sample}`)
+  }
+}
+
 if (contrastFails.length || hardMobile.length) process.exitCode = 1

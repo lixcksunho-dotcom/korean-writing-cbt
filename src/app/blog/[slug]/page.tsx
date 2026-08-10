@@ -106,10 +106,12 @@ export default async function BlogPostPage({
             {t.icon}
           </span>
           <div className="max-w-3xl mx-auto px-4 py-10 sm:py-14">
-            <nav className="text-sm text-white/70 mb-4">
-              <Link href="/blog" className="inline-block py-1.5 hover:text-white">블로그</Link>
-              <span className="mx-1.5">›</span>
-              <Link href={`/blog/category/${post.category}`} className="inline-block py-1.5 hover:text-white">
+            {/* py-1.5는 32px밖에 안 돼 권장(44px)에 못 미친다. 글자 크기는 그대로 두고
+                패딩만 키워 누르는 영역을 넓힌다 — 모든 글의 첫 링크라 여기서 되돌아간다. */}
+            <nav className="text-sm text-white/70 mb-3 -ml-1 flex items-center">
+              <Link href="/blog" className="inline-flex items-center min-h-[44px] px-1 hover:text-white">블로그</Link>
+              <span className="mx-0.5" aria-hidden>›</span>
+              <Link href={`/blog/category/${post.category}`} className="inline-flex items-center min-h-[44px] px-1 hover:text-white">
                 {post.categoryLabel}
               </Link>
             </nav>
