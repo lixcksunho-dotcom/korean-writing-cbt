@@ -3,6 +3,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { isActivePass } from '@/lib/subscription'
 import { checkAiKey } from '@/lib/aiKeyStatus'
 import { recentOperatorAlerts } from '@/lib/operatorAlerts'
+import SubscriberTrend from '@/components/admin/SubscriberTrend'
 import { BookOpen, Star, CreditCard, Wallet, FileCheck2, PenLine, ChevronRight, BadgeCheck, Users, Flag, AlertTriangle, CheckCircle2 } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
@@ -100,6 +101,11 @@ export default async function AdminHome() {
             <div className="text-xs text-gray-600 mt-0.5">{sub}</div>
           </div>
         ))}
+      </div>
+
+      {/* 유입 추이 — 텔레그램이 없어도 여기서 볼 수 있게 */}
+      <div className="mb-8">
+        <SubscriberTrend />
       </div>
 
       {/* 관리 메뉴 */}
