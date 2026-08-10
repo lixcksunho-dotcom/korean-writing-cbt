@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { BookOpen, ChevronRight, Clock, FileQuestion, Trophy, Lock } from 'lucide-react'
 import { getActiveSubscription } from '@/lib/subscription'
+import ExamResumeAction from '@/components/cbt/ExamResumeAction'
 import { isRoundLocked } from '@/lib/examAccess'
 import { getActiveProgram } from '@/lib/programContext'
 import { getProgram } from '@/lib/programs'
@@ -36,11 +37,11 @@ export default async function CbtPage() {
       .order('completed_at', { ascending: false }),
     supabase
       .from('quiz_sessions')
-      .select('year, round')
+      .select('id, year, round, saved_at, started_at')
       .eq('user_id', user.id)
       .eq('program', program)
       .is('completed_at', null)
-      .not('saved_at', 'is', null),
+      .order('started_at', { ascending: false }),
     getActiveSubscription(user.id),
   ])
 
@@ -55,7 +56,14 @@ export default async function CbtPage() {
   }
 
   const sessionMap = new Map((sessions ?? []).map(s => [`${s.year}-${s.round}`, s]))
-  const resumable = new Set((inProgress ?? []).map(s => `${s.year}-${s.round}`))
+  // 서버 중간저장(유료)이 있는 회차
+  const resumable = new Set((inProgress ?? []).filter(s => s.saved_at).map(s => `${s.year}-${s.round}`))
+  // 회차별 '가장 최근 진행 중 세션' — 브라우저에 남은 임시본을 찾는 열쇠다.
+  const openSession = new Map<string, string>()
+  for (const s of inProgress ?? []) {
+    const k = `${s.year}-${s.round}`
+    if (!openSession.has(k)) openSession.set(k, s.id as string)
+  }
   const hasSub = !!subscription
 
   return (
@@ -176,16 +184,12 @@ export default async function CbtPage() {
                     ) : (
                       <>
                         <span className="text-xs bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-full font-semibold">무료</span>
-                        {resumable.has(key) && (
-                          <span className="text-xs bg-amber-100 text-amber-700 px-2.5 py-1 rounded-full font-semibold">이어풀기 가능</span>
-                        )}
-                        <Link
+                        <ExamResumeAction
                           href={`/cbt/${formatExamId(program, year, round)}`}
-                          className="flex-1 btn-primary flex items-center justify-center gap-1.5 text-white font-semibold py-3 rounded-xl text-sm"
-                        >
-                          {resumable.has(key) ? '이어풀기' : prev ? '다시 풀기' : '시작하기'}
-                          <ChevronRight className="h-4 w-4" />
-                        </Link>
+                          openSessionId={openSession.get(key) ?? null}
+                          serverResumable={resumable.has(key)}
+                          hasPrev={!!prev}
+                        />
                       </>
                     )}
                   </div>
