@@ -135,6 +135,9 @@ export default function ScheduleModal({ program = 'silyong' }: { program?: strin
           onClick={() => setOpen(false)}
         >
           <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="schedule-modal-title"
             className="bg-white w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col"
             onClick={e => e.stopPropagation()}
           >
@@ -147,7 +150,7 @@ export default function ScheduleModal({ program = 'silyong' }: { program?: strin
               >
                 <X className="h-5 w-5" />
               </button>
-              <div className="inline-flex items-center gap-1.5 bg-white/10 text-white/90 text-xs font-semibold px-2.5 py-1 rounded-full mb-3">
+              <div id="schedule-modal-title" className="inline-flex items-center gap-1.5 bg-white/10 text-white/90 text-xs font-semibold px-2.5 py-1 rounded-full mb-3">
                 <CalendarDays className="h-3.5 w-3.5 text-[#f59e0b]" />
                 {title}
               </div>

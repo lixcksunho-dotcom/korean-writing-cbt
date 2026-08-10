@@ -2,6 +2,8 @@
 
 import { useState, useTransition } from 'react'
 import { Star, X, MessageSquarePlus, CheckCircle2, Upload, Calendar, Award } from 'lucide-react'
+
+const RATING_WORDS = ['', '별로예요', '그저 그래요', '괜찮아요', '좋아요', '최고예요']
 import { submitReview } from '@/app/(main)/review/actions'
 import { createClient } from '@/lib/supabase/client'
 
@@ -103,13 +105,19 @@ export default function ReviewWriteModal({ defaultName }: { defaultName: string 
 
       {open && (
         <div className="fixed inset-0 bg-[#0f172a]/60 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 sm:px-4">
-          <div className="bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl border border-[#e2e8f0] w-full max-w-md p-6 sm:p-7 max-h-[92vh] overflow-y-auto">
+          {/* role/aria-modal이 없으면 낭독기가 대화상자로 알리지 못해, 뒤 화면과 구분이 안 된다 */}
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="review-modal-title"
+            className="bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl border border-[#e2e8f0] w-full max-w-md p-6 sm:p-7 max-h-[92vh] overflow-y-auto"
+          >
             {done ? (
               <div className="text-center py-6">
                 <div className="w-16 h-16 rounded-2xl bg-emerald-100 flex items-center justify-center mx-auto mb-4">
                   <CheckCircle2 className="h-8 w-8 text-emerald-500" />
                 </div>
-                <h3 className="text-lg font-black text-[#0f172a] mb-2">후기가 등록됐어요!</h3>
+                <h3 id="review-modal-title" className="text-lg font-black text-[#0f172a] mb-2">후기가 등록됐어요!</h3>
                 {/* 환급은 점수 인증까지 한 후기에만 걸린 약속이다 — 아닌 사람에게 말하면 안 된다 */}
                 <p className="text-sm text-[#64748b] mb-6">
                   {withProof
@@ -127,10 +135,10 @@ export default function ReviewWriteModal({ defaultName }: { defaultName: string 
               <>
                 <div className="flex items-center justify-between mb-5">
                   <div>
-                    <h3 className="text-lg font-black text-[#0f172a]">후기 남기기</h3>
+                    <h3 id="review-modal-title" className="text-lg font-black text-[#0f172a]">후기 남기기</h3>
                     <p className="text-xs text-[#64748b] mt-0.5">공부하며 느낀 점을 남겨 주세요 · 1분이면 돼요</p>
                   </div>
-                  <button onClick={handleClose} className="p-1.5 rounded-lg hover:bg-[#f1f5f9] transition-colors text-[#64748b]">
+                  <button onClick={handleClose} aria-label="후기 창 닫기" className="p-1.5 rounded-lg hover:bg-[#f1f5f9] transition-colors text-[#64748b]">
                     <X className="h-5 w-5" />
                   </button>
                 </div>
@@ -138,12 +146,16 @@ export default function ReviewWriteModal({ defaultName }: { defaultName: string 
                 <form onSubmit={handleSubmit} className="space-y-4">
                   {/* 별점 */}
                   <div>
-                    <label className="block text-xs font-semibold text-[#334155] mb-2">만족도</label>
-                    <div className="flex gap-1">
+                    {/* 별 아이콘뿐이라 낭독기에는 이름 없는 버튼 5개로만 들렸다 — 평점을 매길 수 없었다. */}
+                    <span id="review-rating-label" className="block text-xs font-semibold text-[#334155] mb-2">만족도</span>
+                    <div className="flex gap-1" role="radiogroup" aria-labelledby="review-rating-label">
                       {[1, 2, 3, 4, 5].map(s => (
                         <button
                           key={s}
                           type="button"
+                          role="radio"
+                          aria-checked={rating === s}
+                          aria-label={`${s}점 · ${RATING_WORDS[s]}`}
                           onClick={() => setRating(s)}
                           onMouseEnter={() => setHoverRating(s)}
                           onMouseLeave={() => setHoverRating(0)}
@@ -157,7 +169,7 @@ export default function ReviewWriteModal({ defaultName }: { defaultName: string 
                         </button>
                       ))}
                       <span className="ml-2 text-sm text-[#64748b] self-center font-medium">
-                        {['', '별로예요', '그저 그래요', '괜찮아요', '좋아요', '최고예요'][hoverRating || rating]}
+                        {RATING_WORDS[hoverRating || rating]}
                       </span>
                     </div>
                   </div>

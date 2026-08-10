@@ -83,6 +83,50 @@ try {
   await ctx.addInitScript(dismissIntros)
   const page = await ctx.newPage()
 
+  // 모달 안은 그동안 아무도 안 봤다. 검사는 화면만 열고 지나갔는데, 조작 요소는
+  // 오히려 모달에 몰려 있다 — 실제로 후기 모달의 별점 5개와 닫기 버튼이 낭독기에
+  // 이름 없는 버튼으로만 들렸다(평점을 매길 방법이 없었다).
+  async function lookInside(label, path, openText) {
+    const res = await page.goto(`${BASE}${path}`, { waitUntil: 'load', timeout: 40000 }).catch(() => null)
+    if (!res || res.status() >= 400) { problems.push(`${label} ${path}  열지 못함`); return }
+    await page.waitForTimeout(1200)
+    const opener = page.locator('button, a').filter({ hasText: openText }).first()
+    if (!await opener.count()) { problems.push(`${label} ${path}  "${openText}"를 찾지 못함`); return }
+    await opener.click().catch(() => {})
+    await page.waitForTimeout(1200)
+    const dialog = await page.evaluate(() => {
+      const root = document.querySelector('[role="dialog"]') ?? document.querySelector('[aria-modal="true"]')
+      if (!root) return null
+      const accName = (el) => {
+        const aria = el.getAttribute('aria-label')
+        if (aria && aria.trim()) return aria.trim()
+        if (el.getAttribute('aria-labelledby')) return 'labelledby'
+        if (el.labels && el.labels.length) {
+          const t = [...el.labels].map((l) => l.textContent ?? '').join(' ').trim()
+          if (t) return t
+        }
+        const title = el.getAttribute('title')
+        if (title && title.trim()) return title.trim()
+        return (el.textContent ?? '').trim()
+      }
+      const noName = []
+      for (const el of root.querySelectorAll('a[href], button, [role="button"], input, select, textarea')) {
+        const cs = getComputedStyle(el)
+        if (cs.display === 'none' || cs.visibility === 'hidden') continue
+        if (el.type === 'hidden') continue
+        const r = el.getBoundingClientRect()
+        if (r.width < 4 || r.height < 4) continue
+        if (!accName(el)) noName.push(`<${el.tagName.toLowerCase()}> ${(el.className || '').toString().slice(0, 24)}`)
+      }
+      return { noName }
+    })
+    if (!dialog) { problems.push(`${label} ${path}  "${openText}"를 눌렀는데 대화상자가 안 열렸다`); return }
+    looked++
+    if (dialog.noName.length) {
+      problems.push(`${label} "${openText}" 모달  이름 없는 조작 요소 ${dialog.noName.length}개 — ${dialog.noName.slice(0, 3).join(' / ')}`)
+    }
+  }
+
   async function look(label, path) {
     const res = await page.goto(`${BASE}${path}`, { waitUntil: 'load', timeout: 40000 }).catch(() => null)
     if (!res || res.status() >= 400) { problems.push(`${label} ${path}  열지 못함 (${res?.status() ?? '이동 실패'})`); return }
@@ -122,7 +166,12 @@ try {
       if (!logged) await page.waitForTimeout(4000)
     }
     if (!logged) problems.push('로그인 뒤 화면을 보지 못함 — 로그인 실패')
-    else for (const p of AUTHED) await look('로그인 뒤', p)
+    else {
+      for (const p of AUTHED) await look('로그인 뒤', p)
+      // 모달 안쪽(조작 요소가 몰려 있는 자리)
+      await lookInside('로그인 뒤', '/dashboard', '후기 남기기')
+      await lookInside('로그인 뒤', '/dashboard', '시험일정')
+    }
   } else {
     problems.push('검증용 계정을 만들지 못해 로그인 뒤 화면은 건너뜀')
   }

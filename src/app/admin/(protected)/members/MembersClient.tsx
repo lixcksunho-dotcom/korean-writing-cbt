@@ -131,7 +131,7 @@ function AddForm({ onClose, onError }: { onClose: () => void; onError: (s: strin
 
   return (
     <form onSubmit={submit} className="bg-white border rounded-xl p-4 mb-4 relative">
-      <button type="button" onClick={onClose} className="absolute right-3 top-3 text-gray-600 hover:text-gray-600"><X className="h-4 w-4" /></button>
+      <button type="button" onClick={onClose} aria-label="닫기" className="absolute right-3 top-3 text-gray-600 hover:text-gray-600"><X className="h-4 w-4" /></button>
       <p className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-1.5"><Mail className="h-4 w-4" /> 새 회원 추가</p>
       <div className="grid sm:grid-cols-3 gap-2 mb-3">
         <input value={email} onChange={e => setEmail(e.target.value)} placeholder="이메일" type="email" required className="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gray-500" />
