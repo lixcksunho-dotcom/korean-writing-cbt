@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { isActivePass } from '@/lib/subscription'
 import { checkAiKey } from '@/lib/aiKeyStatus'
+import { recentOperatorAlerts } from '@/lib/operatorAlerts'
 import { BookOpen, Star, CreditCard, Wallet, FileCheck2, PenLine, ChevronRight, BadgeCheck, Users, Flag, AlertTriangle, CheckCircle2 } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
@@ -10,7 +11,8 @@ export default async function AdminHome() {
   // 관리자 권한은 admin/layout.tsx에서 이미 검증됨. 통계는 service_role로 집계.
   const admin = createAdminClient()
 
-  const [aiKey, qCount, reviewRows, subRows, examDone, manuscriptCount, reportRows] = await Promise.all([
+  const [alerts, aiKey, qCount, reviewRows, subRows, examDone, manuscriptCount, reportRows] = await Promise.all([
+    recentOperatorAlerts(),
     checkAiKey(),
     admin.from('questions').select('*', { count: 'exact', head: true }),
     admin.from('reviews').select('proof_path, verified, is_visible'),
@@ -53,6 +55,24 @@ export default async function AdminHome() {
         <h1 className="text-xl font-bold text-gray-900">관리자 대시보드</h1>
         <p className="text-sm text-gray-600 mt-1">서비스 핵심 지표를 한눈에 확인하세요.</p>
       </div>
+
+      {/* 최근 사고. 텔레그램 설정이 없어도 여기엔 남는다 — 알림이 설정에 의존하면
+          설정이 빠진 동안은 없는 것과 같다(결제 실패 1건을 16일간 몰랐다). */}
+      {alerts.length > 0 && (
+        <div className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4">
+          <h2 className="text-sm font-bold text-red-800 mb-2.5">최근 2주 사고 {alerts.length}건</h2>
+          <ul className="space-y-1.5">
+            {alerts.map((a, i) => (
+              <li key={i} className="text-xs text-red-800 leading-relaxed">
+                <span className="font-semibold">[{a.label}]</span>{' '}
+                {new Date(a.at).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}{' '}
+                — {a.summary}
+                {a.ref && <span className="block font-mono text-[11px] text-red-700 break-all">{a.ref}</span>}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {/* AI 채점 연결 상태 — 키가 빠지면 채점이 전부 실패하는데 사용자 화면에만 뜬다.
           요금이 붙지 않는 모델 조회로 확인한다(잔액은 이 방법으로 알 수 없다). */}

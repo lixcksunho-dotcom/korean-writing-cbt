@@ -1,3 +1,5 @@
+import { recordOperatorAlert } from '@/lib/operatorAlerts'
+
 // AI 채점 호출이 실패했을 때 '누구 탓인지'를 가려 준다.
 //
 // 왜 필요한가: 2026-07-09·07-10에 실제 사용자 두 명이 서술형 AI 채점을 시도해
@@ -109,32 +111,19 @@ export function truncatedFailure(maxTokens: number): GradingFailure {
 }
 
 /**
- * 운영자가 손봐야 하는 실패를 텔레그램으로 알린다.
+ * 운영자가 손봐야 하는 실패를 알린다(기록 + 설정돼 있으면 텔레그램).
  * 잔액·키 문제는 모든 사용자에게 동시에 터지므로 조용히 넘기면 안 된다.
- * 전송 실패는 무시한다 — 알림 때문에 채점 흐름이 더 망가지면 안 된다.
  */
 export async function alertGradingFailure(where: string, f: GradingFailure): Promise<void> {
   if (!f.needsOperator) return
-  const token = process.env.TELEGRAM_BOT_TOKEN
-  const chatId = process.env.TELEGRAM_CHAT_ID
-  if (!token || !chatId) return
+  await recordOperatorAlert(
+    'ai_grading',
+    `${where} — ${f.operator}`,
+    where,
+    `🛑 AI 채점 실패 (${where})
 
-  const controller = new AbortController()
-  const timer = setTimeout(() => controller.abort(), 4000)
-  try {
-    await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        chat_id: chatId,
-        text: `🛑 AI 채점 실패 (${where})\n\n${f.operator}\n\n사용자는 채점을 받지 못했습니다.`,
-        disable_web_page_preview: true,
-      }),
-      signal: controller.signal,
-    })
-  } catch {
-    // 무시
-  } finally {
-    clearTimeout(timer)
-  }
+${f.operator}
+
+사용자는 채점을 받지 못했습니다.`,
+  )
 }

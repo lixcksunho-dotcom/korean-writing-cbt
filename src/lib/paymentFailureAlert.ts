@@ -8,7 +8,8 @@
 // 관리자 화면에는 이미 결제 복구 기능이 있다. 알림에 주문번호를 실어 보내면
 // 사장님이 그걸 그대로 넣어 손으로 발급해 줄 수 있다.
 //
-// 전송 실패는 무시한다(알림 때문에 결제 화면이 더 망가지면 안 된다).
+// 기록·전송은 operatorAlerts가 맡는다 — 텔레그램이 없어도 관리자 화면에는 남는다.
+import { recordOperatorAlert } from '@/lib/operatorAlerts'
 
 const REASON_LABEL: Record<string, string> = {
   not_found: '포트원에서 결제건을 찾지 못함',
@@ -26,35 +27,22 @@ export async function alertPaymentFailure(a: {
   amount?: number
   status?: string
 }): Promise<void> {
-  const token = process.env.TELEGRAM_BOT_TOKEN
-  const chatId = process.env.TELEGRAM_CHAT_ID
-  if (!token || !chatId) return
-
   const detail = [
     a.status ? `상태: ${a.status}` : null,
     a.amount != null ? `금액: ${a.amount.toLocaleString()}원` : null,
     a.userId ? `사용자: ${a.userId}` : null,
   ].filter(Boolean).join(' · ')
 
-  const text =
-    `💳 결제는 됐는데 이용권 발급 실패\n\n` +
-    `• 사유: ${REASON_LABEL[a.reason] ?? a.reason}\n` +
-    `• 주문번호: ${a.paymentId}\n` +
-    (detail ? `• ${detail}\n` : '') +
-    `\n관리자 → 결제 관리에서 이 주문번호로 복구할 수 있습니다.`
+  const why = REASON_LABEL[a.reason] ?? a.reason
+  const telegram = [
+    '💳 결제는 됐는데 이용권 발급 실패',
+    '',
+    `• 사유: ${why}`,
+    `• 주문번호: ${a.paymentId}`,
+    detail ? `• ${detail}` : null,
+    '',
+    '관리자 → 결제 관리에서 이 주문번호로 복구할 수 있습니다.',
+  ].filter((l) => l !== null).join('\n')
 
-  const controller = new AbortController()
-  const timer = setTimeout(() => controller.abort(), 4000)
-  try {
-    await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chat_id: chatId, text, disable_web_page_preview: true }),
-      signal: controller.signal,
-    })
-  } catch {
-    // 무시
-  } finally {
-    clearTimeout(timer)
-  }
+  await recordOperatorAlert('payment', `${why}${detail ? ' — ' + detail : ''}`, a.paymentId, telegram)
 }
