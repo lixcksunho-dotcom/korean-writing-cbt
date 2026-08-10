@@ -41,6 +41,10 @@ export default async function CbtPage() {
       .eq('user_id', user.id)
       .eq('program', program)
       .is('completed_at', null)
+      // startSession이 고르는 순서와 같아야 한다. 여기서 고른 세션 id로 브라우저
+      // 임시본을 찾아 '이어풀기'를 띄우는데, 실제로 이어지는 세션과 다르면
+      // 배지는 떠 있고 눌러 보면 빈 화면이 나온다.
+      .order('saved_at', { ascending: false, nullsFirst: false })
       .order('started_at', { ascending: false }),
     getActiveSubscription(user.id),
   ])

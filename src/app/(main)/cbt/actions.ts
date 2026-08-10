@@ -208,6 +208,11 @@ export async function getOrCreateExamSession(
     .eq('year', year)
     .eq('round', round)
     .is('completed_at', null)
+    // 저장된 게 있는 세션을 먼저 고른다. 같은 회차에 미완료 세션이 둘 이상 생길 수
+    // 있는데(읽고 나서 넣는 방식이라 요청이 겹치면 둘 다 만들어진다 — 실제로 0~3초
+    // 간격으로 생긴 게 있다), '가장 최근'만 보면 답안이 든 쪽을 두고 빈 쪽을 집는다.
+    // 그러면 이어풀기도 자동 저장도 엉뚱한 세션에 대고 도는 셈이 된다.
+    .order('saved_at', { ascending: false, nullsFirst: false })
     .order('started_at', { ascending: false })
     .limit(1)
     .maybeSingle()

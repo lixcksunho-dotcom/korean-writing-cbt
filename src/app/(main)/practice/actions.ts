@@ -10,6 +10,7 @@ import { describeGradingFailure, truncatedFailure, alertGradingFailure } from '@
 import { trackServerEvent } from '@/lib/analytics/trackServerEvent'
 import { SUBSCRIPTION_REQUIRED, type GradingError } from '@/lib/aiGradingMessage'
 import type { EssayGrade } from '@/app/(main)/cbt/actions'
+import { getActiveProgram } from '@/lib/programContext'
 import { questionBank } from '@/lib/questionBank'
 
 // 서술형 '연습' 채점: 정식 시험 세션과 무관하게 단일 문항을 즉시 채점한다.
@@ -146,13 +147,21 @@ export async function getPracticeProgress(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { savedAnswers: {}, resumed: false }
 
+  // program을 안 걸면 실글과 KBS가 같은 행을 쓴다. 유형별 연습은 두 시험이 같은
+  // 센티넬 연도(9001)와 같은 유형 번호를 쓰기 때문이다 — 한쪽을 저장하면 다른 쪽
+  // 답안이 그대로 지워진다.
+  const program = await getActiveProgram()
+
   const { data: existing } = await supabase
     .from('quiz_sessions')
     .select('saved_answers, saved_at')
     .eq('user_id', user.id)
+    .eq('program', program)
     .eq('year', year)
     .eq('round', round)
     .is('completed_at', null)
+    // 저장된 게 있는 쪽을 먼저 — 미완료 세션이 둘 이상 생길 수 있다(cbt/actions.ts 참고)
+    .order('saved_at', { ascending: false, nullsFirst: false })
     .order('started_at', { ascending: false })
     .limit(1)
     .maybeSingle()
@@ -178,13 +187,18 @@ export async function savePracticeProgress(
   const subscription = await getActiveSubscription(user.id)
   if (!subscription) throw new Error(SUBSCRIPTION_REQUIRED)
 
+  // 읽을 때와 같은 축으로 찾아야 한다 — 안 그러면 저장은 A에, 복구는 B에서 돈다.
+  const program = await getActiveProgram()
+
   const { data: existing } = await supabase
     .from('quiz_sessions')
     .select('id')
     .eq('user_id', user.id)
+    .eq('program', program)
     .eq('year', year)
     .eq('round', round)
     .is('completed_at', null)
+    .order('saved_at', { ascending: false, nullsFirst: false })
     .order('started_at', { ascending: false })
     .limit(1)
     .maybeSingle()
@@ -192,7 +206,7 @@ export async function savePracticeProgress(
   const sessionId = existing?.id as string | undefined
     ?? (await supabase
       .from('quiz_sessions')
-      .insert({ user_id: user.id, year, round })
+      .insert({ user_id: user.id, year, round, program })
       .select('id')
       .single()).data?.id
 
