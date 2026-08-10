@@ -15,6 +15,8 @@ const PAGES = [
   '/kbs-korean', '/exam-compare', '/guides', '/proverbs', '/expressions',
   '/refined-words', '/honorifics', '/standard-words', '/loanword-spelling',
   '/privacy', '/terms', '/refund', '/support',
+  // 비밀번호 재설정 — 계정을 잃은 사람이 마지막으로 닿는 화면이라 여기가 깨지면 되돌릴 길이 없다
+  '/forgot-password', '/reset-password',
 ]
 
 const browser = await chromium.launch()

@@ -48,10 +48,10 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#f8fafc] px-4 py-12">
+    <main className="min-h-screen flex items-center justify-center bg-[#f8fafc] px-4 py-12">
       <div className="w-full max-w-sm">
         <div className="text-center mb-6">
-          <Link href="/" className="inline-flex items-center gap-2">
+          <Link href="/" aria-label="실글패스 홈으로" className="inline-flex items-center gap-2">
             <LogoGlyph className="h-8 w-8" />
           </Link>
         </div>
@@ -117,6 +117,6 @@ export default function ForgotPasswordPage() {
           )}
         </div>
       </div>
-    </div>
+    </main>
   );
 }

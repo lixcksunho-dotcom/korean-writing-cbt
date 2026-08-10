@@ -27,7 +27,7 @@ const admin = (p, init) => fetch(`${SB}${p}`, {
 const PUBLIC = [
   '/', '/blog', '/subscribe', '/login', '/signup', '/spelling', '/word-counter',
   '/exam-info', '/kbs-korean', '/guides', '/manuscript-guide', '/essay-guide',
-  '/privacy', '/terms', '/refund', '/support',
+  '/privacy', '/terms', '/refund', '/support', '/forgot-password', '/reset-password',
 ]
 const AUTHED = ['/dashboard', '/insights', '/cbt', '/manuscript', '/practice', '/practice/report', '/subscribe/history']
 
