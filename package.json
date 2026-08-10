@@ -34,7 +34,8 @@
     "check:data": "node scripts/data_integrity_check.mjs",
     "check:policy": "node --experimental-strip-types --no-warnings scripts/policy_consistency_check.mjs",
     "check:autosave": "node scripts/exam_autosave_check.mjs",
-    "check:resume": "node scripts/session_resume_check.mjs"
+    "check:resume": "node scripts/session_resume_check.mjs",
+    "check:exam-ui": "node scripts/exam_screen_ui_check.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.100.1",

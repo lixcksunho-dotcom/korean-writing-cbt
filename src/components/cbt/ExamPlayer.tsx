@@ -421,9 +421,12 @@ export default function ExamPlayer({
 
           {/* 좌우 2단 래퍼(서술형+지문) — lg 이상에서 지문 왼쪽·답안 오른쪽, 모바일은 세로 */}
           <div className={sideBySide ? 'grid lg:grid-cols-2 gap-4 items-start' : ''}>
-          {/* 지문/자료 — 실제 시험지처럼 항상 펼쳐진 박스 */}
+          {/* 지문/자료 — 실제 시험지처럼 항상 펼쳐진 박스.
+              min-w-0가 없으면 격자 칸이 안쪽 표 너비만큼 벌어진다(격자 자식의 기본
+              min-width는 auto다). 그러면 지문 안의 overflow-x-auto가 한 번도 안 걸리고
+              화면 전체가 가로로 밀린다 — 휴대폰에서 506px가 되어 '다음'이 밖으로 나갔다. */}
           {q.passage && (
-            <div className={`bg-white border-2 border-[#1e3a5f]/20 rounded-xl mb-4 ${sideBySide ? 'lg:mb-0 lg:sticky lg:top-24 lg:self-start' : ''}`}>
+            <div className={`bg-white border-2 border-[#1e3a5f]/20 rounded-xl mb-4 min-w-0 ${sideBySide ? 'lg:mb-0 lg:sticky lg:top-24 lg:self-start' : ''}`}>
               <div className="px-5 py-2.5 border-b border-[#1e3a5f]/10 flex items-center gap-2 bg-[#f8fafc] rounded-t-xl">
                 <FileText className="h-4 w-4 text-[#1e3a5f]" />
                 <span className="text-sm font-bold text-[#1e3a5f]">[지문 · 자료]</span>
@@ -544,7 +547,8 @@ export default function ExamPlayer({
                   />
                 )}
                 <p className="text-xs text-[#64748b]">
-                  ※ 제출 후 결과 화면에서 <span className="font-semibold text-[#f59e0b]">AI 채점</span>(항목별 점수·첨삭) 또는 모범 답안 비교가 제공됩니다.
+                  {/* 밝은 금색(#f59e0b)은 흰 배경에서 2.15다 — 12px 글자엔 4.5가 필요하다 */}
+                  ※ 제출 후 결과 화면에서 <span className="font-semibold text-[#b45309]">AI 채점</span>(항목별 점수·첨삭) 또는 모범 답안 비교가 제공됩니다.
                 </p>
               </div>
             )}
