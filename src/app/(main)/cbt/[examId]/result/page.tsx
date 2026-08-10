@@ -160,6 +160,13 @@ export default async function ResultPage({
               ※ 서술형 AI 채점 전 점수입니다. 아래에서 채점하면 점수에 반영됩니다.
             </p>
           )}
+          {/* 채점이 끝나면 이 등급의 700/1000점이 AI가 매긴 값이다. '합격권'이라고
+              단정해 놓고 근거를 안 밝히면, 사람은 이걸 실제 채점 결과로 읽는다. */}
+          {essaysGraded && essayQuestions.length > 0 && (
+            <p className="text-white/50 text-xs mt-3">
+              ※ 서술형은 AI가 매긴 참고 점수라, 실제 시험의 채점 결과와 다를 수 있습니다.
+            </p>
+          )}
           {timeTaken && (
             <p className="text-white/40 text-sm mt-2">
               소요 시간 {Math.floor(timeTaken / 60)}분 {timeTaken % 60}초

@@ -6,6 +6,7 @@ import { Sparkles, CheckCircle2, AlertCircle, Lock } from 'lucide-react'
 import { gradeExamEssay, type EssayGrade } from '@/app/(main)/cbt/actions'
 import { useAiTrial } from '@/components/cbt/AiTrialContext'
 import { gradingErrorText, isGradingError } from '@/lib/aiGradingMessage'
+import AiEstimateNotice from '@/components/grading/AiEstimateNotice'
 
 export default function EssayGrader({
   sessionId,
@@ -85,6 +86,8 @@ export default function EssayGrader({
             </ul>
           </div>
         )}
+        <AiEstimateNotice className="mt-3 pt-2 border-t border-blue-100" />
+
         {/* 첨삭 직후 업셀 — aha 직후가 전환 최적 타이밍 */}
         {!hasSubscription && (
           <Link href="/subscribe" className="mt-3 flex items-center justify-between gap-2 bg-white/70 border border-amber-200 rounded-lg px-3 py-2 hover:bg-amber-50 transition-colors">

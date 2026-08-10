@@ -2,6 +2,7 @@
 
 import { RotateCcw, Trophy, CheckCircle2, AlertCircle } from 'lucide-react'
 import type { GradeResult } from '@/app/(main)/manuscript/actions'
+import AiEstimateNotice from '@/components/grading/AiEstimateNotice'
 
 const CATEGORIES = [
   { key: 'manuscriptRules', label: '원고지 사용법', color: 'bg-purple-500' },
@@ -32,6 +33,9 @@ export default function ManuscriptResult({
         </div>
         <div className="mt-3 text-sm text-white/60 truncate px-4">{topic}</div>
       </div>
+
+      {/* '합격권/불합격'은 응시 여부를 좌우할 만한 말이다 — 근거가 AI 추정이라는 걸 밝힌다 */}
+      <AiEstimateNotice className="-mt-3 mb-6 text-center" />
 
       {/* 항목별 점수 */}
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 mb-4">
