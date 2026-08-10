@@ -28,10 +28,43 @@ export async function createMember(email: string, password: string, name?: strin
   revalidatePath('/admin/members')
 }
 
-/** 회원 삭제 */
+/**
+ * 회원 삭제.
+ *
+ * subscriptions.user_id 가 ON DELETE CASCADE 라서, 그냥 지우면 **결제 기록도 함께
+ * 사라진다** — 누적 매출이 조용히 줄고, 환불·분쟁 때 근거가 없어지며, 전자상거래법이
+ * 요구하는 대금결제 기록 5년 보존과도 어긋난다(개인정보처리방침에도 "법령상 보존이
+ * 필요한 경우 보관"이라고 적어 두었다).
+ *
+ * 그래서 지우기 전에 결제 기록과 사람의 연결을 먼저 끊는다. 거래가 있었다는 사실은
+ * 남기고 '누가 샀는지'만 지우는 것이라 개인정보 관점에서도 이쪽이 맞다.
+ *
+ * 마이그레이션 036 적용 전에는 user_id 가 NOT NULL 이라 이 끊기가 실패한다. 그때는
+ * 결제 기록이 있는 회원의 삭제를 막는다 — 조용히 지워 버리는 것보다 낫다.
+ */
 export async function deleteMember(userId: string) {
   await assertAdmin()
   const admin = createAdminClient()
+
+  const { data: paid } = await admin
+    .from('subscriptions')
+    .select('id')
+    .eq('user_id', userId)
+    .limit(1)
+
+  if (paid && paid.length > 0) {
+    const { error: unlinkError } = await admin
+      .from('subscriptions')
+      .update({ user_id: null })
+      .eq('user_id', userId)
+    if (unlinkError) {
+      throw new Error(
+        '이 회원에게 결제 기록이 있어 지금 삭제하면 결제 기록도 함께 사라집니다. ' +
+        'supabase/migrations/036_keep_payment_records.sql 을 먼저 실행해 주세요.'
+      )
+    }
+  }
+
   const { error } = await admin.auth.admin.deleteUser(userId)
   if (error) throw new Error(error.message)
   revalidatePath('/admin/members')
