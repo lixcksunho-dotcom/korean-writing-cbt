@@ -17,6 +17,9 @@ export default function robots(): MetadataRoute.Robots {
         '/dashboard', '/cbt', '/practice', '/manuscript',
         '/subscribe/success', '/subscribe/history', '/subscribe/fail',
         '/admin', '/auth',
+        // 비밀번호 재설정은 토큰이 있어야 의미가 있는 화면이다. 크롤러가 열면
+        // '링크가 만료됐어요'만 보이므로 그게 검색 결과에 실린다.
+        '/forgot-password', '/reset-password',
       ],
     },
     sitemap: `${SITE_URL}/sitemap.xml`,
