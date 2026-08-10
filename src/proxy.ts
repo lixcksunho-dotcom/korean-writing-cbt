@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { stripBom, SB_URL, SB_ANON } from "@/lib/supabase/sanitize";
+import { safeNextPath } from "@/lib/nextPath";
 
 export async function proxy(request: NextRequest) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -61,7 +62,11 @@ export async function proxy(request: NextRequest) {
   }
 
   if (user && (pathname === "/login" || pathname === "/signup")) {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
+    // 가려던 곳이 있으면 그리로. 인증 화면은 브라우저 쪽에서도 같은 판정을 하는데
+    // (배포 환경에서는 이 미들웨어가 실행되지 않기 때문이다 — next.config.ts 참고),
+    // 규칙이 갈리면 로컬과 배포가 다르게 움직인다. 그래서 같은 함수를 쓴다.
+    const next = safeNextPath(request.nextUrl.searchParams.get("next"), "/dashboard");
+    return NextResponse.redirect(new URL(next, request.url));
   }
 
   return supabaseResponse;

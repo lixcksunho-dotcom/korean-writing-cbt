@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useSyncExternalStore } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { readNextPath } from "@/lib/nextPath";
@@ -20,6 +20,20 @@ export default function SignupPage() {
   const [password, setPassword] = useState("");
   const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState("");
+
+  // 이미 로그인돼 있으면 폼을 보여 줄 이유가 없다.
+  //
+  // 원래 미들웨어가 하던 일인데 배포 환경에서는 미들웨어가 실행되지 않는다(proxy.ts 참고).
+  // 덤으로: 접근 토큰이 만료된 채 돌아온 사람은 서버 렌더에서 로그인 화면으로 밀린다.
+  // 브라우저 클라이언트는 갱신 토큰으로 세션을 되살릴 수 있으므로, 되살아나면 가려던
+  // 곳으로 그대로 보낸다 — 다시 로그인하게 만들 이유가 없다.
+  useEffect(() => {
+    let alive = true;
+    createClient().auth.getUser().then(({ data }) => {
+      if (alive && data.user) window.location.assign(readNextPath("/dashboard"));
+    });
+    return () => { alive = false };
+  }, []);
   // useSearchParams는 Suspense 경계를 요구하므로 주소에서 직접 읽는다.
   // 이펙트에서 setState하면 React 19 규칙에 걸려서, 이 프로젝트가 쓰는 방식(useSyncExternalStore)을 따른다.
   // 서버 스냅샷은 false — 서버에는 주소 질의문자열이 없으니 하이드레이션 불일치가 나지 않는다.
