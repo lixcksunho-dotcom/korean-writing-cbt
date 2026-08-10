@@ -402,6 +402,14 @@ export default async function DashboardPage() {
                 서술형 AI 채점을 받으면 예상 점수가 더 정확해져요 <ChevronRight className="h-3.5 w-3.5" />
               </Link>
             )}
+            {/* KBS는 주관처가 절대 등급컷을 공개하지 않는다. 결과 화면에는 이 안내가 있었는데
+                여기에는 없어서, 같은 주장을 한 곳에서만 밝히고 있었다(programs.ts에도
+                'UI에서 명시할 것'이라고 적혀 있다). */}
+            {program === 'kbs' && (
+              <p className="mt-3 text-xs text-[#64748b] leading-relaxed">
+                ※ KBS한국어능력시험은 공식 등급컷을 공개하지 않아, 학습 참고용 근사 기준으로 계산한 예상 등급입니다.
+              </p>
+            )}
           </div>
         ) : (
           <Link href="/subscribe" className="group block relative overflow-hidden rounded-2xl border border-[#e2e8f0] shadow-[0_4px_16px_rgba(15,31,61,0.06)] p-5 sm:p-6 mb-8 bg-white">
