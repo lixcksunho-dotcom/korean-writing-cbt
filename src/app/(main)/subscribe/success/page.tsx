@@ -5,6 +5,7 @@ import { CheckCircle2, PenLine } from 'lucide-react'
 import PurchaseTracker from '@/components/analytics/PurchaseTracker'
 import EventTracker from '@/components/analytics/EventTracker'
 import { grantSubscriptionForPayment, PLAN_PRICE } from '@/lib/payment'
+import { alertPaymentFailure } from '@/lib/paymentFailureAlert'
 
 export default async function SuccessPage({
   searchParams,
@@ -31,6 +32,15 @@ export default async function SuccessPage({
   const result = await grantSubscriptionForPayment(paymentId, { expectedUserId: user.id })
 
   if (!result.ok) {
+    // 돈이 오간 뒤라 조용히 넘기면 안 된다. 사용자가 문의하지 않으면 그걸로 끝이었다.
+    console.error('[결제] 이용권 발급 실패', { paymentId, reason: result.reason, userId: user.id })
+    await alertPaymentFailure({
+      paymentId,
+      reason: result.reason,
+      userId: user.id,
+      amount: result.amount,
+      status: result.status,
+    })
     // reason → 기존 실패 페이지 매핑 유지
     const reasonMap: Record<string, string> = {
       not_found: 'confirm',
@@ -40,7 +50,8 @@ export default async function SuccessPage({
       user_mismatch: 'confirm',
       save: 'save',
     }
-    redirect(`/subscribe/fail?reason=${reasonMap[result.reason] ?? 'confirm'}`)
+    // 주문번호를 함께 넘긴다 — 문의할 때 "어느 결제인지"를 사용자가 댈 수 있어야 한다.
+    redirect(`/subscribe/fail?reason=${reasonMap[result.reason] ?? 'confirm'}&order=${encodeURIComponent(paymentId)}`)
   }
 
   const expiresAt = new Date(result.expiresAt)

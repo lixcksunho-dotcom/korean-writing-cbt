@@ -1,5 +1,6 @@
 import { Webhook } from '@portone/server-sdk'
 import { grantSubscriptionForPayment } from '@/lib/payment'
+import { alertPaymentFailure } from '@/lib/paymentFailureAlert'
 
 // 포트원 V2 결제완료 웹훅. success 페이지(브라우저 의존)와 무관하게 서버 간 호출로
 // 구독을 발급해, 결제는 됐는데 발급이 안 되는 사고를 자동 복구한다.
@@ -44,6 +45,16 @@ export async function POST(req: Request) {
       // 500을 반환해 포트원 재시도(0→1→4→16→256분, 최대 5회)로 자동 복구되게 한다.
       // 영구 실패(금액 불일치·사용자 식별 불가)는 재시도해도 같으므로 200으로 종료.
       const transient = result.reason === 'not_found' || result.reason === 'status' || result.reason === 'save'
+      // 재시도로 낫는 것(transient)은 포트원이 다시 부른다. 그렇지 않은 것은 여기서
+      // 영영 사라지므로 — 사용자는 돈을 냈는데 이용권이 없다 — 즉시 알린다.
+      if (!transient) {
+        await alertPaymentFailure({
+          paymentId,
+          reason: result.reason,
+          amount: result.amount,
+          status: result.status,
+        })
+      }
       return new Response(`unprocessed: ${result.reason}`, { status: transient ? 500 : 200 })
     } catch (e) {
       console.error(`[portone-webhook] 처리 예외 payment=${paymentId}:`, (e as Error).message)

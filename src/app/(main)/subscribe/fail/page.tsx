@@ -44,9 +44,9 @@ function resolve(reason?: string, code?: string): View {
 export default async function FailPage({
   searchParams,
 }: {
-  searchParams: Promise<{ message?: string; code?: string; reason?: string }>
+  searchParams: Promise<{ message?: string; code?: string; reason?: string; order?: string }>
 }) {
-  const { message, code, reason } = await searchParams
+  const { message, code, reason, order } = await searchParams
   const view = resolve(reason, code)
 
   const icon =
@@ -66,6 +66,13 @@ export default async function FailPage({
         <p className="text-[#64748b] text-sm mb-2 leading-relaxed">{view.desc}</p>
         {message && (
           <p className="text-xs text-[#64748b] mb-2">{message} {code ? `(${code})` : ''}</p>
+        )}
+        {/* 문의할 때 "어느 결제인지"를 댈 수 있어야 한다. 없으면 사용자도 우리도 못 찾는다. */}
+        {order && (
+          <p className="mt-3 rounded-lg bg-[#f8fafc] px-3 py-2 text-xs text-[#475569]">
+            주문번호 <span className="font-mono font-semibold text-[#0f172a] break-all">{order}</span>
+            <span className="block mt-0.5 text-[#64748b]">문의하실 때 이 번호를 알려 주세요.</span>
+          </p>
         )}
         <div className="space-y-3 mt-8">
           {view.kind === 'pending' ? (
