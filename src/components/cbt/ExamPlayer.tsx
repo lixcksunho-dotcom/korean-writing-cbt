@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Clock, ChevronLeft, ChevronRight, ChevronDown, Send, AlertCircle, CheckCircle2, FileText, Save, Lock } from 'lucide-react'
 import { submitSession, saveExamProgress } from '@/app/(main)/cbt/actions'
+import { readableActionError } from '@/lib/actionErrorMessage'
 import EditableManuscript, { type EditableManuscriptHandle } from '@/components/manuscript/EditableManuscript'
 import { parseCharLimit, manuscriptRows, clampToCharLimit } from '@/lib/charLimit'
 import { extractCircledLabels, insertAtTextareaCursor } from '@/lib/circledSymbols'
@@ -140,21 +141,13 @@ export default function ExamPlayer({
         // 시간 종료 자동 제출이 실패해도 답안은 브라우저에 남겨 둔다. 여기서 자동 재시도는
         // 하지 않는다 — timeLeft가 이미 0이라 이 이펙트가 다시 돌지 않고, 억지로 돌리면
         // 실패가 계속될 때 무한 반복이 된다. 대신 오류를 띄워 직접 제출하게 한다.
-        setSubmitError(readableError(e, '제출에 실패했어요. 제출하기를 다시 눌러 주세요.'))
+        setSubmitError(readableActionError(e, '제출에 실패했어요. 제출하기를 다시 눌러 주세요.'))
         return
       }
       clearDraft(sessionId)
       router.push(`/cbt/${examYear}-${examRound}/result?session=${sessionId}`)
     })
   }, [timeLeft, sessionId, examYear, examRound, router])
-
-  // 서버 액션이 던지는 우리 메시지는 한국어다. 회선이 끊기면 브라우저가 던지는
-  // "Failed to fetch" 같은 영문이 그대로 올라오는데, 그대로 보여 주면 무슨 일인지도
-  // 뭘 해야 하는지도 알 수 없다(실측에서 그 영문이 그대로 노출되고 있었다).
-  function readableError(e: unknown, fallback: string): string {
-    const raw = e instanceof Error ? e.message : ''
-    return /[가-힣]/.test(raw) ? raw : fallback
-  }
 
   function handleAnswer(questionId: string, value: string) {
     setAnswers(prev => ({ ...prev, [questionId]: value }))
@@ -168,7 +161,7 @@ export default function ExamPlayer({
       } catch (e) {
         // 저장에 실패했으면 화면에 남아야 한다. 여기서 초안을 지우거나 결과로 넘기면
         // 사용자가 방금 푼 답안이 통째로 사라진다.
-        setSubmitError(readableError(e, '회선이 끊겼는지 제출이 되지 않았어요. 연결을 확인하고 다시 눌러 주세요.'))
+        setSubmitError(readableActionError(e, '회선이 끊겼는지 제출이 되지 않았어요. 연결을 확인하고 다시 눌러 주세요.'))
         return
       }
       clearDraft(sessionId)

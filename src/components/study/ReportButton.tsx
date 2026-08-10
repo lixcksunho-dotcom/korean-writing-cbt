@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react'
 import { Flag, Check, X } from 'lucide-react'
 import { submitQuestionReport } from '@/lib/study-actions'
+import { readableActionError } from '@/lib/actionErrorMessage'
 
 const REASONS = ['정답이 틀린 것 같아요', '문제·보기에 오타가 있어요', '해설이 이상해요', '기타 오류']
 
@@ -17,7 +18,8 @@ export default function ReportButton({ questionId }: { questionId: string }) {
     setErr('')
     start(async () => {
       try { await submitQuestionReport(questionId, reason); setDone(true); setOpen(false) }
-      catch (e) { setErr(e instanceof Error ? e.message : '신고 실패') }
+      // 운영 빌드는 서버가 쓴 문장을 지우고 영문 내부 메시지를 준다 — 그대로 띄우면 안 된다.
+      catch (e) { setErr(readableActionError(e, '신고를 접수하지 못했어요. 잠시 후 다시 시도해 주세요.')) }
     })
   }
 
