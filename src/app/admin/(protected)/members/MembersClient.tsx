@@ -3,6 +3,7 @@
 import { useState, useMemo, useTransition } from 'react'
 import { Search, UserPlus, Trash2, Loader2, Crown, Mail, X } from 'lucide-react'
 import { createMember, deleteMember, setMemberPaid } from './actions'
+import type { RefundJudgement } from '@/lib/refundEligibility'
 
 export type AdminMember = {
   id: string
@@ -12,6 +13,7 @@ export type AdminMember = {
   lastSignInAt: string | null
   provider: string
   paid: boolean
+  refund: RefundJudgement
 }
 
 export default function MembersClient({ members }: { members: AdminMember[] }) {
@@ -95,6 +97,18 @@ function Row({ m, onError }: { m: AdminMember; onError: (s: string) => void }) {
           {m.provider !== 'email' && <span className="text-xs text-gray-600 bg-gray-100 px-1.5 rounded">{m.provider}</span>}
         </div>
         <span className="text-xs text-gray-600 truncate block">{m.email}</span>
+        {/* 환불 정책(/refund)이 "7일 이내 + AI 미사용"을 기준으로 삼는데, 문의가 왔을 때
+            그 둘을 확인할 데가 없었다. 결제한 사람에게만 보여 준다. */}
+        {m.refund.verdict !== 'no_payment' && (
+          <span
+            className={`mt-1 inline-block text-[11px] font-semibold px-1.5 py-0.5 rounded ${
+              m.refund.verdict === 'refundable' ? 'bg-amber-50 text-amber-800' : 'bg-gray-100 text-gray-700'
+            }`}
+          >
+            {m.refund.verdict === 'refundable' ? '환불 대상 · ' : '환불 제한 · '}
+            {m.refund.label}
+          </span>
+        )}
       </div>
       <span className="hidden sm:block text-xs text-gray-600 whitespace-nowrap">{new Date(m.createdAt).toLocaleDateString('ko-KR')}</span>
       <label className="flex items-center gap-1.5 min-h-11 cursor-pointer select-none">
