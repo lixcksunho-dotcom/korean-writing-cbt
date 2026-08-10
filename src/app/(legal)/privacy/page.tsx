@@ -52,6 +52,7 @@ export default function PrivacyPage() {
         <ul className="list-disc pl-5 space-y-1 mt-2">
           <li>(주)코리아포트원 및 제휴 PG사 — 결제 처리 및 결제 도용 방지</li>
           <li>Supabase — 회원 인증 및 데이터 저장(클라우드 인프라)</li>
+          <li>Vercel — 서비스 호스팅 및 접속 로그 처리</li>
           <li>Anthropic — AI 채점·첨삭 처리(입력된 답안 텍스트 분석)</li>
         </ul>
         <p className="mt-2">

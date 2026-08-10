@@ -87,5 +87,42 @@ for (const [rel, label] of SCORE_SCREENS) {
   }
 }
 
+// ── 개인정보처리방침: 실제로 붙어 있는 외부 도구가 위탁 목록에 있는가 ────────
+// 코드에는 Google Analytics와 Microsoft Clarity가 이미 연결돼 있고, 환경변수만 넣으면
+// 켜진다(NEXT_PUBLIC_GA_ID · NEXT_PUBLIC_CLARITY_ID). Clarity는 세션 녹화 도구다 —
+// 켜는 순간 방문자의 조작이 Microsoft로 넘어가는데, 방침에는 두 회사가 없다.
+// 설정은 Vercel에 있어서 이 저장소만 봐서는 켜졌는지 알 수 없다. 그래서 **실제 화면을
+// 받아서** 무엇이 로드되는지 보고, 방침과 대조한다.
+const BASE = process.env.POLICY_CHECK_BASE ?? 'https://kptest.cloud'
+const TRACKERS = [
+  { test: /googletagmanager\.com\/gtag|gtag\(/, company: 'Google', what: 'Google Analytics' },
+  { test: /clarity\.ms/, company: 'Microsoft', what: 'Microsoft Clarity(세션 녹화)' },
+]
+
+console.log('\n실제 화면에 붙은 외부 도구 — 개인정보처리방침 위탁 목록과 대조')
+const privacy = fs.readFileSync(path.join(process.cwd(), 'src', 'app', '(legal)', 'privacy', 'page.tsx'), 'utf-8')
+let html = null
+try {
+  const res = await fetch(BASE, { signal: AbortSignal.timeout(15000) })
+  if (res.ok) html = await res.text()
+} catch { /* 아래에서 '확인 못 함'으로 알린다 */ }
+
+if (html === null) {
+  console.log(`  ? ${BASE}를 열지 못해 확인하지 못했다 — 통과로 세지 않는다`)
+} else {
+  for (const t of TRACKERS) {
+    const loaded = t.test.test(html)
+    const listed = privacy.includes(t.company)
+    if (loaded && !listed) {
+      bad++
+      console.log(`  × ${t.what}가 켜져 있는데 방침의 위탁 목록에 ${t.company}가 없다`)
+    } else if (loaded) {
+      console.log(`  ○ ${t.what} 켜짐 · 방침에 ${t.company} 있음`)
+    } else {
+      console.log(`  ○ ${t.what} 꺼짐`)
+    }
+  }
+}
+
 console.log(bad ? `\n${bad}건 어긋남` : '\n모두 일치')
 if (bad) process.exitCode = 1
