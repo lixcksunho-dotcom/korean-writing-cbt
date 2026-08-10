@@ -80,9 +80,22 @@ export default async function FailPage({
               대시보드에서 확인하기
             </Link>
           ) : view.kind === 'support' ? (
-            <Link href="/support" className="w-full btn-primary flex items-center justify-center text-white font-bold py-3.5 rounded-xl text-sm">
-              고객센터 문의하기
-            </Link>
+            // 방금 결제가 막힌 사람에게 '고객센터 가서 알아서 쓰세요'는 한 단계가 더 있는 것이다.
+            // 주문번호까지 채워 둔 메일을 바로 열어 준다(주문번호가 없으면 평소대로 안내 페이지로).
+            order ? (
+              <a
+                href={`mailto:lyw2216@naver.com?subject=${encodeURIComponent('[실글패스] 결제 문의')}&body=${encodeURIComponent(`주문번호: ${order}
+
+(어떤 문제가 있었는지 적어 주세요)`)}`}
+                className="w-full btn-primary flex items-center justify-center text-white font-bold py-3.5 rounded-xl text-sm"
+              >
+                주문번호와 함께 문의 메일 쓰기
+              </a>
+            ) : (
+              <Link href="/support" className="w-full btn-primary flex items-center justify-center text-white font-bold py-3.5 rounded-xl text-sm">
+                고객센터 문의하기
+              </Link>
+            )
           ) : (
             <Link href="/subscribe" className="w-full btn-primary flex items-center justify-center text-white font-bold py-3.5 rounded-xl text-sm">
               다시 시도하기

@@ -65,7 +65,8 @@ export default function SupportPage() {
 
       <p className="text-sm text-[#64748b] bg-[#f8fafc] border border-[#e2e8f0] rounded-xl p-4 mb-10">
         이메일 문의는 24시간 접수되며, 운영시간 내 순차적으로 답변드립니다. 결제·환불 문의 시 가입하신
-        이메일 주소를 함께 보내주시면 빠르게 확인할 수 있습니다.
+        이메일 주소와 <b className="text-[#334155]">주문번호</b>를 함께 보내주시면 빠르게 확인할 수 있습니다.
+        주문번호는 결제 안내 화면에 표시되며, 없으시면 결제하신 시각만 알려 주셔도 됩니다.
       </p>
 
       {/* 자주 묻는 질문 */}
