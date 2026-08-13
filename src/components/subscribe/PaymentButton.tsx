@@ -89,6 +89,11 @@ export default function PaymentButton({
       // PC(팝업/iframe)에서는 Promise가 resolve된다. code가 있으면 실패.
       if (response?.code !== undefined) {
         setError(response.message ?? '결제 중 오류가 발생했습니다.')
+        // 결제창이 닫힌 이유는 여기서만 알 수 있다. 창을 열고 그냥 닫으면 PG에는
+        // READY만 남고 사유가 없어서, 나중에 보면 '왜 안 냈는지'를 영영 모른다.
+        // 이름·meta는 리다이렉트 실패(/subscribe/fail)와 같은 규약을 쓴다 — 이름이 갈리면
+        // 퍼널 보고와 관리자 트래픽 화면이 둘 중 하나만 세고, 사유 분류도 어긋난다.
+        trackEvent('payment_fail', response.code)
         return
       }
 
@@ -99,6 +104,8 @@ export default function PaymentButton({
     } catch (e: unknown) {
       const err = e as { message?: string }
       setError(err?.message ?? '결제 중 오류가 발생했습니다.')
+      // 사유 문구는 그대로 싣지 않는다(길이·개인정보). 예외로 끝났다는 것만 남긴다.
+      trackEvent('payment_fail', 'exception')
     } finally {
       setLoading(null)
     }

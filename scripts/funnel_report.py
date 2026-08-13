@@ -147,6 +147,11 @@ def main():
     # 결제 실패는 사유를 나눠서 봐야 한다. 사용자가 결제창에서 스스로 닫은 것(PAY_CANCELLED)과
     # 정말 깨진 것을 한 숫자로 묶으면 "실패율 33%"처럼 읽혀서 없는 불을 끄러 가게 된다.
     # 사유는 trackEvent의 meta에 실려 page_views.referrer로 저장된다.
+    #
+    # 이 목록은 리다이렉트 결제(모바일)가 주소로 돌려주던 코드다. PC 결제창은 포트원 V2
+    # 브라우저 SDK가 주는 code를 그대로 싣는데, 그 값의 실물은 아직 못 봤다(2026-08 기준).
+    # 처음 보는 코드가 '확인 필요'로 뜨면 사고가 아니라 이 목록에 없는 것일 수 있다 —
+    # 실제로 찍힌 값을 보고 넣는다(지어내서 미리 채우지 않는다).
     CANCELLED = {"PAY_CANCELLED", "USER_CANCEL", "CANCEL", "PAY_PROCESS_CANCELED"}
     fails = [r for r in events if r["path"] == "#event/payment_fail"]
     if fails:
