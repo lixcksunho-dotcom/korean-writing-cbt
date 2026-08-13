@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { isActivePass } from '@/lib/subscription'
+import { REVOKED } from '@/lib/subscriptionRevocationPolicy'
 import { checkAiKey } from '@/lib/aiKeyStatus'
 import { recentOperatorAlerts } from '@/lib/operatorAlerts'
 import SubscriberTrend from '@/components/admin/SubscriberTrend'
@@ -31,12 +32,15 @@ export default async function AdminHome() {
 
   const subs = subRows.data ?? []
   const activePasses = subs.filter(s => isActivePass(s.status as string, s.expires_at as string)).length
-  const totalOrders = subs.length
-  const revenue = subs.reduce((sum, s) => sum + (Number(s.amount) || 0), 0)
+  // 환불(회수)된 건은 매출이 아니다. 만료된 건은 매출이 맞으므로 만료가 아니라 status로 가른다.
+  const paidSubs = subs.filter(s => s.status !== REVOKED)
+  const totalOrders = paidSubs.length
+  const revenue = paidSubs.reduce((sum, s) => sum + (Number(s.amount) || 0), 0)
+  const refundedCount = subs.length - totalOrders
 
   const stats = [
     { label: '활성 이용권', value: `${activePasses}`, sub: `누적 결제 ${totalOrders}건`, icon: CreditCard, color: 'text-blue-600 bg-blue-50' },
-    { label: '누적 매출', value: `${revenue.toLocaleString()}원`, sub: '결제 합계', icon: Wallet, color: 'text-emerald-700 bg-emerald-50' },
+    { label: '누적 매출', value: `${revenue.toLocaleString()}원`, sub: refundedCount ? `환불 ${refundedCount}건 제외` : '결제 합계', icon: Wallet, color: 'text-emerald-700 bg-emerald-50' },
     { label: '등록 문제', value: `${qCount.count ?? 0}`, sub: '객관식+서술형', icon: BookOpen, color: 'text-indigo-600 bg-indigo-50' },
     { label: '후기', value: `${reviewTotal}`, sub: `노출 ${reviewVisible} · 인증대기 ${reviewPending}`, icon: Star, color: 'text-amber-700 bg-amber-50' },
     { label: '완료한 시험', value: `${examDone.count ?? 0}`, sub: '제출 세션', icon: FileCheck2, color: 'text-violet-600 bg-violet-50' },

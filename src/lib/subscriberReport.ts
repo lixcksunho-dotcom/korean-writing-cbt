@@ -1,4 +1,5 @@
 import { createAdminClient } from '@/lib/supabase/admin'
+import { REVOKED } from '@/lib/subscriptionRevocationPolicy'
 
 // 매일 아침 보내는 '신규 구독 유입' 보고의 계산부. 전송·그림과 분리해 둔다 —
 // 숫자가 맞는지는 화면 없이도 확인할 수 있어야 한다(npm run report:subs).
@@ -51,7 +52,7 @@ export type SubscriberReport = {
   signup7: number
 }
 
-type Row = { created_at: string; amount: number | null; user_id: string }
+type Row = { created_at: string; amount: number | null; user_id: string; status: string }
 
 /**
  * 주 단위로 묶는다. 유료 구독은 지금까지 10주에 9건뿐이라 일별로 그리면
@@ -89,10 +90,11 @@ export async function buildSubscriberReport(now = Date.now()): Promise<Subscribe
 
   const { data: subsRaw } = await admin
     .from('subscriptions')
-    .select('created_at, amount, user_id')
+    .select('created_at, amount, user_id, status')
     .order('created_at')
+  // 환불(회수)된 건은 결제 추이에서 뺀다 — 안 빼면 취소된 주가 계속 매출로 보인다.
   const subs = ((subsRaw ?? []) as Row[])
-    .filter((s) => (s.amount ?? 0) > 0 && !testIds.has(s.user_id))
+    .filter((s) => (s.amount ?? 0) > 0 && s.status !== REVOKED && !testIds.has(s.user_id))
   const dates = subs.map((s) => s.created_at)
 
   // PostgREST는 한 번에 1000행까지만 준다. limit을 크게 줘도 조용히 잘리고, 정렬을 안 주면

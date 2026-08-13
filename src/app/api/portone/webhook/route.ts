@@ -1,10 +1,12 @@
 import { Webhook } from '@portone/server-sdk'
 import { grantSubscriptionForPayment } from '@/lib/payment'
 import { alertPaymentFailure } from '@/lib/paymentFailureAlert'
+import { revokeSubscriptionForPayment } from '@/lib/subscriptionRevocation'
 
-// 포트원 V2 결제완료 웹훅. success 페이지(브라우저 의존)와 무관하게 서버 간 호출로
-// 구독을 발급해, 결제는 됐는데 발급이 안 되는 사고를 자동 복구한다.
+// 포트원 V2 결제 웹훅. success 페이지(브라우저 의존)와 무관하게 서버 간 호출로
+// 구독을 발급하고(결제완료), 환불되면 회수한다(취소).
 // 콘솔에 웹훅 URL(https://kptest.cloud/api/portone/webhook) 등록 + PORTONE_WEBHOOK_SECRET 필요.
+// 취소 이벤트를 받으려면 콘솔 웹훅 설정에서 'Transaction.Cancelled'도 켜져 있어야 한다.
 
 export async function POST(req: Request) {
   const secret = process.env.PORTONE_WEBHOOK_SECRET
@@ -62,6 +64,29 @@ export async function POST(req: Request) {
     }
   }
 
-  // 결제완료 외 이벤트(취소·실패·가상계좌 등)는 처리 대상 아님 → 200으로 조용히 수신.
+  // 환불 → 이용권 회수. 전액 취소만 자동 회수하고, 부분 취소는 회수 여부를 사람이 정한다
+  // (판정은 subscriptionRevocationPolicy, 여기서는 두 이벤트를 같은 경로로 넘긴다).
+  if ('type' in webhook && (webhook.type === 'Transaction.Cancelled' || webhook.type === 'Transaction.PartialCancelled')) {
+    const paymentId = webhook.data.paymentId
+    try {
+      const result = await revokeSubscriptionForPayment(paymentId)
+      if (result.ok) {
+        console.log(`[portone-webhook] 취소 처리 ${result.action} payment=${paymentId} (${result.reason})`)
+        return new Response('ok', { status: 200 })
+      }
+      console.error(`[portone-webhook] 회수 실패 payment=${paymentId} reason=${result.reason}`)
+      // 전부 재시도로 나을 수 있는 실패다(포트원 반영 지연·조회 장애·DB 일시오류).
+      // 여기서 포기하면 환불받은 사람이 30일을 그대로 쓴다 → 500으로 재시도를 부른다.
+      // 재시도 5회가 모두 실패해도 대사(npm run audit:refunds)가 나중에 잡으므로,
+      // 매 재시도마다 알림을 쌓지는 않는다. 알림은 revokeSubscriptionForPayment가
+      // 자기 판단으로 필요한 경우(부분취소·갱신 실패)에만 남긴다.
+      return new Response(`revoke failed: ${result.reason}`, { status: 500 })
+    } catch (e) {
+      console.error(`[portone-webhook] 취소 처리 예외 payment=${paymentId}:`, (e as Error).message)
+      return new Response('error', { status: 500 })
+    }
+  }
+
+  // 그 밖의 이벤트(실패·가상계좌 발급·취소대기 등)는 처리 대상 아님 → 200으로 조용히 수신.
   return new Response('ok', { status: 200 })
 }
