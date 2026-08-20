@@ -5,10 +5,15 @@ import * as PortOne from '@portone/browser-sdk/v2'
 import { trackEvent } from '@/lib/analytics/trackEvent'
 
 type Method = 'card' | 'easypay'
+/** 아직 못 여는 수단도 자리는 만들어 둔다 — 누가 무엇을 원하는지 세어야 준비 순서를 감으로 안 정한다. */
+type MethodKey = Method | 'kakaopay'
 
-const METHODS: { key: Method; label: string; emoji: string; color: string }[] = [
+const METHODS: { key: MethodKey; label: string; emoji: string; color: string; soon?: boolean }[] = [
   { key: 'card', label: '카드 결제', emoji: '💳', color: 'border-[#1e3a5f] bg-[#1e3a5f] text-white' },
   { key: 'easypay', label: '간편결제', emoji: '⚡', color: 'border-[#1e3a5f] bg-white text-[#1e3a5f]' },
+  // 카카오페이 전용 채널은 아직 없다. 되는 것처럼 보이면 눌러 본 사람이 결제를 포기하므로,
+  // 솔리드 CTA(위 둘)와 다른 테두리형으로 두고 '준비중'을 함께 적는다.
+  { key: 'kakaopay', label: '카카오페이', emoji: '💬', color: 'border-[#FEE500] bg-white text-[#3C1E1E]', soon: true },
 ]
 
 // 포트원 V2 결제수단 매핑. 카드(CARD) + 간편결제(EASY_PAY, provider 미지정).
@@ -32,10 +37,20 @@ export default function PaymentButton({
 }) {
   const [loading, setLoading] = useState<Method | null>(null)
   const [error, setError] = useState('')
+  const [notice, setNotice] = useState('')
   const [agreed, setAgreed] = useState(false)
   const [phone, setPhone] = useState('')
 
+  // 잠가 두면 누른 사람은 아무 반응도 못 받고 이유도 모른다(아래 동의 가드와 같은 원칙).
+  // 눌리게 두고 왜 안 되는지 말해 준 다음, 원한 수단을 세어 둔다.
+  function handleUnavailable(key: MethodKey) {
+    setError('')
+    setNotice('카카오페이는 준비 중입니다. 지금은 카드 결제·간편결제로 이용해 주세요.')
+    trackEvent('method_unavailable', key)
+  }
+
   async function handlePayment(method: Method) {
+    setNotice('')
     // 결제창까지 못 간 이유도 남긴다. payment_started는 아래 가드를 모두 통과해야 찍혀서,
     // 여기서 막힌 사람은 퍼널에 아예 안 보였다(구독 페이지 조회는 있는데 결제 시작이 0인 구간이 있었다).
     if (!agreed) {
@@ -145,10 +160,10 @@ export default function PaymentButton({
         </span>
       </label>
 
-      {METHODS.map(({ key, label, emoji, color }) => (
+      {METHODS.map(({ key, label, emoji, color, soon }) => (
         <button
           key={key}
-          onClick={() => handlePayment(key)}
+          onClick={() => (soon ? handleUnavailable(key) : handlePayment(key as Method))}
           // 동의 전이라고 버튼을 잠그면, 누른 사람은 아무 반응도 못 받고 이유도 모른다.
           // 눌리게 두고 handlePayment가 "무엇이 빠졌는지"를 말해 주게 한다(결제는 그대로 막힌다).
           disabled={loading !== null}
@@ -156,11 +171,19 @@ export default function PaymentButton({
         >
           <span className="text-base">{emoji}</span>
           {loading === key ? '결제창 열리는 중...' : label}
+          {soon && (
+            <span className="rounded-full bg-[#FEE500] px-2 py-0.5 text-[11px] font-bold text-[#3C1E1E]">준비중</span>
+          )}
         </button>
       ))}
 
       {error && (
         <p className="text-xs text-red-600 text-center pt-1">{error}</p>
+      )}
+
+      {/* 준비중 안내는 오류가 아니다 — 빨간 글씨로 쓰면 결제가 고장 난 것처럼 읽힌다. */}
+      {notice && (
+        <p className="text-xs text-[#475569] text-center pt-1">{notice}</p>
       )}
 
       <p className="text-center text-xs text-[#64748b] pt-1">
