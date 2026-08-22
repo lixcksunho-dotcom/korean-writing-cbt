@@ -26,6 +26,12 @@ function portoneMethodParams(method: Method) {
   return { payMethod: 'CARD' } as const
 }
 
+/** 사유 문구에서 숫자를 지우고 짧게 자른다. 트래킹은 익명 비콘이라 개인정보가 실리면 안 된다. */
+function sanitizeReason(message?: string): string {
+  if (!message) return 'unknown'
+  return message.replace(/\d/g, '').replace(/\s+/g, ' ').trim().slice(0, 80) || 'unknown'
+}
+
 export default function PaymentButton({
   userId,
   userEmail,
@@ -119,8 +125,10 @@ export default function PaymentButton({
     } catch (e: unknown) {
       const err = e as { message?: string }
       setError(err?.message ?? '결제 중 오류가 발생했습니다.')
-      // 사유 문구는 그대로 싣지 않는다(길이·개인정보). 예외로 끝났다는 것만 남긴다.
-      trackEvent('payment_fail', 'exception')
+      // 'exception'만 남기면 무엇이 터졌는지 영영 모른다 — 실제로 간편결제가 매번 즉시
+      // 죽고 있었는데 사유가 안 남아 원인을 못 좁혔다. 숫자는 지우고(카드번호·전화번호가
+      // 섞여 들어올 수 있다) 길이를 잘라 사유 문구를 함께 싣는다.
+      trackEvent('payment_fail', `ex:${method}:${sanitizeReason(err?.message)}`)
     } finally {
       setLoading(null)
     }
