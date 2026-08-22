@@ -35,6 +35,7 @@
     "check:policy": "node --experimental-strip-types --no-warnings scripts/policy_consistency_check.mjs",
     "check:revoke": "node --experimental-strip-types --no-warnings scripts/refund_revocation_check.mjs",
     "check:attempts": "node --experimental-strip-types --no-warnings scripts/payment_attempt_check.mjs",
+    "check:methods": "node scripts/payment_method_check.mjs",
     "report:payments": "node --experimental-strip-types --no-warnings scripts/payment_attempt_report.mjs",
     "audit:refunds": "node --experimental-strip-types --no-warnings scripts/revoke_refunded_subscriptions.mjs",
     "check:autosave": "node scripts/exam_autosave_check.mjs",
