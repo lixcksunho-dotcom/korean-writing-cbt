@@ -4,25 +4,36 @@ import { useState } from 'react'
 import * as PortOne from '@portone/browser-sdk/v2'
 import { trackEvent } from '@/lib/analytics/trackEvent'
 
-type Method = 'card' | 'easypay'
+type Method = 'card'
 /** 아직 못 여는 수단도 자리는 만들어 둔다 — 누가 무엇을 원하는지 세어야 준비 순서를 감으로 안 정한다. */
-type MethodKey = Method | 'kakaopay'
+type MethodKey = Method | 'easypay' | 'kakaopay'
 
-const METHODS: { key: MethodKey; label: string; emoji: string; color: string; soon?: boolean }[] = [
+const METHODS: {
+  key: MethodKey; label: string; emoji: string; color: string
+  soon?: boolean; notice?: string
+}[] = [
   { key: 'card', label: '카드 결제', emoji: '💳', color: 'border-[#1e3a5f] bg-[#1e3a5f] text-white' },
-  { key: 'easypay', label: '간편결제', emoji: '⚡', color: 'border-[#1e3a5f] bg-white text-[#1e3a5f]' },
-  // 카카오페이 전용 채널은 아직 없다. 되는 것처럼 보이면 눌러 본 사람이 결제를 포기하므로,
-  // 솔리드 CTA(위 둘)와 다른 테두리형으로 두고 '준비중'을 함께 적는다.
-  { key: 'kakaopay', label: '카카오페이', emoji: '💬', color: 'border-[#FEE500] bg-white text-[#3C1E1E]', soon: true },
+  // 되는 것처럼 보이면 눌러 본 사람이 결제를 포기한다. 솔리드 CTA(카드)와 다른 테두리형으로
+  // 두고 '준비중'을 함께 적는다.
+  {
+    key: 'easypay', label: '간편결제', emoji: '⚡', color: 'border-[#cbd5e1] bg-white text-[#475569]', soon: true,
+    notice: '간편결제(카카오페이·네이버페이·토스페이)는 준비 중입니다. 지금은 카드 결제로 이용해 주세요.',
+  },
+  {
+    key: 'kakaopay', label: '카카오페이', emoji: '💬', color: 'border-[#FEE500] bg-white text-[#3C1E1E]', soon: true,
+    notice: '카카오페이는 준비 중입니다. 지금은 카드 결제로 이용해 주세요.',
+  },
 ]
 
-// 포트원 V2 결제수단 매핑. 카드(CARD) + 간편결제(EASY_PAY, provider 미지정).
-// EASY_PAY는 기존 PG(KG이니시스) 채널에 활성화된 간편결제(삼성페이·카카오페이 등)를 결제창에서 노출한다.
-// 별도 채널/계약 없이 기존 채널키로 동작 — provider를 지정하지 않으면 이니시스가 가능한 수단을 보여준다.
-function portoneMethodParams(method: Method) {
-  if (method === 'easypay') {
-    return { payMethod: 'EASY_PAY' } as const
-  }
+// 포트원 V2 결제수단 매핑. 지금 실제로 열 수 있는 건 카드뿐이다.
+//
+// 간편결제를 `payMethod: 'EASY_PAY'`만 주고 부르면 KG이니시스 V2에서는 결제창이 아예 안 뜬다
+// ("이니시스 V2의 경우 간편 결제 수단은 필수 입력입니다", 400). 예전 주석은 'provider를
+// 지정하지 않으면 이니시스가 가능한 수단을 보여준다'고 적혀 있었지만 사실이 아니었고,
+// 그 탓에 8/16·8/18 결제자 두 명이 간편결제를 7번 눌러 7번 다 1초 만에 튕겼다(둘 다 카드로 겨우 결제).
+// 살리려면 `easyPay: { easyPayProvider: 'KAKAOPAY' }`처럼 **간편결제사를 하나씩 지정**해야 하고,
+// 그 회사가 이니시스 계약에 실제로 열려 있어야 한다 — 계약 내용은 지어낼 수 없으므로 확인 후 켠다.
+function portoneMethodParams() {
   return { payMethod: 'CARD' } as const
 }
 
@@ -49,9 +60,9 @@ export default function PaymentButton({
 
   // 잠가 두면 누른 사람은 아무 반응도 못 받고 이유도 모른다(아래 동의 가드와 같은 원칙).
   // 눌리게 두고 왜 안 되는지 말해 준 다음, 원한 수단을 세어 둔다.
-  function handleUnavailable(key: MethodKey) {
+  function handleUnavailable(key: MethodKey, message?: string) {
     setError('')
-    setNotice('카카오페이는 준비 중입니다. 지금은 카드 결제·간편결제로 이용해 주세요.')
+    setNotice(message ?? '지금은 카드 결제로 이용해 주세요.')
     trackEvent('method_unavailable', key)
   }
 
@@ -104,7 +115,7 @@ export default function PaymentButton({
         },
         // 모바일 등 리다이렉트 결제는 이 주소로 paymentId를 달고 돌아온다.
         redirectUrl: `${window.location.origin}/subscribe/success`,
-        ...portoneMethodParams(method),
+        ...portoneMethodParams(),
       })
 
       // PC(팝업/iframe)에서는 Promise가 resolve된다. code가 있으면 실패.
@@ -168,10 +179,10 @@ export default function PaymentButton({
         </span>
       </label>
 
-      {METHODS.map(({ key, label, emoji, color, soon }) => (
+      {METHODS.map(({ key, label, emoji, color, soon, notice: soonNotice }) => (
         <button
           key={key}
-          onClick={() => (soon ? handleUnavailable(key) : handlePayment(key as Method))}
+          onClick={() => (soon ? handleUnavailable(key, soonNotice) : handlePayment(key as Method))}
           // 동의 전이라고 버튼을 잠그면, 누른 사람은 아무 반응도 못 받고 이유도 모른다.
           // 눌리게 두고 handlePayment가 "무엇이 빠졌는지"를 말해 주게 한다(결제는 그대로 막힌다).
           disabled={loading !== null}
