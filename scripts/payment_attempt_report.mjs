@@ -35,7 +35,16 @@ for (let page = 0; ; page++) {
   if (got.length < 100) break
 }
 
-const rows = items.map((p) => ({
+// 지금 회원인 사람의 시도만 센다 — 탈퇴·검증 계정이 섞이면 '안 낸 사람'이 부풀고,
+// 정작 연락할 수 있는 사람이 몇 명인지가 흐려진다(관리자 화면도 같은 규칙).
+const userRes = await fetch(`${ENV.NEXT_PUBLIC_SUPABASE_URL}/auth/v1/admin/users?per_page=1000`, {
+  headers: { apikey: ENV.SUPABASE_SERVICE_ROLE_KEY, Authorization: `Bearer ${ENV.SUPABASE_SERVICE_ROLE_KEY}` },
+})
+const memberIds = new Set(((await userRes.json())?.users ?? []).map((u) => u.id))
+const dropped = items.filter((p) => !memberIds.has(p.customer?.id ?? p.customer?.customerId ?? ''))
+if (dropped.length) console.log(`(탈퇴·검증 계정 ${dropped.length}건 제외)`)
+
+const rows = items.filter((p) => memberIds.has(p.customer?.id ?? p.customer?.customerId ?? '')).map((p) => ({
   id: p.id,
   status: p.status,
   customerId: p.customer?.id ?? p.customer?.customerId ?? null,
@@ -84,5 +93,5 @@ for (const r of f.failureReasons) console.log(`  ${r.count}건  ${r.reason}`)
 const noReason = rows.filter((r) => r.status === 'READY').length
 if (noReason) {
   console.log(`\nREADY로 남은 건 ${noReason}건 — 결제창은 열렸는데 PG에 아무 결과도 안 남았다.`)
-  console.log('  브라우저에서 창을 닫으면 이렇게 된다. 닫힌 이유는 화면 쪽 payment_failed 이벤트로만 알 수 있다.')
+  console.log('  브라우저에서 창을 닫으면 이렇게 된다. 닫힌 이유는 화면 쪽 payment_fail 이벤트로만 알 수 있다.')
 }
