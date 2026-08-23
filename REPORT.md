@@ -117,3 +117,13 @@ SDK 실물 대조: 설치된 `@portone/browser-sdk` v2에 `PaymentRequestUnionEa
 - 결제 0건인 날(2026-08-19, 08-21) 실제 실행 결과 — 명시 출력 후 정상 종료(exit 0):
   `2026-08-19 결제 퍼널: 결제창 진입 0건 — 결제 활동 없음`
 - 08-18~08-22 닷새 연속 실행으로 결제일·0건일·진입만 있던 날 세 경로 모두 확인. `git status` 로 변경이 위 3개 파일뿐임을 확인.
+
+### 검수 통과 (리뷰어)
+
+- 커밋 `587896b` diff 재확인: `REPORT.md`·`package.json`(스크립트 1줄)·`scripts/payment_funnel_daily.mjs`(신규) 3건뿐. `src/`·DB·배포 관련 변경 없음.
+- 스크립트 실물 확인: `summarizeAttempts` 를 `src/lib/paymentAttemptFunnel.ts` 에서 그대로 import — 재사용 주장과 일치. 호출은 `client.payment.getPayments` 조회 1건뿐, 쓰기·삭제·취소 계열 호출 없음(grep 확인).
+- `npm run report:funnel-daily -- --date 2026-08-18` 재실행 → REPORT의 진입 11/시도 2/완결 1(100%), 실패 사유 "[01] 인증이 실패하였습니다." 1건과 정확히 일치.
+- `npm run report:funnel-daily -- --date 2026-08-19`(0건일) 재실행 → "결제 활동 없음" 출력, exit 0 확인.
+- `npm run report:funnel-daily`(어제=2026-08-23, 기본값) 재실행 → 진입 2건(2명)/시도 0/완결 0과 REPORT 기재 내용 일치.
+- `.env.local` 값이 stdout에 노출되지 않음을 위 실행 출력에서 확인.
+- main에 fast-forward 병합.
