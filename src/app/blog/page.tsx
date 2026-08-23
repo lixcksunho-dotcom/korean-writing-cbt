@@ -110,6 +110,26 @@ export default function BlogIndexPage() {
             )
           })}
 
+          {/* 전체 글 — 목록에서 링크로 닿는 글이 24편뿐이었다(나머지는 카테고리를 거쳐야 했다).
+              검색엔진은 링크를 따라가며 글을 찾으므로, 깊이 있는 글일수록 늦게·덜 수집된다.
+              79편이면 한 화면에 다 담아도 무겁지 않아 페이지를 나누지 않았다. */}
+          <section className="mb-10">
+            <h2 className="text-2xl font-black text-[#0f172a] mb-3">전체 글 {posts.length}편</h2>
+            <ul className="divide-y divide-[#e2e8f0] border-y border-[#e2e8f0]">
+              {posts.map((p) => (
+                <li key={p.slug}>
+                  <Link
+                    href={`/blog/${encodeURIComponent(p.slug)}`}
+                    className="flex items-baseline justify-between gap-3 py-3 text-sm hover:bg-[#f8fafc]"
+                  >
+                    <span className="font-semibold text-[#0f172a]">{p.title}</span>
+                    <span className="shrink-0 text-xs text-[#64748b]">{p.date}</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
+
           <section className="mb-10 mt-10">
             <BlogCTA />
           </section>
