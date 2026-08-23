@@ -1,4 +1,4 @@
-import { buildSubscriberReport, deltaLabel, kstDay, TRACKING_CLEAN_FROM } from '@/lib/subscriberReport'
+import { buildSubscriberReport, deltaLabel, kstDay, EXPIRING_WINDOW_DAYS, EXPIRED_WINDOW_DAYS, TRACKING_CLEAN_FROM } from '@/lib/subscriberReport'
 import { renderSubscriberReport } from '@/lib/subscriberReportChart'
 
 // 매일 아침 9시(KST)에 신규 구독 유입을 텔레그램으로 보낸다.
@@ -56,6 +56,10 @@ export async function GET(req: Request) {
       : `· 방문자 ${r.visitors7}명 (최근 ${r.visitorDaysCounted}일치 · 비교는 아직)`,
     `· 구독페이지 ${r.subscribeView7}명 → 결제창 ${r.paymentStart7}명`,
     `· 가입 ${r.signup7}명`,
+    '',
+    '재결제로 붙잡을 사람',
+    `· ${EXPIRING_WINDOW_DAYS}일 안에 끝남 ${r.expiringSoon}명`,
+    `· 최근 ${EXPIRED_WINDOW_DAYS}일 안에 끝났는데 다시 안 삼 ${r.expiredNotBack}명`,
     ...(r.visitorsComparable
       ? []
       : [`

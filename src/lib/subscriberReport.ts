@@ -1,5 +1,8 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { REVOKED } from '@/lib/subscriptionRevocationPolicy'
+import { summarizeRenewals } from '@/lib/subscriptionRenewal'
+
+export { EXPIRING_WINDOW_DAYS, EXPIRED_WINDOW_DAYS } from '@/lib/subscriptionRenewal'
 
 // 매일 아침 보내는 '신규 구독 유입' 보고의 계산부. 전송·그림과 분리해 둔다 —
 // 숫자가 맞는지는 화면 없이도 확인할 수 있어야 한다(npm run report:subs).
@@ -50,9 +53,11 @@ export type SubscriberReport = {
   subscribeView7: number
   paymentStart7: number
   signup7: number
+  /** 7일 안에 이용권이 끝나는 사람 수 — 아직 붙잡을 수 있는 사람 */
+  expiringSoon: number
+  /** 최근 30일 안에 끝났는데 다시 안 산 사람 수 */
+  expiredNotBack: number
 }
-
-type Row = { created_at: string; amount: number | null; user_id: string; status: string }
 
 /**
  * 주 단위로 묶는다. 유료 구독은 지금까지 10주에 9건뿐이라 일별로 그리면
@@ -79,6 +84,8 @@ export function bucketWeeks(dates: string[], now: number, weeks = 10) {
   return out
 }
 
+type Row = { created_at: string; amount: number | null; user_id: string; status: string; expires_at: string }
+
 export async function buildSubscriberReport(now = Date.now()): Promise<SubscriberReport> {
   const admin = createAdminClient()
 
@@ -90,7 +97,7 @@ export async function buildSubscriberReport(now = Date.now()): Promise<Subscribe
 
   const { data: subsRaw } = await admin
     .from('subscriptions')
-    .select('created_at, amount, user_id, status')
+    .select('created_at, amount, user_id, status, expires_at')
     .order('created_at')
   // 환불(회수)된 건은 결제 추이에서 뺀다 — 안 빼면 취소된 주가 계속 매출로 보인다.
   const subs = ((subsRaw ?? []) as Row[])
@@ -176,6 +183,7 @@ export async function buildSubscriberReport(now = Date.now()): Promise<Subscribe
     subscribeView7: evUv('subscribe_view', d7),
     paymentStart7: evUv('payment_started', d7),
     signup7: evUv('signup', d7),
+    ...summarizeRenewals(subs, now),
   }
 
   // 방문자 수는 '깨끗한 날'만 센다. 오염 구간을 섞으면 검사 트래픽이 사람으로 잡힌다.
