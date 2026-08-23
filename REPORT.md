@@ -77,3 +77,11 @@ SDK 실물 대조: 설치된 `@portone/browser-sdk` v2에 `PaymentRequestUnionEa
 - 방법: `node scripts/payment_method_diagnose.mjs` (옵션 `--json`)
 - 실제 실행 결과: 위 ①②③ 표가 그대로 출력됨. 초기 버전은 주석 속 과거 사고 기록의 `'EASY_PAY'`·`'KAKAOPAY'` 문자열을 실제 코드 값으로 오인해 표가 틀리게 나왔고, 주석 제거 후 분석하도록 고쳐 재실행해 실물(코드 102행 호출부는 CARD만)과 일치함을 확인했다. `--json` 출력도 동일 내용으로 정상 동작.
 - 결제 코드(`src/`) diff 없음: `git status` 로 확인 — 변경은 `scripts/`와 `REPORT.md`뿐.
+
+### 검수 통과 (리뷰어)
+
+- 커밋 `e32d666` diff 재확인: `REPORT.md`·`scripts/payment_method_diagnose.mjs` 신규 2건뿐, `src/` diff 0줄, `package.json`·포트원 API 호출 없음.
+- `node scripts/payment_method_diagnose.mjs` 재실행 → REPORT의 세 표와 출력 동일 확인.
+- `src/components/subscribe/PaymentButton.tsx` 실물 대조: 102행 `requestPayment` 호출 1곳뿐, 36행 `portoneMethodParams()`가 `{ payMethod: 'CARD' }` 고정 반환 — 리포트 기술과 일치.
+- 수정안은 diff 예시로만 제시되고 미적용 — NEED_HUMAN 대상 유지 확인.
+- main에 fast-forward 병합. (local main이 origin/main보다 뒤처져 있었을 뿐 분기는 아님 — `origin/main` 이 옛 local main의 ancestor였고, 이번 병합으로 origin 대비 3커밋(지원 창구, 자율 루프, 본 진단 리포트) 앞섬. origin push는 아직 안 함.)
