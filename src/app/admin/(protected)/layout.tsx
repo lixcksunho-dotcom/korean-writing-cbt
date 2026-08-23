@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { Shield, BookOpen, ArrowLeft, Star, LayoutDashboard, Users, Flag, CreditCard, BarChart3 } from 'lucide-react'
+import { Shield, BookOpen, ArrowLeft, Star, LayoutDashboard, Users, Flag, CreditCard, BarChart3, MessageSquareWarning } from 'lucide-react'
 
 const ADMIN_NAV = [
   { href: '/admin', label: '대시보드', icon: LayoutDashboard },
@@ -9,6 +9,7 @@ const ADMIN_NAV = [
   { href: '/admin/reviews', label: '후기 관리', icon: Star },
   { href: '/admin/questions', label: '문제 관리', icon: BookOpen },
   { href: '/admin/reports', label: '신고', icon: Flag },
+  { href: '/admin/feedback', label: '불편사항', icon: MessageSquareWarning },
   { href: '/admin/payments', label: '결제 복구', icon: CreditCard },
   { href: '/admin/traffic', label: '방문 통계', icon: BarChart3 },
   { href: '/dashboard', label: '서비스로', icon: ArrowLeft },

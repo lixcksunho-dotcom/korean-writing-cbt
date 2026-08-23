@@ -13,13 +13,14 @@ import { createAdminClient } from '@/lib/supabase/admin'
 //
 // 기록은 관리자 첫 화면에서 바로 보인다.
 
-export type AlertKind = 'payment' | 'ai_grading' | 'question_report' | 'page_error'
+export type AlertKind = 'payment' | 'ai_grading' | 'question_report' | 'page_error' | 'feedback'
 
 const KIND_LABEL: Record<AlertKind, string> = {
   payment: '결제',
   ai_grading: 'AI 채점',
   question_report: '문제 신고',
   page_error: '화면 오류',
+  feedback: '불편사항',
 }
 
 /**

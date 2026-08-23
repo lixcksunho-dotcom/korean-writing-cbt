@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Mail, Phone, Clock } from 'lucide-react'
 import { BUSINESS, biz } from '@/lib/businessInfo'
+import FeedbackForm from '@/components/support/FeedbackForm'
 
 export const metadata: Metadata = {
   title: '고객센터',
@@ -44,7 +45,12 @@ export default function SupportPage() {
   return (
     <div className="text-[#334155] text-[15px] leading-7">
       <h1 className="text-2xl font-black text-[#0f172a] mb-1">고객센터</h1>
-      <p className="text-sm text-[#64748b] mb-8">문의 사항은 아래 연락처로 보내주시면 확인 후 답변드립니다.</p>
+      <p className="text-sm text-[#64748b] mb-6">불편한 점은 아래에서 바로 알려주실 수 있어요. 답변이 필요하시면 연락처를 남겨 주세요.</p>
+
+      {/* 메일 앱을 여는 사람만 말할 수 있으면, 대부분은 조용히 떠난다 — 그 자리에서 바로 쓰게 한다. */}
+      <div className="mb-10">
+        <FeedbackForm email={BUSINESS.email} />
+      </div>
 
       {/* 연락처 카드 */}
       <div className="grid sm:grid-cols-3 gap-3 mb-10">
