@@ -41,6 +41,7 @@
     "check:feedback": "node --experimental-strip-types --no-warnings scripts/feedback_check.mjs",
     "check:alerts": "node --experimental-strip-types --no-warnings scripts/alert_channel_check.mjs",
     "check:chunk": "node --experimental-strip-types --no-warnings scripts/stale_chunk_check.mjs",
+    "check:keyshape": "node --experimental-strip-types --no-warnings scripts/api_key_shape_check.mjs",
     "report:payments": "node --experimental-strip-types --no-warnings scripts/payment_attempt_report.mjs",
     "report:funnel-daily": "node --experimental-strip-types --no-warnings scripts/payment_funnel_daily.mjs",
     "audit:refunds": "node --experimental-strip-types --no-warnings scripts/revoke_refunded_subscriptions.mjs",

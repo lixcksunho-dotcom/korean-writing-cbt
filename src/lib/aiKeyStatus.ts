@@ -12,6 +12,8 @@
 // console.anthropic.com 에서 봐야 한다. 대신 잔액이 바닥나 채점이 실패하면
 // aiGradingFailure 가 텔레그램으로 알린다.
 
+import { describeKeyShape } from '@/lib/apiKeyShape'
+
 const MODEL = 'claude-sonnet-4-6'
 
 export type AiKeyStatus = {
@@ -30,24 +32,33 @@ export async function checkAiKey(): Promise<AiKeyStatus> {
     }
   }
 
+  // 값이 깨져 있으면 fetch가 요청을 보내기도 전에 예외로 죽는다. 그 예외는 '서버가
+  // 인터넷에 못 나간다'와 화면상 구분되지 않아 엉뚱한 데를 파게 된다 — 먼저 모양부터 본다.
+  const shape = describeKeyShape(key, 'sk-ant-')
+  if (!shape.ok) {
+    return { ok: false, title: 'AI 채점 키 값이 깨져 있습니다', detail: `${shape.problem} (Vercel 환경변수 ANTHROPIC_API_KEY)` }
+  }
+
   // 한 번 실패했다고 '키가 문제'라고 말하면 안 된다. 관리자 화면을 열 때마다 도는 점검이라
   // 한 번의 지연이 그대로 빨간불이 된다(실제로 그렇게 뜬 것을 사장님이 보고 놀랐다).
   // 짧게 한 번 더 시도하고, 그래도 안 되면 '무엇이' 안 됐는지 구분해서 말한다.
   let lastError: 'timeout' | 'network' = 'network'
+  let lastReason = ''
   for (let attempt = 0; attempt < 2; attempt++) {
     const outcome = await probe(key)
     if (outcome.kind === 'status') return fromStatus(outcome.status)
     lastError = outcome.kind
+    lastReason = outcome.reason ?? ''
   }
   return lastError === 'timeout'
     ? { ok: false, title: 'AI 채점 키 확인이 시간 안에 안 끝났습니다', detail: `Anthropic 응답이 ${TIMEOUT_MS / 1000}초 안에 오지 않았습니다(두 번 시도). 채점이 실제로 실패했는지는 사고 알림으로 확인하세요.` }
-    : { ok: false, title: 'AI 채점 키를 확인하지 못했습니다', detail: 'Anthropic에 연결하지 못했습니다(두 번 시도). 일시적일 수 있습니다.' }
+    : { ok: false, title: 'AI 채점 키를 확인하지 못했습니다', detail: `Anthropic에 연결하지 못했습니다(두 번 시도)${lastReason ? ` — ${lastReason}` : ''}` }
 }
 
 const TIMEOUT_MS = 8000
 
 /** 한 번 두드려 본다. 응답 코드를 받았으면 그걸, 못 받았으면 왜 못 받았는지를 돌려준다. */
-async function probe(key: string): Promise<{ kind: 'status'; status: number } | { kind: 'timeout' | 'network' }> {
+async function probe(key: string): Promise<{ kind: 'status'; status: number } | { kind: 'timeout' | 'network'; reason?: string }> {
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS)
   try {
@@ -58,7 +69,10 @@ async function probe(key: string): Promise<{ kind: 'status'; status: number } | 
     })
     return { kind: 'status', status: res.status }
   } catch (e) {
-    return { kind: (e as Error)?.name === 'AbortError' ? 'timeout' : 'network' }
+    const err = e as Error
+    // 사유에 키가 섞이면 화면·로그에 그대로 남는다. 키처럼 생긴 토막은 지운다.
+    const reason = String(err?.message ?? '').replace(/sk-[A-Za-z0-9_-]+/g, '<키>').slice(0, 120)
+    return { kind: err?.name === 'AbortError' ? 'timeout' : 'network', reason }
   } finally {
     clearTimeout(timer)
   }
