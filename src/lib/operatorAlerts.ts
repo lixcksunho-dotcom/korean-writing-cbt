@@ -44,29 +44,53 @@ export async function recordOperatorAlert(
     // 알림 기록 실패가 결제·채점 흐름을 막으면 안 된다
   }
 
+  const sent = await sendTelegram(telegramText ?? `⚠️ ${KIND_LABEL[kind]}
+
+${summary}`)
+  // 전송 실패를 삼키면 '알림을 보냈다'와 '아무 데도 안 갔다'가 구분되지 않는다.
+  // 알림 흐름을 막지는 않되(기록은 이미 남았다) 로그에는 반드시 남긴다.
+  if (!sent.ok) console.error(`[operator-alert] 텔레그램 전송 실패(${kind}): ${sent.detail}`)
+}
+
+/** 텔레그램 설정이 둘 다 있는지. 화면에 '알림이 실제로 가는지'를 보여 주는 데 쓴다. */
+export function alertChannelEnv(): { hasToken: boolean; hasChatId: boolean } {
+  return {
+    hasToken: Boolean(process.env.TELEGRAM_BOT_TOKEN),
+    hasChatId: Boolean(process.env.TELEGRAM_CHAT_ID),
+  }
+}
+
+/**
+ * 텔레그램 한 통. 결과를 돌려준다 — 부르는 쪽이 실패를 알 수 있어야 한다.
+ * 실패 사유는 응답 본문만 짧게 싣는다(토큰이 섞이면 안 된다).
+ */
+export async function sendTelegram(text: string): Promise<{ ok: boolean; detail: string }> {
   const token = process.env.TELEGRAM_BOT_TOKEN
   const chatId = process.env.TELEGRAM_CHAT_ID
-  if (!token || !chatId) return
+  if (!token || !chatId) {
+    return { ok: false, detail: !token && !chatId ? '토큰·대화방 id 둘 다 없음' : !token ? '봇 토큰 없음' : '대화방 id 없음' }
+  }
 
   const controller = new AbortController()
-  const timer = setTimeout(() => controller.abort(), 4000)
+  const timer = setTimeout(() => controller.abort(), 6000)
   try {
-    await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+    const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        chat_id: chatId,
-        text: telegramText ?? `⚠️ ${KIND_LABEL[kind]}\n\n${summary}`,
-        disable_web_page_preview: true,
-      }),
+      body: JSON.stringify({ chat_id: chatId, text, disable_web_page_preview: true }),
       signal: controller.signal,
     })
-  } catch {
-    // 무시
+    if (res.ok) return { ok: true, detail: '전송됨' }
+    // 텔레그램은 실패 이유를 본문에 준다(잘못된 chat_id·봇 차단 등). 그게 없으면 고칠 수가 없다.
+    const body = await res.text().catch(() => '')
+    return { ok: false, detail: `${res.status} ${body.slice(0, 200)}` }
+  } catch (e) {
+    return { ok: false, detail: (e as Error).name === 'AbortError' ? '시간 초과(6초)' : String((e as Error).message).slice(0, 120) }
   } finally {
     clearTimeout(timer)
   }
 }
+
 
 export type OperatorAlert = { kind: AlertKind; label: string; summary: string; ref: string | null; at: string }
 

@@ -3,7 +3,9 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { isActivePass } from '@/lib/subscription'
 import { REVOKED } from '@/lib/subscriptionRevocationPolicy'
 import { checkAiKey } from '@/lib/aiKeyStatus'
-import { recentOperatorAlerts } from '@/lib/operatorAlerts'
+import { recentOperatorAlerts, alertChannelEnv } from '@/lib/operatorAlerts'
+import { describeAlertChannel } from '@/lib/alertChannel'
+import AlertChannelCard from './AlertChannelCard'
 import SubscriberTrend from '@/components/admin/SubscriberTrend'
 import { BookOpen, Star, CreditCard, Wallet, FileCheck2, PenLine, ChevronRight, BadgeCheck, Users, Flag, AlertTriangle, CheckCircle2 } from 'lucide-react'
 
@@ -60,6 +62,8 @@ export default async function AdminHome() {
         <h1 className="text-xl font-bold text-gray-900">관리자 대시보드</h1>
         <p className="text-sm text-gray-600 mt-1">서비스 핵심 지표를 한눈에 확인하세요.</p>
       </div>
+
+      <AlertChannelCard status={describeAlertChannel(alertChannelEnv())} />
 
       {/* 최근 사고. 텔레그램 설정이 없어도 여기엔 남는다 — 알림이 설정에 의존하면
           설정이 빠진 동안은 없는 것과 같다(결제 실패 1건을 16일간 몰랐다). */}
