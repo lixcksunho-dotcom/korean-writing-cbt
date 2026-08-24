@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
+import { recoverFromStaleChunk } from '@/lib/staleChunkRecovery'
 import Link from 'next/link'
 import { RotateCcw, Home, AlertTriangle, BookOpen, Newspaper } from 'lucide-react'
 
@@ -9,6 +10,9 @@ import { RotateCcw, Home, AlertTriangle, BookOpen, Newspaper } from 'lucide-reac
 // 사이트 안 어디로도 갈 수 없는 화면이 된다. 검색으로 처음 들어온 사람에게는 그게 곧 이탈이다.
 export default function PublicError({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
   useEffect(() => {
+    // 배포 직후 사라진 조각을 부른 것이면 새로고침 한 번으로 열린다.
+    const stale = recoverFromStaleChunk(error?.message)
+
     console.error('[page-error]', error?.digest, error?.message)
 
     // 콘솔은 브라우저에만 남는다 — 운영자가 볼 수 있는 곳으로도 보낸다.
@@ -20,6 +24,7 @@ export default function PublicError({ error, reset }: { error: Error & { digest?
         digest: error?.digest,
         message: error?.message,
         path: typeof window !== 'undefined' ? window.location.pathname : '',
+        stale,
       }),
       keepalive: true,
     }).catch(() => {})

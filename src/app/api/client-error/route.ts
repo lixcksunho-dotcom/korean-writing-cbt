@@ -18,7 +18,7 @@ const DEDUPE_MS = 60 * 60_000
 
 export async function POST(req: Request) {
   try {
-    const { digest, message, path } = await req.json()
+    const { digest, message, path, stale } = await req.json()
     const ref = typeof digest === 'string' && digest ? digest.slice(0, 64) : 'no-digest'
     const where = typeof path === 'string' ? path.slice(0, 120) : '(경로 불명)'
     const what = typeof message === 'string' && message ? message.slice(0, MAX) : '(메시지 없음)'
@@ -33,7 +33,10 @@ export async function POST(req: Request) {
       .limit(1)
     if (recent && recent.length > 0) return new Response(null, { status: 204 })
 
-    await recordOperatorAlert('page_error', `${where} — ${what}`, ref)
+    // 새로고침으로 스스로 복구된 건은 그렇게 적는다 — 손댈 게 없는 사고와
+    // 진짜로 사람이 막힌 사고를 같은 줄로 보면 급한 것을 놓친다.
+    const prefix = stale === true ? '[배포 직후 조각 · 새로고침으로 복구] ' : ''
+    await recordOperatorAlert('page_error', `${prefix}${where} — ${what}`, ref)
     return new Response(null, { status: 204 })
   } catch {
     // 오류 보고가 또 오류를 내면 안 된다

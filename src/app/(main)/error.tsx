@@ -1,12 +1,17 @@
 'use client'
 
 import { useEffect } from 'react'
+import { recoverFromStaleChunk } from '@/lib/staleChunkRecovery'
 import Link from 'next/link'
 import { RotateCcw, Home, AlertTriangle } from 'lucide-react'
 
 // (main) 영역 공통 에러 경계 — 서버/렌더 오류 시 영문 크래시 대신 친절한 한글 화면 + 재시도.
 export default function Error({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
   useEffect(() => {
+    // 배포 직후 열려 있던 화면이 사라진 조각을 부른 것이면 새로고침 한 번으로 그냥 열린다.
+    // 기록은 먼저 보낸다(keepalive라 새로고침해도 살아서 나간다) — 얼마나 자주 나는지 알아야 한다.
+    const stale = recoverFromStaleChunk(error?.message)
+
     // 콘솔/모니터링에 남겨 추후 원인 추적(digest로 서버로그 매칭 가능)
     console.error('[page-error]', error?.digest, error?.message)
 
@@ -19,6 +24,7 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
         digest: error?.digest,
         message: error?.message,
         path: typeof window !== 'undefined' ? window.location.pathname : '',
+        stale,
       }),
       keepalive: true,
     }).catch(() => {})
