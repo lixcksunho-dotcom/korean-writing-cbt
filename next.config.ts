@@ -14,9 +14,30 @@ import type { NextConfig } from "next";
 // 체크아웃된 경로가 된다. import.meta.dirname 대신 process.cwd()를 쓰는 이유는,
 // 설정 파일이 CJS로 변환되는 환경에서 import.meta가 깨질 수 있기 때문이다 —
 // 설정이 깨지면 빌드가 통째로 실패하고 예전 배포가 그대로 살아 있게 된다.
+// 브라우저에 지시하는 기본 방어선. 넣지 않으면 브라우저는 관대한 쪽으로 동작한다.
+//
+// CSP(스크립트 출처 제한)는 **일부러 뺐다**. 결제창(포트원·이니시스)·구글 로그인이
+// 여러 도메인을 오가는데, 목록을 하나라도 빠뜨리면 결제가 통째로 막힌다.
+// 막는 이득보다 결제가 죽는 손해가 크다 — 넣으려면 실제 결제창을 띄워 놓고
+// 하나씩 확인하면서 붙여야 한다(그때까지는 여기 없는 게 맞다).
+const SECURITY_HEADERS = [
+  // 우리 화면을 남의 사이트가 iframe으로 덮어씌워 클릭을 가로채는 것을 막는다.
+  // DENY가 아니라 SAMEORIGIN인 이유: 우리 화면 안에서 우리 화면을 여는 경우를 남겨 둔다.
+  { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
+  // 브라우저가 파일 내용을 보고 타입을 멋대로 추측하지 못하게 한다(업로드물 실행 방지).
+  { key: 'X-Content-Type-Options', value: 'nosniff' },
+  // 외부로 나갈 때 전체 주소를 넘기지 않는다. 주소에 세션·주문번호가 실릴 수 있다.
+  { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+  // 쓰지 않는 장치 권한은 아예 닫아 둔다.
+  { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=(), interest-cohort=()' },
+];
+
 const nextConfig: NextConfig = {
   turbopack: {
     root: process.cwd(),
+  },
+  async headers() {
+    return [{ source: '/:path*', headers: SECURITY_HEADERS }];
   },
 };
 
