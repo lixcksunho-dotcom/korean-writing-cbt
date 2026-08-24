@@ -2,6 +2,14 @@
 
 ## 무료 발급과 유료 결제 분리 검증 (work/revenue-integrity-check)
 
+**검수 통과.**
+
+- diff는 `REPORT.md`·`package.json`(스크립트 1줄)·`scripts/revenue_integrity_check.mjs`(신규) 3건뿐. `src/`·DB·배포 변경 없음.
+- `getPayments`는 SDK 상 조회 전용 메서드(`node_modules/@portone/server-sdk/dist/generated/payment/client.d.ts`)이며, 스크립트에 쓰기·삭제·환불 호출 없음을 확인.
+- `npm run check:revenue` 재실행 결과가 REPORT 인용 블록과 정확히 일치(불일치 4건, exit 1). 재실행 후 `git status`로 추가 변경 없음 확인, `.env.local` 값 미노출.
+- BACKLOG 요구사항(무료/유료 카운트, 원장 대조, 불일치 목록/일치 시 "일치"만 출력, id 앞 8자만) 충족.
+- main에 fast-forward 병합, BACKLOG 3번 항목 `[x]` 처리, work 브랜치 삭제 완료.
+
 - 날짜: 2026-08-24
 - 백로그: "무료 발급과 유료 결제 분리 검증 `scripts/revenue_integrity_check.mjs`"
 - 범위: **읽기 전용.** DB 쓰기·삭제 없음, 포트원은 조회 API만. 이메일 등 개인정보 미출력, id는 앞 8자만.
