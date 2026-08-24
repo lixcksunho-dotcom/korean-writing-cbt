@@ -32,6 +32,7 @@
     "check:blog-render": "node scripts/blog_render_check.mjs",
     "check:signup": "node scripts/signup_flow_check.mjs",
     "check:data": "node scripts/data_integrity_check.mjs",
+    "check:revenue": "node scripts/revenue_integrity_check.mjs",
     "check:policy": "node --experimental-strip-types --no-warnings scripts/policy_consistency_check.mjs",
     "check:revoke": "node --experimental-strip-types --no-warnings scripts/refund_revocation_check.mjs",
     "check:attempts": "node --experimental-strip-types --no-warnings scripts/payment_attempt_check.mjs",
