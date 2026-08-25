@@ -32,12 +32,11 @@ export async function checkAiKey(): Promise<AiKeyStatus> {
     }
   }
 
-  // 값이 깨져 있으면 fetch가 요청을 보내기도 전에 예외로 죽는다. 그 예외는 '서버가
-  // 인터넷에 못 나간다'와 화면상 구분되지 않아 엉뚱한 데를 파게 된다 — 먼저 모양부터 본다.
+  // 값의 모양은 참고로만 본다. 앞뒤 공백 정도로는 호출이 깨지지 않는다는 걸 실측으로
+  // 확인했다(fetch·SDK 둘 다 200). 그래서 모양이 이상해도 **호출은 반드시 해 본다** —
+  // 되는지 안 되는지는 눌러 봐야 알고, 모양만 보고 단정하면 엉뚱한 데를 고치게 된다.
   const shape = describeKeyShape(key, 'sk-ant-')
-  if (!shape.ok) {
-    return { ok: false, title: 'AI 채점 키 값이 깨져 있습니다', detail: `${shape.problem} (Vercel 환경변수 ANTHROPIC_API_KEY)` }
-  }
+  const note = shape.ok ? '' : ` (참고: 환경변수 값 ${shape.problem} — 지금은 동작에 지장 없음)`
 
   // 한 번 실패했다고 '키가 문제'라고 말하면 안 된다. 관리자 화면을 열 때마다 도는 점검이라
   // 한 번의 지연이 그대로 빨간불이 된다(실제로 그렇게 뜬 것을 사장님이 보고 놀랐다).
@@ -45,14 +44,14 @@ export async function checkAiKey(): Promise<AiKeyStatus> {
   let lastError: 'timeout' | 'network' = 'network'
   let lastReason = ''
   for (let attempt = 0; attempt < 2; attempt++) {
-    const outcome = await probe(key)
-    if (outcome.kind === 'status') return fromStatus(outcome.status)
+    const outcome = await probe(key.trim())
+    if (outcome.kind === 'status') return fromStatus(outcome.status, note)
     lastError = outcome.kind
     lastReason = outcome.reason ?? ''
   }
   return lastError === 'timeout'
     ? { ok: false, title: 'AI 채점 키 확인이 시간 안에 안 끝났습니다', detail: `Anthropic 응답이 ${TIMEOUT_MS / 1000}초 안에 오지 않았습니다(두 번 시도). 채점이 실제로 실패했는지는 사고 알림으로 확인하세요.` }
-    : { ok: false, title: 'AI 채점 키를 확인하지 못했습니다', detail: `Anthropic에 연결하지 못했습니다(두 번 시도)${lastReason ? ` — ${lastReason}` : ''}` }
+    : { ok: false, title: 'AI 채점 키를 확인하지 못했습니다', detail: `Anthropic에 연결하지 못했습니다(두 번 시도)${lastReason ? ` — ${lastReason}` : ''}${note}` }
 }
 
 const TIMEOUT_MS = 8000
@@ -78,12 +77,12 @@ async function probe(key: string): Promise<{ kind: 'status'; status: number } | 
   }
 }
 
-function fromStatus(status: number): AiKeyStatus {
+function fromStatus(status: number, note = ''): AiKeyStatus {
   if (status === 200) {
     return {
       ok: true,
       title: 'AI 채점 키 정상',
-      detail: `${MODEL} 사용 가능. 잔액은 API로 확인할 수 없으니 console.anthropic.com에서 보세요.`,
+      detail: `${MODEL} 사용 가능. 잔액은 API로 확인할 수 없으니 console.anthropic.com에서 보세요.${note}`,
     }
   }
   if (status === 401 || status === 403) {
