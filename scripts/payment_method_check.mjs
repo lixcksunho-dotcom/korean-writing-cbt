@@ -41,13 +41,20 @@ function readMethodEntries(src) {
   return chunks
     .map((text) => ({ text, key: (text.match(/key:\s*'([a-z]+)'/) ?? [])[1] }))
     .filter((e) => e.key)
-    .map((e) => ({ ...e, soon: /soon:\s*true/.test(e.text) }))
+    .map((e) => ({
+      ...e,
+      soon: /soon:\s*true/.test(e.text),
+      // soon 값이 조건식이면(예: soon: !CHANNEL_KEY) 열릴지 말지는 환경변수가 정한다.
+      // 그런 항목을 '무조건 열려 있다'로 세면, 카드가 사라져도 이 검사가 통과해 버린다.
+      conditional: /soon:\s*(?!true|false)\S/.test(e.text),
+    }))
 }
 
 const results = []
 const ck = (ok, name, detail = '') => results.push({ ok, name, detail })
 const entries = readMethodEntries(code)
-const live = entries.filter((e) => !e.soon)
+const live = entries.filter((e) => !e.soon && !e.conditional)
+const conditional = entries.filter((e) => e.conditional)
 
 // 1) 간편결제를 부르려면 간편결제사를 반드시 지정해야 한다.
 const callsEasyPay = /payMethod:\s*'EASY_PAY'/.test(code)
@@ -61,15 +68,18 @@ ck(
 ck(/soon\s*\?\s*handleUnavailable\(/.test(code), "'준비중' 수단은 결제창 대신 안내로 간다", '버튼 onClick 분기')
 
 // 3) 목록을 제대로 읽었는지 먼저 밝힌다 — 0개를 '문제 없음'으로 넘기면 안 된다.
-ck(entries.length > 0, '결제 수단 목록을 읽었다', `${entries.length}개: ${entries.map((e) => `${e.key}${e.soon ? '(준비중)' : ''}`).join(', ')}`)
+ck(entries.length > 0, '결제 수단 목록을 읽었다', `${entries.length}개: ${entries.map((e) => `${e.key}${e.soon ? '(준비중)' : e.conditional ? '(환경변수에 따라)' : ''}`).join(', ')}`)
 
 // 4) 준비중이 아닌(=실제로 열리는) 수단이 최소 하나는 남아 있어야 한다.
 //    전부 준비중이면 화면은 멀쩡한데 아무도 결제할 수 없다.
-ck(live.length > 0, '실제로 결제할 수 있는 수단이 남아 있다', live.map((e) => e.key).join(', ') || '없음 — 매출이 0이 된다')
+ck(live.length > 0, '환경변수와 무관하게 열려 있는 수단이 있다', live.map((e) => e.key).join(', ') || '없음 — 설정이 빠지면 매출이 0이 된다')
+if (conditional.length) {
+  ck(true, '환경변수가 정하는 수단', `${conditional.map((e) => e.key).join(', ')} — 키가 없으면 준비중으로 남는다`)
+}
 
 // 5) 준비중 수단에는 왜 안 되는지 안내 문구가 있어야 한다.
 //    "안 눌린다"만 알려 주고 대안을 안 주면 그 사람은 그냥 나간다.
-const soonWithoutNotice = entries.filter((e) => e.soon && !/notice:/.test(e.text)).map((e) => e.key)
+const soonWithoutNotice = entries.filter((e) => (e.soon || e.conditional) && !/notice:/.test(e.text)).map((e) => e.key)
 ck(soonWithoutNotice.length === 0, '준비중 수단마다 안내 문구가 있다', soonWithoutNotice.join(', ') || '전부 있음')
 
 const failed = results.filter((r) => !r.ok)

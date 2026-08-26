@@ -4,9 +4,15 @@ import { useState } from 'react'
 import * as PortOne from '@portone/browser-sdk/v2'
 import { trackEvent } from '@/lib/analytics/trackEvent'
 
-type Method = 'card'
+type Method = 'card' | 'kakaopay'
 /** 아직 못 여는 수단도 자리는 만들어 둔다 — 누가 무엇을 원하는지 세어야 준비 순서를 감으로 안 정한다. */
-type MethodKey = Method | 'easypay' | 'kakaopay'
+type MethodKey = Method | 'easypay'
+
+// 카카오페이는 이니시스와 별개 계약이라 포트원에서 **채널이 따로** 생긴다(채널키도 따로).
+// 이 값이 없으면 버튼은 '준비중'으로 남는다 — 채널키를 넣고 재배포하면 저절로 켜진다.
+// 코드를 다시 고칠 필요가 없고, 키 없이 눌려서 튕기는 일도 생기지 않는다.
+// (NEXT_PUBLIC_은 브라우저로 나가는 값이다. 채널키는 원래 결제창을 여는 데 쓰는 공개값이라 괜찮다.)
+const KAKAOPAY_CHANNEL_KEY = process.env.NEXT_PUBLIC_PORTONE_CHANNEL_KEY_KAKAOPAY
 
 const METHODS: {
   key: MethodKey; label: string; emoji: string; color: string
@@ -20,7 +26,11 @@ const METHODS: {
     notice: '간편결제(카카오페이·네이버페이·토스페이)는 준비 중입니다. 지금은 카드 결제로 이용해 주세요.',
   },
   {
-    key: 'kakaopay', label: '카카오페이', emoji: '💬', color: 'border-[#FEE500] bg-white text-[#3C1E1E]', soon: true,
+    key: 'kakaopay', label: '카카오페이', emoji: '💬',
+    color: KAKAOPAY_CHANNEL_KEY
+      ? 'border-[#FEE500] bg-[#FEE500] text-[#3C1E1E]'   // 열렸으면 브랜드색을 채워 진짜 버튼으로 보이게
+      : 'border-[#FEE500] bg-white text-[#3C1E1E]',
+    soon: !KAKAOPAY_CHANNEL_KEY,
     notice: '카카오페이는 준비 중입니다. 지금은 카드 결제로 이용해 주세요.',
   },
 ]
@@ -33,7 +43,16 @@ const METHODS: {
 // 그 탓에 8/16·8/18 결제자 두 명이 간편결제를 7번 눌러 7번 다 1초 만에 튕겼다(둘 다 카드로 겨우 결제).
 // 살리려면 `easyPay: { easyPayProvider: 'KAKAOPAY' }`처럼 **간편결제사를 하나씩 지정**해야 하고,
 // 그 회사가 이니시스 계약에 실제로 열려 있어야 한다 — 계약 내용은 지어낼 수 없으므로 확인 후 켠다.
-function portoneMethodParams() {
+function portoneMethodParams(method: Method) {
+  if (method === 'kakaopay') {
+    // 카카오페이는 자기 채널키로 불러야 한다. 이니시스 채널키로 KAKAOPAY를 부르면
+    // 조용히 카드창으로 떨어진다(실측 확인) — 사용자는 카카오페이를 눌렀는데 카드창을 본다.
+    return {
+      channelKey: KAKAOPAY_CHANNEL_KEY,
+      payMethod: 'EASY_PAY',
+      easyPay: { easyPayProvider: 'KAKAOPAY' },
+    } as const
+  }
   return { payMethod: 'CARD' } as const
 }
 
@@ -84,9 +103,10 @@ export default function PaymentButton({
       return
     }
 
-    // 포트원 키 미설정 가드: storeId/channelKey가 비면 SDK가 cryptic 에러를 내므로 먼저 차단
+    // 포트원 키 미설정 가드: storeId/channelKey가 비면 SDK가 cryptic 에러를 내므로 먼저 차단.
+    // 수단마다 채널이 다르므로 그 수단이 쓸 키로 본다(카드는 이니시스, 카카오페이는 자기 채널).
     const storeId = process.env.NEXT_PUBLIC_PORTONE_STORE_ID
-    const channelKey = process.env.NEXT_PUBLIC_PORTONE_CHANNEL_KEY
+    const channelKey = method === 'kakaopay' ? KAKAOPAY_CHANNEL_KEY : process.env.NEXT_PUBLIC_PORTONE_CHANNEL_KEY
     if (!storeId || !channelKey) {
       setError('결제 설정이 준비 중입니다. 잠시 후 다시 시도하거나 고객센터로 문의해 주세요.')
       trackEvent('payment_blocked', 'no_portone_key')
@@ -115,7 +135,7 @@ export default function PaymentButton({
         },
         // 모바일 등 리다이렉트 결제는 이 주소로 paymentId를 달고 돌아온다.
         redirectUrl: `${window.location.origin}/subscribe/success`,
-        ...portoneMethodParams(),
+        ...portoneMethodParams(method),
       })
 
       // PC(팝업/iframe)에서는 Promise가 resolve된다. code가 있으면 실패.
