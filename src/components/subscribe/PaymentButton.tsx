@@ -47,6 +47,14 @@ function portoneMethodParams(method: Method) {
   if (method === 'kakaopay') {
     // 카카오페이는 자기 채널키로 불러야 한다. 이니시스 채널키로 KAKAOPAY를 부르면
     // 조용히 카드창으로 떨어진다(실측 확인) — 사용자는 카카오페이를 눌렀는데 카드창을 본다.
+    //
+    // 카카오페이 채널에서 넣으면 안 되는 것들(포트원 연동 문서):
+    //   · windowType — PC는 IFRAME, 모바일은 REDIRECTION만 된다. 안 주면 알아서 그렇게 잡히므로
+    //     **일부러 비워 둔다**. 다른 값을 주면 에러가 난다.
+    //   · locale — KO_KR만 지원(주지 않는다). currency — 원화만 지원(CURRENCY_KRW로 이미 보낸다).
+    //   · easyPayProvider — 카카오페이는 PG 자체가 간편결제사라 무시된다. 그래도 남겨 두는 이유는,
+    //     EASY_PAY를 결제사 없이 부르다 이니시스에서 결제창이 아예 안 뜬 적이 있어서
+    //     그 실수가 되돌아오지 않게 검사(check:methods)로 못 박아 뒀기 때문이다.
     return {
       channelKey: KAKAOPAY_CHANNEL_KEY,
       payMethod: 'EASY_PAY',
