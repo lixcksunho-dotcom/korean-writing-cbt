@@ -28,6 +28,14 @@
 - Supabase 회원 목록 대조: 두 customer id 모두 현재 회원에 없음(이메일 등 개인정보 미출력, id 앞 8자만).
 - `git status` 확인: 변경은 위 2개 파일뿐 — `src/`·`scripts/`·DB·배포 무변경.
 
+### 검수 통과 (리뷰어)
+
+- diff는 REPORT.md·docs/checkout_dropoff_plan.md 두 파일뿐, 코드·DB·배포 무변경 확인.
+- 문서 내 file:line 인용 전수 대조: `PaymentButton.tsx` 이벤트 라인(93/102/110/120/126/156/170), `subscribe/page.tsx:100`, `trackEvent.ts`의 webdriver/kpt_no_track 필터 — 모두 실물과 일치.
+- `payment_funnel_daily.mjs`에 회원 필터 없음(grep으로 확인), `payment_attempt_report.mjs:40-45`의 회원 필터 로직 존재 — 문서 주장과 일치.
+- 백로그 항목(9행) 범위와 문서 범위 표기 일치. NEED_HUMAN 대상(결제 파일 수정) 후보들은 모두 승인 전제로 명시됨.
+- main에 merge, BACKLOG.md 체크 완료.
+
 ## 카카오페이 도입 전후 전환 비교 (work/payment-method-impact)
 
 ### 검수 통과 (리뷰어)
