@@ -6,7 +6,7 @@ import { trackEvent } from '@/lib/analytics/trackEvent'
 
 type Method = 'card' | 'kakaopay'
 /** 아직 못 여는 수단도 자리는 만들어 둔다 — 누가 무엇을 원하는지 세어야 준비 순서를 감으로 안 정한다. */
-type MethodKey = Method | 'easypay'
+type MethodKey = Method
 
 // 카카오페이는 이니시스와 별개 계약이라 포트원에서 **채널이 따로** 생긴다(채널키도 따로).
 // 이 값이 없으면 버튼은 '준비중'으로 남는다 — 채널키를 넣고 재배포하면 저절로 켜진다.
@@ -18,31 +18,31 @@ const METHODS: {
   key: MethodKey; label: string; emoji: string; color: string
   soon?: boolean; notice?: string
 }[] = [
-  { key: 'card', label: '카드 결제', emoji: '💳', color: 'border-[#1e3a5f] bg-[#1e3a5f] text-white' },
-  // 되는 것처럼 보이면 눌러 본 사람이 결제를 포기한다. 솔리드 CTA(카드)와 다른 테두리형으로
-  // 두고 '준비중'을 함께 적는다.
-  {
-    key: 'easypay', label: '간편결제', emoji: '⚡', color: 'border-[#cbd5e1] bg-white text-[#475569]', soon: true,
-    notice: '간편결제(카카오페이·네이버페이·토스페이)는 준비 중입니다. 지금은 카드 결제로 이용해 주세요.',
-  },
+  // 카카오페이를 맨 위에 둔다. 열려 있으면 브랜드색을 채워 주 버튼으로, 아직이면
+  // 테두리형 + '준비중'으로 — 되는 것처럼 보이면 눌러 본 사람이 결제를 포기한다.
   {
     key: 'kakaopay', label: '카카오페이', emoji: '💬',
     color: KAKAOPAY_CHANNEL_KEY
-      ? 'border-[#FEE500] bg-[#FEE500] text-[#3C1E1E]'   // 열렸으면 브랜드색을 채워 진짜 버튼으로 보이게
+      ? 'border-[#FEE500] bg-[#FEE500] text-[#3C1E1E]'
       : 'border-[#FEE500] bg-white text-[#3C1E1E]',
     soon: !KAKAOPAY_CHANNEL_KEY,
     notice: '카카오페이는 준비 중입니다. 지금은 카드 결제로 이용해 주세요.',
   },
+  // 카카오페이가 주 버튼이 되면 카드는 테두리형으로 물러난다(솔리드 둘이 서로 경쟁하지 않게).
+  {
+    key: 'card', label: '카드 결제', emoji: '💳',
+    color: KAKAOPAY_CHANNEL_KEY
+      ? 'border-[#1e3a5f] bg-white text-[#1e3a5f]'
+      : 'border-[#1e3a5f] bg-[#1e3a5f] text-white',
+  },
 ]
 
-// 포트원 V2 결제수단 매핑. 지금 실제로 열 수 있는 건 카드뿐이다.
+// 포트원 V2 결제수단 매핑.
 //
-// 간편결제를 `payMethod: 'EASY_PAY'`만 주고 부르면 KG이니시스 V2에서는 결제창이 아예 안 뜬다
-// ("이니시스 V2의 경우 간편 결제 수단은 필수 입력입니다", 400). 예전 주석은 'provider를
-// 지정하지 않으면 이니시스가 가능한 수단을 보여준다'고 적혀 있었지만 사실이 아니었고,
-// 그 탓에 8/16·8/18 결제자 두 명이 간편결제를 7번 눌러 7번 다 1초 만에 튕겼다(둘 다 카드로 겨우 결제).
-// 살리려면 `easyPay: { easyPayProvider: 'KAKAOPAY' }`처럼 **간편결제사를 하나씩 지정**해야 하고,
-// 그 회사가 이니시스 계약에 실제로 열려 있어야 한다 — 계약 내용은 지어낼 수 없으므로 확인 후 켠다.
+// 이니시스 '간편결제' 버튼은 뺐다. `payMethod: 'EASY_PAY'`만 주고 부르면 이니시스 V2는
+// 결제창을 아예 안 띄우고("간편 결제 수단은 필수 입력입니다", 400), 살리려면 간편결제사를
+// 하나씩 지정하면서 그 회사가 이니시스 계약에 열려 있어야 한다. 카카오페이는 자기 채널로
+// 따로 열었으므로, 이니시스 간편결제는 계약이 생기기 전까지 자리를 두지 않는다.
 function portoneMethodParams(method: Method) {
   if (method === 'kakaopay') {
     // 카카오페이는 자기 채널키로 불러야 한다. 이니시스 채널키로 KAKAOPAY를 부르면

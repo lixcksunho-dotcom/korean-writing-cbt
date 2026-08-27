@@ -42,18 +42,19 @@ export default function Navbar({
       <div className="max-w-6xl mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* 로고 + 모드 스위처 (현재 모드가 한눈에) */}
-          <div className="flex items-center gap-3 min-w-0">
+          <div className="flex items-center gap-3 shrink-0">
             <Link href="/dashboard" className="flex items-center gap-2.5 shrink-0 px-1.5 py-1.5">
               <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${brandGradient} flex items-center justify-center shadow-lg shadow-black/20`}>
                 <LogoGlyph className="h-5 w-5 text-white" />
               </div>
-              <span className="font-bold text-white tracking-tight hidden lg:block whitespace-nowrap">{brandName}</span>
+              {/* 메뉴가 펴지는 1024px에서는 이 글자까지 넣으면 한 뼘이 모자라 가로 스크롤이 생긴다 */}
+              <span className="font-bold text-white tracking-tight hidden xl:block whitespace-nowrap">{brandName}</span>
             </Link>
-            <ModeSwitcher current={program} />
+            <ModeSwitcher current={program} className="shrink-0" />
           </div>
 
           {/* 데스크탑 메뉴 */}
-          <div className="hidden md:flex items-center gap-1">
+          <div className="hidden lg:flex items-center gap-1">
             {items.map(({ href, label, icon: Icon }) => {
               const active = pathname.startsWith(href);
               return (
@@ -100,7 +101,7 @@ export default function Navbar({
 
           {/* 모바일 햄버거 */}
           <button
-            className="md:hidden p-3 rounded-lg hover:bg-white/10 transition-colors"
+            className="lg:hidden p-3 rounded-lg hover:bg-white/10 transition-colors"
             onClick={() => setMenuOpen((v) => !v)}
             aria-label={menuOpen ? '메뉴 닫기' : '메뉴 열기'}
             aria-expanded={menuOpen}
@@ -112,7 +113,7 @@ export default function Navbar({
 
       {/* 모바일 메뉴 */}
       {menuOpen && (
-        <div className="md:hidden border-t border-white/10 bg-[#0f1f3d]">
+        <div className="lg:hidden border-t border-white/10 bg-[#0f1f3d]">
           <div className="px-4 py-3 space-y-1">
             {items.map(({ href, label, icon: Icon }) => (
               <Link
