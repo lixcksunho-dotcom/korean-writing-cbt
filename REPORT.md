@@ -2,6 +2,12 @@
 
 ## 카카오페이 도입 전후 전환 비교 (work/payment-method-impact)
 
+### 검수 통과 (리뷰어)
+
+- 날짜: 2026-08-28
+- 확인: 커밋 날짜(e32d666=2026-08-24 진단 문서, 846d49a=2026-08-27 08:15 실연동) git log로 대조 일치. `npm run report:method-impact` 기본 실행·`--pivot 2026-08-24`·`--pivot notadate` 세 경로 모두 재실행해 REPORT 기재 출력과 정확히 일치 확인. 포트원 호출은 `getPayments`(조회) 뿐, 쓰기·취소 없음. `.env.local` 값 미노출, 고객 식별자 8자 절단 확인. 표본 경고 항상 출력, "효과 있음" 단정 없음.
+- 판정: 통과 → main 병합
+
 - 날짜: 2026-08-28
 - 백로그: "카카오페이 도입 전후 전환 비교 `scripts/payment_method_impact.mjs`"
 - 범위: 포트원 조회 API(무료)만 사용, `summarizeAttempts` 재사용. 새 스케줄·알림 없음. 고객 식별자는 앞 8자만 출력.
