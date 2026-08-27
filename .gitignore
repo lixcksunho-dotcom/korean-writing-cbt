@@ -66,3 +66,6 @@ scripts/_question_overlap.txt
 _*.txt
 _*.log
 _*.png
+
+# 워커/리뷰어 실행 로그 - 저장소에 남길 대상이 아니다(로그 문장이 코드 검사에 걸린 전례: kbspass 2026-08-27)
+logs/
