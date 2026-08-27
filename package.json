@@ -44,6 +44,7 @@
     "check:keyshape": "node --experimental-strip-types --no-warnings scripts/api_key_shape_check.mjs",
     "report:payments": "node --experimental-strip-types --no-warnings scripts/payment_attempt_report.mjs",
     "report:funnel-daily": "node --experimental-strip-types --no-warnings scripts/payment_funnel_daily.mjs",
+    "verify:payment": "node --experimental-strip-types --no-warnings scripts/verify_latest_payment.mjs",
     "audit:refunds": "node --experimental-strip-types --no-warnings scripts/revoke_refunded_subscriptions.mjs",
     "check:autosave": "node scripts/exam_autosave_check.mjs",
     "check:resume": "node scripts/session_resume_check.mjs",
