@@ -2,6 +2,15 @@
 
 ## 8/27 결제 1건이 순매출 0원인 경위 조사 (work/same-day-refund-trace)
 
+### 검수 통과 (리뷰어)
+
+- diff 재확인: `REPORT.md`·`package.json`(스크립트 1줄)·`scripts/same_day_refund_trace.mjs`(신규) 3건뿐. `src/`·DB·배포 변경 없음.
+- 스크립트 실물 확인: 호출은 `client.payment.getPayments` 조회 1건뿐 — 취소·환불·쓰기 계열 호출 없음(grep 확인).
+- `npm run trace:refund` 재실행 → 출력이 REPORT 인용 블록과 완전히 일치(결제 4분 만에 전액 취소, 사유 "관리자페이지취소", 미완결 3건).
+- 고객 식별자가 앞 8자(`5d5196b0`)만 출력됨을 확인, `.env.local` 값 미노출.
+- BACKLOG 요구사항(판정 근거 나열, 애매한 배경은 단정 대신 근거 병기) 충족.
+- main에 fast-forward 병합, BACKLOG 항목 `[x]` 처리, work 브랜치 삭제 완료.
+
 - 날짜: 2026-08-27
 - 백로그: "8/27 결제 1건이 순매출 0원인 경위 조사 `scripts/same_day_refund_trace.mjs`"
 - 범위: **조회 전용.** 포트원 `getPayments` 조회만 호출 — 취소·환불 실행 없음. 고객 식별자는 id 앞 8자만 출력.
