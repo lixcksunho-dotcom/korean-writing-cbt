@@ -11,6 +11,7 @@ import { getActiveProgram } from "@/lib/programContext";
 import { getProgram, type GradeCut } from "@/lib/programs";
 import { formatExamId } from "@/lib/examId";
 import ModeIntroModal from "@/components/mode/ModeIntroModal";
+import ResolvedFeedbackNotice from "@/components/feedback/ResolvedFeedbackNotice";
 
 function getGreeting() {
   const h = new Date().getHours();
@@ -164,10 +165,29 @@ export default async function DashboardPage() {
   // 원고지 채점이 없는 모드(KBS)에선 '원고지 제출' 통계 제외
   const visibleStats = cfg.hasManuscript ? stats : stats.filter(s => s.label !== "원고지 제출");
 
+  // 이 사람이 남긴 불편사항 중 해결 처리된 것 — 로그인하면 알려 준다.
+  // 문의를 고쳐 놓고도 알릴 길이 없어, 남긴 사람은 읽혔는지조차 몰랐다.
+  const { data: resolvedFeedback } = await supabase
+    .from('feedback')
+    .select('id, message, created_at')
+    .eq('user_id', user.id)
+    .eq('resolved', true)
+    .order('created_at', { ascending: false })
+    .limit(3)
+
   return (
     <div className="animate-fade-up">
       {/* 첫 방문 모드 안내 팝업 */}
       <ModeIntroModal current={program} />
+
+      {/* 남긴 불편사항이 해결되면 알려 주는 띠 */}
+      <ResolvedFeedbackNotice
+        items={(resolvedFeedback ?? []).map(f => ({
+          id: f.id as string,
+          message: (f.message as string) ?? '',
+          createdAt: f.created_at as string,
+        }))}
+      />
 
       {/* 웰컴 배너 */}
       <div className="relative overflow-hidden rounded-2xl mb-8 bg-gradient-to-br from-[#0f1f3d] to-[#1e3a5f] p-7 shadow-[0_8px_32px_rgba(15,31,61,0.2)]">

@@ -30,7 +30,11 @@ export default async function CbtPage() {
       .order('round', { ascending: true }),
     supabase
       .from('quiz_sessions')
-      .select('year, round, score, total, completed_at')
+      // id가 있어야 결과 페이지(/cbt/…/result?session=)로 보낼 수 있다.
+      // 예전에는 점수만 읽어 와 '마지막 시도'를 글자로만 찍었는데, 그래서 이미 푼
+      // 회차의 결과를 다시 볼 길이 아예 없었다 — 결제하고 서술형 채점을 이어 받으려던
+      // 사람이 방금 푼 회차에 닿지 못했다(2026-08-28 문의).
+      .select('id, year, round, score, total, completed_at')
       .eq('user_id', user.id)
       .eq('program', program)
       .not('completed_at', 'is', null)
@@ -166,12 +170,16 @@ export default async function CbtPage() {
                   </div>
 
                   {prev && (
-                    <div className="mb-4 bg-[#f8fafc] rounded-xl px-4 py-2.5 flex items-center justify-between">
-                      <span className="text-xs text-[#64748b]">마지막 시도</span>
-                      <span className="text-xs font-semibold text-[#334155]">
+                    <Link
+                      href={`/cbt/${formatExamId(program, year, round)}/result?session=${prev.id}`}
+                      className="mb-4 bg-[#f8fafc] hover:bg-[#eef2f7] rounded-xl px-4 py-2.5 flex items-center justify-between transition-colors group"
+                    >
+                      <span className="text-xs text-[#64748b] group-hover:text-[#334155]">마지막 시도 · 결과 다시 보기</span>
+                      <span className="text-xs font-semibold text-[#334155] flex items-center gap-1">
                         {prev.score}/{prev.total}점 · {new Date(prev.completed_at!).toLocaleDateString('ko-KR')}
+                        <ChevronRight className="h-3.5 w-3.5" />
                       </span>
-                    </div>
+                    </Link>
                   )}
 
                   <div className="flex items-center gap-2">
