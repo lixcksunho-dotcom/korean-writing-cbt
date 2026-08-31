@@ -30,6 +30,7 @@ const email = `notice+${stamp}@kptest.cloud`
 const password = `Chk-${stamp}-aA1!`
 const MESSAGE = '검사용 문의입니다. 해결 알림이 뜨는지 확인합니다.'
 let uid = null
+let feedbackId = null
 let failed = false
 
 try {
@@ -43,6 +44,7 @@ try {
     body: JSON.stringify({ user_id: uid, message: MESSAGE, path: '/support', resolved: true }),
   })
   if (!fb.ok) throw new Error(`문의를 넣지 못했다: ${await fb.text()}`)
+  feedbackId = (await fb.json())[0].id
 
   const browser = await chromium.launch()
   const ctx = await browser.newContext()
@@ -88,6 +90,16 @@ try {
     failed = true
   } else {
     console.log(`  ○ 알림이 뜬다 — "${seen.text}"`)
+    // 띠가 뜬 사실이 운영자에게 남는가 — 어드민 '고객 확인함' 배지의 근거다.
+    // 서버 액션이 도는 시간을 준다(최대 10초).
+    let acked = false
+    for (let i = 0; i < 10 && !acked; i++) {
+      await page.waitForTimeout(1000)
+      const rows = await (await api(`/rest/v1/page_views?path=eq.${encodeURIComponent('#event/feedback_ack')}&visitor_id=eq.${feedbackId}&select=id`)).json()
+      acked = Array.isArray(rows) && rows.length > 0
+    }
+    if (acked) console.log('  ○ 확인 사실이 운영자 기록에 남는다 (#event/feedback_ack)')
+    else { console.error('  × 띠는 떴는데 확인 기록이 안 남는다 — 어드민에 "고객 확인 전"으로 보인다'); failed = true }
     // 닫으면 다시 안 떠야 한다. 매번 뜨면 그것대로 성가시다.
     // 클릭 실패를 삼키면 '닫아도 또 뜬다'는 잘못된 판정이 나온다 — 실제로 그랬다.
     const closer = page.locator('button[aria-label="알림 닫기"]')
@@ -110,6 +122,7 @@ try {
   console.error(String(e?.message ?? e).slice(0, 900))
 } finally {
   if (uid) {
+    if (feedbackId) await api(`/rest/v1/page_views?path=eq.${encodeURIComponent('#event/feedback_ack')}&visitor_id=eq.${feedbackId}`, { method: 'DELETE' }).catch(() => {})
     await api(`/rest/v1/feedback?user_id=eq.${uid}`, { method: 'DELETE' }).catch(() => {})
     await api(`/auth/v1/admin/users/${uid}`, { method: 'DELETE' }).catch(() => {})
   }

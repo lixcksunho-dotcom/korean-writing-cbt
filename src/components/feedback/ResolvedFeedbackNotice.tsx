@@ -1,6 +1,7 @@
 'use client'
 
-import { useMemo, useState, useSyncExternalStore } from 'react'
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
+import { acknowledgeResolvedNotices } from '@/app/(main)/resolved-notice-actions'
 import { CheckCircle2, X } from 'lucide-react'
 
 // 불편사항을 남긴 사람에게 '고쳤습니다'라고 알려 주는 띠.
@@ -53,6 +54,18 @@ export default function ResolvedFeedbackNotice({ items }: { items: ResolvedNotic
     const seen = [...parseSeen(seenRaw), ...dismissed]
     return items.filter(i => !seen.includes(i.id))
   }, [items, seenRaw, dismissed])
+
+  // 띠가 실제로 떴다는 사실을 운영자에게 남긴다 — '처리함'이 전달됐는지 알 수 있도록.
+  // 서버가 중복을 거르지만, 같은 화면에서 반복 호출할 이유는 없다.
+  const ackedRef = useRef<Set<string>>(new Set())
+  useEffect(() => {
+    const fresh = shown.filter(i => !ackedRef.current.has(i.id))
+    if (!fresh.length) return
+    fresh.forEach(i => ackedRef.current.add(i.id))
+    acknowledgeResolvedNotices(fresh.map(i => i.id)).catch(() => {
+      // 기록 실패가 알림 표시를 막으면 안 된다
+    })
+  }, [shown])
 
   if (shown.length === 0) return null
 

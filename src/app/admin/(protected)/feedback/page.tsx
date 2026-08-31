@@ -16,6 +16,19 @@ export default async function AdminFeedbackPage() {
   const rows = (data ?? []) as FeedbackRow[]
   const pending = rows.filter((r) => !r.resolved).length
 
+  // 해결 알림을 고객이 봤는지 — 띠가 뜨는 순간 #event/feedback_ack로 남는다.
+  // (resolved-notice-actions.ts) 여기서는 처리된 항목에 '고객 확인함'을 붙이는 데 쓴다.
+  const resolvedIds = rows.filter((r) => r.resolved).map((r) => r.id)
+  const ackAt: Record<string, string> = {}
+  if (resolvedIds.length) {
+    const { data: acks } = await createAdminClient()
+      .from('page_views')
+      .select('visitor_id, created_at')
+      .eq('path', '#event/feedback_ack')
+      .in('visitor_id', resolvedIds)
+    for (const a of acks ?? []) if (a.visitor_id) ackAt[a.visitor_id] = a.created_at
+  }
+
   return (
     <div>
       <div className="mb-6 flex items-center gap-2">
@@ -34,7 +47,7 @@ export default async function AdminFeedbackPage() {
           <span className="text-xs">feedback 테이블이 아직 없으면 supabase/migrations/037_feedback.sql을 대시보드에서 실행해 주세요.</span>
         </p>
       ) : (
-        <FeedbackClient rows={rows} />
+        <FeedbackClient rows={rows} ackAt={ackAt} />
       )}
     </div>
   )

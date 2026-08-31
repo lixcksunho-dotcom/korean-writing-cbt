@@ -48,6 +48,14 @@ export default function SiteFooter() {
             </li>
           ))}
         </ul>
+        {/* 자매 서비스 — KBS CBT는 전용 서비스로 이전했다(2026-08-31). 서로 오가는 길을
+            모든 페이지 하단에 둔다. 내부 링크가 아니므로 Link가 아니라 a를 쓴다. */}
+        <p className="mb-4 font-semibold text-white/70">
+          <span className="text-white/40">자매 서비스</span>{' '}
+          <a href="https://kbstest.cloud" className="inline-block py-1.5 hover:text-white transition-colors underline underline-offset-2">
+            KBS패스 — KBS한국어능력시험 CBT
+          </a>
+        </p>
         {/* 약관·정책도 학습자료와 같은 규칙으로 — 휴대폰에서는 격자, 넓은 화면에서는 한 줄 */}
         <ul className="grid grid-cols-2 sm:flex sm:flex-wrap sm:gap-x-4 gap-y-0.5 sm:gap-y-2 mb-4 font-semibold text-white/70">
           {POLICY_LINKS.map((l, i) => (

@@ -28,7 +28,7 @@ function ResolveButton({ row }: { row: FeedbackRow }) {
   )
 }
 
-export default function FeedbackClient({ rows }: { rows: FeedbackRow[] }) {
+export default function FeedbackClient({ rows, ackAt = {} }: { rows: FeedbackRow[]; ackAt?: Record<string, string> }) {
   if (rows.length === 0) {
     return <p className="rounded-xl border border-[#e2e8f0] bg-white p-6 text-sm text-gray-600">아직 접수된 불편사항이 없습니다.</p>
   }
@@ -45,6 +45,16 @@ export default function FeedbackClient({ rows }: { rows: FeedbackRow[] }) {
             {r.path && <span>화면 {r.path}</span>}
             {r.contact && <span className="font-semibold text-[#1e3a5f]">연락처 {r.contact}</span>}
             <span>{r.user_id ? '회원' : '비회원'}</span>
+            {/* 처리함이 전달됐는지 — 회원이 아니면 알림 띠 자체가 안 가므로 표시하지 않는다 */}
+            {r.resolved && r.user_id && (
+              ackAt[r.id] ? (
+                <span className="font-bold text-emerald-700">
+                  ✓ 고객 확인함 · {new Date(ackAt[r.id]).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul', month: 'numeric', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
+                </span>
+              ) : (
+                <span className="font-semibold text-amber-700">고객 확인 전</span>
+              )
+            )}
           </div>
         </li>
       ))}
