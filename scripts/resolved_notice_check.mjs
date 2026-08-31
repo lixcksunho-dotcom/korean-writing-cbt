@@ -65,6 +65,17 @@ try {
   await page.goto(`${BASE}/dashboard`, { waitUntil: 'networkidle' })
   await page.waitForTimeout(1500)
 
+  // 첫 방문 안내 같은 모달이 떠 있으면 화면 전체를 덮어 아무것도 누를 수 없다.
+  // 이걸 안 닫고 검사하면 '닫기 버튼이 안 눌린다'가 알림의 문제처럼 보인다 — 실제로 그랬다.
+  for (let i = 0; i < 3; i++) {
+    const dialog = page.locator('[role="dialog"]')
+    if (await dialog.count() === 0) break
+    const close = dialog.locator('button').filter({ hasText: /닫기|시작|확인|나중에/ }).first()
+    if (await close.count()) await close.click().catch(() => {})
+    else await page.keyboard.press('Escape')
+    await page.waitForTimeout(700)
+  }
+
   const seen = await page.evaluate(() => {
     const el = [...document.querySelectorAll('[role="status"]')]
       .find(e => /불편사항이 해결/.test(e.textContent ?? ''))
@@ -78,8 +89,14 @@ try {
   } else {
     console.log(`  ○ 알림이 뜬다 — "${seen.text}"`)
     // 닫으면 다시 안 떠야 한다. 매번 뜨면 그것대로 성가시다.
-    await page.click('button[aria-label="알림 닫기"]').catch(() => {})
+    // 클릭 실패를 삼키면 '닫아도 또 뜬다'는 잘못된 판정이 나온다 — 실제로 그랬다.
+    const closer = page.locator('button[aria-label="알림 닫기"]')
+    const closers = await closer.count()
+    if (closers !== 1) console.error(`  · 닫기 버튼이 ${closers}개다`)
+    await closer.first().click()
     await page.waitForTimeout(600)
+    const stored = await page.evaluate(() => localStorage.getItem('silyong_resolved_feedback_seen_v1'))
+    console.log(`  · 닫은 뒤 저장된 값: ${stored ?? '(없음)'}`)
     await page.reload({ waitUntil: 'networkidle' })
     await page.waitForTimeout(1500)
     const again = await page.evaluate(() =>
@@ -90,7 +107,7 @@ try {
   await browser.close()
 } catch (e) {
   failed = true
-  console.error(String(e?.message ?? e).slice(0, 200))
+  console.error(String(e?.message ?? e).slice(0, 900))
 } finally {
   if (uid) {
     await api(`/rest/v1/feedback?user_id=eq.${uid}`, { method: 'DELETE' }).catch(() => {})
