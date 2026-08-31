@@ -1,13 +1,11 @@
-// 다중 시험(프로그램) 설정의 단일 소스.
+// 시험(프로그램) 설정의 단일 소스.
 //
-// 이 앱은 원래 한국실용글쓰기(silyong) 단일 시험 전제로 만들어졌는데,
-// KBS한국어능력시험(kbs)을 같은 플랫폼에 얹기 위해 시험별로 달라지는 값
-// (만점·등급컷·시험시간·영역·채점가중치·무료회차 등)을 여기 한 곳에 모은다.
-//
-// 원칙: 기존 silyong 값은 하드코딩돼 있던 것을 "그대로" 옮긴 것이라,
-// silyong 동작은 100% 동일하게 유지된다. 신규 시험은 설정만 추가하면 된다.
+// 한때 KBS한국어능력시험을 같은 플랫폼에 얹었다가, 별도 서비스(kbstest.cloud)로
+// 완전히 이전했다(2026-08-31). 이 구조는 남겨 둔다 — 시험별로 달라지는 값
+// (만점·등급컷·시험시간·영역·가중치·무료회차)이 한 곳에 모여 있어야
+// 화면 코드가 시험을 하드코딩하지 않는다.
 
-export type ProgramId = 'silyong' | 'kbs'
+export type ProgramId = 'silyong'
 
 /** 등급컷 한 줄 (min 이상이면 해당 등급). 내림차순 정렬 가정. */
 export type GradeCut = { min: number; name: string; color: string }
@@ -81,59 +79,15 @@ const SILYONG: ProgramConfig = {
   hasManuscript: true,
 }
 
-// ── KBS한국어능력시험 (국가공인, 990점·8단계) ────────────────────────
-// ⚠️ 주관처가 절대 등급컷을 공개하지 않는다(누적 응시 데이터 기반 산정). 아래 cuts는
-//    "연습용 근사치"이며, 실제 등급과 다를 수 있음을 UI에서 명시할 것.
-//    영역·문항수·가중치는 공개 시험구조 기반 초기값 — 콘텐츠 확정 시 조정.
-const KBS: ProgramConfig = {
-  id: 'kbs',
-  serviceName: '한국어패스',
-  examName: 'KBS한국어능력시험',
-  shortLabel: 'KBS한국어',
-  logoGradient: 'from-emerald-500 to-teal-600',
-  maxScore: 990,
-  // 실제 시행 시간 120분(듣기 25분 + 나머지 95분). 출처: KBS한국어진흥원 시행 안내.
-  examMinutes: 120,
-  freeRounds: 1,
-  essayColumns: 20,
-  manuscriptMinPoints: 100,
-  // 연습용 근사 등급컷(990점 환산). 실제 상대평가와 다름 → "예상 등급"으로 표기.
-  cuts: [
-    { min: 830, name: '1급', color: 'emerald' },
-    { min: 780, name: '2⁺급', color: 'emerald' },
-    { min: 730, name: '2⁻급', color: 'blue' },
-    { min: 680, name: '3⁺급', color: 'blue' },
-    { min: 630, name: '3⁻급', color: 'amber' },
-    { min: 580, name: '4⁺급', color: 'amber' },
-    { min: 530, name: '4⁻급', color: 'slate' },
-  ],
-  belowLabel: '무급',
-  weight: { objective: 900, essay: 90 },
-  // 실제 교재(2026 김영북스) 구조 반영 — 100문항 7영역.
-  // 듣기·말하기는 시험에선 오디오지만 교재/CBT에선 지문(대본)으로 출제 가능 → 오디오 플레이어 불필요.
-  areas: [
-    { name: '듣기·말하기', from: 1, to: 15 },
-    { name: '어휘', from: 16, to: 30 },
-    { name: '어법', from: 31, to: 45 },
-    { name: '쓰기', from: 46, to: 50 },
-    { name: '창안', from: 51, to: 60 },
-    { name: '읽기', from: 61, to: 90 },
-    { name: '국어문화', from: 91, to: 100 },
-  ],
-  hasListening: false,
-  hasManuscript: false,
-}
-
 export const PROGRAMS: Record<ProgramId, ProgramConfig> = {
   silyong: SILYONG,
-  kbs: KBS,
 }
 
 /** 기본(레거시) 프로그램 — 시험 구분 없이 호출되던 기존 코드용 */
 export const DEFAULT_PROGRAM: ProgramId = 'silyong'
 
 export function isProgramId(v: string): v is ProgramId {
-  return v === 'silyong' || v === 'kbs'
+  return v === 'silyong'
 }
 
 /** 프로그램 설정 조회 (미지정/미상 시 기본 프로그램) */

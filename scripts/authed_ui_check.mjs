@@ -27,7 +27,7 @@ const ROUTES = [
   '/dashboard', '/insights', '/cbt', '/manuscript', '/manuscript/history',
   '/practice', '/practice/areas', '/practice/bookmarks', '/practice/essay',
   '/practice/multiple', '/practice/refine', '/practice/report', '/practice/types',
-  '/practice/wrong', '/practice/kbs-types', '/subscribe', '/subscribe/history',
+  '/practice/wrong', '/subscribe', '/subscribe/history',
 ]
 
 const admin = (p, init) => fetch(`${SB}${p}`, {
@@ -127,7 +127,7 @@ try {
 
   if (!await login(page, await makeAccount('d'))) throw new Error('로그인이 되지 않음')
 
-  for (const mode of ['silyong', 'kbs']) {
+  for (const mode of ['silyong']) {
     await dctx.addCookies([{ name: 'kptest_mode', value: mode, domain: new URL(BASE).hostname, path: '/' }])
     for (const route of ROUTES) {
       const res = await page.goto(`${BASE}${route}`, { waitUntil: 'load', timeout: 40000 }).catch(() => null)
@@ -179,7 +179,7 @@ try {
   const mpage = await mctx.newPage()
   if (!await login(mpage, await makeAccount('m'))) throw new Error('휴대폰 폭에서 로그인이 되지 않음')
 
-  for (const mode of ['silyong', 'kbs']) {
+  for (const mode of ['silyong']) {
     await mctx.addCookies([{ name: 'kptest_mode', value: mode, domain: new URL(BASE).hostname, path: '/' }])
     for (const route of ROUTES) {
       const res = await mpage.goto(`${BASE}${route}`, { waitUntil: 'load', timeout: 40000 }).catch(() => null)

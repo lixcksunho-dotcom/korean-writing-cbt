@@ -10,7 +10,6 @@ import { tierFor } from "@/lib/grade";
 import { getActiveProgram } from "@/lib/programContext";
 import { getProgram, type GradeCut } from "@/lib/programs";
 import { formatExamId } from "@/lib/examId";
-import ModeIntroModal from "@/components/mode/ModeIntroModal";
 import ResolvedFeedbackNotice from "@/components/feedback/ResolvedFeedbackNotice";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -185,7 +184,6 @@ export default async function DashboardPage() {
   return (
     <div className="animate-fade-up">
       {/* 첫 방문 모드 안내 팝업 */}
-      <ModeIntroModal current={program} />
 
       {/* 남긴 불편사항이 해결되면 알려 주는 띠 */}
       <ResolvedFeedbackNotice
@@ -335,7 +333,7 @@ export default async function DashboardPage() {
               </Link>
             </div>
           </div>
-        ) : cfg.hasManuscript ? (
+        ) : (
           // silyong 시험 경험자: 무료 AI 첨삭으로 유도
           <Link
             href="/practice/essay"
@@ -354,24 +352,6 @@ export default async function DashboardPage() {
                 <p className="text-sm text-amber-800/80">내가 쓴 답안을 AI가 모범답안과 비교해 <b>점수·첨삭</b>으로 분석해 드려요. 지금 바로 무료로 받아보세요.</p>
               </div>
               <ChevronRight className="h-5 w-5 text-amber-700 shrink-0 group-hover:translate-x-1 transition-transform" />
-            </div>
-          </Link>
-        ) : (
-          // KBS 시험 경험자: 유형별 집중 연습으로 약점 공략 유도
-          <Link
-            href="/practice/kbs-types"
-            className="group block relative overflow-hidden rounded-2xl mb-8 p-5 sm:p-6 border border-emerald-200 bg-gradient-to-r from-emerald-50 to-teal-50 hover:shadow-[0_8px_24px_rgba(13,148,136,0.15)] transition-all"
-          >
-            <div className="absolute top-0 right-0 w-40 h-40 bg-emerald-300 rounded-full blur-3xl opacity-20 -translate-y-1/3 translate-x-1/3" />
-            <div className="relative flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center shrink-0 shadow-lg shadow-emerald-500/30">
-                <Sparkles className="h-6 w-6 text-white" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h2 className="text-base font-black text-emerald-900 mb-0.5">유형별 집중 연습으로 약점 공략</h2>
-                <p className="text-sm text-emerald-800/80">고유어·한자성어·표준발음·맞춤법 등 <b>기출유형별</b>로 골라 풀며 자주 틀리는 유형을 잡으세요.</p>
-              </div>
-              <ChevronRight className="h-5 w-5 text-emerald-700 shrink-0 group-hover:translate-x-1 transition-transform" />
             </div>
           </Link>
         )
@@ -402,7 +382,7 @@ export default async function DashboardPage() {
               <h2 className="text-base font-bold text-[#0f172a]">AI 예상 점수</h2>
               <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">AI 추정</span>
             </div>
-            <p className="text-xs text-[#64748b] mb-4">객관식 정답률과 서술형 AI 채점 평균을 {cfg.maxScore}점으로 환산한 추정치예요.{cfg.id === 'kbs' && ' (KBS는 상대평가라 실제 등급과 다를 수 있어요.)'}</p>
+            <p className="text-xs text-[#64748b] mb-4">객관식 정답률과 서술형 AI 채점 평균을 {cfg.maxScore}점으로 환산한 추정치예요.</p>
 
             <div className="flex items-end gap-3 mb-4">
               <span className="text-4xl font-black text-[#0f172a] tracking-tight">{predicted}<span className="text-lg text-[#64748b]">점</span></span>
@@ -428,14 +408,6 @@ export default async function DashboardPage() {
               <Link href="/cbt" className="mt-3 inline-flex items-center gap-1 text-xs font-bold text-amber-700 hover:underline py-3">
                 서술형 AI 채점을 받으면 예상 점수가 더 정확해져요 <ChevronRight className="h-3.5 w-3.5" />
               </Link>
-            )}
-            {/* KBS는 주관처가 절대 등급컷을 공개하지 않는다. 결과 화면에는 이 안내가 있었는데
-                여기에는 없어서, 같은 주장을 한 곳에서만 밝히고 있었다(programs.ts에도
-                'UI에서 명시할 것'이라고 적혀 있다). */}
-            {program === 'kbs' && (
-              <p className="mt-3 text-xs text-[#64748b] leading-relaxed">
-                ※ KBS한국어능력시험은 공식 등급컷을 공개하지 않아, 학습 참고용 근사 기준으로 계산한 예상 등급입니다.
-              </p>
             )}
           </div>
         ) : (

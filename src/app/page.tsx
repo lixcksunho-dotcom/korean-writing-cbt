@@ -320,7 +320,7 @@ export default async function HomePage() {
                 {[
                   // '전 회차'라고 적혀 있었는데 무료는 실글 2회차·KBS 1회차뿐이다(programs.ts의 freeRounds).
                   // 결제 여부를 여기서 판단하는 표라, 여기가 틀리면 산 사람이 기대한 것과 다른 걸 받는다.
-                  'CBT 실전 모의고사 무료 2회차 (KBS 1회차)',
+                  'CBT 실전 모의고사 무료 2회차',
                   '객관식 정답·해설 전체 공개',
                   '서술형 모범답안 열람',
                   '맞춤법·외래어·문장호응 유형별 연습',
@@ -437,18 +437,18 @@ export default async function HomePage() {
             <div className="inline-flex items-center gap-1.5 text-xs font-black text-emerald-700 bg-white/70 border border-emerald-200 px-2.5 py-1 rounded-full mb-2">
               NEW
             </div>
-            <h2 className="text-xl font-black text-[#0f172a] mb-1.5">KBS한국어능력시험도 같은 계정으로</h2>
+            <h2 className="text-xl font-black text-[#0f172a] mb-1.5">KBS한국어능력시험은 전용 서비스에서</h2>
             <p className="text-sm text-[#475569] leading-relaxed">
-              국가공인 KBS한국어능력시험(990점·100문항·120분)까지 한 곳에서 준비하세요.
+              국가공인 KBS한국어능력시험(990점·100문항·120분)은 전용 서비스 <b>KBS패스</b>에서 준비하세요.
               듣기 음성이 들어간 실전 CBT와 7개 영역별 약점 분석을 제공합니다.
             </p>
           </div>
-          <Link
-            href="/kbs-korean"
+          <a
+            href="https://kbstest.cloud"
             className="shrink-0 inline-flex items-center justify-center gap-1.5 bg-[#0f766e] hover:bg-[#115e59] text-white font-bold px-6 py-3 rounded-xl text-sm transition-colors"
           >
-            시험 정보 보기 <ArrowRight className="h-4 w-4" />
-          </Link>
+            KBS패스 바로가기 <ArrowRight className="h-4 w-4" />
+          </a>
         </div>
       </section>
 

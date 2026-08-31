@@ -16,7 +16,7 @@ export default async function MainLayout({ children }: { children: React.ReactNo
 
   return (
     <div className="min-h-screen flex flex-col bg-[#f8fafc]">
-      <Navbar userEmail={userEmail} program={program} brandName={cfg.serviceName} brandGradient={cfg.logoGradient} showManuscript={cfg.hasManuscript} />
+      <Navbar userEmail={userEmail} brandName={cfg.serviceName} brandGradient={cfg.logoGradient} showManuscript={cfg.hasManuscript} />
       {/* pb-24: 우하단 플로팅 버튼이 마지막 카드의 CTA를 덮지 않도록 여백 확보 */}
       <a
         href="#main"

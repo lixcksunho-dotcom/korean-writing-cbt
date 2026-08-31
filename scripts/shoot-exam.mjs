@@ -30,8 +30,6 @@ await page.goto(BASE + '/cbt/2025-1', { waitUntil: 'networkidle' })
 await shoot('exam-silyong')
 
 // KBS 1회 — 듣기 문항 포함. 모드 전환 후 진입
-await page.goto(BASE + '/cbt/kbs-2025-1', { waitUntil: 'networkidle' })
-await shoot('exam-kbs')
 
 console.log('done', await page.title())
 await browser.close()

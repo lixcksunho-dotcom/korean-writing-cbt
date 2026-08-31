@@ -3,26 +3,15 @@ import Link from 'next/link'
 import { getActiveSubscription, daysUntilExpiry } from '@/lib/subscription'
 import PaymentSection from '@/components/subscribe/PaymentSection'
 import EventTracker from '@/components/analytics/EventTracker'
-import { getActiveProgram } from '@/lib/programContext'
 import { CheckCircle2, Sparkles, Shield, Zap, LogIn, Star } from 'lucide-react'
 
-// 이용권으로 열리는 기능은 시험(모드)마다 다르다 — KBS는 원고지·서술형 채점이 없다.
-const FEATURES_BY_PROGRAM: Record<string, string[]> = {
-  silyong: [
-    'AI 예상 점수·합격 등급 판정 (지금 실력이면 몇 점?)',
-    '모의고사 서술형 AI 분석·채점 무제한',
-    '원고지 AI 채점·첨삭 무제한',
-    '항목별 점수 + 잘한 점·보완점 첨삭',
-    '잠긴 모의고사 전 회차 + 영역별·유형별 집중 연습',
-  ],
-  kbs: [
-    'AI 예상 점수·등급 판정 (지금 실력이면 몇 급?)',
-    '잠긴 모의고사 전 회차 100문항 무제한',
-    '7개 영역별 약점 분석 + 영역별 집중 연습',
-    '듣기 대본·해설 열람 · 틀린 문항 다시 풀기',
-    '시험 저장하고 이어풀기 · 학습 기록 보관',
-  ],
-}
+const FEATURES = [
+  'AI 예상 점수·합격 등급 판정 (지금 실력이면 몇 점?)',
+  '모의고사 서술형 AI 분석·채점 무제한',
+  '원고지 AI 채점·첨삭 무제한',
+  '항목별 점수 + 잘한 점·보완점 첨삭',
+  '잠긴 모의고사 전 회차 + 영역별·유형별 집중 연습',
+]
 
 // 비로그인 방문자도 상품·가격·환불정책을 볼 수 있어야 한다(간편결제 가맹 심사 요건).
 // 실제 결제(PaymentSection)만 로그인 뒤에 노출하고, 비로그인은 로그인 유도 버튼으로 대체한다.
@@ -30,22 +19,11 @@ export default async function SubscribePage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  const program = await getActiveProgram()
-  const FEATURES = FEATURES_BY_PROGRAM[program] ?? FEATURES_BY_PROGRAM.silyong
-
-  // 시험마다 다른 문구 — KBS는 AI 첨삭이 없고 응시료도 달라서 실글쓰기 카피를 그대로 쓰면 안 된다.
-  const copy =
-    program === 'kbs'
-      ? {
-          subtitle: '전 회차 무제한 풀이·영역별 분석까지, 5,500원 1회 결제로 30일 무제한',
-          valueProp: 'KBS한국어능력시험 응시료(약 3만원 초반)보다 훨씬 저렴하게, 시험 전까지 무제한 실전 연습',
-          refund: '결제 후 이용하지 않았다면 100% 돌려드려요.',
-        }
-      : {
-          subtitle: 'AI 채점·분석까지, 5,500원 1회 결제로 30일 무제한',
-          valueProp: '한국실용글쓰기 응시료(약 2~3만원)보다 훨씬 저렴하게, 합격 전까지 무제한 AI 첨삭',
-          refund: 'AI 채점을 한 번도 쓰지 않았다면 100% 돌려드려요.',
-        }
+  const copy = {
+    subtitle: 'AI 채점·분석까지, 5,500원 1회 결제로 30일 무제한',
+    valueProp: '한국실용글쓰기 응시료(약 2~3만원)보다 훨씬 저렴하게, 합격 전까지 무제한 AI 첨삭',
+    refund: 'AI 채점을 한 번도 쓰지 않았다면 100% 돌려드려요.',
+  }
 
   // 결제 직전이 사회적 증거가 가장 잘 먹히는 자리 — 공개된 실사용 후기를 함께 보여 준다.
   const { data: reviews } = await supabase

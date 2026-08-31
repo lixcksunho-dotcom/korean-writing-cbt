@@ -5,7 +5,6 @@ import SiteFooter from "@/components/layout/SiteFooter";
 import BreadcrumbLd from "@/components/seo/BreadcrumbLd";
 import StickyMobileCTA from "@/components/landing/StickyMobileCTA";
 import { KBS_SCHEDULE, KBS_APPLY_URL, KBS_SCHEDULE_URL } from "@/lib/examSchedule";
-import { PROGRAMS } from "@/lib/programs";
 import RelatedBlogPosts from '@/components/blog/RelatedBlogPosts'
 import TopicQuiz from '@/components/study/TopicQuiz'
 
@@ -35,8 +34,18 @@ function fmt(iso: string): string {
   return `${y}.${m}.${d}(${wd})`;
 }
 
-// 영역·문항 배분은 programs.ts(시험 설정)와 같은 값을 써서 CBT 화면과 어긋나지 않게 한다.
-const AREAS = PROGRAMS.kbs.areas.map((a) => ({
+// KBS CBT는 전용 서비스(kbstest.cloud)로 이전했다. 이 페이지는 검색 유입을 받아
+// 그쪽으로 보내는 안내문으로 남는다 — 영역 배분은 공개 시험구조 값을 직접 적는다.
+const KBSPASS_URL = "https://kbstest.cloud";
+const AREAS = [
+  { name: "듣기·말하기", from: 1, to: 15 },
+  { name: "어휘", from: 16, to: 30 },
+  { name: "어법", from: 31, to: 45 },
+  { name: "쓰기", from: 46, to: 50 },
+  { name: "창안", from: 51, to: 60 },
+  { name: "읽기", from: 61, to: 90 },
+  { name: "국어문화", from: 91, to: 100 },
+].map((a) => ({
   name: a.name,
   range: `${a.from}~${a.to}번`,
   count: a.to - a.from + 1,
@@ -96,9 +105,9 @@ export default function KbsKoreanPage() {
             <LogoGlyph className="h-7 w-7" />
             <span className="font-black text-[#1e3a5f]">실글패스</span>
           </Link>
-          <Link href="/cbt" className="text-sm font-semibold text-[#64748b] hover:text-[#1e3a5f] transition-colors py-3">
+          <a href="https://kbstest.cloud/cbt" className="text-sm font-semibold text-[#64748b] hover:text-[#1e3a5f] transition-colors py-3">
             무료 CBT 모의고사 →
-          </Link>
+          </a>
         </div>
       </header>
 
@@ -221,19 +230,19 @@ export default function KbsKoreanPage() {
               KBS한국어능력시험의 최대 난관은 지식이 아니라 <strong className="text-[#334155]">시간</strong>입니다.
               읽기 30문항의 지문이 길어, 앞 영역에서 시간을 흘리면 뒤를 못 풀고 끝나요. 그래서 실전과 같은{" "}
               <strong className="text-[#334155]">CBT 환경에서 120분을 재며 푸는 연습</strong>이 가장 빠른 길입니다.
-              실글패스는 회차를 풀면 <strong className="text-[#334155]">영역별 정답률</strong>로 약점을 짚어 주고,
-              틀린 문항만 모아 다시 풀 수 있으며, 듣기 문항은 채점 후 <strong className="text-[#334155]">대본</strong>까지 확인할 수 있습니다.
+              KBS한국어 전용 서비스 <strong className="text-[#334155]">KBS패스(kbstest.cloud)</strong>에서 회차를 풀면{" "}
+              <strong className="text-[#334155]">영역별 정답률</strong>로 약점을 짚어 주고, 틀린 문항만 모아 다시 풀 수 있습니다.
             </p>
             <div className="rounded-2xl border border-[#e2e8f0] bg-gradient-to-br from-[#064e3b] to-[#0f766e] p-6 text-center text-white">
               <p className="text-lg font-black mb-1">지금 실력, 몇 급일까?</p>
               <p className="text-white/70 text-sm mb-5">모의고사 1회분은 무료 · 가입하면 AI 첨삭도 무료로 체험할 수 있어요.</p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                <Link href="/cbt" className="btn-gold inline-flex items-center justify-center gap-1.5 font-bold py-3 px-6 rounded-xl text-sm">
+                <a href={`${KBSPASS_URL}/cbt`} className="btn-gold inline-flex items-center justify-center gap-1.5 font-bold py-3 px-6 rounded-xl text-sm">
                   무료 CBT 모의고사 풀어보기
-                </Link>
-                <Link href="/signup" className="inline-flex items-center justify-center gap-1.5 font-bold py-3 px-6 rounded-xl text-sm bg-white/10 text-white border border-white/20 hover:bg-white/15 transition-colors">
+                </a>
+                <a href={`${KBSPASS_URL}/signup`} className="inline-flex items-center justify-center gap-1.5 font-bold py-3 px-6 rounded-xl text-sm bg-white/10 text-white border border-white/20 hover:bg-white/15 transition-colors">
                   무료로 시작하기
-                </Link>
+                </a>
               </div>
             </div>
           </section>

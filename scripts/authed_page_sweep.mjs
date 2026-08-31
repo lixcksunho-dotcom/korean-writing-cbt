@@ -33,7 +33,7 @@ const ROUTES = [
   '/dashboard', '/insights', '/cbt', '/manuscript', '/manuscript/history',
   '/practice', '/practice/areas', '/practice/bookmarks', '/practice/essay',
   '/practice/multiple', '/practice/refine', '/practice/report', '/practice/types',
-  '/practice/kbs-types', '/practice/wrong', '/subscribe', '/subscribe/history',
+  '/practice/wrong', '/subscribe', '/subscribe/history',
   '/guides', '/word-counter', '/refined-words',
 ]
 
@@ -57,7 +57,7 @@ try {
 
   const browser = await chromium.launch()
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 })
-  // 첫 방문 안내 팝업(ModeIntroModal)은 화면을 가려 판정을 흐린다.
+  // 첫 방문 안내 팝업은 화면을 가려 판정을 흐린다.
   // 이 플래그는 쿠키가 아니라 localStorage에 있다 — 쿠키로 심으면 아무 효과가 없다.
   await ctx.addInitScript(() => {
     try { localStorage.setItem('kptest_mode_intro_v1', '1') } catch { /* 접근 불가면 그냥 둔다 */ }
@@ -81,7 +81,7 @@ try {
   }
   if (!loggedIn) throw new Error('로그인이 되지 않음')
 
-  for (const mode of ['silyong', 'kbs']) {
+  for (const mode of ['silyong']) {
     await ctx.addCookies([{ name: 'kptest_mode', value: mode, domain: new URL(BASE).hostname, path: '/' }])
     for (const route of ROUTES) {
       pageErrs = []
@@ -128,7 +128,6 @@ try {
   // 한쪽만 보면 다른 쪽 구멍이 그대로 남는다.
   const PAID_BY_MODE = {
     silyong: ['/cbt/2025-5', '/cbt/2025-9', '/practice/multiple?set=2025-5', '/practice/essay?set=2025-5'],
-    kbs: ['/cbt/kbs-2025-2', '/cbt/kbs-2025-3', '/practice/multiple?set=2025-2'],
   }
   for (const [mode, paidRoutes] of Object.entries(PAID_BY_MODE)) {
     await ctx.addCookies([{ name: 'kptest_mode', value: mode, domain: new URL(BASE).hostname, path: '/' }])
@@ -146,7 +145,7 @@ try {
   // 반대쪽도 본다. 무료 회차까지 /subscribe로 가 버리면 위 검사는 전부 통과하는데
   // 정작 아무도 못 푸는 상태가 된다 — 통과가 통과인지 확인하는 대조군이다.
   // 시험 화면은 자동저장이 계속 돌아 networkidle이 안 온다 — 여기선 주소만 보면 된다.
-  const FREE_BY_MODE = { silyong: '/cbt/2025-1', kbs: '/cbt/kbs-2025-1' }
+  const FREE_BY_MODE = { silyong: '/cbt/2025-1' }
   for (const [mode, free] of Object.entries(FREE_BY_MODE)) {
     await ctx.addCookies([{ name: 'kptest_mode', value: mode, domain: new URL(BASE).hostname, path: '/' }])
     await page.goto(`${BASE}${free}`, { waitUntil: 'domcontentloaded', timeout: 40000 }).catch(() => {})

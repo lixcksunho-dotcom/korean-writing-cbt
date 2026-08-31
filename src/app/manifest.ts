@@ -8,7 +8,7 @@ import type { MetadataRoute } from 'next'
 // 워커 없이도 이 매니페스트만으로 앱처럼 열린다 — 위험을 지고 얻을 만큼은 아니다.
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: '실글패스 — 한국실용글쓰기 · KBS한국어 CBT',
+    name: '실글패스 — 한국실용글쓰기 CBT',
     short_name: '실글패스',
     description:
       '기출 유형 CBT 모의고사와 서술형·원고지 AI 채점·첨삭. 실전과 같은 제한 시간으로 풀고 바로 채점받으세요.',

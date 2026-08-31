@@ -149,12 +149,6 @@ export default async function ResultPage({
               {isPass ? `${tier.name}${program === 'silyong' ? ' 합격권' : ' 예상'}` : `${cfg.belowLabel} — 다시 도전하세요`}
             </div>
           )}
-          {/* KBS는 주관처가 절대 등급컷을 공개하지 않는다 — 참고용임을 분명히 알린다 */}
-          {program === 'kbs' && (
-            <p className="text-white/50 text-xs mt-3">
-              ※ KBS한국어능력시험은 공식 등급컷을 공개하지 않아, 학습 참고용 근사 기준으로 계산한 예상 등급입니다.
-            </p>
-          )}
           {!essaysGraded && essayQuestions.length > 0 && (
             <p className="text-white/50 text-xs mt-4">
               ※ 서술형 AI 채점 전 점수입니다. 아래에서 채점하면 점수에 반영됩니다.

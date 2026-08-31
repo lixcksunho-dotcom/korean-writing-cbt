@@ -7,8 +7,6 @@ import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import { BookOpen, LayoutDashboard, Menu, X, LogOut, PenLine, Sparkles, ListChecks } from "lucide-react";
 import LogoGlyph from "@/components/layout/LogoGlyph";
-import ModeSwitcher from "@/components/mode/ModeSwitcher";
-import type { ProgramId } from "@/lib/programs";
 
 const navItems = [
   { href: "/dashboard", label: "대시보드", icon: LayoutDashboard },
@@ -19,11 +17,10 @@ const navItems = [
 
 export default function Navbar({
   userEmail = "",
-  program = "silyong",
   brandName = "실글패스",
   brandGradient = "from-[#f59e0b] to-[#d97706]",
   showManuscript = true,
-}: { userEmail?: string; program?: ProgramId; brandName?: string; brandGradient?: string; showManuscript?: boolean }) {
+}: { userEmail?: string; brandName?: string; brandGradient?: string; showManuscript?: boolean }) {
   const pathname = usePathname();
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -50,7 +47,6 @@ export default function Navbar({
               {/* 메뉴가 펴지는 1024px에서는 이 글자까지 넣으면 한 뼘이 모자라 가로 스크롤이 생긴다 */}
               <span className="font-bold text-white tracking-tight hidden xl:block whitespace-nowrap">{brandName}</span>
             </Link>
-            <ModeSwitcher current={program} className="shrink-0" />
           </div>
 
           {/* 데스크탑 메뉴 */}

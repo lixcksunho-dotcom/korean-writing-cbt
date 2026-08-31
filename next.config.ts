@@ -39,6 +39,17 @@ const nextConfig: NextConfig = {
   async headers() {
     return [{ source: '/:path*', headers: SECURITY_HEADERS }];
   },
+  // KBS 기능은 전용 서비스(kbstest.cloud)로 이전했다(2026-08-31). 북마크·검색으로
+  // 들어오는 옛 주소를 새집으로 보낸다. proxy(미들웨어)가 아니라 여기 두는 이유:
+  // 위 주석대로 배포 환경에서 미들웨어가 안 돌던 전례가 있고, 정적 리다이렉트는
+  // 설정 계층이 가장 확실하다.
+  async redirects() {
+    return [
+      { source: '/practice/kbs-types', destination: 'https://kbstest.cloud/practice', permanent: true },
+      { source: '/cbt/kbs-:examId', destination: 'https://kbstest.cloud/cbt', permanent: true },
+      { source: '/cbt/kbs-:examId/:path*', destination: 'https://kbstest.cloud/cbt', permanent: true },
+    ];
+  },
 };
 
 export default nextConfig;
