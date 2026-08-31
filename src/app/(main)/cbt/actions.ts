@@ -235,7 +235,7 @@ export async function getOrCreateExamSession(
   return { sessionId: created.id as string, savedAnswers: {}, timeLeft: null, resumed: false }
 }
 
-// 시험 중간 저장 (유료 전용). 답안·남은시간을 세션에 보관하고 시험화면을 빠져나간다.
+// 시험 중간 저장. 답안·남은시간을 세션에 보관하고 시험화면을 빠져나간다.
 export async function saveExamProgress(
   sessionId: string,
   answers: Record<string, string>,
@@ -245,10 +245,10 @@ export async function saveExamProgress(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Unauthorized')
 
-  // 저장하고 나가기는 유료 전용. 여기는 채점이 아니라 화면이 결과를 안 그리므로
-  // 예전처럼 던진다(값 반환은 채점 액션에만 해당).
-  const subscription = await getActiveSubscription(user.id)
-  if (!subscription) throw new Error(SUBSCRIPTION_REQUIRED)
+  // 저장은 구독을 묻지 않는다. 무료로 체험하다 중간에 나가는 사람이 되돌아올 길을
+  // 막으면 그 사람은 다시 오지 않는다 — 붙잡아야 할 바로 그 사람이다.
+  // 유료로 남는 건 '자동 저장'이다(ExamPlayer의 1분 간격). 무료는 나갈 때 직접 고른다.
+  // 아래 조건이 남의 세션·끝난 세션을 막는다.
 
   const { error } = await supabase
     .from('quiz_sessions')

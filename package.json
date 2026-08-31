@@ -54,7 +54,8 @@
     "check:past-result": "node scripts/past_result_link_check.mjs",
     "check:resolved-notice": "node scripts/resolved_notice_check.mjs",
     "check:free-to-paid": "node scripts/free_to_paid_resume_check.mjs",
-    "check:paid-essay-resume": "node scripts/paid_essay_resume_check.mjs"
+    "check:paid-essay-resume": "node scripts/paid_essay_resume_check.mjs",
+    "check:exit-save": "node scripts/exit_save_check.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.100.1",

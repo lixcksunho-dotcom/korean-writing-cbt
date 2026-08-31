@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useMemo, useState, useSyncExternalStore } from 'react'
 import { CheckCircle2, X } from 'lucide-react'
 
 // 불편사항을 남긴 사람에게 '고쳤습니다'라고 알려 주는 띠.
@@ -18,6 +18,14 @@ export type ResolvedNotice = { id: string; message: string; createdAt: string }
 
 const SEEN_KEY = 'silyong_resolved_feedback_seen_v1'
 
+function parseSeen(raw: string | null): string[] {
+  try {
+    return raw ? JSON.parse(raw) : []
+  } catch {
+    return []
+  }
+}
+
 function readSeen(): string[] {
   try {
     return JSON.parse(localStorage.getItem(SEEN_KEY) ?? '[]')
@@ -26,14 +34,25 @@ function readSeen(): string[] {
   }
 }
 
-export default function ResolvedFeedbackNotice({ items }: { items: ResolvedNotice[] }) {
-  // 서버와 첫 그림이 어긋나지 않게, 무엇을 봤는지는 붙은 뒤에 읽는다.
-  const [shown, setShown] = useState<ResolvedNotice[]>([])
+// localStorage는 구독할 게 없다 — 서버에서는 없는 값이라는 것만 알면 된다.
+const noSubscribe = () => () => {}
+const readSeenRaw = () => {
+  try {
+    return localStorage.getItem(SEEN_KEY)
+  } catch {
+    return null
+  }
+}
 
-  useEffect(() => {
-    const seen = readSeen()
-    setShown(items.filter(i => !seen.includes(i.id)))
-  }, [items])
+export default function ResolvedFeedbackNotice({ items }: { items: ResolvedNotice[] }) {
+  // 서버의 첫 그림에서는 localStorage가 없다. 이펙트에서 setState로 맞추면 렌더가
+  // 한 번 더 도므로, 서버(null)와 브라우저(실제 값)를 같은 자리에서 읽는다.
+  const seenRaw = useSyncExternalStore(noSubscribe, readSeenRaw, () => null)
+  const [dismissed, setDismissed] = useState<string[]>([])
+  const shown = useMemo(() => {
+    const seen = [...parseSeen(seenRaw), ...dismissed]
+    return items.filter(i => !seen.includes(i.id))
+  }, [items, seenRaw, dismissed])
 
   if (shown.length === 0) return null
 
@@ -43,7 +62,7 @@ export default function ResolvedFeedbackNotice({ items }: { items: ResolvedNotic
     } catch {
       // 저장이 막혀 있어도 이번 화면에서는 닫히게 둔다
     }
-    setShown(prev => prev.filter(i => i.id !== id))
+    setDismissed(prev => [...prev, id])
   }
 
   return (

@@ -2,8 +2,7 @@
 
 import { useState, useEffect, useMemo, useRef, useSyncExternalStore, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import Link from 'next/link'
-import { Clock, ChevronLeft, ChevronRight, ChevronDown, Send, AlertCircle, CheckCircle2, FileText, Save, Lock } from 'lucide-react'
+import { Clock, ChevronLeft, ChevronRight, ChevronDown, Send, AlertCircle, CheckCircle2, FileText, Save } from 'lucide-react'
 import { submitSession, saveExamProgress } from '@/app/(main)/cbt/actions'
 import { readableActionError } from '@/lib/actionErrorMessage'
 import EditableManuscript, { type EditableManuscriptHandle } from '@/components/manuscript/EditableManuscript'
@@ -15,6 +14,8 @@ import MarkedText from '@/components/cbt/MarkedText'
 import CopyGuard from '@/components/cbt/CopyGuard'
 import { getProgram, type ProgramId } from '@/lib/programs'
 import { readDraftRaw, parseDraft, saveDraft, clearDraft } from '@/lib/examDraft'
+import ExamExitDialog from '@/components/cbt/ExamExitDialog'
+import { useExamExitGuard } from '@/components/cbt/useExamExitGuard'
 
 // localStorage는 구독할 게 없다 — 마운트 시점 값만 필요하다.
 const noSubscribe = () => () => {}
@@ -66,6 +67,9 @@ export default function ExamPlayer({
   const [isPending, startTransition] = useTransition()
   const [saving, setSaving] = useState(false)
   const [submitError, setSubmitError] = useState('')
+  const [exitError, setExitError] = useState('')
+  // 나가는 중에는 파수꾼을 꺼야 한다 — 켜 둔 채 이동하면 자기가 만든 이동을 되잡는다.
+  const [leaving, setLeaving] = useState(false)
 
   const answersRef = useRef(answers)
   useEffect(() => { answersRef.current = answers }, [answers])
@@ -127,7 +131,8 @@ export default function ExamPlayer({
   // 브라우저 임시 보관(위)은 그 기기 그 브라우저에서만 살아난다. 출퇴근길에 휴대폰으로
   // 풀다가 집에서 노트북을 켜면 아무것도 없다.
   //
-  // 유료 기능의 문을 넓히지는 않는다 — 저장은 원래대로 유료고, 누르지 않아도 될 뿐이다.
+  // 저장 자체는 이제 누구나 할 수 있다(나갈 때 물어본다). 유료로 남는 건 '누르지 않아도
+  // 1분마다 알아서 남는다'는 것 — 배터리가 죽거나 창이 튕겨도 잃지 않는다.
   const lastSavedRef = useRef('')
   useEffect(() => {
     if (!hasSubscription) return
@@ -206,18 +211,33 @@ export default function ExamPlayer({
     setShowConfirm(false)
   }
 
-  // 저장하고 나가기 (유료 전용) — 답안·남은시간 저장 후 시험 목록으로
-  function handleSaveExit() {
+  // 저장하고 나가기 — 답안·남은시간을 서버에 남기고 목적지로 보낸다.
+  function handleSaveExit(to = '/cbt') {
     setSaving(true)
+    setExitError('')
     startTransition(async () => {
       try {
         await saveExamProgress(sessionId, answersRef.current, timeLeftRef.current)
-        router.push('/cbt')
-      } catch {
+      } catch (e) {
+        // 저장에 실패했는데 그냥 내보내면 답안이 사라진 것으로 보인다. 화면에 붙잡아 둔다.
+        setExitError(readableActionError(e, '저장이 되지 않았어요. 연결을 확인하고 다시 눌러 주세요.'))
         setSaving(false)
+        return
       }
+      setLeaving(true)
+      router.push(to)
     })
   }
+
+  // 저장하지 않고 나가기 — 서버에는 남기지 않는다. 이 브라우저의 임시본은 사고 복구용으로
+  // 그대로 둔다(창에도 '서버에 남지 않는다'고만 적었다).
+  function handleDiscardExit(to: string) {
+    setLeaving(true)
+    router.push(to)
+  }
+
+  // 한 문항이라도 풀었을 때만 붙잡는다 — 아무것도 안 쓴 화면에서 묻는 건 방해일 뿐이다.
+  const exitGuard = useExamExitGuard(Object.keys(answers).length > 0 && !leaving && !isPending)
 
   const q = questions[currentIdx]
   const qCharLimit = parseCharLimit(q.question)
@@ -297,26 +317,15 @@ export default function ExamPlayer({
               <Clock className="h-3.5 w-3.5" />
               {String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
             </div>
-            {hasSubscription ? (
-              <button
-                onClick={handleSaveExit}
-                disabled={saving || isPending}
-                title="답안을 저장하고 나중에 이어서 풀 수 있어요"
-                className="flex min-h-11 min-w-11 items-center justify-center gap-1.5 text-[#1e3a5f] bg-[#1e3a5f]/8 hover:bg-[#1e3a5f]/15 px-3 py-2 rounded-xl text-sm font-semibold transition-colors disabled:opacity-50"
-              >
-                <Save className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">{saving ? '저장 중...' : '저장하고 나가기'}</span>
-              </button>
-            ) : (
-              <Link
-                href="/subscribe"
-                title="저장하고 나가기는 구독 회원 전용이에요"
-                className="flex min-h-11 min-w-11 items-center justify-center gap-1.5 text-[#475569] bg-[#f1f5f9] hover:bg-[#e2e8f0] px-3 py-2 rounded-xl text-sm font-semibold transition-colors"
-              >
-                <Lock className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">저장하고 나가기</span>
-              </Link>
-            )}
+            <button
+              onClick={() => handleSaveExit()}
+              disabled={saving || isPending}
+              title="답안을 저장하고 나중에 어느 기기에서든 이어서 풀 수 있어요"
+              className="flex min-h-11 min-w-11 items-center justify-center gap-1.5 text-[#1e3a5f] bg-[#1e3a5f]/8 hover:bg-[#1e3a5f]/15 px-3 py-2 rounded-xl text-sm font-semibold transition-colors disabled:opacity-50"
+            >
+              <Save className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">{saving ? '저장 중...' : '저장하고 나가기'}</span>
+            </button>
             <button
               onClick={() => setShowConfirm(true)}
               className="btn-primary flex min-h-11 shrink-0 items-center gap-1.5 text-white px-4 py-2 rounded-xl text-sm font-semibold whitespace-nowrap ml-auto sm:ml-0"
@@ -484,6 +493,8 @@ export default function ExamPlayer({
                   return (
                     <button
                       key={i}
+                      // 고른 보기는 색으로만 알렸다 — 화면을 못 보는 사람에게는 아무 표시가 없다.
+                      aria-pressed={selected}
                       onClick={() => handleAnswer(q.id, val)}
                       className={[
                         'w-full text-left px-5 py-3.5 rounded-xl border-2 transition-all text-sm font-medium',
@@ -583,6 +594,18 @@ export default function ExamPlayer({
       </div>
 
       {/* 제출 확인 모달 */}
+      {exitGuard.pendingHref && (
+        <ExamExitDialog
+          answeredCount={answeredCount}
+          totalCount={questions.length}
+          saving={saving}
+          error={exitError}
+          onStay={() => { setExitError(''); exitGuard.release() }}
+          onSaveExit={() => handleSaveExit(exitGuard.pendingHref!)}
+          onDiscardExit={() => handleDiscardExit(exitGuard.pendingHref!)}
+        />
+      )}
+
       {showConfirm && (
         <div className="fixed inset-0 bg-[#0f172a]/60 backdrop-blur-sm flex items-center justify-center z-50 px-4">
           <div className="bg-white rounded-2xl p-7 max-w-sm w-full shadow-2xl border border-[#e2e8f0]">
