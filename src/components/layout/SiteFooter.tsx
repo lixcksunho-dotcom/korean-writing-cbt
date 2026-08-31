@@ -52,7 +52,7 @@ export default function SiteFooter() {
             모든 페이지 하단에 둔다. 내부 링크가 아니므로 Link가 아니라 a를 쓴다. */}
         <p className="mb-4 font-semibold text-white/70">
           <span className="text-white/40">자매 서비스</span>{' '}
-          <a href="https://kbstest.cloud" className="inline-block py-1.5 hover:text-white transition-colors underline underline-offset-2">
+          <a href="https://kbstest.cloud" className="inline-block py-3.5 sm:py-1.5 hover:text-white transition-colors underline underline-offset-2">
             KBS패스 — KBS한국어능력시험 CBT
           </a>
         </p>
