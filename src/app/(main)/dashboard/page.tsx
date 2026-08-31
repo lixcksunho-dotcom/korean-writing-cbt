@@ -12,6 +12,7 @@ import { getProgram, type GradeCut } from "@/lib/programs";
 import { formatExamId } from "@/lib/examId";
 import ModeIntroModal from "@/components/mode/ModeIntroModal";
 import ResolvedFeedbackNotice from "@/components/feedback/ResolvedFeedbackNotice";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 function getGreeting() {
   const h = new Date().getHours();
@@ -167,7 +168,13 @@ export default async function DashboardPage() {
 
   // 이 사람이 남긴 불편사항 중 해결 처리된 것 — 로그인하면 알려 준다.
   // 문의를 고쳐 놓고도 알릴 길이 없어, 남긴 사람은 읽혔는지조차 몰랐다.
-  const { data: resolvedFeedback } = await supabase
+  //
+  // service_role로 읽는 까닭: feedback 표에는 읽기 정책이 없어서(넣기만 된다) 사용자
+  // 권한으로는 자기가 쓴 글도 빈 배열로 돌아온다. 정책을 더하는 것은 DB 변경이라
+  // 사람이 결정할 일이므로, 서버에서 본인 id로만 좁혀 읽는다.
+  // user.id는 세션에서 나온 값이라 남의 글에는 닿지 않는다. 연락처·기기 정보는
+  // 가져오지 않는다 — 화면에 필요한 것만 읽는다.
+  const { data: resolvedFeedback } = await createAdminClient()
     .from('feedback')
     .select('id, message, created_at')
     .eq('user_id', user.id)
