@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { getActiveSubscription, daysUntilExpiry } from '@/lib/subscription'
 import PaymentSection from '@/components/subscribe/PaymentSection'
+import PromoCodeBox from '@/components/subscribe/PromoCodeBox'
 import EventTracker from '@/components/analytics/EventTracker'
 import { CheckCircle2, Sparkles, Shield, Zap, LogIn, Star } from 'lucide-react'
 
@@ -161,6 +162,14 @@ export default async function SubscribePage() {
               <p className="text-center text-xs text-[#64748b]">
                 결제는 로그인 후 진행되며, 카드 · 간편결제로 결제할 수 있어요.
               </p>
+            </div>
+          )}
+
+          {/* 행사 코드 — 블로그 홍보 답례로 받은 코드를 이용권으로 바꾼다.
+              결제하러 온 사람이 코드를 갖고 있으면 여기서 멈춰야 한다. */}
+          {user && (
+            <div className="mt-4">
+              <PromoCodeBox />
             </div>
           )}
 

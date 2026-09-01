@@ -108,9 +108,9 @@ export default function ExamInfoPage() {
           <section className="mb-10">
             <h2 className="text-2xl font-black text-[#0f172a] mb-3">시험 일정</h2>
             <div className="overflow-x-auto rounded-xl border border-[#e2e8f0]">
-              <table className="w-full text-sm">
+              <table className="w-full text-sm table-fixed">
                 <thead>
-                  <tr className="bg-[#f8fafc] text-[#475569]">
+                  <tr className="bg-[#f8fafc] text-[#475569] h-[42px]">
                     <th className="px-3 py-2.5 text-left font-bold">회차</th>
                     <th className="px-3 py-2.5 text-left font-bold">접수 기간</th>
                     <th className="px-3 py-2.5 text-left font-bold">시험일</th>
@@ -119,10 +119,10 @@ export default function ExamInfoPage() {
                 </thead>
                 <tbody>
                   {SCHEDULE.map((r) => (
-                    <tr key={r.round} className="border-t border-[#e2e8f0]">
+                    <tr key={r.round} className="border-t border-[#e2e8f0] h-[50px]">
                       <td className="px-3 py-2.5 font-bold text-[#0f172a]">{r.round}</td>
-                      <td className="px-3 py-2.5 text-[#475569]">{fmt(r.applyStart)} ~ {fmt(r.applyEnd)}</td>
-                      <td className="px-3 py-2.5 font-semibold text-[#1e3a5f]">{fmt(r.examDate)}</td>
+                      <td className="px-3 py-2.5 text-[#475569] whitespace-nowrap">{fmt(r.applyStart)} ~ {fmt(r.applyEnd)}</td>
+                      <td className="px-3 py-2.5 font-semibold text-[#1e3a5f] whitespace-nowrap">{fmt(r.examDate)}</td>
                       <td className="px-3 py-2.5 text-[#475569]">{fmt(r.resultDate)}</td>
                     </tr>
                   ))}
@@ -141,10 +141,10 @@ export default function ExamInfoPage() {
           <TopicQuiz topic="exam-info" />
 
           {/* 등급 기준 */}
-          <section className="mb-10">
+          <section className="defer-render mb-10" style={{ containIntrinsicSize: 'auto 315px' }}>
             <h2 className="text-2xl font-black text-[#0f172a] mb-3">등급 기준 (1000점 만점)</h2>
             <div className="overflow-hidden rounded-xl border border-[#e2e8f0]">
-              <table className="w-full text-sm">
+              <table className="w-full text-sm table-fixed">
                 <thead>
                   <tr className="bg-[#f8fafc] text-[#475569]">
                     <th className="px-3 py-2.5 text-left font-bold">등급</th>
@@ -165,10 +165,10 @@ export default function ExamInfoPage() {
           </section>
 
           {/* 점수 구성 */}
-          <section className="mb-10">
+          <section className="defer-render mb-10" style={{ containIntrinsicSize: 'auto 289px' }}>
             <h2 className="text-2xl font-black text-[#0f172a] mb-3">점수 구성</h2>
             <div className="overflow-hidden rounded-xl border border-[#e2e8f0]">
-              <table className="w-full text-sm">
+              <table className="w-full text-sm table-fixed">
                 <thead>
                   <tr className="bg-[#f8fafc] text-[#475569]">
                     <th className="px-3 py-2.5 text-left font-bold">영역</th>
@@ -198,7 +198,7 @@ export default function ExamInfoPage() {
           </section>
 
           {/* 준비 전략 + CTA */}
-          <section className="mb-10">
+          <section className="defer-render mb-10" style={{ containIntrinsicSize: 'auto 434px' }}>
             <h2 className="text-2xl font-black text-[#0f172a] mb-3">어떻게 준비할까요?</h2>
             <p className="text-[#475569] leading-relaxed mb-4">
               배점이 큰 <strong className="text-[#334155]">서술형</strong>은 혼자 채점하기 어렵다는 게 가장 큰 벽이에요.
@@ -221,7 +221,7 @@ export default function ExamInfoPage() {
           </section>
 
           {/* FAQ */}
-          <section className="mt-12">
+          <section className="defer-render mt-12" style={{ containIntrinsicSize: 'auto 340px' }}>
             <h2 className="text-2xl font-black text-[#0f172a] mb-4">자주 묻는 질문</h2>
             <div className="space-y-3">
               {FAQ.map((f) => (

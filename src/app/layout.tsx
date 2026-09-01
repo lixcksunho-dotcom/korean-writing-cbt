@@ -120,15 +120,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko" className="h-full">
-      <head>
-        {/* 프리텐다드(동적 서브셋) — 자매 서비스와 같은 방식: swap + 폴백 메트릭 보정.
-            느린 회선 CLS는 자매 서비스에서 0.055로 실측 확인(기준 0.1). */}
-        <link rel="preconnect" href="https://cdn.jsdelivr.net" crossOrigin="anonymous" />
-        <link
-          rel="stylesheet"
-          href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
-        />
-      </head>
       <body className="min-h-full flex flex-col">
         <script
           type="application/ld+json"

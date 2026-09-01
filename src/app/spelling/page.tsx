@@ -280,7 +280,7 @@ export default function SpellingPage() {
           <TopicQuiz topic="spelling" />
 
           {/* 틀림 → 바름 */}
-          <section className="mb-10">
+          <section className="defer-render mb-10" style={{ containIntrinsicSize: 'auto 4268px' }}>
             <h2 className="text-2xl font-black text-[#0f172a] mb-3">자주 틀리는 표기 (틀림 → 바름)</h2>
             <div className="overflow-hidden rounded-xl border border-[#e2e8f0]">
               <table className="w-full text-sm">
@@ -303,7 +303,7 @@ export default function SpellingPage() {
           </section>
 
           {/* 뜻이 다른 헷갈리는 단어 */}
-          <section className="mb-10">
+          <section className="defer-render mb-10" style={{ containIntrinsicSize: 'auto 1916px' }}>
             <h2 className="text-2xl font-black text-[#0f172a] mb-3">뜻이 다른 헷갈리는 단어</h2>
             <div className="overflow-hidden rounded-xl border border-[#e2e8f0]">
               <table className="w-full text-sm">
@@ -320,7 +320,7 @@ export default function SpellingPage() {
           </section>
 
           {/* 띄어쓰기 */}
-          <section className="mb-10">
+          <section className="defer-render mb-10" style={{ containIntrinsicSize: 'auto 760px' }}>
             <h2 className="text-2xl font-black text-[#0f172a] mb-3">헷갈리는 띄어쓰기</h2>
             <div className="space-y-2.5">
               {SPACES.map((s) => (
@@ -333,7 +333,7 @@ export default function SpellingPage() {
           </section>
 
           {/* CTA */}
-          <section className="mb-10">
+          <section className="defer-render mb-10" style={{ containIntrinsicSize: 'auto 760px' }}>
             <div className="rounded-2xl border border-[#e2e8f0] bg-gradient-to-br from-[#0f1f3d] to-[#1e3a5f] p-6 text-center text-white">
               <p className="text-lg font-black mb-1">맞춤법, 문제로 풀어야 진짜 는다</p>
               <p className="text-white/70 text-sm mb-5">한국실용글쓰기 CBT에서 맞춤법·어법을 유형별로 연습하고, 서술형은 AI 첨삭으로 표기 오류까지 짚어보세요. 무료로 시작할 수 있어요.</p>
@@ -349,7 +349,7 @@ export default function SpellingPage() {
           </section>
 
           {/* FAQ */}
-          <section className="mt-12">
+          <section className="defer-render mt-12" style={{ containIntrinsicSize: 'auto 760px' }}>
             <h2 className="text-2xl font-black text-[#0f172a] mb-4">자주 묻는 질문</h2>
             <div className="space-y-3">
               {FAQ.map((f) => (

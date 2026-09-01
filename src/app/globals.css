@@ -33,7 +33,7 @@ html {
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: "Pretendard Variable", Pretendard, "Pretendard Fallback", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   /* 한국어는 기본이 글자 단위 줄바꿈이라 좁은 폭에서 낱말이 쪼개진다
@@ -121,7 +121,10 @@ body {
 @font-face {
   font-family: "Pretendard Fallback";
   src: local("Malgun Gothic"), local("Apple SD Gothic Neo");
-  size-adjust: 100%;
+  /* 폴백(맑은고딕·애플고딕)이 프리텐다드보다 18% 넓다(실측: 3016.4 vs 2559.4 @100px).
+     그대로 두면 글꼴이 도착하는 순간 줄 수가 바뀌어 아래 전체가 밀린다(CLS 0.207 실측).
+     글자폭을 맞춰 바꿔치기해도 줄바꿈이 그대로이게 한다. */
+  size-adjust: 84.85%;
   ascent-override: 96%;
   descent-override: 24%;
   line-gap-override: 0%;

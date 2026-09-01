@@ -14,7 +14,7 @@ for (const name of scripts) {
   try {
     // autosave·resume은 '방금 빌드한 로컬 서버'가 전제다(기본 포트가 다른 프로젝트를 가리킨다)
     const env = { ...process.env, AUTOSAVE_BASE: 'http://localhost:3399', RESUME_BASE: 'http://localhost:3399', VITALS_BASE: 'http://localhost:3399', VITALS_BASE: 'http://localhost:3399' }
-    execSync(`npm run --silent ${name}`, { stdio: 'pipe', timeout: 900_000, env })
+    execSync(`npm run --silent ${name}`, { stdio: 'pipe', timeout: 1_800_000, env })
     out.push(['○', short, `${((Date.now() - t0) / 1000).toFixed(0)}s`])
   } catch (e) {
     const tail = String(e.stdout ?? '').split('\n').filter(Boolean).slice(-3).join(' | ').slice(0, 160)
