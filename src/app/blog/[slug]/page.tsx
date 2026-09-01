@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import BlogHeader from '@/components/blog/BlogHeader'
 import BlogCTA from '@/components/blog/BlogCTA'
+import PromoBanner from '@/components/blog/PromoBanner'
 import PostCard from '@/components/blog/PostCard'
 import RelatedStudyPages from '@/components/blog/RelatedStudyPages'
 import CategoryIcon from '@/components/blog/CategoryIcon'
@@ -147,6 +148,8 @@ export default async function BlogPostPage({
           {/* CTA */}
           <div className="mt-10">
             <BlogCTA path={post.ctaPath} label={post.ctaLabel} />
+            {/* 진행 중인 행사가 있으면 그 자리에서 코드를 준다(없으면 아무것도 안 그린다) */}
+            <PromoBanner />
           </div>
 
           {/* 읽고 끝나지 않게 — 읽은 자리에서 바로 풀어보고 실전으로 잇는다.
