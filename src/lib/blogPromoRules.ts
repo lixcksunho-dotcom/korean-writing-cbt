@@ -20,6 +20,10 @@ export const BODY_KEYWORDS = ['실글패스', '실용글쓰기시험', '실용�
 /** 사진 최소 장수 */
 export const MIN_IMAGES = 5
 
+/** 본문 최소 글자 수(공백 제외). 체험단 기준이 보통 1,000~1,500자다.
+ *  한두 줄 쓰고 사진만 붙인 글은 홍보가 되지 않는다. */
+export const MIN_CHARS = 1500
+
 /** 승인 시 지급 일수 */
 export const REWARD_DAYS = 30
 
@@ -64,7 +68,7 @@ export function countImages(html: string): number {
  * @param photos  본문 사진 수(사이트마다 세는 법이 달라 밖에서 세어 넘긴다)
  * @param ownerCode 본인 확인 코드. 주면 본문에 그 코드가 있는지도 본다.
  */
-export function checkBlogHtml(html: string, photos?: number, ownerCode?: string): BlogPromoResult {
+export function checkBlogHtml(html: string, photos?: number, ownerCode?: string, bodyChars?: number): BlogPromoResult {
   const title = extractTitle(html)
   const raw = textOf(html)
   const body = squash(raw)
@@ -74,6 +78,8 @@ export function checkBlogHtml(html: string, photos?: number, ownerCode?: string)
   const titleHit = TITLE_KEYWORDS.filter(k => squash(title).includes(squash(k)))
   const bodyMissing = BODY_KEYWORDS.filter(k => !body.includes(squash(k)))
   const images = photos ?? (html.match(/<img/gi) ?? []).length
+  // 글자 수는 본문만 세어 밖에서 넘긴다(네이버는 UI 글자가 1,000자 넘게 섞인다)
+  const chars = bodyChars ?? body.length
 
   const checks: RuleCheck[] = [
     {
@@ -90,6 +96,11 @@ export function checkBlogHtml(html: string, photos?: number, ownerCode?: string)
       rule: `사진 ${MIN_IMAGES}장 이상`,
       ok: images >= MIN_IMAGES,
       detail: `${images}장`,
+    },
+    {
+      rule: `본문 ${MIN_CHARS.toLocaleString('ko-KR')}자 이상`,
+      ok: readable && chars >= MIN_CHARS,
+      detail: readable ? `${chars.toLocaleString('ko-KR')}자` : '본문을 못 읽음',
     },
   ]
 

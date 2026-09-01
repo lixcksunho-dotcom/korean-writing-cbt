@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react'
 import { PenLine, CheckCircle2, AlertCircle, Check, X } from 'lucide-react'
 import { submitBlogReview } from '@/app/(main)/subscribe/blog-review-actions'
-import { TITLE_KEYWORDS, BODY_KEYWORDS, MIN_IMAGES, REWARD_DAYS, type RuleCheck } from '@/lib/blogPromoRules'
+import { TITLE_KEYWORDS, BODY_KEYWORDS, MIN_IMAGES, MIN_CHARS, REWARD_DAYS, type RuleCheck } from '@/lib/blogPromoRules'
 
 // 블로그에 홍보 글을 쓰면 이용권을 드리는 신청 화면.
 // 조건을 '내고 나서' 알려 주면 늦다 — 쓰기 전에 보이도록 폼 위에 그대로 적는다.
@@ -59,7 +59,10 @@ export default function BlogReviewForm({ ownerCode }: { ownerCode: string }) {
         </li>
         <li className="flex gap-2">
           <span className="font-bold text-[#d97706]">3</span>
-          <span>화면 사진을 <b>{MIN_IMAGES}장 이상</b> 넣어 주세요(문제 화면·채점 결과 등).</span>
+          <span>
+            화면 사진을 <b>{MIN_IMAGES}장 이상</b> 넣고, 본문을{' '}
+            <b>{MIN_CHARS.toLocaleString('ko-KR')}자 이상</b> 써 주세요(공백 제외).
+          </span>
         </li>
         <li className="flex gap-2">
           <span className="font-bold text-[#d97706]">4</span>

@@ -197,25 +197,6 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* 이벤트 배너 */}
-      <section className="py-5 px-4 bg-gradient-to-r from-[#d97706] via-[#f59e0b] to-[#d97706]">
-        <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
-          {/* 금색 위 흰 글자는 명암비 2.15라 읽히지 않는다 — 금색을 살리고 글자를 진하게 둔다 */}
-          <div className="flex items-center gap-3 text-[#0f172a]">
-            <Gift className="h-5 w-5 shrink-0" />
-            <div>
-              <span className="font-black text-sm sm:text-base">🎉 합격 후기 이벤트</span>
-              <span className="text-[#451a03] text-sm ml-2">시험 합격 후 후기를 남기면 응시료 5,000원 환급!</span>
-            </div>
-          </div>
-          <Link
-            href="/signup"
-            className="shrink-0 bg-white text-[#b45309] text-sm font-black px-5 py-3 rounded-xl hover:bg-amber-50 transition-colors shadow-md"
-          >
-            지금 참여하기 →
-          </Link>
-        </div>
-      </section>
 
       {/* 핵심 기능 */}
       <section className="defer-render py-20 px-4" style={{ containIntrinsicSize: 'auto 920px' }}>

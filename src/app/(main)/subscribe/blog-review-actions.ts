@@ -10,7 +10,7 @@ import {
   isLikelyBlogPostUrl,
   type RuleCheck,
 } from '@/lib/blogPromoRules'
-import { fetchBlogPost, countPhotos } from '@/lib/blogPromoFetch'
+import { fetchBlogPost, countPhotos, countBodyChars } from '@/lib/blogPromoFetch'
 import { blogOwnerCode } from '@/lib/blogOwnerCode'
 import { getActiveSubscription } from '@/lib/subscription'
 
@@ -50,7 +50,7 @@ export async function submitBlogReview(url: string): Promise<SubmitResult> {
   if (fetched.html === null) {
     note = `${fetched.reason}. 접수했고 사람이 직접 확인합니다.`
   } else {
-    const r = checkBlogHtml(fetched.html, countPhotos(fetched.html), ownerCode)
+    const r = checkBlogHtml(fetched.html, countPhotos(fetched.html), ownerCode, countBodyChars(fetched.html))
     checks = r.checks
     autoPassed = r.allPassed
     note = autoPassed

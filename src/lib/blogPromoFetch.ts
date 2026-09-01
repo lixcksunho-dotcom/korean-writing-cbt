@@ -66,3 +66,26 @@ export async function fetchBlogPost(raw: string): Promise<FetchedPost> {
   }
   return { html: null, reason: lastReason }
 }
+
+/**
+ * 본문 글자 수. UI·메뉴 글자를 빼야 '분량' 기준이 뜻을 갖는다.
+ *
+ * 실측(네이버 공개 글 1건): 문서 전체 5,663자 중 머리 UI가 1,192자였고,
+ * 스마트에디터 텍스트 모듈(se-module-text) 합계는 2,089자였다. 전체로 재면
+ * 짧은 글도 UI 덕에 통과해 버린다.
+ */
+export function countBodyChars(html: string): number {
+  const strip = (s: string) =>
+    s.replace(/<script[\s\S]*?<\/script>/gi, ' ')
+      .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/\s+/g, '')
+
+  // 네이버 스마트에디터: 글쓴이가 적은 텍스트 블록만 모은다
+  const modules = [...html.matchAll(/<div[^>]*class="[^"]*se-module-text[^"]*"[\s\S]*?<\/div>/gi)]
+  if (modules.length > 0) return strip(modules.map(m => m[0]).join(' ')).length
+
+  // 그 외 블로그: 문서 전체에서 태그를 걷어낸 길이. 머리·꼬리 메뉴가 섞이지만
+  // 티스토리·워드프레스는 그 양이 적어 기준을 넘기는 데 문제가 되지 않는다.
+  return strip(html).length
+}
