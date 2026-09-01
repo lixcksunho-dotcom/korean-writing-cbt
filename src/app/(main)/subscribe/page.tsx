@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { getActiveSubscription, daysUntilExpiry } from '@/lib/subscription'
 import PaymentSection from '@/components/subscribe/PaymentSection'
 import PromoCodeBox from '@/components/subscribe/PromoCodeBox'
+import BlogReviewForm from '@/components/subscribe/BlogReviewForm'
 import EventTracker from '@/components/analytics/EventTracker'
 import { CheckCircle2, Sparkles, Shield, Zap, LogIn, Star } from 'lucide-react'
 
@@ -168,8 +169,9 @@ export default async function SubscribePage() {
           {/* 행사 코드 — 블로그 홍보 답례로 받은 코드를 이용권으로 바꾼다.
               결제하러 온 사람이 코드를 갖고 있으면 여기서 멈춰야 한다. */}
           {user && (
-            <div className="mt-4">
+            <div className="mt-4 space-y-4">
               <PromoCodeBox />
+              <BlogReviewForm />
             </div>
           )}
 
