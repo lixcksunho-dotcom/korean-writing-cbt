@@ -14,6 +14,7 @@ import MarkedText from '@/components/cbt/MarkedText'
 import CopyGuard from '@/components/cbt/CopyGuard'
 import { getProgram, type ProgramId } from '@/lib/programs'
 import { readDraftRaw, parseDraft, saveDraft, clearDraft } from '@/lib/examDraft'
+import PaceGuide from '@/components/cbt/PaceGuide'
 import ExamExitDialog from '@/components/cbt/ExamExitDialog'
 import { useExamExitGuard } from '@/components/cbt/useExamExitGuard'
 
@@ -309,6 +310,15 @@ export default function ExamPlayer({
               객관식 {multipleCount}문 · 서술형 {essayCount}문
             </span>
             <span className="text-[#64748b] text-sm ml-2 whitespace-nowrap">{answeredCount}/{questions.length} 완료</span>
+            {/* 이 시험의 최대 난관은 시간이다. 남은 시간만 보여 주면 자기가 늦은 건지 모른다. */}
+            <div className="mt-1">
+              <PaceGuide
+                answered={answeredCount}
+                total={questions.length}
+                elapsedSec={EXAM_MINUTES * 60 - timeLeft}
+                leftSec={timeLeft}
+              />
+            </div>
           </div>
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             <div className={`flex items-center gap-1.5 font-mono font-bold text-sm px-3 py-1.5 rounded-xl ${

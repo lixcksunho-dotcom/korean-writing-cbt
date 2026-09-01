@@ -56,7 +56,8 @@
     "check:free-to-paid": "node scripts/free_to_paid_resume_check.mjs",
     "check:paid-essay-resume": "node scripts/paid_essay_resume_check.mjs",
     "check:exit-save": "node scripts/exit_save_check.mjs",
-    "check:promo": "node scripts/promo_redeem_check.mjs"
+    "check:promo": "node scripts/promo_redeem_check.mjs",
+    "check:pace": "node --experimental-strip-types scripts/exam_pace_check.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.100.1",
