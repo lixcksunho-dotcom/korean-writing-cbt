@@ -7,9 +7,9 @@ import { TITLE_KEYWORDS, BODY_KEYWORDS, MIN_IMAGES, REWARD_DAYS, type RuleCheck 
 
 // 블로그에 홍보 글을 쓰면 이용권을 드리는 신청 화면.
 // 조건을 '내고 나서' 알려 주면 늦다 — 쓰기 전에 보이도록 폼 위에 그대로 적는다.
-export default function BlogReviewForm() {
+export default function BlogReviewForm({ ownerCode }: { ownerCode: string }) {
   const [url, setUrl] = useState('')
-  const [result, setResult] = useState<{ autoPassed: boolean; checks: RuleCheck[]; note: string } | null>(null)
+  const [result, setResult] = useState<{ autoPassed: boolean; granted: boolean; checks: RuleCheck[]; note: string } | null>(null)
   const [error, setError] = useState('')
   const [pending, start] = useTransition()
 
@@ -18,7 +18,7 @@ export default function BlogReviewForm() {
     setError(''); setResult(null)
     start(async () => {
       const r = await submitBlogReview(url)
-      if (r.ok) setResult({ autoPassed: r.autoPassed, checks: r.checks, note: r.note })
+      if (r.ok) setResult({ autoPassed: r.autoPassed, granted: r.granted, checks: r.checks, note: r.note })
       else setError(r.message)
     })
   }
@@ -36,7 +36,17 @@ export default function BlogReviewForm() {
       <ol className="mb-4 space-y-2 rounded-lg bg-[#f8fafc] p-3.5 text-xs text-[#334155]">
         <li className="flex gap-2">
           <span className="font-bold text-[#d97706]">1</span>
-          <span>제목에 <b>{TITLE_KEYWORDS.join('</b> 또는 <b>')}</b> 중 하나를 넣어 주세요.</span>
+          {/* join에 태그를 섞으면 React가 글자로 그려 '실글패스&lt;/b&gt; 또는'처럼 보인다 */}
+          <span>
+            제목에{' '}
+            {TITLE_KEYWORDS.map((k, i) => (
+              <span key={k}>
+                {i > 0 && ' 또는 '}
+                <b>{k}</b>
+              </span>
+            ))}
+            {' '}중 하나를 넣어 주세요.
+          </span>
         </li>
         <li className="flex gap-2">
           <span className="font-bold text-[#d97706]">2</span>
@@ -51,13 +61,24 @@ export default function BlogReviewForm() {
           <span className="font-bold text-[#d97706]">3</span>
           <span>화면 사진을 <b>{MIN_IMAGES}장 이상</b> 넣어 주세요(문제 화면·채점 결과 등).</span>
         </li>
+        <li className="flex gap-2">
+          <span className="font-bold text-[#d97706]">4</span>
+          <span>
+            글 맨 아래에 <b>본인 확인 코드</b>를 적어 주세요 — 본인이 쓴 글임을 확인하는 용도예요.
+            <span className="mt-1.5 block">
+              <code className="rounded border border-dashed border-[#d97706]/50 bg-white px-2.5 py-1.5 font-mono text-sm font-black tracking-widest text-[#b45309]">
+                {ownerCode}
+              </code>
+            </span>
+          </span>
+        </li>
       </ol>
 
       {result ? (
         <div className={`rounded-lg border p-4 ${result.autoPassed ? 'border-emerald-200 bg-emerald-50' : 'border-amber-200 bg-amber-50'}`} role="status">
           <p className={`flex items-center gap-1.5 text-sm font-bold ${result.autoPassed ? 'text-emerald-900' : 'text-amber-900'}`}>
             <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
-            신청이 접수됐어요
+            {result.granted ? '이용권이 지급됐어요' : '신청이 접수됐어요'}
           </p>
           <p className={`mt-1 text-xs ${result.autoPassed ? 'text-emerald-800' : 'text-amber-800'}`}>{result.note}</p>
           {result.checks.length > 0 && (

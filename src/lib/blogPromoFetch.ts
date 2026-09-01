@@ -1,0 +1,68 @@
+// 신청한 블로그 글을 서버가 '실제로' 읽어 오는 방법.
+//
+// 왜 이 파일이 따로 있나: 네이버 블로그 주소를 그대로 받아 오면 본문이 안 들어 있다.
+// 실측(2026-09-01, 공개 글 1건):
+//   원본 blog.naver.com/{id}/{logNo} → 글자 13자 · img 0개   ← 껍데기(iframe)
+//   PostView.naver?blogId=…&logNo=…  → 글자 5,663자 · img 72개 ← 본문
+//   m.blog.naver.com/{id}/{logNo}    → 글자 2,708자 · img 12개
+// 체험단 서비스들이 쓰는 방법이 이것이다. 껍데기를 읽고 '본문 없음'이라 하면
+// 네이버로 홍보해 준 사람이 전부 사람 확인 대기로 밀린다.
+//
+// 사진 수도 주의: PostView의 img 태그 72개에는 네이버 UI 아이콘이 섞여 있다.
+// 스마트에디터의 이미지 모듈(se-module-image) 22개가 실제 본문 사진 수에 가깝다.
+
+/** 한 주소에 대해 시도할 후보들. 앞에서부터 읽어 본다. */
+export function blogFetchCandidates(raw: string): string[] {
+  const url = raw.trim()
+  const naver = url.match(/blog\.naver\.com\/(?:PostView\.naver\?blogId=)?([A-Za-z0-9_-]+)[/&](?:logNo=)?(\d{6,})/)
+  if (naver) {
+    const [, id, logNo] = naver
+    return [
+      // 본문이 그대로 들어 있는 주소
+      `https://blog.naver.com/PostView.naver?blogId=${id}&logNo=${logNo}&redirect=Dlog&widgetTypeCall=true&directAccess=false`,
+      `https://m.blog.naver.com/${id}/${logNo}`,
+      url,
+    ]
+  }
+  // 티스토리·워드프레스·브런치는 서버가 본문을 그대로 준다.
+  return [url]
+}
+
+/** 본문 사진 수. 네이버는 에디터 이미지 모듈을, 그 외는 img 태그를 센다. */
+export function countPhotos(html: string): number {
+  const seModules = (html.match(/se-module-image/gi) ?? []).length
+  if (seModules > 0) return seModules
+  // 네이버 구 에디터: 사진 CDN 주소로 센다
+  const cdn = new Set(
+    [...html.matchAll(/https?:\/\/(?:postfiles|blogfiles|mblogthumb)[^"'\s)]{20,}/gi)].map(m => m[0].split('?')[0]),
+  )
+  if (cdn.size > 0) return cdn.size
+  return (html.match(/<img\b/gi) ?? []).length
+}
+
+const UA = {
+  // 블로그가 봇에게 빈 문서를 주는 일이 잦아 일반 브라우저처럼 요청한다.
+  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0 Safari/537.36',
+  'Accept-Language': 'ko-KR,ko;q=0.9',
+}
+
+export type FetchedPost = { html: string; via: string } | { html: null; reason: string }
+
+/** 후보를 차례로 읽어 본문이 들어 있는 문서를 돌려준다. */
+export async function fetchBlogPost(raw: string): Promise<FetchedPost> {
+  let lastReason = '주소를 열지 못했어요'
+  for (const url of blogFetchCandidates(raw)) {
+    try {
+      const res = await fetch(url, { headers: UA, redirect: 'follow', signal: AbortSignal.timeout(12000) })
+      if (!res.ok) { lastReason = `주소를 열지 못했어요(${res.status})`; continue }
+      const html = await res.text()
+      const textLen = html.replace(/<script[\s\S]*?<\/script>/gi, ' ').replace(/<[^>]+>/g, ' ').replace(/\s+/g, '').length
+      // 껍데기(iframe)는 글자가 거의 없다 — 다음 후보로 넘어간다.
+      if (textLen >= 400) return { html, via: url }
+      lastReason = '본문이 비어 있어요'
+    } catch {
+      lastReason = '주소를 여는 데 시간이 오래 걸렸어요'
+    }
+  }
+  return { html: null, reason: lastReason }
+}

@@ -5,13 +5,17 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { recordOperatorAlert } from '@/lib/operatorAlerts'
 import {
   BLOG_REVIEW_PATH,
+  REWARD_DAYS,
   checkBlogHtml,
   isLikelyBlogPostUrl,
   type RuleCheck,
 } from '@/lib/blogPromoRules'
+import { fetchBlogPost, countPhotos } from '@/lib/blogPromoFetch'
+import { blogOwnerCode } from '@/lib/blogOwnerCode'
+import { getActiveSubscription } from '@/lib/subscription'
 
 export type SubmitResult =
-  | { ok: true; autoPassed: boolean; checks: RuleCheck[]; note: string }
+  | { ok: true; autoPassed: boolean; granted: boolean; checks: RuleCheck[]; note: string }
   | { ok: false; message: string }
 
 /** 신청 주소를 받아 자동 확인을 돌리고 접수한다. 승인은 사람이 한다. */
@@ -37,33 +41,47 @@ export async function submitBlogReview(url: string): Promise<SubmitResult> {
     .limit(1)
   if (dup?.length) return { ok: false, message: '이미 신청한 글이에요. 심사 결과를 기다려 주세요.' }
 
-  // 자동 확인. 못 읽어도 접수는 한다 — 네이버·티스토리는 본문을 스크립트로 그린다.
+  // 자동 확인. 네이버는 원본 주소가 껍데기라 본문이 들어 있는 주소로 바꿔 읽는다.
+  const ownerCode = blogOwnerCode(user.id)
   let checks: RuleCheck[] = []
   let autoPassed = false
   let note = ''
-  try {
-    const res = await fetch(link, {
-      headers: {
-        // 블로그가 봇에게 빈 문서를 주는 일이 잦아 일반 브라우저처럼 요청한다.
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0 Safari/537.36',
-        'Accept-Language': 'ko-KR,ko;q=0.9',
-      },
-      signal: AbortSignal.timeout(12000),
-      redirect: 'follow',
+  const fetched = await fetchBlogPost(link)
+  if (fetched.html === null) {
+    note = `${fetched.reason}. 접수했고 사람이 직접 확인합니다.`
+  } else {
+    const r = checkBlogHtml(fetched.html, countPhotos(fetched.html), ownerCode)
+    checks = r.checks
+    autoPassed = r.allPassed
+    note = autoPassed
+      ? '조건을 모두 만족했어요.'
+      : '아래에서 ✗ 표시된 것을 고치고 다시 신청해 주세요.'
+  }
+
+  // 다 통과하면 사람을 기다리지 않고 그 자리에서 지급한다.
+  // 본인 확인 코드까지 맞았으므로 '그 사람이 쓴 글'임이 확인된 상태다.
+  let granted = false
+  if (autoPassed) {
+    const current = await getActiveSubscription(user.id)
+    const base = current ? new Date(current.expires_at) : new Date()
+    const expiresAt = new Date(base.getTime() + REWARD_DAYS * 24 * 60 * 60 * 1000).toISOString()
+    const { error: grantErr } = await admin.from('subscriptions').insert({
+      user_id: user.id,
+      payment_key: 'promo:blog-review',
+      // 사람마다 한 번만 자동 지급된다 — 여러 글을 써도 자동 지급은 1회.
+      order_id: `review-auto-${user.id}`,
+      amount: 0,
+      status: 'active',
+      expires_at: expiresAt,
     })
-    if (!res.ok) {
-      note = `주소를 열지 못했어요(${res.status}). 사람이 직접 확인합니다.`
+    if (!grantErr) {
+      granted = true
+      note = `조건을 모두 만족해 이용권 ${REWARD_DAYS}일을 바로 드렸어요.`
+    } else if (grantErr.code === '23505') {
+      note = '조건은 만족했지만 이미 이 행사로 이용권을 받으셨어요.'
     } else {
-      const html = await res.text()
-      const r = checkBlogHtml(html)
-      checks = r.checks
-      autoPassed = r.allPassed
-      note = r.readable
-        ? (autoPassed ? '조건을 모두 만족했어요. 확인 뒤 이용권을 드립니다.' : '아래 항목을 고쳐서 다시 신청해 주세요.')
-        : '글을 자동으로 읽지 못했어요(네이버·티스토리는 흔한 일이에요). 사람이 직접 확인합니다.'
+      note = '조건은 만족했어요. 지급에 문제가 있어 사람이 확인 후 처리합니다.'
     }
-  } catch {
-    note = '주소를 여는 데 시간이 오래 걸렸어요. 접수했고 사람이 직접 확인합니다.'
   }
 
   const summary = checks.length
@@ -85,5 +103,5 @@ export async function submitBlogReview(url: string): Promise<SubmitResult> {
     user.id,
   ).catch(() => {})
 
-  return { ok: true, autoPassed, checks, note }
+  return { ok: true, autoPassed, granted, checks, note }
 }

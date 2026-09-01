@@ -15,6 +15,8 @@
 import fs from 'node:fs'
 import { chromium } from 'playwright'
 import { checkBlogHtml, isLikelyBlogPostUrl, MIN_IMAGES, BODY_KEYWORDS } from '../src/lib/blogPromoRules.ts'
+import { blogFetchCandidates, countPhotos } from '../src/lib/blogPromoFetch.ts'
+import { blogOwnerCode, bodyHasOwnerCode } from '../src/lib/blogOwnerCode.ts'
 
 const ENV = Object.fromEntries(
   fs.readFileSync('.env.local', 'utf-8').split('\n')
@@ -48,33 +50,74 @@ ${'가나다라마바사아자차카타파하 '.repeat(40)}
 공기업자격증 준비하시는 분께 추천합니다.
 ${Array.from({ length: MIN_IMAGES }, (_, i) => `<img src="/s${i}.png">`).join('')}
 </body></html>`
-const r1 = checkBlogHtml(good)
+const r1 = checkBlogHtml(good, countPhotos(good))
 if (r1.allPassed) ok('조건을 갖춘 글은 통과한다')
 else bad('정상 글 판정', r1.checks.filter(c => !c.ok).map(c => `${c.rule}(${c.detail})`).join(' / '))
 
 // 사진이 모자란 글
 const fewImages = good.replace(/(<img[^>]*>)+/g, '<img src="/only.png">')  // 여러 장을 한 장으로
-const r2 = checkBlogHtml(fewImages)
+const r2 = checkBlogHtml(fewImages, countPhotos(fewImages))
 if (!r2.allPassed && r2.checks.find(c => c.rule.includes('사진'))?.ok === false) ok(`사진이 ${MIN_IMAGES}장 미만이면 걸린다`)
 else bad('사진 장수 판정', '사진이 1장인데 통과했다')
 
 // 낱말이 빠진 글
 const missing = good.replace('공기업자격증 준비하시는 분께 추천합니다.', '')
-const r3 = checkBlogHtml(missing)
+const r3 = checkBlogHtml(missing, countPhotos(missing))
 const bodyCheck = r3.checks.find(c => c.rule.includes('본문'))
 if (!r3.allPassed && bodyCheck?.ok === false && bodyCheck.detail.includes('공기업자격증')) ok('빠진 낱말을 집어 준다', bodyCheck.detail)
 else bad('본문 낱말 판정', `${bodyCheck?.detail}`)
 
 // 띄어 쓴 낱말도 인정한다 — 사람은 '실용글쓰기 CBT'라고 쓴다
 const spaced = good.replace('실용글쓰기CBT', '실용글쓰기 CBT')
-if (checkBlogHtml(spaced).allPassed) ok('낱말을 띄어 써도 인정한다', '실용글쓰기 CBT')
+if (checkBlogHtml(spaced, countPhotos(spaced)).allPassed) ok('낱말을 띄어 써도 인정한다', '실용글쓰기 CBT')
 else bad('띄어쓰기 허용', '띄어 쓰면 못 찾는다')
 
 // 스크립트로 그리는 블로그는 '위반'이 아니라 '못 읽음'이어야 한다
 const empty = '<html><head><title>실글패스 후기</title></head><body><div id="root"></div></body></html>'
-const r4 = checkBlogHtml(empty)
+const r4 = checkBlogHtml(empty, countPhotos(empty))
 if (!r4.readable && !r4.allPassed) ok('본문을 못 읽으면 위반이 아니라 못 읽음으로 둔다')
 else bad('읽기 실패 처리', '빈 문서를 판정해 버린다')
+
+// 네이버 주소는 본문이 든 주소로 바꿔 읽어야 한다(원본은 껍데기 — 실측 13자)
+const cand = blogFetchCandidates('https://blog.naver.com/lyw2216/224392844838')
+if (cand[0].includes('PostView.naver') && cand[0].includes('logNo=224392844838')) {
+  ok('네이버는 본문이 든 주소로 바꿔 읽는다', 'PostView')
+} else bad('네이버 주소 변환', cand[0])
+if (blogFetchCandidates('https://example.com/post/1')[0] === 'https://example.com/post/1') ok('다른 블로그는 주소를 그대로 쓴다')
+else bad('주소 변환 범위', '남의 주소까지 바꾼다')
+
+// 사진 수: 네이버는 에디터 이미지 모듈로 센다(img 태그엔 UI 아이콘이 섞인다 — 실측 72 vs 22)
+if (countPhotos('<div class="se-module-image"></div>'.repeat(7) + '<img>'.repeat(40)) === 7) {
+  ok('네이버 사진은 에디터 모듈로 센다', 'UI 아이콘에 안 속는다')
+} else bad('사진 세기', String(countPhotos('<div class="se-module-image"></div>'.repeat(7))))
+if (countPhotos('<img><img><img>') === 3) ok('일반 블로그는 img 태그로 센다')
+else bad('사진 세기(일반)', String(countPhotos('<img><img><img>')))
+
+// 본인 확인 코드 — 남의 글을 그대로 내는 것을 막는 장치
+const code = blogOwnerCode('user-abc-123')
+if (/^SGP-[A-Z2-9]{6}$/.test(code)) ok('계정마다 본인 확인 코드가 나온다', code)
+else bad('코드 모양', code)
+if (blogOwnerCode('user-abc-123') === code) ok('같은 계정은 늘 같은 코드')
+else bad('코드 고정', '호출할 때마다 달라진다')
+if (blogOwnerCode('user-abc-124') !== code) ok('계정이 다르면 코드도 다르다')
+else bad('코드 충돌', '다른 계정인데 같은 코드')
+if (bodyHasOwnerCode('글 마지막 줄 sgp k7m2qx 입니다', code.replace('SGP-','SGP-')) === bodyHasOwnerCode('x', code)) {
+  // 위 비교는 의미 없으니 실제로 코드를 넣어 본다
+}
+if (bodyHasOwnerCode(`후기 잘 봤습니다 ${code}`, code)) ok('본문에 코드가 있으면 찾는다')
+else bad('코드 확인', '있는데 못 찾는다')
+if (bodyHasOwnerCode(`후기 ${code.toLowerCase().replace('-', ' ')}`, code)) ok('대소문자·띄어쓰기를 섞어 적어도 찾는다')
+else bad('코드 확인(변형)', '소문자로 적으면 못 찾는다')
+if (!bodyHasOwnerCode('코드 없는 글입니다', code)) ok('코드가 없으면 못 찾는다고 한다')
+else bad('코드 확인(없음)', '없는데 있다고 한다')
+
+// 코드까지 넣어 판정하면 통과해야 한다
+const withCode = good.replace('</body>', `<p>${code}</p></body>`)
+if (checkBlogHtml(withCode, countPhotos(withCode), code).allPassed) ok('코드까지 갖추면 자동 판정을 통과한다')
+else bad('코드 포함 판정', checkBlogHtml(withCode, countPhotos(withCode), code).checks.filter(c=>!c.ok).map(c=>c.rule).join(', '))
+// 코드가 없으면 통과하면 안 된다 — 남의 글 도용을 막는 자리다
+if (!checkBlogHtml(good, countPhotos(good), code).allPassed) ok('코드가 없으면 통과시키지 않는다', '남의 글 도용 차단')
+else bad('도용 차단', '코드 없이 통과한다')
 
 // 글 주소가 아닌 것
 if (!isLikelyBlogPostUrl('https://blog.naver.com') && isLikelyBlogPostUrl('https://blog.naver.com/me/123')) {

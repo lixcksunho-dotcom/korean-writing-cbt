@@ -60,17 +60,20 @@ export function countImages(html: string): number {
 
 /**
  * 받아 온 HTML로 규칙을 판정한다.
- * @param html 신청한 주소에서 받아 온 문서
+ * @param html    신청한 주소에서 받아 온 문서(본문이 들어 있는 것)
+ * @param photos  본문 사진 수(사이트마다 세는 법이 달라 밖에서 세어 넘긴다)
+ * @param ownerCode 본인 확인 코드. 주면 본문에 그 코드가 있는지도 본다.
  */
-export function checkBlogHtml(html: string): BlogPromoResult {
+export function checkBlogHtml(html: string, photos?: number, ownerCode?: string): BlogPromoResult {
   const title = extractTitle(html)
-  const body = squash(textOf(html))
+  const raw = textOf(html)
+  const body = squash(raw)
   // 본문이 거의 비어 있으면 스크립트로 그리는 블로그다 — 읽은 척하지 않는다.
   const readable = body.length >= 400
 
   const titleHit = TITLE_KEYWORDS.filter(k => squash(title).includes(squash(k)))
   const bodyMissing = BODY_KEYWORDS.filter(k => !body.includes(squash(k)))
-  const images = countImages(html)
+  const images = photos ?? (html.match(/<img/gi) ?? []).length
 
   const checks: RuleCheck[] = [
     {
@@ -89,6 +92,16 @@ export function checkBlogHtml(html: string): BlogPromoResult {
       detail: `${images}장`,
     },
   ]
+
+  // 본인 확인 코드 — 남이 쓴 글 주소를 그대로 내는 것을 막는다.
+  if (ownerCode) {
+    const has = squash(raw).includes(squash(ownerCode))
+    checks.push({
+      rule: `본문에 본인 확인 코드 ${ownerCode}`,
+      ok: readable && has,
+      detail: !readable ? '본문을 못 읽음' : has ? '확인됨' : '못 찾음 — 글 맨 아래에 적어 주세요',
+    })
+  }
 
   return { readable, checks, allPassed: readable && checks.every(c => c.ok) }
 }
