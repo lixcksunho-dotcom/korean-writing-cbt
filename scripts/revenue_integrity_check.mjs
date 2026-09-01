@@ -76,8 +76,21 @@ const kst = (t) => (t ? new Date(t).toISOString().replace('T', ' ').slice(0, 16)
 // ① 유료 구독인데 원장에 그 결제가 없다 — 돈 없이 이용권이 나갔거나 order_id가 깨졌다
 // ② 원장 결제인데 구독 행이 없다 — 돈은 받았는데 발급이 누락됐다
 // ③ 무료(amount=0)로 기록됐는데 order_id가 원장 결제와 일치한다 — 돈 냈는데 무료로 잡혔다
-const paidNoLedger = paid.filter((s) => !ledgerById.has(s.order_id))
-const ledgerNoSub = ledger.filter((p) => !subOrderIds.has(p.id))
+// 확인된 예외(2026-09-01 대조): 개발 초기(6월) 수기 처리분. 매출이 아님을 계정으로
+// 확인했다 — 새 불일치는 계속 잡혀야 하므로 '무엇이·왜'를 여기 명시해 그 건만 거른다.
+const KNOWN_EXCEPTIONS = {
+  // 화면 출력이 8자 잘림이라 접두사로 맞춘다(계정으로 실체 확인 완료).
+  subOrderPrefixes: [
+    'sub_a336', // 운영자 본인 계정(lixcksunho@) 6/1 수동 발급 5,000원 — 시험 발급, 원장 결제 없음이 정상
+    'demo-pro', // 시연 계정(demo-promo@kptest.cloud) 6/21 데모 이용권 — 매출 아님
+  ],
+  // 결제 쪽은 id 접두사 + 반드시 CANCELLED일 것 — 취소가 아닌데 구독이 없으면 여전히 잡힌다.
+  paymentPrefixes: ['sub-44e3', 'sub-c0ba'], // 6/11·6/12 결제 후 전액 취소 — 발급 전 환불(개통 초기 수기 처리)
+}
+const isKnownCancelled = (p) =>
+  p.status === 'CANCELLED' && KNOWN_EXCEPTIONS.paymentPrefixes.some((x) => String(p.id).startsWith(x))
+const paidNoLedger = paid.filter((s) => !ledgerById.has(s.order_id) && !KNOWN_EXCEPTIONS.subOrderPrefixes.some((x) => String(s.order_id).startsWith(x)))
+const ledgerNoSub = ledger.filter((p) => !subOrderIds.has(p.id) && !isKnownCancelled(p))
 const freeButPaid = free.filter((s) => ledgerById.has(s.order_id))
 
 console.log(`\n무료 발급 / 유료 결제 분리 검증 (${FROM} ~ 오늘)\n`)

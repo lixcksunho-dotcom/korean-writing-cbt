@@ -6,6 +6,7 @@ import BlogHeader from '@/components/blog/BlogHeader'
 import BlogCTA from '@/components/blog/BlogCTA'
 import PostCard from '@/components/blog/PostCard'
 import RelatedStudyPages from '@/components/blog/RelatedStudyPages'
+import CategoryIcon from '@/components/blog/CategoryIcon'
 import TopicQuiz from '@/components/study/TopicQuiz'
 import { quizTopicForPost } from '@/components/study/quizTopicForPost'
 import SiteFooter from '@/components/layout/SiteFooter'
@@ -102,9 +103,7 @@ export default async function BlogPostPage({
           className="relative overflow-hidden"
           style={{ background: `linear-gradient(135deg, ${t.from}, ${t.to})` }}
         >
-          <span aria-hidden className="pointer-events-none absolute -right-6 -top-6 text-[8rem] opacity-15 select-none">
-            {t.icon}
-          </span>
+          <CategoryIcon slug={post.category} className="pointer-events-none absolute -right-6 -top-6 h-32 w-32 text-white opacity-15" />
           <div className="max-w-3xl mx-auto px-4 py-10 sm:py-14">
             {/* py-1.5는 32px밖에 안 돼 권장(44px)에 못 미친다. 글자 크기는 그대로 두고
                 패딩만 키워 누르는 영역을 넓힌다 — 모든 글의 첫 링크라 여기서 되돌아간다. */}
@@ -116,7 +115,7 @@ export default async function BlogPostPage({
               </Link>
             </nav>
             <span className="inline-flex items-center gap-1.5 text-xs font-bold text-white/90 bg-white/15 rounded-full px-3 py-1 backdrop-blur">
-              {t.icon} {post.categoryLabel}
+              <CategoryIcon slug={post.category} /> {post.categoryLabel}
             </span>
             <h1 className="mt-3 text-[1.9rem] sm:text-[2.4rem] font-black text-white tracking-tight leading-tight drop-shadow-sm">
               {post.title}

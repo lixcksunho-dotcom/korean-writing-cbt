@@ -33,7 +33,7 @@ html {
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", "Noto Sans CJK KR", "Segoe UI", Roboto, sans-serif;
+  font-family: "Pretendard Variable", Pretendard, "Pretendard Fallback", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   /* 한국어는 기본이 글자 단위 줄바꿈이라 좁은 폭에서 낱말이 쪼개진다
@@ -93,13 +93,38 @@ body {
 .btn-gold {
   background: linear-gradient(135deg, #d97706, #f59e0b);
   color: #0f172a;
-  box-shadow: 0 4px 15px rgba(217, 119, 6, 0.35);
-  transition: all 0.2s ease;
+  /* 자매 서비스와 같은 결(2026-09-01): radius·눌림감을 한 곳에서 — 전 화면 CTA가 같이 다듬어진다 */
+  border-radius: 0.75rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  box-shadow: 0 1px 2px rgba(217, 119, 6, 0.3), 0 4px 14px rgba(217, 119, 6, 0.28);
+  transition: background 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
 }
 .btn-gold:hover {
   background: linear-gradient(135deg, #f59e0b, #fbbf24);
-  box-shadow: 0 6px 20px rgba(217, 119, 6, 0.45);
+  box-shadow: 0 2px 4px rgba(217, 119, 6, 0.3), 0 8px 22px rgba(217, 119, 6, 0.32);
   transform: translateY(-1px);
+}
+.btn-gold:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 2px rgba(217, 119, 6, 0.3);
+}
+
+/* 첫 화면 밖 구간은 레이아웃을 미룬다(content-visibility) — 자매 서비스에서 검증한 처방.
+   긴 목록·접힌 구획의 첫 Layout 비용을 화면에 가까워질 때로 쪼갠다. */
+@utility defer-render {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 600px;
+}
+
+/* 프리텐다드 도착 전 폴백 칸 크기 보정 — 바꿔치기 CLS 최소화(자매 서비스 실측 기법) */
+@font-face {
+  font-family: "Pretendard Fallback";
+  src: local("Malgun Gothic"), local("Apple SD Gothic Neo");
+  size-adjust: 100%;
+  ascent-override: 96%;
+  descent-override: 24%;
+  line-gap-override: 0%;
 }
 
 /* 스크롤바 */

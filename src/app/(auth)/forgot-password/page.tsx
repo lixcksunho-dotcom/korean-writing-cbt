@@ -17,7 +17,7 @@ import LogoGlyph from "@/components/layout/LogoGlyph";
 // 프래그먼트는 브라우저에서만 읽을 수 있어 클라이언트 화면이 직접 받아야 한다.
 // (/reset-password 가 Supabase 허용목록에 있는지는 generate_link 로 확인했다.)
 const inputCls =
-  "w-full bg-[#f8fafc] border border-[#e2e8f0] rounded-xl px-4 py-3.5 text-sm text-[#0f172a] placeholder:text-[#94a3b8] focus:outline-none focus:border-[#1e3a5f] focus:bg-white transition-colors";
+  "w-full bg-[#f8fafc] border border-[#e2e8f0] rounded-xl px-4 py-3.5 text-sm text-[#0f172a] placeholder:text-[#64748b] focus:outline-none focus:border-[#1e3a5f] focus:bg-white transition-colors";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");

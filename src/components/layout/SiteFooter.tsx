@@ -37,7 +37,8 @@ const STUDY_LINKS = [
 export default function SiteFooter() {
   return (
     <footer className="bg-[#080f1e] text-white/40 text-xs">
-      <div className="max-w-6xl mx-auto px-4 pt-7 pb-24 sm:pb-7">
+      {/* 푸터는 어느 면에서든 접힌 화면 밖 — 링크 격자 레이아웃을 첫 계산에서 뺀다 */}
+      <div className="defer-render max-w-6xl mx-auto px-4 pt-7 pb-24 sm:pb-7" style={{ containIntrinsicSize: 'auto 720px' }}>
         <ul className="grid grid-cols-2 sm:flex sm:flex-wrap sm:gap-x-4 gap-y-0.5 sm:gap-y-2 mb-3 font-semibold text-white/70">
           {STUDY_LINKS.map((l, i) => (
             <li key={l.href} className="contents sm:inline">

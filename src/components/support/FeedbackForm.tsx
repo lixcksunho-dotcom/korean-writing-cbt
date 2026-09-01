@@ -74,7 +74,7 @@ export default function FeedbackForm({ email }: { email: string }) {
       />
 
       <label htmlFor="feedback-contact" className="mt-3 block text-xs font-semibold text-[#475569]">
-        연락처 <span className="font-normal text-[#94a3b8]">(선택 — 답변이 필요할 때만)</span>
+        연락처 <span className="font-normal text-[#64748b]">(선택 — 답변이 필요할 때만)</span>
       </label>
       <input
         id="feedback-contact"

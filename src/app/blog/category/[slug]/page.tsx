@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import BlogHeader from '@/components/blog/BlogHeader'
+import CategoryIcon from '@/components/blog/CategoryIcon'
 import PostCard from '@/components/blog/PostCard'
 import BlogCTA from '@/components/blog/BlogCTA'
 import SiteFooter from '@/components/layout/SiteFooter'
@@ -56,7 +57,7 @@ export default async function BlogCategoryPage({
 
       {/* 카테고리 색 히어로 */}
       <div className="relative overflow-hidden" style={{ background: `linear-gradient(135deg, ${cat.from}, ${cat.to})` }}>
-        <span aria-hidden className="pointer-events-none absolute -right-4 -top-4 text-[7rem] opacity-15 select-none">{cat.icon}</span>
+        <CategoryIcon slug={cat.slug} className="pointer-events-none absolute -right-4 -top-4 h-28 w-28 text-white opacity-15" />
         <div className="max-w-3xl mx-auto px-4 py-10 sm:py-12 relative">
           <nav className="text-sm text-white/70 mb-3">
             <Link href="/blog" className="hover:text-white">블로그</Link>
@@ -64,7 +65,7 @@ export default async function BlogCategoryPage({
             <span className="text-white/90">{cat.label}</span>
           </nav>
           <h1 className="text-3xl sm:text-4xl font-black text-white tracking-tight drop-shadow-sm">
-            {cat.icon} {cat.label}
+            <CategoryIcon slug={cat.slug} className="inline h-7 w-7 align-[-0.15em]" /> {cat.label}
           </h1>
           <p className="text-white/75 mt-2 leading-relaxed">{cat.blurb}</p>
         </div>

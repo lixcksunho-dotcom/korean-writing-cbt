@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import type { BlogPost } from '@/lib/blog'
 import { formatDate, catTheme } from '@/lib/blog'
+import CategoryIcon from '@/components/blog/CategoryIcon'
 
 // 블로그 목록의 글 카드. 이미지가 없어 밋밋해 보이지 않도록, 카테고리 색 그라디언트
 // 커버 + 아이콘으로 시각적 무게를 준다.
@@ -17,9 +18,9 @@ export default function PostCard({ post, featured = false }: { post: BlogPost; f
           className="relative px-6 py-10 sm:px-8 sm:py-12"
           style={{ background: `linear-gradient(135deg, ${t.from}, ${t.to})` }}
         >
-          <span aria-hidden className="absolute right-5 top-5 text-4xl opacity-30 select-none">{t.icon}</span>
+          <CategoryIcon slug={post.category} className="absolute right-5 top-5 h-9 w-9 text-white opacity-30" />
           <span className="inline-flex items-center gap-1.5 text-xs font-bold text-white/90 bg-white/15 rounded-full px-3 py-1 backdrop-blur">
-            {t.icon} {post.categoryLabel}
+            <CategoryIcon slug={post.category} /> {post.categoryLabel}
           </span>
           <p className="mt-3 text-2xl sm:text-[1.7rem] font-black text-white leading-tight drop-shadow-sm">
             {post.title}
@@ -50,7 +51,7 @@ export default function PostCard({ post, featured = false }: { post: BlogPost; f
           className="inline-flex items-center gap-1 text-xs font-bold rounded-full px-2.5 py-0.5"
           style={{ background: t.tint, color: t.ink }}
         >
-          {t.icon} {post.categoryLabel}
+          <CategoryIcon slug={post.category} className="h-3 w-3" /> {post.categoryLabel}
         </span>
         <p className="mt-2.5 font-black text-[#0f172a] text-lg leading-snug group-hover:text-[#1e3a5f]">
           {post.title}

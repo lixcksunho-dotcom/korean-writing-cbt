@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import CategoryIcon from '@/components/blog/CategoryIcon'
 import { getPostsByCategory, catTheme, formatDate } from '@/lib/blog'
 
 // 학습자료 페이지 → 같은 주제의 블로그 글로 잇는 블록.
@@ -29,7 +30,7 @@ export default function RelatedBlogPosts({
   return (
     <section className="mt-10">
       <h2 className="text-lg font-black text-[#0f172a] mb-3">
-        {t.icon} 이 주제의 글 더 보기
+        <CategoryIcon slug={category} className="inline h-4 w-4 align-[-0.2em]" /> 이 주제의 글 더 보기
       </h2>
       <ul className="grid sm:grid-cols-2 gap-2">
         {posts.map((p) => (

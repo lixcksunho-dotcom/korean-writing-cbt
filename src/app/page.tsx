@@ -150,15 +150,16 @@ export default async function HomePage() {
             한국실용글쓰기 자격증 합격을 위한 최적의 도구
           </div>
 
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-black text-white leading-[1.1] tracking-tight mb-6">
-            CBT 문제풀기 &amp;
+          {/* 첫 문장에서 정체를 밝힌다(자매 서비스와 같은 처방) — 무슨 시험의 무엇인지 h1에 그대로 */}
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-black text-white leading-[1.12] tracking-tight mb-6">
+            한국실용글쓰기
             <br />
-            <span className="text-gradient-gold">AI 원고지 첨삭</span>
+            실전 CBT &amp; <span className="text-gradient-gold">AI 첨삭</span>
           </h1>
 
           <p className="text-white/60 text-lg mb-6 leading-relaxed max-w-xl mx-auto">
-            기출 유형 CBT로 실력을 확인하고,
-            AI가 원고지 답안을 즉시 채점·첨삭해드립니다.
+            실글패스는 국가공인 한국실용글쓰기검정을 실전 화면·120분 제한 CBT로 풀고,
+            서술형·원고지 답안을 AI가 즉시 채점·첨삭해 주는 온라인 모의고사 서비스입니다.
           </p>
 
           <div className="inline-flex flex-wrap items-center justify-center gap-x-2 gap-y-1 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-4 py-2 mb-10 text-sm">
@@ -217,7 +218,7 @@ export default async function HomePage() {
       </section>
 
       {/* 핵심 기능 */}
-      <section className="py-20 px-4">
+      <section className="defer-render py-20 px-4" style={{ containIntrinsicSize: 'auto 920px' }}>
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-black text-[#0f172a] mb-3 tracking-tight">핵심 기능</h2>
@@ -241,7 +242,7 @@ export default async function HomePage() {
       </section>
 
       {/* 서술형 차별화 — 합격의 70%가 서술형(700점), 그걸 AI가 채점·첨삭 (무료 CBT엔 없는 강점) */}
-      <section className="py-16 px-4 bg-gradient-to-br from-[#0f1f3d] to-[#1e3a5f]">
+      <section className="defer-render py-16 px-4 bg-gradient-to-br from-[#0f1f3d] to-[#1e3a5f]" style={{ containIntrinsicSize: 'auto 760px' }}>
         <div className="max-w-3xl mx-auto text-center text-white">
           <div className="inline-flex items-center gap-1.5 bg-white/10 border border-white/20 text-amber-300 text-xs font-bold px-3 py-1.5 rounded-full mb-4">
             <PenLine className="h-3.5 w-3.5" /> 실글패스만의 강점
@@ -278,7 +279,7 @@ export default async function HomePage() {
       </section>
 
       {/* 이용 3단계 */}
-      <section className="pb-4 px-4">
+      <section className="defer-render pb-4 px-4" style={{ containIntrinsicSize: 'auto 520px' }}>
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-10">
             <h2 className="text-3xl font-black text-[#0f172a] mb-3 tracking-tight">3단계로 바로 시작</h2>
@@ -302,7 +303,7 @@ export default async function HomePage() {
       </section>
 
       {/* 무료 / 유료 비교 */}
-      <section className="py-16 px-4 bg-white">
+      <section className="defer-render py-16 px-4 bg-white" style={{ containIntrinsicSize: 'auto 900px' }}>
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-10">
             <h2 className="text-3xl font-black text-[#0f172a] mb-3 tracking-tight">무료로 시작하고, 필요할 때 무제한</h2>
@@ -366,7 +367,7 @@ export default async function HomePage() {
       </section>
 
       {/* 가치 앵커링 — 응시료 대비 프레이밍(전환↑). 특정 학원가를 지어내지 않고 사실만 사용. */}
-      <section className="py-16 px-4 bg-[#f8fafc]">
+      <section className="defer-render py-16 px-4 bg-[#f8fafc]" style={{ containIntrinsicSize: 'auto 620px' }}>
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-8">
             <h2 className="text-3xl font-black text-[#0f172a] mb-3 tracking-tight">떨어지면 응시료가 더 듭니다</h2>
@@ -399,7 +400,7 @@ export default async function HomePage() {
       </section>
 
       {/* 혜택 */}
-      <section className="py-20 px-4 bg-white">
+      <section className="defer-render py-20 px-4 bg-white" style={{ containIntrinsicSize: 'auto 700px' }}>
         <div className="max-w-3xl mx-auto text-center">
           <h2 className="text-3xl font-black text-[#0f172a] mb-3 tracking-tight">왜 선택해야 할까요?</h2>
           <p className="text-[#64748b] mb-10">합격에 필요한 모든 기능을 한 곳에서</p>
@@ -416,7 +417,7 @@ export default async function HomePage() {
 
       {/* 실 사용자 후기 */}
       {(reviews?.length ?? 0) > 0 && (
-        <section className="py-16 bg-[#f8fafc] overflow-hidden">
+        <section className="defer-render py-16 bg-[#f8fafc] overflow-hidden" style={{ containIntrinsicSize: 'auto 820px' }}>
           <div className="max-w-4xl mx-auto px-4 mb-8 text-center">
             <div className="inline-flex items-center gap-2 bg-amber-50 border border-amber-100 text-amber-700 text-xs font-semibold px-3 py-1.5 rounded-full mb-3">
               <Star className="h-3.5 w-3.5 fill-current" />
@@ -431,7 +432,7 @@ export default async function HomePage() {
       )}
 
       {/* 두 번째 시험(KBS) 안내 — 검색으로 들어온 KBS 준비생이 바로 갈 곳을 준다 */}
-      <section className="py-14 px-4 bg-white">
+      <section className="defer-render py-14 px-4 bg-white" style={{ containIntrinsicSize: 'auto 300px' }}>
         <div className="max-w-3xl mx-auto rounded-2xl border border-emerald-200 bg-gradient-to-br from-[#ecfdf5] to-[#f0fdfa] p-6 sm:p-7 flex flex-col sm:flex-row sm:items-center gap-5">
           <div className="flex-1">
             <div className="inline-flex items-center gap-1.5 text-xs font-black text-emerald-700 bg-white/70 border border-emerald-200 px-2.5 py-1 rounded-full mb-2">
@@ -453,7 +454,7 @@ export default async function HomePage() {
       </section>
 
       {/* 자주 묻는 질문 */}
-      <section className="py-20 px-4 bg-[#f8fafc]">
+      <section className="defer-render py-20 px-4 bg-[#f8fafc]" style={{ containIntrinsicSize: 'auto 900px' }}>
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-10">
             <h2 className="text-3xl font-black text-[#0f172a] mb-3 tracking-tight">자주 묻는 질문</h2>
@@ -493,7 +494,7 @@ export default async function HomePage() {
       />
 
       {/* CTA */}
-      <section className="py-20 px-4 relative overflow-hidden">
+      <section className="defer-render py-20 px-4 relative overflow-hidden" style={{ containIntrinsicSize: 'auto 420px' }}>
         <div className="absolute inset-0 bg-gradient-to-br from-[#0f1f3d] to-[#1e3a5f]" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,rgba(217,119,6,0.15)_0%,transparent_60%)]" />
         <div className="relative max-w-2xl mx-auto text-center">

@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import BlogHeader from '@/components/blog/BlogHeader'
 import PostCard from '@/components/blog/PostCard'
+import CategoryIcon from '@/components/blog/CategoryIcon'
 import BlogCTA from '@/components/blog/BlogCTA'
 import SiteFooter from '@/components/layout/SiteFooter'
 import { getAllPosts, CATEGORIES } from '@/lib/blog'
@@ -65,7 +66,7 @@ export default function BlogIndexPage() {
                 className="inline-flex items-center gap-1 text-sm font-semibold rounded-full px-3.5 py-3 transition-colors hover:brightness-95"
                 style={{ background: c.tint, color: c.ink }}
               >
-                {c.icon} {c.label} <span className="opacity-50">{byCat.get(c.slug)?.length}</span>
+                <CategoryIcon slug={c.slug} /> {c.label} <span className="opacity-50">{byCat.get(c.slug)?.length}</span>
               </Link>
             ))}
           </div>
@@ -90,7 +91,8 @@ export default function BlogIndexPage() {
             const list = byCat.get(c.slug) ?? []
             if (list.length === 0) return null
             return (
-              <section key={c.slug} className="mb-10">
+              // 접힌 화면 밖 구획 — 첫 레이아웃에서 뺀다(TBT, 자매 서비스 실측 처방)
+              <section key={c.slug} className="defer-render mb-10" style={{ containIntrinsicSize: 'auto 560px' }}>
                 <div className="flex items-baseline justify-between mb-3">
                   <h2 className="text-2xl font-black text-[#0f172a]">{c.label}</h2>
                   <Link
@@ -113,11 +115,13 @@ export default function BlogIndexPage() {
           {/* 전체 글 — 목록에서 링크로 닿는 글이 24편뿐이었다(나머지는 카테고리를 거쳐야 했다).
               검색엔진은 링크를 따라가며 글을 찾으므로, 깊이 있는 글일수록 늦게·덜 수집된다.
               79편이면 한 화면에 다 담아도 무겁지 않아 페이지를 나누지 않았다. */}
-          <section className="mb-10">
+          <section className="defer-render mb-10" style={{ containIntrinsicSize: 'auto 4200px' }}>
             <h2 className="text-2xl font-black text-[#0f172a] mb-3">전체 글 {posts.length}편</h2>
             <ul className="divide-y divide-[#e2e8f0] border-y border-[#e2e8f0]">
               {posts.map((p) => (
-                <li key={p.slug}>
+                // 92편을 한 화면에 두되(검색 수집 때문에 자르지 않는다) 줄 단위로 레이아웃을
+                // 미룬다 — 구획 통째 지연만으로는 첫 Layout이 여전히 480ms대였다.
+                <li key={p.slug} className="defer-render" style={{ containIntrinsicSize: 'auto 45px' }}>
                   <Link
                     href={`/blog/${encodeURIComponent(p.slug)}`}
                     className="flex items-baseline justify-between gap-3 py-3 text-sm hover:bg-[#f8fafc]"
