@@ -62,7 +62,8 @@
     "check:spelling-consistency": "node scripts/spelling_consistency_check.mjs",
     "check:blog-lab": "node --experimental-strip-types scripts/blog_rule_lab_check.mjs",
     "check:audit-revoke": "node --experimental-strip-types scripts/blog_audit_revoke_check.mjs",
-    "check:popup": "node scripts/event_popup_check.mjs"
+    "check:popup": "node scripts/event_popup_check.mjs",
+    "check:trial": "node scripts/trial_check.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.100.1",

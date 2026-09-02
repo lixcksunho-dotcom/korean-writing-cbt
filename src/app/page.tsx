@@ -176,6 +176,10 @@ export default async function HomePage() {
             <Link href="/signup" className="btn-gold inline-flex items-center justify-center gap-2 font-bold px-8 py-4 rounded-xl text-base">
               무료로 시작하기 <ArrowRight className="h-5 w-5" />
             </Link>
+            {/* 가입 전에 문제부터 보게 한다 — 로그인만 있으면 검색으로 온 사람은 그냥 돌아간다 */}
+            <Link href="/try" className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/15 backdrop-blur-sm border border-white/20 text-white font-semibold px-8 py-4 rounded-xl transition-all text-base">
+              가입 없이 문제 풀어보기
+            </Link>
             <Link href="/login" className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/15 backdrop-blur-sm border border-white/20 text-white font-semibold px-8 py-4 rounded-xl transition-all text-base">
               로그인
             </Link>
