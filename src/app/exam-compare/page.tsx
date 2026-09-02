@@ -171,9 +171,9 @@ export default function ExamComparePage() {
                   <div className="flex flex-wrap items-center gap-x-4">
                     <Link href={c.href} className="inline-flex min-h-[44px] items-center text-sm font-bold text-[#1e3a5f] hover:underline">{c.cta} →</Link>
                     {c.tryHref.startsWith("http") ? (
-                      <a href={c.tryHref} className="inline-flex min-h-[44px] items-center text-sm font-bold text-[#d97706] hover:underline">{c.tryCta} →</a>
+                      <a href={c.tryHref} className="inline-flex min-h-[44px] items-center text-sm font-bold text-[#b45309] hover:underline">{c.tryCta} →</a>
                     ) : (
-                      <Link href={c.tryHref} className="inline-flex min-h-[44px] items-center text-sm font-bold text-[#d97706] hover:underline">{c.tryCta} →</Link>
+                      <Link href={c.tryHref} className="inline-flex min-h-[44px] items-center text-sm font-bold text-[#b45309] hover:underline">{c.tryCta} →</Link>
                     )}
                   </div>
                 </div>

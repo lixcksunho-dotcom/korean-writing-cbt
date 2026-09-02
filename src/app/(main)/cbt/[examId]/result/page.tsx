@@ -1,4 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
+import { nextRoundToTake } from '@/lib/nextRoundToTake'
+import { formatExamId } from '@/lib/examId'
 import { redirectToLogin } from '@/lib/loginRedirect'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
@@ -46,7 +48,7 @@ export default async function ResultPage({
   const program = (session.program as ProgramId) ?? 'silyong'
   const cfg = getProgram(program)
 
-  const [{ data: answers }, { data: questions }, subscription, { data: bookmarkRows }, { data: allRounds }, trialUsed] = await Promise.all([
+  const [{ data: answers }, { data: questions }, subscription, { data: bookmarkRows }, { data: allRounds }, trialUsed, { data: myDone }] = await Promise.all([
     supabase.from('quiz_answers').select('question_id, user_answer, is_correct, ai_score, ai_feedback').eq('session_id', sessionId),
     questionBank().from('questions').select('id, number, type, points, question, options, correct_answer, explanation').eq('program', program).eq('year', session.year).eq('round', session.round).order('number'),
     getActiveSubscription(user.id),
@@ -55,10 +57,24 @@ export default async function ResultPage({
     questionBank().from('questions').select('round').eq('program', program).lt('year', 9000),
     // user.id만 있으면 되는 조회 — 뒤에 따로 await하면 왕복이 하나 더 는다.
     readTrialUsed(user.id, Number(user.app_metadata?.ai_trial_used ?? 0)),
+    // 이 사람이 끝낸 회차 — '다음은 이 회차'를 정하려면 필요하다.
+    supabase.from('quiz_sessions').select('year, round').eq('user_id', user.id)
+      .eq('program', program).not('completed_at', 'is', null),
   ])
   const lockedRoundCount = Math.max(
     0,
     new Set((allRounds ?? []).map(r => r.round)).size - cfg.freeRounds,
+  )
+
+  // 방금 한 회차를 끝낸 사람에게 가장 좋은 다음 행동은 다른 회차를 푸는 것이다.
+  // 그 자리가 없어서 '같은 회차 다시 풀기'와 '대시보드'만 있었다.
+  const roundList = [...new Set((allRounds ?? []).map(r => r.round as number))]
+    .sort((a, b) => a - b)
+    .map(round => ({ year: session.year as number, round }))
+  const next = nextRoundToTake(
+    roundList,
+    (myDone ?? []).map(d => ({ year: d.year as number, round: d.round as number })),
+    { year: session.year as number, round: session.round as number },
   )
   const bookmarkSet = new Set((bookmarkRows ?? []).map(b => b.question_id as string))
 
@@ -191,6 +207,32 @@ export default async function ResultPage({
           </span>
           <ChevronRight className="h-5 w-5 shrink-0" />
         </a>
+      )}
+
+      {/* 다음 회차 — 결과 화면 직후가 의욕이 가장 높은 자리다. 여기서 다음을 안 정해 주면
+          대시보드로 가서 무엇을 할지 고르다가 그냥 나간다. */}
+      {next.kind === 'next' ? (
+        <Link
+          href={`/cbt/${formatExamId(program, next.year, next.round)}`}
+          className="mb-3 flex items-center justify-between gap-3 rounded-xl border-2 border-[#1e3a5f] bg-white p-4 transition-colors hover:bg-[#1e3a5f]/5"
+        >
+          <span className="min-w-0">
+            <span className="block text-xs font-bold text-[#64748b]">
+              {next.total}회차 중 {next.doneCount}회차 완료 · 다음은
+            </span>
+            <span className="block truncate text-base font-black text-[#0f172a]">
+              {next.round}회차 풀어보기
+            </span>
+          </span>
+          <ChevronRight className="h-5 w-5 shrink-0 text-[#1e3a5f]" />
+        </Link>
+      ) : (
+        <div className="mb-3 rounded-xl border border-[#e2e8f0] bg-white p-4">
+          <p className="text-sm font-bold text-[#0f172a]">{next.total}회차를 모두 푸셨어요</p>
+          <p className="mt-0.5 text-xs text-[#64748b]">
+            이제는 틀린 문항과 약한 영역만 반복하는 편이 점수를 더 올립니다.
+          </p>
+        </div>
       )}
 
       {/* 오답 즉시 재도전 — '틀린 것만 반복'이 자격증 CBT 학습의 핵심 루프 */}

@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import BlogHeader from '@/components/blog/BlogHeader'
 import BlogCTA from '@/components/blog/BlogCTA'
+import { blogPostService } from '@/lib/blogPostService'
 import PromoBanner from '@/components/blog/PromoBanner'
 import PostCard from '@/components/blog/PostCard'
 import RelatedStudyPages from '@/components/blog/RelatedStudyPages'
@@ -147,7 +148,7 @@ export default async function BlogPostPage({
 
           {/* CTA */}
           <div className="mt-10">
-            <BlogCTA path={post.ctaPath} label={post.ctaLabel} />
+            <BlogCTA path={post.ctaPath} label={post.ctaLabel} service={blogPostService(post.title)} />
             {/* 진행 중인 행사가 있으면 그 자리에서 코드를 준다(없으면 아무것도 안 그린다) */}
             <PromoBanner />
           </div>

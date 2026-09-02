@@ -159,14 +159,22 @@ try {
   await page.locator('button').filter({ hasText: /^제출하기$/ }).first().click().catch(() => {})
   await page.waitForTimeout(1200)
   await page.locator('button').filter({ hasText: /^제출하기$/ }).last().click().catch(() => {})
-  for (let i = 0; i < 30; i++) {
+  // 실제 서비스(Vercel)는 함수가 잠들어 있으면 첫 제출이 느리다. 로컬 기준으로 30초만
+  // 기다리면 멀쩡한 제출을 '실패'로 적는다 — 실사용자는 같은 시각에 정상 제출하고 있었다.
+  const SUBMIT_WAIT_SEC = Number(process.env.SUBMIT_WAIT_SEC ?? 90)
+  for (let i = 0; i < SUBMIT_WAIT_SEC; i++) {
     if (/\/result/.test(page.url())) break
     await page.waitForTimeout(1000)
   }
   if (!/\/result/.test(page.url())) {
     const t = await page.evaluate(() => document.body.innerText.slice(0, 200).replace(/\s+/g, ' ')).catch(() => '')
     const why = submitFailures.length ? ` [서버 응답: ${[...new Set(submitFailures)].join(' / ')}]` : ' [실패한 요청 없음 — 화면 쪽 문제]'
-    bad('제출', `결과 화면으로 못 넘어감${why} — ${t}`)
+    const detail = `결과 화면으로 못 넘어감${why} — ${t}`
+    bad('제출', detail)
+    // 예외가 먼저 올라가면 위 진단이 안 보인다 — 왜 실패했는지 없이 실패만 남는다.
+    console.error(`
+[제출 실패 상세] ${detail}
+`)
     throw new Error('제출 실패')
   }
   ok('제출', '결과 화면으로 넘어감')

@@ -65,7 +65,9 @@
     "check:popup": "node scripts/event_popup_check.mjs",
     "check:trial": "node scripts/trial_check.mjs",
     "check:sales": "node --experimental-strip-types scripts/daily_sales_check.mjs",
-    "score": "node --experimental-strip-types scripts/site_score.mjs"
+    "score": "node --experimental-strip-types scripts/site_score.mjs",
+    "check:blog-cta": "node --experimental-strip-types scripts/blog_cta_check.mjs",
+    "check:next-round": "node --experimental-strip-types scripts/next_round_check.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.100.1",
