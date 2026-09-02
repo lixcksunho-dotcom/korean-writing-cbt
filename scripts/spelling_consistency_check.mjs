@@ -84,6 +84,27 @@ for (const q of rows) {
   }
 }
 
+// 뜻이 갈리는 붙여쓰기 — 한 낱말로 쓰면 다른 뜻이 되는 말들.
+// 2026-09-02 전수 점검에서 실제로 걸린 자리: 공문서의 '재개관은 다음날부터'를
+// 붙여 쓰면 '훗날부터'가 된다(그 이튿날이 아니라). 문맥이 '이튿날'이면 띄어야 한다.
+const MEANING_SPLIT = [
+  { joined: '다음날', spaced: '다음 날', note: "'다음날'은 훗날(정해지지 않은 미래). 이튿날이면 '다음 날'" },
+  { joined: '큰소리', spaced: '큰 소리', note: "'큰소리'는 장담·호통. 소리가 크면 '큰 소리'" },
+  { joined: '한번', spaced: '한 번', note: "'한번'은 시도·기회. 횟수 1회면 '한 번'" },
+]
+for (const q of rows) {
+  const a = String(q.correct_answer ?? '')
+  for (const m of MEANING_SPLIT) {
+    // 답의 '→' 오른쪽(고친 결과)만 본다. 공문서 문항은 띄어쓰기를 V로 적으므로
+    // V를 공백으로 되돌린 뒤, '붙여 쓴 꼴'로 답했을 때만 알린다.
+    const rights = a.split(/→|->/).slice(1).join(' ').replace(/V/g, ' ')
+    const joinedUsed = new RegExp(`${m.joined}(?![가-힣])`).test(rights)
+    if (joinedUsed) {
+      console.log(`  · ${q.year}-${q.round} ${q.number}번 — '${m.joined}'으로 붙여 쓰라고 답한다. ${m.note}`)
+    }
+  }
+}
+
 let failed = false
 let conflicts = 0
 for (const [wrong, rights] of pairs) {
