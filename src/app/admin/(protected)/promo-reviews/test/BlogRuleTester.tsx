@@ -6,13 +6,12 @@ import { runBlogRuleTest, type RuleTestResult } from './actions'
 
 export default function BlogRuleTester({ sample }: { sample: string }) {
   const [url, setUrl] = useState('')
-  const [code, setCode] = useState('')
   const [res, setRes] = useState<RuleTestResult | null>(null)
   const [pending, start] = useTransition()
 
   function run() {
     if (!url.trim()) return
-    start(async () => setRes(await runBlogRuleTest(url, code)))
+    start(async () => setRes(await runBlogRuleTest(url)))
   }
 
   return (
@@ -37,17 +36,6 @@ export default function BlogRuleTester({ sample }: { sample: string }) {
             {pending ? '읽는 중' : '판정 돌리기'}
           </button>
         </div>
-
-        <label htmlFor="test-code" className="mb-1 mt-3 block text-xs font-bold text-[#334155]">
-          본인 확인 코드 <span className="font-normal text-[#94a3b8]">(비우면 코드 검사를 건너뜁니다)</span>
-        </label>
-        <input
-          id="test-code"
-          value={code}
-          onChange={e => setCode(e.target.value)}
-          placeholder="SGP-XXXXXX"
-          className="w-full rounded-lg border border-[#e2e8f0] px-3 py-2 font-mono text-sm"
-        />
       </div>
 
       {res && !res.ok && (
@@ -79,16 +67,36 @@ export default function BlogRuleTester({ sample }: { sample: string }) {
             ))}
           </dl>
 
-          <ul className="space-y-1.5 rounded-xl border border-[#e2e8f0] bg-white p-4">
+          <ul className="space-y-2.5 rounded-xl border border-[#e2e8f0] bg-white p-4">
             {res.checks.map(c => (
-              <li key={c.rule} className="flex items-start gap-2 text-sm">
-                {c.ok
-                  ? <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" aria-hidden="true" />
-                  : <X className="mt-0.5 h-4 w-4 shrink-0 text-red-500" aria-hidden="true" />}
-                <span className={c.ok ? 'text-[#334155]' : 'font-semibold text-[#0f172a]'}>
-                  {c.rule}
-                  <span className="ml-1.5 font-normal text-[#64748b]">— {c.detail}</span>
-                </span>
+              <li key={c.rule} className="text-sm">
+                <div className="flex items-start gap-2">
+                  {c.ok
+                    ? <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" aria-hidden="true" />
+                    : <X className="mt-0.5 h-4 w-4 shrink-0 text-red-500" aria-hidden="true" />}
+                  <span className={c.ok ? 'text-[#334155]' : 'font-semibold text-[#0f172a]'}>
+                    {c.rule}
+                    <span className="ml-1.5 font-normal text-[#64748b]">— {c.detail}</span>
+                  </span>
+                </div>
+                {/* 낱말은 하나씩 보여 준다 — '빠짐: A, B'로는 어느 낱말을 어디에 더 넣어야 하는지 바로 안 보인다 */}
+                {c.items && (
+                  <div className="ml-6 mt-1.5 flex flex-wrap gap-1.5">
+                    {c.items.map(it => (
+                      <span
+                        key={it.label}
+                        className={`inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-xs font-semibold ${
+                          it.ok
+                            ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+                            : 'border-red-200 bg-red-50 text-red-700'
+                        }`}
+                      >
+                        {it.ok ? <Check className="h-3 w-3" aria-hidden="true" /> : <X className="h-3 w-3" aria-hidden="true" />}
+                        {it.label}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </li>
             ))}
           </ul>

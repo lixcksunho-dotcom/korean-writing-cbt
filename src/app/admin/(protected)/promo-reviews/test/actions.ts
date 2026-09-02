@@ -33,7 +33,7 @@ export type RuleTestResult =
  * 왜 따로 두나: 규칙을 손볼 때마다 진짜 신청을 넣어 보면 접수 기록과 지급이 남아
  * DB가 실험 찌꺼기로 더러워진다. 판정만 떼어내 마음대로 돌릴 자리가 필요하다.
  */
-export async function runBlogRuleTest(url: string, ownerCode: string): Promise<RuleTestResult> {
+export async function runBlogRuleTest(url: string): Promise<RuleTestResult> {
   const link = (url ?? '').trim()
   if (!isLikelyBlogPostUrl(link)) {
     return { ok: false, message: '글 주소를 정확히 넣어 주세요(블로그 첫 화면이 아니라 글 주소여야 해요).' }
@@ -44,8 +44,7 @@ export async function runBlogRuleTest(url: string, ownerCode: string): Promise<R
 
   const photos = countPhotos(fetched.html)
   const chars = countBodyChars(fetched.html)
-  const code = ownerCode.trim() || undefined
-  const result = checkBlogHtml(fetched.html, photos, code, chars)
+  const result = checkBlogHtml(fetched.html, photos, chars)
 
   // 태그를 걷어낸 본문 앞부분. 광고 문구가 '글 첫머리'에 있는지는 이 순서로 판정된다.
   const excerpt = fetched.html

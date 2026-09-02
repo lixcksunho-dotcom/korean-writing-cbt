@@ -4,7 +4,6 @@ import { getActiveSubscription, daysUntilExpiry } from '@/lib/subscription'
 import PaymentSection from '@/components/subscribe/PaymentSection'
 import PromoCodeBox from '@/components/subscribe/PromoCodeBox'
 import BlogReviewForm from '@/components/subscribe/BlogReviewForm'
-import { blogOwnerCode } from '@/lib/blogOwnerCode'
 import EventTracker from '@/components/analytics/EventTracker'
 import { CheckCircle2, Sparkles, Shield, Zap, LogIn, Star, Ticket, ChevronDown } from 'lucide-react'
 
@@ -213,7 +212,7 @@ export default async function SubscribePage() {
           </summary>
           <div className="space-y-4 border-t border-[#e2e8f0] p-5">
             <PromoCodeBox />
-            <BlogReviewForm ownerCode={blogOwnerCode(user.id)} />
+            <BlogReviewForm />
           </div>
         </details>
       )}

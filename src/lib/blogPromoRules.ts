@@ -62,7 +62,13 @@ export const DISCLOSURE_NOT_ENOUGH = [
 export const DISCLOSURE_SAMPLE =
   '이 글은 실글패스로부터 이용권을 무료로 제공받아 작성한 광고입니다.'
 
-export type RuleCheck = { rule: string; ok: boolean; detail: string }
+export type RuleCheck = {
+  rule: string
+  ok: boolean
+  detail: string
+  /** 낱말별 통과 여부. 있으면 화면에서 하나씩 ✓/✗로 보여 준다. */
+  items?: { label: string; ok: boolean }[]
+}
 export type BlogPromoResult = {
   /** 자동으로 판정할 수 있었는가. false면 사람이 봐야 한다. */
   readable: boolean
@@ -101,9 +107,8 @@ export function countImages(html: string): number {
  * 받아 온 HTML로 규칙을 판정한다.
  * @param html    신청한 주소에서 받아 온 문서(본문이 들어 있는 것)
  * @param photos  본문 사진 수(사이트마다 세는 법이 달라 밖에서 세어 넘긴다)
- * @param ownerCode 본인 확인 코드. 주면 본문에 그 코드가 있는지도 본다.
  */
-export function checkBlogHtml(html: string, photos?: number, ownerCode?: string, bodyChars?: number): BlogPromoResult {
+export function checkBlogHtml(html: string, photos?: number, bodyChars?: number): BlogPromoResult {
   const title = extractTitle(html)
   const raw = textOf(html)
   const body = squash(raw)
@@ -118,24 +123,30 @@ export function checkBlogHtml(html: string, photos?: number, ownerCode?: string,
 
   const checks: RuleCheck[] = [
     {
-      rule: `제목에 ${TITLE_KEYWORDS.join(' 또는 ')}`,
+      rule: `제목에 ${TITLE_KEYWORDS.join(' 또는 ')} 중 하나`,
       ok: titleHit.length > 0,
-      detail: title ? (titleHit.length ? `찾음: ${titleHit.join(', ')}` : `제목: ${title.slice(0, 40)}`) : '제목을 못 읽음',
+      detail: !title ? '제목을 못 읽음' : `제목: ${title.slice(0, 60)}`,
+      items: TITLE_KEYWORDS.map(k => ({ label: k, ok: titleHit.includes(k) })),
     },
     {
-      rule: `본문에 ${BODY_KEYWORDS.join(', ')}`,
+      rule: `본문에 ${BODY_KEYWORDS.length}개 낱말 모두`,
       ok: readable && bodyMissing.length === 0,
-      detail: !readable ? '본문을 못 읽음' : bodyMissing.length ? `빠짐: ${bodyMissing.join(', ')}` : '모두 있음',
+      detail: !readable ? '본문을 못 읽음'
+        : bodyMissing.length ? `${BODY_KEYWORDS.length - bodyMissing.length}/${BODY_KEYWORDS.length}개 있음`
+        : '모두 있음',
+      items: BODY_KEYWORDS.map(k => ({ label: k, ok: readable && !bodyMissing.includes(k) })),
     },
     {
       rule: `사진 ${MIN_IMAGES}장 이상`,
       ok: images >= MIN_IMAGES,
-      detail: `${images}장`,
+      detail: images >= MIN_IMAGES ? `${images}장` : `${images}장 — ${MIN_IMAGES - images}장 더 필요해요`,
     },
     {
       rule: `본문 ${MIN_CHARS.toLocaleString('ko-KR')}자 이상`,
       ok: readable && chars >= MIN_CHARS,
-      detail: readable ? `${chars.toLocaleString('ko-KR')}자` : '본문을 못 읽음',
+      detail: !readable ? '본문을 못 읽음'
+        : chars >= MIN_CHARS ? `${chars.toLocaleString('ko-KR')}자`
+        : `${chars.toLocaleString('ko-KR')}자 — ${(MIN_CHARS - chars).toLocaleString('ko-KR')}자 더 필요해요`,
     },
   ]
 
@@ -156,15 +167,6 @@ export function checkBlogHtml(html: string, photos?: number, ownerCode?: string,
     })
   }
 
-  // 본인 확인 코드 — 남이 쓴 글 주소를 그대로 내는 것을 막는다.
-  if (ownerCode) {
-    const has = squash(raw).includes(squash(ownerCode))
-    checks.push({
-      rule: `본문에 본인 확인 코드 ${ownerCode}`,
-      ok: readable && has,
-      detail: !readable ? '본문을 못 읽음' : has ? '확인됨' : '못 찾음 — 글 맨 아래에 적어 주세요',
-    })
-  }
 
   return { readable, checks, allPassed: readable && checks.every(c => c.ok) }
 }

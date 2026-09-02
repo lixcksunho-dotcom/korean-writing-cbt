@@ -8,7 +8,7 @@ import DisclosureCopyBox from '@/components/subscribe/DisclosureCopyBox'
 
 // 블로그에 홍보 글을 쓰면 이용권을 드리는 신청 화면.
 // 조건을 '내고 나서' 알려 주면 늦다 — 쓰기 전에 보이도록 폼 위에 그대로 적는다.
-export default function BlogReviewForm({ ownerCode }: { ownerCode: string }) {
+export default function BlogReviewForm() {
   const [url, setUrl] = useState('')
   const [result, setResult] = useState<{ autoPassed: boolean; granted: boolean; checks: RuleCheck[]; note: string } | null>(null)
   const [error, setError] = useState('')
@@ -68,14 +68,13 @@ export default function BlogReviewForm({ ownerCode }: { ownerCode: string }) {
         <li className="flex gap-2">
           <span className="font-bold text-[#d97706]">4</span>
           <span>
-            아래 두 문구를 <b>복사해서 그대로</b> 붙여 주세요 — 광고 표시(법정 의무)와
-            본인 확인용입니다.
+            아래 문구를 <b>복사해서 그대로</b> 붙여 주세요 — 광고 표시는 법정 의무입니다.
           </span>
         </li>
       </ol>
 
       <div className="mb-4">
-        <DisclosureCopyBox sample={DISCLOSURE_SAMPLE} ownerCode={ownerCode} />
+        <DisclosureCopyBox sample={DISCLOSURE_SAMPLE} />
       </div>
 
       {result ? (
@@ -86,15 +85,33 @@ export default function BlogReviewForm({ ownerCode }: { ownerCode: string }) {
           </p>
           <p className={`mt-1 text-xs ${result.autoPassed ? 'text-emerald-800' : 'text-amber-800'}`}>{result.note}</p>
           {result.checks.length > 0 && (
-            <ul className="mt-2.5 space-y-1">
+            <ul className="mt-2.5 space-y-2">
               {result.checks.map(c => (
-                <li key={c.rule} className="flex items-start gap-1.5 text-xs">
-                  {c.ok
-                    ? <Check className="h-3.5 w-3.5 shrink-0 text-emerald-600 mt-0.5" aria-hidden="true" />
-                    : <X className="h-3.5 w-3.5 shrink-0 text-red-600 mt-0.5" aria-hidden="true" />}
-                  <span className={c.ok ? 'text-[#475569]' : 'text-red-700'}>
-                    {c.rule} <span className="text-[#64748b]">— {c.detail}</span>
-                  </span>
+                <li key={c.rule} className="text-xs">
+                  <div className="flex items-start gap-1.5">
+                    {c.ok
+                      ? <Check className="h-3.5 w-3.5 shrink-0 text-emerald-600 mt-0.5" aria-hidden="true" />
+                      : <X className="h-3.5 w-3.5 shrink-0 text-red-600 mt-0.5" aria-hidden="true" />}
+                    <span className={c.ok ? 'text-[#475569]' : 'text-red-700'}>
+                      {c.rule} <span className="text-[#64748b]">— {c.detail}</span>
+                    </span>
+                  </div>
+                  {/* 어느 낱말이 빠졌는지 낱개로 보여 준다 — 다시 낼 때 무엇을 고쳐야 하는지가 바로 보여야 한다 */}
+                  {c.items && (
+                    <div className="ml-5 mt-1 flex flex-wrap gap-1">
+                      {c.items.map(it => (
+                        <span
+                          key={it.label}
+                          className={`inline-flex items-center gap-0.5 rounded border px-1.5 py-0.5 font-semibold ${
+                            it.ok ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-red-200 bg-red-50 text-red-700'
+                          }`}
+                        >
+                          {it.ok ? <Check className="h-3 w-3" aria-hidden="true" /> : <X className="h-3 w-3" aria-hidden="true" />}
+                          {it.label}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </li>
               ))}
             </ul>

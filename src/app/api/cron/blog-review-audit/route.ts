@@ -3,7 +3,6 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { recordOperatorAlert } from '@/lib/operatorAlerts'
 import { BLOG_REVIEW_PATH, checkBlogHtml } from '@/lib/blogPromoRules'
 import { fetchBlogPost, countPhotos, countBodyChars } from '@/lib/blogPromoFetch'
-import { blogOwnerCode } from '@/lib/blogOwnerCode'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 60
@@ -49,8 +48,7 @@ export async function GET(req: Request) {
       continue
     }
 
-    const ownerCode = r.user_id ? blogOwnerCode(r.user_id) : undefined
-    const check = checkBlogHtml(fetched.html, countPhotos(fetched.html), ownerCode, countBodyChars(fetched.html))
+    const check = checkBlogHtml(fetched.html, countPhotos(fetched.html), countBodyChars(fetched.html))
     const failed = check.checks.filter(c => !c.ok)
 
     results.push({

@@ -11,12 +11,11 @@ import { Copy, Check, ShieldAlert } from 'lucide-react'
 //
 // 배너 이미지가 아니라 글자로 준다 — 사진은 검색에 안 읽히고, 규정은 '소비자가 쉽게
 // 인식'을 요구한다. 굵게·색으로 눈에 띄게 하는 건 붙여 넣은 뒤 블로그에서 하면 된다.
-export default function DisclosureCopyBox({ sample, ownerCode }: { sample: string; ownerCode: string }) {
+export default function DisclosureCopyBox({ sample }: { sample: string }) {
   const [copied, setCopied] = useState<string | null>(null)
 
   const blocks = [
-    { key: 'notice', label: '① 글 맨 위(제목 아래)에 붙여 주세요', text: sample },
-    { key: 'code', label: '② 글 맨 아래에 붙여 주세요 (본인 확인용)', text: `본인 확인 코드: ${ownerCode}` },
+    { key: 'notice', label: '글 맨 위(제목 아래)에 붙여 주세요', text: sample },
   ]
 
   async function copy(key: string, text: string) {

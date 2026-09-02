@@ -11,7 +11,6 @@ import {
   type RuleCheck,
 } from '@/lib/blogPromoRules'
 import { fetchBlogPost, countPhotos, countBodyChars } from '@/lib/blogPromoFetch'
-import { blogOwnerCode } from '@/lib/blogOwnerCode'
 import { getActiveSubscription } from '@/lib/subscription'
 
 export type SubmitResult =
@@ -42,7 +41,6 @@ export async function submitBlogReview(url: string): Promise<SubmitResult> {
   if (dup?.length) return { ok: false, message: '이미 신청한 글이에요. 심사 결과를 기다려 주세요.' }
 
   // 자동 확인. 네이버는 원본 주소가 껍데기라 본문이 들어 있는 주소로 바꿔 읽는다.
-  const ownerCode = blogOwnerCode(user.id)
   let checks: RuleCheck[] = []
   let autoPassed = false
   let note = ''
@@ -50,7 +48,7 @@ export async function submitBlogReview(url: string): Promise<SubmitResult> {
   if (fetched.html === null) {
     note = `${fetched.reason}. 접수했고 사람이 직접 확인합니다.`
   } else {
-    const r = checkBlogHtml(fetched.html, countPhotos(fetched.html), ownerCode, countBodyChars(fetched.html))
+    const r = checkBlogHtml(fetched.html, countPhotos(fetched.html), countBodyChars(fetched.html))
     checks = r.checks
     autoPassed = r.allPassed
     note = autoPassed
@@ -59,7 +57,7 @@ export async function submitBlogReview(url: string): Promise<SubmitResult> {
   }
 
   // 다 통과하면 사람을 기다리지 않고 그 자리에서 지급한다.
-  // 본인 확인 코드까지 맞았으므로 '그 사람이 쓴 글'임이 확인된 상태다.
+  // 제목·본문·사진·글자수·광고표시가 모두 맞은 상태다.
   let granted = false
   if (autoPassed) {
     const current = await getActiveSubscription(user.id)

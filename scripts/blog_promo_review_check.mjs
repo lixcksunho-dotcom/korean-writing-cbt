@@ -14,15 +14,32 @@
 
 import fs from 'node:fs'
 import { chromium } from 'playwright'
-import { checkBlogHtml, isLikelyBlogPostUrl, MIN_IMAGES, MIN_CHARS, BODY_KEYWORDS, DISCLOSURE_SAMPLE } from '../src/lib/blogPromoRules.ts'
+import {
+  checkBlogHtml,
+  isLikelyBlogPostUrl,
+  MIN_IMAGES,
+  MIN_CHARS,
+  TITLE_KEYWORDS,
+  BODY_KEYWORDS,
+  DISCLOSURE_SAMPLE,
+} from '../src/lib/blogPromoRules.ts'
 import { blogFetchCandidates, countPhotos, countBodyChars } from '../src/lib/blogPromoFetch.ts'
-import { blogOwnerCode, bodyHasOwnerCode } from '../src/lib/blogOwnerCode.ts'
 
 const ENV = Object.fromEntries(
   fs.readFileSync('.env.local', 'utf-8').split('\n')
     .filter(l => l.includes('=') && !l.trim().startsWith('#'))
     .map(l => { const i = l.indexOf('='); return [l.slice(0, i).trim(), l.slice(i + 1).trim().replace(/^["']|["']$/g, '')] }),
 )
+// 무료 경로는 접힌 상자 안에 있다 — 사람이 누르는 것과 같은 순서로 연다.
+// 화면을 다시 불러오면 도로 접히므로 채우기 전마다 부른다.
+async function openPromoBox(page) {
+  await page.evaluate(() => {
+    const box = document.querySelector('#blog-url')?.closest('details')
+    if (box) box.open = true
+  })
+  await page.waitForTimeout(400)
+}
+
 const BASE = process.env.BLOG_PROMO_BASE ?? 'https://kptest.cloud'
 const REVIEW_PATH = '#promo/blog-review'
 const api = (p, init) => fetch(`${ENV.NEXT_PUBLIC_SUPABASE_URL}${p}`, {
@@ -51,31 +68,32 @@ ${'가나다라마바사아자차카타파하 '.repeat(140)}
 공기업자격증 준비하시는 분께 추천합니다.
 ${Array.from({ length: MIN_IMAGES }, (_, i) => `<img src="/s${i}.png">`).join('')}
 </body></html>`
-const r1 = checkBlogHtml(good, countPhotos(good), undefined, countBodyChars(good))
+const r1 = checkBlogHtml(good, countPhotos(good), countBodyChars(good))
 if (r1.allPassed) ok('조건을 갖춘 글은 통과한다')
 else bad('정상 글 판정', r1.checks.filter(c => !c.ok).map(c => `${c.rule}(${c.detail})`).join(' / '))
 
 // 사진이 모자란 글
 const fewImages = good.replace(/(<img[^>]*>)+/g, '<img src="/only.png">')  // 여러 장을 한 장으로
-const r2 = checkBlogHtml(fewImages, countPhotos(fewImages), undefined, countBodyChars(fewImages))
+const r2 = checkBlogHtml(fewImages, countPhotos(fewImages), countBodyChars(fewImages))
 if (!r2.allPassed && r2.checks.find(c => c.rule.includes('사진'))?.ok === false) ok(`사진이 ${MIN_IMAGES}장 미만이면 걸린다`)
 else bad('사진 장수 판정', '사진이 1장인데 통과했다')
 
 // 낱말이 빠진 글
 const missing = good.replace('공기업자격증 준비하시는 분께 추천합니다.', '')
-const r3 = checkBlogHtml(missing, countPhotos(missing), undefined, countBodyChars(missing))
+const r3 = checkBlogHtml(missing, countPhotos(missing), countBodyChars(missing))
 const bodyCheck = r3.checks.find(c => c.rule.includes('본문'))
-if (!r3.allPassed && bodyCheck?.ok === false && bodyCheck.detail.includes('공기업자격증')) ok('빠진 낱말을 집어 준다', bodyCheck.detail)
-else bad('본문 낱말 판정', `${bodyCheck?.detail}`)
+const r3Missing = bodyCheck?.items?.filter(i => !i.ok).map(i => i.label) ?? []
+if (!r3.allPassed && bodyCheck?.ok === false && r3Missing.includes('공기업자격증')) ok('빠진 낱말을 집어 준다', r3Missing.join(', '))
+else bad('본문 낱말 판정', `${bodyCheck?.detail} / ${r3Missing.join(', ')}`)
 
 // 띄어 쓴 낱말도 인정한다 — 사람은 '실용글쓰기 CBT'라고 쓴다
 const spaced = good.replace('실용글쓰기CBT', '실용글쓰기 CBT')
-if (checkBlogHtml(spaced, countPhotos(spaced), undefined, countBodyChars(spaced)).allPassed) ok('낱말을 띄어 써도 인정한다', '실용글쓰기 CBT')
+if (checkBlogHtml(spaced, countPhotos(spaced), countBodyChars(spaced)).allPassed) ok('낱말을 띄어 써도 인정한다', '실용글쓰기 CBT')
 else bad('띄어쓰기 허용', '띄어 쓰면 못 찾는다')
 
 // 스크립트로 그리는 블로그는 '위반'이 아니라 '못 읽음'이어야 한다
 const empty = '<html><head><title>실글패스 후기</title></head><body><div id="root"></div></body></html>'
-const r4 = checkBlogHtml(empty, countPhotos(empty), undefined, countBodyChars(empty))
+const r4 = checkBlogHtml(empty, countPhotos(empty), countBodyChars(empty))
 if (!r4.readable && !r4.allPassed) ok('본문을 못 읽으면 위반이 아니라 못 읽음으로 둔다')
 else bad('읽기 실패 처리', '빈 문서를 판정해 버린다')
 
@@ -94,58 +112,74 @@ if (countPhotos('<div class="se-module-image"></div>'.repeat(7) + '<img>'.repeat
 if (countPhotos('<img><img><img>') === 3) ok('일반 블로그는 img 태그로 센다')
 else bad('사진 세기(일반)', String(countPhotos('<img><img><img>')))
 
-// 본인 확인 코드 — 남의 글을 그대로 내는 것을 막는 장치
-const code = blogOwnerCode('user-abc-123')
-if (/^SGP-[A-Z2-9]{6}$/.test(code)) ok('계정마다 본인 확인 코드가 나온다', code)
-else bad('코드 모양', code)
-if (blogOwnerCode('user-abc-123') === code) ok('같은 계정은 늘 같은 코드')
-else bad('코드 고정', '호출할 때마다 달라진다')
-if (blogOwnerCode('user-abc-124') !== code) ok('계정이 다르면 코드도 다르다')
-else bad('코드 충돌', '다른 계정인데 같은 코드')
-if (bodyHasOwnerCode('글 마지막 줄 sgp k7m2qx 입니다', code.replace('SGP-','SGP-')) === bodyHasOwnerCode('x', code)) {
-  // 위 비교는 의미 없으니 실제로 코드를 넣어 본다
-}
-if (bodyHasOwnerCode(`후기 잘 봤습니다 ${code}`, code)) ok('본문에 코드가 있으면 찾는다')
-else bad('코드 확인', '있는데 못 찾는다')
-if (bodyHasOwnerCode(`후기 ${code.toLowerCase().replace('-', ' ')}`, code)) ok('대소문자·띄어쓰기를 섞어 적어도 찾는다')
-else bad('코드 확인(변형)', '소문자로 적으면 못 찾는다')
-if (!bodyHasOwnerCode('코드 없는 글입니다', code)) ok('코드가 없으면 못 찾는다고 한다')
-else bad('코드 확인(없음)', '없는데 있다고 한다')
+// 제목·본문 낱말 — 어느 낱말이 되고 안 됐는지 낱개로 돌려줘야 한다
+{
+  const r = checkBlogHtml(good, countPhotos(good), countBodyChars(good))
+  const titleCheck = r.checks.find(c => c.rule.includes('제목에'))
+  const bodyCheck = r.checks.find(c => c.rule.includes('본문에'))
 
-// 코드까지 넣어 판정하면 통과해야 한다
-const withCode = good.replace('</body>', `<p>${code}</p></body>`)
-if (checkBlogHtml(withCode, countPhotos(withCode), code, countBodyChars(withCode)).allPassed) ok('코드까지 갖추면 자동 판정을 통과한다')
-else bad('코드 포함 판정', checkBlogHtml(withCode, countPhotos(withCode), code, countBodyChars(withCode)).checks.filter(c=>!c.ok).map(c=>c.rule).join(', '))
-// 코드가 없으면 통과하면 안 된다 — 남의 글 도용을 막는 자리다
-if (!checkBlogHtml(good, countPhotos(good), code, countBodyChars(good)).allPassed) ok('코드가 없으면 통과시키지 않는다', '남의 글 도용 차단')
-else bad('도용 차단', '코드 없이 통과한다')
+  if (titleCheck?.items?.length === TITLE_KEYWORDS.length) ok('제목 낱말을 낱개로 돌려준다', TITLE_KEYWORDS.join(', '))
+  else bad('제목 낱개 판정', '낱말별 결과가 없다')
+  if (bodyCheck?.items?.length === BODY_KEYWORDS.length) ok('본문 낱말을 낱개로 돌려준다', BODY_KEYWORDS.join(', '))
+  else bad('본문 낱개 판정', '낱말별 결과가 없다')
+  if (bodyCheck?.items?.every(i => i.ok)) ok('낱말이 다 있으면 낱개도 모두 통과')
+  else bad('낱개 판정(통과)', bodyCheck?.items?.filter(i => !i.ok).map(i => i.label).join(', '))
+}
+
+// 낱말 하나만 빼면 그 낱말만 실패로 표시돼야 한다
+{
+  const missing = BODY_KEYWORDS[BODY_KEYWORDS.length - 1]
+  const html = good.split(missing).join('○○○')
+  const r = checkBlogHtml(html, countPhotos(html), countBodyChars(html))
+  const bodyCheck = r.checks.find(c => c.rule.includes('본문에'))
+  const failed = bodyCheck?.items?.filter(i => !i.ok).map(i => i.label) ?? []
+  if (failed.length === 1 && failed[0] === missing) ok('빠진 낱말만 콕 집어 표시한다', missing)
+  else bad('낱개 판정(누락)', `빠졌다고 한 낱말: ${failed.join(', ') || '없음'}`)
+  if (!r.allPassed) ok('낱말이 하나라도 빠지면 통과시키지 않는다')
+  else bad('낱말 누락 통과', '하나 빠졌는데 통과한다')
+}
+
+// 사진·글자수는 얼마나 모자란지 말해 줘야 다시 낼 수 있다
+{
+  const short = checkBlogHtml(good, 2, 900)
+  const photo = short.checks.find(c => c.rule.includes('사진'))
+  const chars = short.checks.find(c => c.rule.includes('자 이상'))
+  if (photo && !photo.ok && /더 필요/.test(photo.detail)) ok('사진이 몇 장 모자란지 알려준다', photo.detail)
+  else bad('사진 부족 안내', photo?.detail ?? '없음')
+  if (chars && !chars.ok && /더 필요/.test(chars.detail)) ok('글자가 몇 자 모자란지 알려준다', chars.detail)
+  else bad('글자수 부족 안내', chars?.detail ?? '없음')
+}
+
+// 본인 확인 코드는 없앴다 — 되살아나면 잡는다
+if (!fs.existsSync('src/lib/blogOwnerCode.ts')) ok('본인 확인 코드는 쓰지 않는다')
+else bad('본인 확인 코드', 'blogOwnerCode.ts가 남아 있다')
 
 // ── 공정위 표시 의무 ────────────────────────────────────────────────────────
 // 대가를 받고 쓴 글에 광고임을 안 밝히면 광고주(우리)가 제재를 받는다.
 // '있으면 좋은 것'이 아니라 '없으면 못 주는 것'이어야 한다.
 const noAd = good.replace(`<p>${DISCLOSURE_SAMPLE}</p>`, '')
-const rNoAd = checkBlogHtml(noAd, countPhotos(noAd), undefined, countBodyChars(noAd))
+const rNoAd = checkBlogHtml(noAd, countPhotos(noAd), countBodyChars(noAd))
 const adCheck = rNoAd.checks.find(c => c.rule.includes('광고임을'))
 if (adCheck && !adCheck.ok && !rNoAd.allPassed) ok('광고 표시가 없으면 통과시키지 않는다', '공정위 표시 의무')
 else bad('광고 표시 강제', '문구 없이 통과한다 — 광고주가 제재를 받는다')
 
 // '체험단'·'AD' 같은 말로는 인정되지 않는다(지침이 명시적으로 배제)
 const weak = noAd.replace('<body>', '<body><p>체험단 후기입니다 #AD</p>')
-const rWeak = checkBlogHtml(weak, countPhotos(weak), undefined, countBodyChars(weak))
+const rWeak = checkBlogHtml(weak, countPhotos(weak), countBodyChars(weak))
 const weakCheck = rWeak.checks.find(c => c.rule.includes('광고임을'))
 if (weakCheck && !weakCheck.ok) ok("'체험단'·'AD'만으로는 인정하지 않는다", weakCheck.detail.slice(0, 40))
 else bad('약한 표현 판정', '체험단·AD로 통과한다')
 
 // 위치도 본다 — 맨 뒤에 적으면 소비자가 못 본다(지침: 제목 또는 첫 부분)
 const tail = noAd.replace('</body>', `<p>${DISCLOSURE_SAMPLE}</p></body>`)
-const rTail = checkBlogHtml(tail, countPhotos(tail), undefined, countBodyChars(tail))
+const rTail = checkBlogHtml(tail, countPhotos(tail), countBodyChars(tail))
 const tailCheck = rTail.checks.find(c => c.rule.includes('광고임을'))
 if (tailCheck && !tailCheck.ok) ok('글 뒤쪽에 적으면 안 된다고 알려 준다', tailCheck.detail.slice(0, 40))
 else bad('위치 판정', '맨 뒤에 있어도 통과한다')
 
 // 짧은 글은 통과시키지 않는다 — 한두 줄 쓰고 사진만 붙이면 홍보가 안 된다
 const shortPost = good.replace(/가나다라마바사아자차카타파하 /g, '')  // 본문을 비워 짧은 글로 만든다
-const rShort = checkBlogHtml(shortPost, countPhotos(shortPost), undefined, countBodyChars(shortPost))
+const rShort = checkBlogHtml(shortPost, countPhotos(shortPost), countBodyChars(shortPost))
 const charCheck = rShort.checks.find(c => c.rule.includes('자 이상'))
 if (charCheck && !charCheck.ok) ok(`본문이 ${MIN_CHARS}자 미만이면 걸린다`, charCheck.detail)
 else bad('글자수 기준', charCheck ? charCheck.detail : '기준 자체가 없다')
@@ -183,6 +217,8 @@ try {
   await page.goto(`${BASE}/subscribe`, { waitUntil: 'networkidle', timeout: 60000 })
   await page.waitForTimeout(1200)
 
+  await openPromoBox(page)
+
   // 조건을 '쓰기 전에' 볼 수 있어야 한다
   const guide = await page.evaluate(ws => {
     const t = document.body.innerText
@@ -194,6 +230,7 @@ try {
 
   // 접수 — 자동 확인이 안 되는 주소여도 접수는 돼야 한다
   const testUrl = `https://example.com/promo-check-${stamp}`
+  await openPromoBox(page)
   await page.fill('#blog-url', testUrl)
   await page.locator('form:has(#blog-url) button[type="submit"]').click()
   await page.waitForTimeout(6000)
@@ -209,6 +246,7 @@ try {
   // 같은 글 재신청 차단
   await page.goto(`${BASE}/subscribe`, { waitUntil: 'networkidle' })
   await page.waitForTimeout(1000)
+  await openPromoBox(page)
   await page.fill('#blog-url', testUrl)
   await page.locator('form:has(#blog-url) button[type="submit"]').click()
   await page.waitForTimeout(5000)
