@@ -132,7 +132,7 @@ export default function LoginPage() {
                 <div className="flex items-baseline justify-between mb-1.5">
                   <label htmlFor="login-password" className="block text-xs font-semibold text-[#334155]">비밀번호</label>
                   {/* 없으면 비밀번호를 잊은 사람은 계정을 통째로 잃는다 */}
-                  <Link href="/forgot-password" className="text-xs font-semibold text-[#1e3a5f] hover:underline py-1">
+                  <Link href="/forgot-password" className="-my-2 inline-flex min-h-[44px] items-center text-xs font-semibold text-[#1e3a5f] hover:underline">
                     비밀번호를 잊으셨나요?
                   </Link>
                 </div>

@@ -61,11 +61,14 @@ export default async function InlineQuiz({
 
       <TrialQuiz questions={questions} />
 
-      <p className="mt-5 text-center text-sm text-[#64748b]">
-        <Link href="/try" className="inline-flex items-center gap-1 font-bold text-[#1e3a5f] underline underline-offset-2">
+      <div className="mt-6 text-center">
+        <Link
+          href="/try"
+          className="inline-flex min-h-[44px] items-center gap-1 px-3 py-2.5 text-sm font-bold text-[#1e3a5f] underline underline-offset-4"
+        >
           다른 유형도 풀어보기 <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
         </Link>
-      </p>
+      </div>
     </section>
   )
 }
