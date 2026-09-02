@@ -6,7 +6,7 @@
     },
     {
       "path": "/api/cron/blog-review-audit",
-      "schedule": "0 */3 * * *"
+      "schedule": "0 18 * * *"
     }
   ]
 }
