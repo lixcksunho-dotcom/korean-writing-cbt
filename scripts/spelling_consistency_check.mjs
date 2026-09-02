@@ -97,8 +97,13 @@ for (const q of rows) {
   for (const m of MEANING_SPLIT) {
     // 답의 '→' 오른쪽(고친 결과)만 본다. 공문서 문항은 띄어쓰기를 V로 적으므로
     // V를 공백으로 되돌린 뒤, '붙여 쓴 꼴'로 답했을 때만 알린다.
-    const rights = a.split(/→|->/).slice(1).join(' ').replace(/V/g, ' ')
-    const joinedUsed = new RegExp(`${m.joined}(?![가-힣])`).test(rights)
+    // 줄마다 '→' 오른쪽만 모은다. 통째로 자르면 다음 줄의 왼쪽(원문)이 섞여
+    // 고쳐 놓은 자리를 오답으로 잡는다 — 실제로 그랬다.
+    const rights = a.split('\n').map(line => (line.split(/→|->/)[1] ?? '')).join(' ').replace(/V/g, ' ')
+    // 뒤에 조사가 붙는다(다음날'부터'). 다만 '다음날씨'처럼 다른 말의 일부는 아니어야
+    // 하므로, 붙을 수 있는 조사만 허용한다.
+    const JOSA = '(?:은|는|이|가|을|를|에|의|도|만|부터|까지|으로|로|와|과|에서|에게|이나|나)?'
+    const joinedUsed = new RegExp(`${m.joined}${JOSA}(?![가-힣])`).test(rights)
     if (joinedUsed) {
       console.log(`  · ${q.year}-${q.round} ${q.number}번 — '${m.joined}'으로 붙여 쓰라고 답한다. ${m.note}`)
     }
