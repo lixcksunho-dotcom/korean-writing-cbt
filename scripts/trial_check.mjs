@@ -116,6 +116,21 @@ try {
     if (seen.size === TRIAL_TOPICS.length) ok('유형마다 첫 문항이 다르다', `${seen.size}가지`)
   }
 
+
+  // 사이트맵에 유형별 주소를 넣었으니 제목·설명도 유형마다 달라야 한다.
+  // 여섯 주소가 같은 제목이면 검색엔진에는 같은 문서 여섯 개다.
+  {
+    const titles = new Map()
+    for (const t of TRIAL_TOPICS) {
+      await page.goto(`${BASE}/try?t=${t.slug}`, { waitUntil: 'domcontentloaded', timeout: 60000 })
+      const title = await page.title()
+      if (titles.has(title)) bad('제목 중복', `${t.label}과 ${titles.get(title)}의 제목이 같다`)
+      titles.set(title, t.label)
+      if (title.includes(t.label)) ok(`${t.label} — 제목에 유형이 들어간다`)
+      else bad(`${t.label} 제목`, title.slice(0, 40))
+    }
+    if (titles.size === TRIAL_TOPICS.length) ok('제목이 유형마다 다르다', `${titles.size}가지`)
+  }
   // 홈에서 이 화면으로 들어올 길이 있는가
   await page.goto(BASE, { waitUntil: 'domcontentloaded', timeout: 60000 })
   if (await page.locator('a[href="/try"]').count()) ok('첫 화면에서 들어갈 수 있다')

@@ -8,16 +8,37 @@ import { TRIAL_TOPICS, findTrialTopic } from '@/lib/trialTopics'
 
 export const revalidate = 3600
 
-export const metadata: Metadata = {
-  title: '한국실용글쓰기 문제 풀어보기 — 회원가입 없이 5문항',
-  description:
-    '한국실용글쓰기 시험 문제를 회원가입 없이 바로 풀어 보세요. 채점과 해설까지 무료입니다. 맞춤법·외래어 표기·띄어쓰기 등 실제 출제 유형 그대로.',
-  keywords: [
-    '한국실용글쓰기 문제', '한국실용글쓰기 기출문제', '한국실용글쓰기 모의고사',
-    '실용글쓰기 문제풀이', '실용글쓰기 무료 문제', '실용글쓰기CBT',
-  ],
-  alternates: { canonical: '/try' },
+// 유형별 주소를 사이트맵에 넣었으므로 제목·설명도 유형마다 달라야 한다.
+// 여섯 주소가 같은 제목을 달고 있으면 검색엔진에는 같은 문서 여섯 개이고,
+// '띄어쓰기 문제'로 찾는 사람에게 걸릴 이유가 없어진다.
+export async function generateMetadata(
+  { searchParams }: { searchParams: Promise<{ t?: string }> },
+): Promise<Metadata> {
+  const topic = findTrialTopic((await searchParams).t)
+  if (!topic) {
+    return {
+      title: '한국실용글쓰기 문제 풀어보기 — 회원가입 없이 5문항',
+      description:
+        '한국실용글쓰기 시험 문제를 회원가입 없이 바로 풀어 보세요. 채점과 해설까지 무료입니다. 맞춤법·외래어 표기·띄어쓰기 등 실제 출제 유형 그대로.',
+      keywords: [
+        '한국실용글쓰기 문제', '한국실용글쓰기 기출문제', '한국실용글쓰기 모의고사',
+        '실용글쓰기 문제풀이', '실용글쓰기 무료 문제', '실용글쓰기CBT',
+      ],
+      alternates: { canonical: '/try' },
+    }
+  }
+  return {
+    title: `${topic.label} 문제 풀어보기 — 회원가입 없이 5문항`,
+    description:
+      `한국실용글쓰기 ${topic.label} 문제를 회원가입 없이 바로 풀어 보세요. 채점과 해설까지 무료입니다. 실제 출제 유형 그대로예요.`,
+    keywords: [
+      `${topic.label} 문제`, `${topic.label} 문제풀이`, `${topic.label} 연습문제`,
+      `한국실용글쓰기 ${topic.label}`, '실용글쓰기 무료 문제',
+    ],
+    alternates: { canonical: `/try?t=${topic.slug}` },
+  }
 }
+
 
 // 로그인 없이 풀어 보는 맛보기 화면.
 //
