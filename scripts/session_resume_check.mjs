@@ -136,6 +136,16 @@ try {
   if (!b?.saved_at) ok('빈 세션은 건드리지 않음')
   else bad('빈 세션에 저장이 들어감', '자동 저장이 엉뚱한 곳으로 간다')
 
+  // 기능이 있어도 시작을 정하는 자리에서 말하지 않으면 없는 것과 같다.
+  // 목록에는 '120분'만 적혀 있어서 2시간을 통째로 내야 하는 것처럼 보였다.
+  {
+    await page.goto(`${BASE}/cbt`, { waitUntil: 'domcontentloaded', timeout: 60000 })
+    await page.waitForTimeout(1200)
+    const t = await page.evaluate(() => document.body.innerText)
+    if (/이어서 풀 수 있어요/.test(t)) ok('목록에서 이어서 풀 수 있다는 것을 미리 알린다')
+    else bad('사전 안내', '120분만 보이고 중간저장 이야기가 없다')
+  }
+
   await ctx.close()
 } catch (e) {
   bad('실행', e instanceof Error ? e.message : String(e))

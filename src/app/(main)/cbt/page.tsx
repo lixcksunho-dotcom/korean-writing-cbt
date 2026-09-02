@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirectToLogin } from '@/lib/loginRedirect'
 import Link from 'next/link'
-import { BookOpen, ChevronRight, Clock, FileQuestion, Trophy, Lock } from 'lucide-react'
+import { BookOpen, ChevronRight, Clock, FileQuestion, Trophy, Lock , Save } from 'lucide-react'
 import { getActiveSubscription } from '@/lib/subscription'
 import ExamResumeAction from '@/components/cbt/ExamResumeAction'
 import { isRoundLocked } from '@/lib/examAccess'
@@ -80,6 +80,13 @@ export default async function CbtPage() {
         <h1 className="text-2xl font-black text-[#0f172a] tracking-tight mb-1">CBT 문제풀기</h1>
         <p className="text-[#64748b] text-sm">
           <b className="text-[#1e3a5f]">{cfg.examName}</b> · 모의고사 <b className="text-[#1e3a5f]">{cfg.freeRounds}회까지 무료</b>, {cfg.freeRounds + 1}회부터는 이용권으로 풀 수 있어요.
+        </p>
+        {/* 목록에는 120분·39문항만 적혀 있어서, 2시간을 통째로 내야 하는 것처럼 보였다.
+            중간저장은 이미 되는데 시작을 정하는 자리에서 그 말을 안 했다 —
+            30일에 382명이 목록까지 오고 102명만 시작했다. */}
+        <p className="mt-1.5 flex items-center gap-1.5 text-xs text-[#64748b]">
+          <Save className="h-3.5 w-3.5 text-[#1e3a5f]" aria-hidden="true" />
+          시간이 모자라면 <b className="text-[#1e3a5f]">저장하고 나갔다가</b> 다른 기기에서도 이어서 풀 수 있어요.
         </p>
       </div>
 
