@@ -5,6 +5,7 @@ import {
   DISCLOSURE_SAMPLE,
   MIN_CHARS,
   MIN_IMAGES,
+  MIN_QA,
   TITLE_KEYWORDS,
   checkBlogHtml,
   extractTitle,
@@ -75,6 +76,7 @@ export async function blogRuleSummary() {
     bodyKeywords: [...BODY_KEYWORDS],
     minImages: MIN_IMAGES,
     minChars: MIN_CHARS,
+    minQa: MIN_QA,
     disclosureSample: DISCLOSURE_SAMPLE,
   }
 }

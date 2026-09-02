@@ -50,11 +50,15 @@ else bad('되살리기', '회수만 하고 안 되살린다')
 if (route.includes("gt('expires_at'")) ok('이미 끝난 이용권은 되살리지 않는다')
 else bad('되살리기 범위', '지난 이용권도 되살린다')
 
-// 3시간마다 도는 일정이 등록돼 있는가 — 코드만 있고 안 돌면 없는 것과 같다
+// 어떤 주기로든 돌기는 하는가.
+// Vercel 무료 플랜은 하루 1회만 허용하므로, 여기 등록된 것은 '바닥선'이다
+// (PC가 꺼져 있어도 하루 안에는 정리된다). 3시간 주기는 PC 스케줄러가 맡는다.
 const cron = JSON.parse(fs.readFileSync('vercel.json', 'utf8'))
 const entry = cron.crons?.find(c => c.path === '/api/cron/blog-review-audit')
-if (entry?.schedule === '0 */3 * * *') ok('3시간마다 도는 일정이 등록돼 있다', entry.schedule)
-else bad('일정 등록', entry ? entry.schedule : '없음')
+if (entry) ok('하루 1회 바닥선이 등록돼 있다', entry.schedule)
+else bad('일정 등록', '없음')
+if (entry && /^0 \d+ \* \* \*$/.test(entry.schedule)) ok('무료 플랜이 받아 주는 주기다', '하루 1회')
+else bad('일정 주기', entry ? `${entry.schedule} — 무료 플랜은 하루 1회만 허용한다` : '없음')
 
 // ── 실제로 껐다 켜지는가 ───────────────────────────────────────────────────
 const stamp = Date.now()

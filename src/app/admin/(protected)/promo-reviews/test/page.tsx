@@ -27,6 +27,7 @@ export default async function BlogRuleTestPage() {
         <li>· 제목: {rules.titleKeywords.join(' 또는 ')}</li>
         <li>· 본문: {rules.bodyKeywords.join(', ')} <b>전부</b></li>
         <li>· 사진 {rules.minImages}장 이상 · 본문 {rules.minChars.toLocaleString('ko-KR')}자 이상</li>
+        <li>· 스스로 묻고 답한 곳 {rules.minQa}번 이상</li>
         <li>· 광고 표시 문구가 글 첫머리에</li>
       </ul>
 

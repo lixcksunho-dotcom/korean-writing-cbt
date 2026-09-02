@@ -29,6 +29,10 @@ export const MIN_CHARS = 1500
 /** 승인 시 지급 일수 */
 export const REWARD_DAYS = 7
 
+/** 스스로 묻고 답한 자리의 최소 횟수.
+ *  검색해서 들어온 사람이 실제로 궁금해하는 것을 짚어 줘야 글이 홍보 구실을 한다. */
+export const MIN_QA = 2
+
 // ── 공정위 표시 의무 ────────────────────────────────────────────────────────
 //
 // 이용권을 주고 글을 받으면 그것은 광고다. '추천·보증 등에 관한 표시·광고 심사지침'에
@@ -92,6 +96,26 @@ function textOf(html: string): string {
     .replace(/<[^>]+>/g, ' ')
 }
 
+/**
+ * 스스로 묻고 답한 자리를 센다.
+ *
+ * 물음표만 세면 "그렇지 않을까요?" 같은 수사의문문까지 잡힌다. 물음 뒤에 실제로
+ * 답이 이어지는지(다음 물음 전까지 충분한 분량이 있는지)까지 봐야 자문자답이다.
+ */
+export function countSelfQa(bodyText: string): number {
+  const marks = [...bodyText.matchAll(/[?？]/g)].map(m => m.index ?? 0)
+  let count = 0
+  for (let i = 0; i < marks.length; i += 1) {
+    const next = marks[i + 1] ?? bodyText.length
+    const answer = bodyText.slice(marks[i] + 1, next).replace(/\s+/g, '')
+    if (answer.length >= MIN_QA_ANSWER_CHARS) count += 1
+  }
+  return count
+}
+
+/** 물음 뒤에 이만큼은 이어져야 '답'으로 본다(공백 제외). */
+const MIN_QA_ANSWER_CHARS = 30
+
 /** <title>과 og:title 중 있는 것 */
 export function extractTitle(html: string): string {
   const og = html.match(/<meta[^>]+property=["']og:title["'][^>]+content=["']([^"']+)["']/i)
@@ -125,6 +149,7 @@ export function checkBlogHtml(html: string, photos?: number, bodyChars?: number)
   const images = photos ?? (html.match(/<img/gi) ?? []).length
   // 글자 수는 본문만 세어 밖에서 넘긴다(네이버는 UI 글자가 1,000자 넘게 섞인다)
   const chars = bodyChars ?? body.length
+  const qaCount = countSelfQa(raw)
 
   const checks: RuleCheck[] = [
     {
@@ -140,6 +165,13 @@ export function checkBlogHtml(html: string, photos?: number, bodyChars?: number)
         : bodyMissing.length ? `${BODY_KEYWORDS.length - bodyMissing.length}/${BODY_KEYWORDS.length}개 있음`
         : '모두 있음',
       items: BODY_KEYWORDS.map(k => ({ label: k, ok: readable && !bodyMissing.includes(k) })),
+    },
+    {
+      rule: `스스로 묻고 답한 곳 ${MIN_QA}번 이상`,
+      ok: readable && qaCount >= MIN_QA,
+      detail: !readable ? '본문을 못 읽음'
+        : qaCount >= MIN_QA ? `${qaCount}번`
+        : `${qaCount}번 — ${MIN_QA - qaCount}번 더 필요해요(물음 뒤에 답을 이어 써 주세요)`,
     },
     {
       rule: `사진 ${MIN_IMAGES}장 이상`,

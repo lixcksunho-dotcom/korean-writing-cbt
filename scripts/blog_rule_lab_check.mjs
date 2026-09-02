@@ -7,6 +7,7 @@ import {
   MIN_CHARS,
   MIN_IMAGES,
   TITLE_KEYWORDS,
+  countSelfQa,
 } from '../src/lib/blogPromoRules.ts'
 import {
   blogFetchCandidates,
@@ -45,7 +46,8 @@ const body = (extra = '') =>
   `<html><head><title>실글패스로 실용글쓰기시험 준비한 후기</title></head><body>` +
   `<div class="se-module se-module-text"><p>${DISCLOSURE_SAMPLE}</p></div>` +
   Array.from({ length: 8 }, () => `<div class="se-module se-module-text"><p>${'실용글쓰기시험 준비하면서 실글패스를 썼습니다. 실용글쓰기CBT 모의고사가 특히 좋았고 공기업자격증 준비에 도움이 됐습니다. '.repeat(6)}</p></div>`).join('') +
-  Array.from({ length: MIN_IMAGES }, () => `<div class="se-module se-module-image"><img src="x.jpg"></div>`).join('') +
+  `<div class="se-module se-module-text"><p>실용글쓰기시험은 많이 어렵나요? 선택형은 평이한 편이지만 서술형이 배점의 대부분이라 여기서 등급이 갈립니다. 저도 첫 회차에 시간 배분이 무너져서 마지막 문항을 통째로 비웠습니다. 독학으로도 준비가 되나요? 서술형 채점만 해결되면 충분히 가능합니다. 저는 모의고사를 회차별로 풀면서 틀린 유형만 골라 반복하는 식으로 준비했습니다. </p></div>` +
+  Array.from({ length: MIN_IMAGES }, (_, i) => `<div class="se-module se-module-image"><img src="https://postfiles.pstatic.net/p${i}.jpg"></div>`).join('') +
   `${extra}</body></html>`
 
 const good = body()
@@ -138,6 +140,38 @@ ok('본인 확인 코드는 쓰지 않음', !fs.existsSync('src/lib/blogOwnerCod
   ok('껍데기 주소는 아예 읽지 않는다',
     !naverCandidates.some(u => /^https:\/\/blog\.naver\.com\/abc\/\d+$/.test(u)),
     naverCandidates.join(' / '))
+}
+
+// ── 자문자답 ───────────────────────────────────────────────────────────────
+// 검색해서 들어온 사람이 궁금해할 것을 짚어 줘야 글이 홍보 구실을 한다.
+{
+  const qBody = '실용글쓰기시험은 많이 어렵나요? 선택형은 평이한 편이지만 서술형이 배점의 대부분이라 여기서 등급이 갈립니다. 저도 첫 회차에 시간 배분이 무너져서 마지막 문항을 통째로 비웠습니다. 독학으로도 준비가 되나요? 서술형 채점만 해결되면 충분히 가능합니다. 저는 모의고사를 회차별로 풀면서 틀린 유형만 골라 반복하는 식으로 준비했습니다.'
+  ok('물음 뒤에 답이 이어지면 자문자답으로 센다', countSelfQa(qBody) === 2, `${countSelfQa(qBody)}번`)
+
+  const rhetorical = '이 정도면 괜찮지 않나요? 그쵸? 아무튼 그렇습니다.'
+  ok('수사의문문은 자문자답으로 세지 않는다', countSelfQa(rhetorical) === 0, `${countSelfQa(rhetorical)}번`)
+
+  const noQa = good.replace(/[?？]/g, '.')
+  const rq = checkBlogHtml(noQa, countPhotos(noQa), countBodyChars(noQa))
+  const qaCheck = rq.checks.find(c => c.rule.includes('묻고 답한'))
+  ok('자문자답이 없으면 통과하지 못한다', qaCheck && !qaCheck.ok && !rq.allPassed, qaCheck?.detail)
+  ok('몇 번 더 필요한지 알려준다', /더 필요/.test(qaCheck?.detail ?? ''), qaCheck?.detail)
+}
+
+// ── 사진 세기 ──────────────────────────────────────────────────────────────
+// 스마트에디터는 사진 한 장에 se-module-image 를 두 번 쓴다(모듈 div + 링크 a).
+// 클래스 이름을 세면 5장짜리 글이 10장이 된다(실측).
+{
+  const shot = (n) =>
+    `<div class="se-component se-image"><div class="se-module se-module-image">` +
+    `<a href="#" class="se-module-image-link __se_image_link">` +
+    `<img src="https://postfiles.pstatic.net/photo${n}.jpg?type=w773"></a></div></div>`
+  const doc = `<html><body><div class="se-main-container">${[1,2,3,4,5].map(shot).join('')}</div></body></html>`
+  ok('사진 한 장을 한 장으로 센다', countPhotos(doc) === 5, `${countPhotos(doc)}장으로 셌다`)
+
+  const withIcon = doc.replace('</div></body>',
+    '<img src="https://ssl.pstatic.net/static/blog/icon.png"></div></body>')
+  ok('아이콘은 사진으로 세지 않는다', countPhotos(withIcon) === 5, `${countPhotos(withIcon)}장`)
 }
 
 // 못 읽는 주소는 오류로 돌아와야 한다(조용히 통과하면 안 된다)

@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react'
 import { PenLine, CheckCircle2, AlertCircle, Check, X } from 'lucide-react'
 import { submitBlogReview } from '@/app/(main)/subscribe/blog-review-actions'
-import { TITLE_KEYWORDS, BODY_KEYWORDS, MIN_IMAGES, MIN_CHARS, REWARD_DAYS, DISCLOSURE_SAMPLE, type RuleCheck } from '@/lib/blogPromoRules'
+import { TITLE_KEYWORDS, BODY_KEYWORDS, MIN_IMAGES, MIN_CHARS, MIN_QA, REWARD_DAYS, DISCLOSURE_SAMPLE, type RuleCheck } from '@/lib/blogPromoRules'
 import DisclosureCopyBox from '@/components/subscribe/DisclosureCopyBox'
 
 // 블로그에 홍보 글을 쓰면 이용권을 드리는 신청 화면.
@@ -67,6 +67,13 @@ export default function BlogReviewForm() {
         </li>
         <li className="flex gap-2">
           <span className="font-bold text-[#d97706]">4</span>
+          <span>
+            <b>스스로 묻고 답하는 부분</b>을 {MIN_QA}번 이상 넣어 주세요 — 검색해서 들어온
+            사람이 궁금해할 것을 물어보고, 바로 아래에 답을 써 주시면 됩니다.
+          </span>
+        </li>
+        <li className="flex gap-2">
+          <span className="font-bold text-[#d97706]">5</span>
           <span>
             아래 <b>광고 표시 그림과 한 줄</b>을 글 맨 위에 넣어 주세요 — 법정 의무입니다.
           </span>

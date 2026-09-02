@@ -66,6 +66,7 @@ const good = `<html><head><title>실글패스로 실용글쓰기시험 준비한
 ${'가나다라마바사아자차카타파하 '.repeat(140)}
 실글패스 정말 좋았습니다. 실용글쓰기시험 준비에 실용글쓰기CBT가 큰 도움이 됐어요.
 공기업자격증 준비하시는 분께 추천합니다.
+실용글쓰기시험은 많이 어렵나요? 선택형은 평이한 편이지만 서술형이 배점의 대부분이라 여기서 등급이 갈립니다. 저도 첫 회차에 시간 배분이 무너져서 마지막 문항을 통째로 비웠습니다. 독학으로도 준비가 되나요? 서술형 채점만 해결되면 충분히 가능합니다. 저는 모의고사를 회차별로 풀면서 틀린 유형만 골라 반복하는 식으로 준비했습니다.
 ${Array.from({ length: MIN_IMAGES }, (_, i) => `<img src="/s${i}.png">`).join('')}
 </body></html>`
 const r1 = checkBlogHtml(good, countPhotos(good), countBodyChars(good))
@@ -105,12 +106,30 @@ if (cand[0].includes('PostView.naver') && cand[0].includes('logNo=224392844838')
 if (blogFetchCandidates('https://example.com/post/1')[0] === 'https://example.com/post/1') ok('다른 블로그는 주소를 그대로 쓴다')
 else bad('주소 변환 범위', '남의 주소까지 바꾼다')
 
-// 사진 수: 네이버는 에디터 이미지 모듈로 센다(img 태그엔 UI 아이콘이 섞인다 — 실측 72 vs 22)
-if (countPhotos('<div class="se-module-image"></div>'.repeat(7) + '<img>'.repeat(40)) === 7) {
-  ok('네이버 사진은 에디터 모듈로 센다', 'UI 아이콘에 안 속는다')
-} else bad('사진 세기', String(countPhotos('<div class="se-module-image"></div>'.repeat(7))))
-if (countPhotos('<img><img><img>') === 3) ok('일반 블로그는 img 태그로 센다')
-else bad('사진 세기(일반)', String(countPhotos('<img><img><img>')))
+// 사진 수: 클래스 이름이 아니라 실제 이미지 주소를 센다.
+// 스마트에디터는 사진 한 장에 se-module-image 를 두 번 쓴다(모듈 div + 링크 a) —
+// 이름을 세면 5장짜리 글이 10장이 된다(실측 2026-09-02).
+{
+  const naver = '<div class="se-main-container">' +
+    Array.from({ length: 5 }, (_, i) =>
+      `<div class="se-module se-module-image"><a class="se-module-image-link">` +
+      `<img src="https://postfiles.pstatic.net/p${i}.jpg?type=w773"></a></div>`).join('') +
+    '</div>'
+  if (countPhotos(naver) === 5) ok('네이버 사진을 두 배로 세지 않는다', '모듈 div + 링크 a = 한 장')
+  else bad('사진 세기', String(countPhotos(naver)))
+
+  const withIcons = naver.replace('</div>', '') + '<img src="https://ssl.pstatic.net/static/blog/icon.png">'.repeat(40) + '</div>'
+  if (countPhotos(withIcons) === 5) ok('UI 아이콘은 사진으로 세지 않는다')
+  else bad('사진 세기(아이콘)', String(countPhotos(withIcons)))
+
+  const same = '<div class="se-main-container">' +
+    '<img src="https://postfiles.pstatic.net/one.jpg">'.repeat(5) + '</div>'
+  if (countPhotos(same) === 1) ok('같은 사진을 여러 번 붙여도 한 장으로 센다', '장수 채우기 방지')
+  else bad('사진 세기(중복)', String(countPhotos(same)))
+
+  if (countPhotos('<img src="/a.png"><img src="/b.png"><img src="/c.png">') === 3) ok('일반 블로그는 img 태그로 센다')
+  else bad('사진 세기(일반)', String(countPhotos('<img src="/a.png"><img src="/b.png"><img src="/c.png">')))
+}
 
 // 제목·본문 낱말 — 어느 낱말이 되고 안 됐는지 낱개로 돌려줘야 한다
 {

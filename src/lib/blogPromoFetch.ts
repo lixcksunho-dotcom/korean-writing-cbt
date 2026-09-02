@@ -32,18 +32,25 @@ export function blogFetchCandidates(raw: string): string[] {
   return [url]
 }
 
-/** 본문 사진 수. 네이버는 에디터 이미지 모듈을, 그 외는 img 태그를 센다.
- *  옆 메뉴·공지글 썸네일이 섞이지 않도록 본문 안에서만 센다. */
+/**
+ * 본문 사진 수. 옆 메뉴·공지글 썸네일이 섞이지 않게 본문 안에서만 센다.
+ *
+ * 클래스 이름(se-module-image)을 세면 안 된다 — 스마트에디터는 사진 한 장에 그 이름을
+ * 두 번 쓴다(모듈 div 하나, 그 안의 링크 a 하나). 실측에서 5장짜리 글이 10장으로 셌다.
+ * 실제 이미지 주소를 세고, 같은 사진이 두 번 나오면 한 장으로 본다.
+ */
 export function countPhotos(raw: string): number {
   const html = extractPostBody(raw).html
-  const seModules = (html.match(/se-module-image/gi) ?? []).length
-  if (seModules > 0) return seModules
-  // 네이버 구 에디터: 사진 CDN 주소로 센다
-  const cdn = new Set(
-    [...html.matchAll(/https?:\/\/(?:postfiles|blogfiles|mblogthumb)[^"'\s)]{20,}/gi)].map(m => m[0].split('?')[0]),
+  const srcs = [...html.matchAll(/<img\b[^>]*\bsrc=["']([^"']+)["']/gi)].map(m => m[1])
+
+  // 네이버 사진은 전용 CDN에 올라간다. 이모티콘·아이콘(ssl.pstatic.net/static)과 갈린다.
+  const photos = new Set(
+    srcs.filter(s => /(?:postfiles|blogfiles|mblogthumb)/i.test(s)).map(s => s.split('?')[0]),
   )
-  if (cdn.size > 0) return cdn.size
-  return (html.match(/<img\b/gi) ?? []).length
+  if (photos.size > 0) return photos.size
+
+  // 그 밖의 블로그: 본문 안의 img를 센다(주소가 제각각이라 걸러낼 기준이 없다).
+  return new Set(srcs.map(s => s.split('?')[0])).size
 }
 
 const UA = {
