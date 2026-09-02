@@ -27,6 +27,41 @@ export const MIN_CHARS = 1500
 /** 승인 시 지급 일수 */
 export const REWARD_DAYS = 30
 
+// ── 공정위 표시 의무 ────────────────────────────────────────────────────────
+//
+// 이용권을 주고 글을 받으면 그것은 광고다. '추천·보증 등에 관한 표시·광고 심사지침'에
+// 따라 **경제적 이해관계를 밝혀야 한다.** 안 밝히면 광고주(우리)가 제재를 받는다 —
+// 시정명령, 관련매출액 2% 이내 과징금까지 갈 수 있다. 글쓴이만의 문제가 아니다.
+//
+// 그래서 '있으면 좋은 것'이 아니라 **없으면 지급하지 않는 조건**으로 둔다.
+//
+// 규정에서 확인한 것(2026-09-02):
+//  · 위치 — 제목 또는 본문 첫 부분. '더보기'를 눌러야 보이는 자리·댓글은 인정 안 됨
+//  · 형식 — 배경과 구분되게, 알아보기 쉬운 크기·색
+//  · 금지 — '체험단', '체험 후기', 'AD', 'PR', '내돈내산',
+//           '소정의 수수료를 지급받을 수 있음'처럼 조건부·불확정 표현
+
+/** 이 중 하나가 글에 있어야 한다(지침의 표준 문구 계열) */
+export const DISCLOSURE_PHRASES = [
+  '광고',            // '유료광고'·'광고 포함'도 이 낱말을 품는다
+  '유료 광고',
+  '대가를 받',       // '소정의 대가를 받고 작성'
+  '무료로 제공받',
+  '이용권을 제공받',
+  '무상으로 제공받',
+] as const
+
+/** 이런 표현만으로는 공개로 인정되지 않는다 */
+export const DISCLOSURE_NOT_ENOUGH = [
+  '체험단', '체험후기', '체험 후기', '내돈내산', '기자단',
+  'AD', 'PR', 'Advertisement', 'sponsored',
+  '지급받을 수 있', '제공받을 수 있',   // 조건부·불확정 표현
+] as const
+
+/** 우리가 권하는 문구 — 화면과 안내가 같은 문장을 쓴다 */
+export const DISCLOSURE_SAMPLE =
+  '이 글은 실글패스로부터 이용권을 무료로 제공받아 작성한 광고입니다.'
+
 export type RuleCheck = { rule: string; ok: boolean; detail: string }
 export type BlogPromoResult = {
   /** 자동으로 판정할 수 있었는가. false면 사람이 봐야 한다. */
@@ -103,6 +138,23 @@ export function checkBlogHtml(html: string, photos?: number, ownerCode?: string,
       detail: readable ? `${chars.toLocaleString('ko-KR')}자` : '본문을 못 읽음',
     },
   ]
+
+  // 공정위 표시 의무 — 없으면 지급하지 않는다. 안 밝히면 광고주인 우리가 제재를 받는다.
+  {
+    const head = squash(raw.slice(0, 600))     // 제목~본문 첫머리
+    const anywhere = squash(raw)
+    const hasPhrase = DISCLOSURE_PHRASES.some(k => anywhere.includes(squash(k)))
+    const inHead = DISCLOSURE_PHRASES.some(k => head.includes(squash(k)))
+    const weakOnly = !hasPhrase && DISCLOSURE_NOT_ENOUGH.some(k => anywhere.includes(squash(k)))
+    checks.push({
+      rule: '광고임을 밝히는 문구(글 첫머리)',
+      ok: readable && hasPhrase && inHead,
+      detail: !readable ? '본문을 못 읽음'
+        : !hasPhrase ? (weakOnly ? "'체험단'·'AD' 같은 말로는 부족합니다 — '광고' 또는 '대가를 받고'가 들어가야 해요" : '못 찾음')
+        : !inHead ? '글 뒤쪽에 있어요 — 제목이나 첫 부분으로 옮겨 주세요'
+        : '확인됨',
+    })
+  }
 
   // 본인 확인 코드 — 남이 쓴 글 주소를 그대로 내는 것을 막는다.
   if (ownerCode) {

@@ -3,7 +3,8 @@
 import { useState, useTransition } from 'react'
 import { PenLine, CheckCircle2, AlertCircle, Check, X } from 'lucide-react'
 import { submitBlogReview } from '@/app/(main)/subscribe/blog-review-actions'
-import { TITLE_KEYWORDS, BODY_KEYWORDS, MIN_IMAGES, MIN_CHARS, REWARD_DAYS, type RuleCheck } from '@/lib/blogPromoRules'
+import { TITLE_KEYWORDS, BODY_KEYWORDS, MIN_IMAGES, MIN_CHARS, REWARD_DAYS, DISCLOSURE_SAMPLE, type RuleCheck } from '@/lib/blogPromoRules'
+import DisclosureCopyBox from '@/components/subscribe/DisclosureCopyBox'
 
 // 블로그에 홍보 글을 쓰면 이용권을 드리는 신청 화면.
 // 조건을 '내고 나서' 알려 주면 늦다 — 쓰기 전에 보이도록 폼 위에 그대로 적는다.
@@ -67,15 +68,15 @@ export default function BlogReviewForm({ ownerCode }: { ownerCode: string }) {
         <li className="flex gap-2">
           <span className="font-bold text-[#d97706]">4</span>
           <span>
-            글 맨 아래에 <b>본인 확인 코드</b>를 적어 주세요 — 본인이 쓴 글임을 확인하는 용도예요.
-            <span className="mt-1.5 block">
-              <code className="rounded border border-dashed border-[#d97706]/50 bg-white px-2.5 py-1.5 font-mono text-sm font-black tracking-widest text-[#b45309]">
-                {ownerCode}
-              </code>
-            </span>
+            아래 두 문구를 <b>복사해서 그대로</b> 붙여 주세요 — 광고 표시(법정 의무)와
+            본인 확인용입니다.
           </span>
         </li>
       </ol>
+
+      <div className="mb-4">
+        <DisclosureCopyBox sample={DISCLOSURE_SAMPLE} ownerCode={ownerCode} />
+      </div>
 
       {result ? (
         <div className={`rounded-lg border p-4 ${result.autoPassed ? 'border-emerald-200 bg-emerald-50' : 'border-amber-200 bg-amber-50'}`} role="status">

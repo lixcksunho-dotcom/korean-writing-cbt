@@ -14,7 +14,7 @@
 
 import fs from 'node:fs'
 import { chromium } from 'playwright'
-import { checkBlogHtml, isLikelyBlogPostUrl, MIN_IMAGES, MIN_CHARS, BODY_KEYWORDS } from '../src/lib/blogPromoRules.ts'
+import { checkBlogHtml, isLikelyBlogPostUrl, MIN_IMAGES, MIN_CHARS, BODY_KEYWORDS, DISCLOSURE_SAMPLE } from '../src/lib/blogPromoRules.ts'
 import { blogFetchCandidates, countPhotos, countBodyChars } from '../src/lib/blogPromoFetch.ts'
 import { blogOwnerCode, bodyHasOwnerCode } from '../src/lib/blogOwnerCode.ts'
 
@@ -45,6 +45,7 @@ const bad = (n, d = '') => { console.error(`  × ${n}${d ? ` — ${d}` : ''}`); 
 console.log(`\n블로그 홍보 심사 — ${BASE}\n`)
 
 const good = `<html><head><title>실글패스로 실용글쓰기시험 준비한 후기</title></head><body>
+<p>${DISCLOSURE_SAMPLE}</p>
 ${'가나다라마바사아자차카타파하 '.repeat(140)}
 실글패스 정말 좋았습니다. 실용글쓰기시험 준비에 실용글쓰기CBT가 큰 도움이 됐어요.
 공기업자격증 준비하시는 분께 추천합니다.
@@ -118,6 +119,29 @@ else bad('코드 포함 판정', checkBlogHtml(withCode, countPhotos(withCode), 
 // 코드가 없으면 통과하면 안 된다 — 남의 글 도용을 막는 자리다
 if (!checkBlogHtml(good, countPhotos(good), code, countBodyChars(good)).allPassed) ok('코드가 없으면 통과시키지 않는다', '남의 글 도용 차단')
 else bad('도용 차단', '코드 없이 통과한다')
+
+// ── 공정위 표시 의무 ────────────────────────────────────────────────────────
+// 대가를 받고 쓴 글에 광고임을 안 밝히면 광고주(우리)가 제재를 받는다.
+// '있으면 좋은 것'이 아니라 '없으면 못 주는 것'이어야 한다.
+const noAd = good.replace(`<p>${DISCLOSURE_SAMPLE}</p>`, '')
+const rNoAd = checkBlogHtml(noAd, countPhotos(noAd), undefined, countBodyChars(noAd))
+const adCheck = rNoAd.checks.find(c => c.rule.includes('광고임을'))
+if (adCheck && !adCheck.ok && !rNoAd.allPassed) ok('광고 표시가 없으면 통과시키지 않는다', '공정위 표시 의무')
+else bad('광고 표시 강제', '문구 없이 통과한다 — 광고주가 제재를 받는다')
+
+// '체험단'·'AD' 같은 말로는 인정되지 않는다(지침이 명시적으로 배제)
+const weak = noAd.replace('<body>', '<body><p>체험단 후기입니다 #AD</p>')
+const rWeak = checkBlogHtml(weak, countPhotos(weak), undefined, countBodyChars(weak))
+const weakCheck = rWeak.checks.find(c => c.rule.includes('광고임을'))
+if (weakCheck && !weakCheck.ok) ok("'체험단'·'AD'만으로는 인정하지 않는다", weakCheck.detail.slice(0, 40))
+else bad('약한 표현 판정', '체험단·AD로 통과한다')
+
+// 위치도 본다 — 맨 뒤에 적으면 소비자가 못 본다(지침: 제목 또는 첫 부분)
+const tail = noAd.replace('</body>', `<p>${DISCLOSURE_SAMPLE}</p></body>`)
+const rTail = checkBlogHtml(tail, countPhotos(tail), undefined, countBodyChars(tail))
+const tailCheck = rTail.checks.find(c => c.rule.includes('광고임을'))
+if (tailCheck && !tailCheck.ok) ok('글 뒤쪽에 적으면 안 된다고 알려 준다', tailCheck.detail.slice(0, 40))
+else bad('위치 판정', '맨 뒤에 있어도 통과한다')
 
 // 짧은 글은 통과시키지 않는다 — 한두 줄 쓰고 사진만 붙이면 홍보가 안 된다
 const shortPost = good.replace(/가나다라마바사아자차카타파하 /g, '')  // 본문을 비워 짧은 글로 만든다
