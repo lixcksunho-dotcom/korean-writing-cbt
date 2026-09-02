@@ -57,6 +57,25 @@ try {
   if (await signup.count()) ok('채점 뒤 가입으로 잇는다', `${await signup.count()}곳`)
   else bad('가입 유도', '이어지는 곳이 없다')
 
+  // ── 설명 페이지에 붙인 문제 ─────────────────────────────────────────────
+  // 검색으로 들어오는 사람의 대부분이 설명 페이지에 닿는다. 읽고 그냥 나가면
+  // 우리 문제를 한 번도 못 본 것이다. 거기서 바로 풀 수 있어야 한다.
+  for (const path of ['/spelling', '/manuscript-guide', '/loanword-spelling']) {
+    await page.goto(`${BASE}${path}`, { waitUntil: 'networkidle', timeout: 60000 })
+    const quiz = page.locator('section:has(ol > li button[aria-pressed])')
+    if (await quiz.count()) ok(`${path} 에서 바로 풀 수 있다`)
+    else { bad(`${path} 문제 블록`, '설명만 있고 풀 곳이 없다'); continue }
+
+    const items = quiz.locator('ol > li')
+    const n = await items.count()
+    for (let i = 0; i < n; i++) await items.nth(i).locator('button[aria-pressed]').first().click()
+    await quiz.getByRole('button', { name: /채점/ }).click()
+    await page.waitForTimeout(600)
+    const t = await quiz.innerText()
+    if (/채점 결과/.test(t) && /해설/.test(t)) ok(`${path} 채점·해설까지 로그인 없이`, `${n}문항`)
+    else bad(`${path} 채점`, t.slice(0, 60))
+  }
+
   // 홈에서 이 화면으로 들어올 길이 있는가
   await page.goto(BASE, { waitUntil: 'domcontentloaded', timeout: 60000 })
   if (await page.locator('a[href="/try"]').count()) ok('첫 화면에서 들어갈 수 있다')

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import InlineQuiz from '@/components/try/InlineQuiz'
 import Link from "next/link";
 import LogoGlyph from "@/components/layout/LogoGlyph";
 import SiteFooter from "@/components/layout/SiteFooter";
@@ -270,6 +271,8 @@ export default function ManuscriptGuidePage() {
             {" · "}
             <Link href="/exam-info" className="underline hover:text-[#1e3a5f]">시험정보</Link>
           </section>
+          {/* 읽은 자리에서 바로 풀게 한다 — 설명만 있는 페이지는 읽고 그냥 나간다 */}
+          <InlineQuiz topic={{ keyword: "공문서", label: "공문서 표기" }} />
           <RelatedBlogPosts category="writing" seed="manuscript-guide" />
         </div>
       </main>

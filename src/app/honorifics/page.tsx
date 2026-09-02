@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import InlineQuiz from '@/components/try/InlineQuiz'
 import Link from "next/link";
 import LogoGlyph from "@/components/layout/LogoGlyph";
 import SiteFooter from "@/components/layout/SiteFooter";
@@ -221,6 +222,8 @@ export default function HonorificsPage() {
             {" · "}
             <Link href="/refined-words" className="underline hover:text-[#1e3a5f]">순화어 모음</Link>
           </section>
+          {/* 읽은 자리에서 바로 풀게 한다 — 설명만 있는 페이지는 읽고 그냥 나간다 */}
+          <InlineQuiz topic={{ keyword: "높임", label: "높임 표현" }} />
           <RelatedBlogPosts category="grammar" seed="honorifics" />
         </div>
       </main>
