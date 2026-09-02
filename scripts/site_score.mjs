@@ -73,11 +73,20 @@ const BASE_ENV = {
 
 const failLog = []
 
+const timings = []
+
+// 한 검사에 15분을 줬더니 시험 한 회차를 끝까지 푸는 검사가 잘렸다. 단독으로 돌리면
+// 7분에 13/13 통과하는 검사가 채점기 안에서만 0점으로 찍혔다 — 앱이 아니라 잣대가
+// 틀린 것이다. 30분으로 늘리고, 어느 검사가 오래 걸리는지 함께 적는다.
 const run = (cmd) => {
+  const started = Date.now()
   try {
-    return { ok: true, out: execSync(cmd, { encoding: 'utf-8', stdio: 'pipe', timeout: 900_000, env: { ...process.env, ...BASE_ENV } }) }
+    const out = execSync(cmd, { encoding: 'utf-8', stdio: 'pipe', timeout: 1_800_000, env: { ...process.env, ...BASE_ENV } })
+    timings.push({ cmd, sec: Math.round((Date.now() - started) / 1000), ok: true })
+    return { ok: true, out }
   } catch (e) {
     const out = String(e.stdout ?? '') + String(e.stderr ?? '')
+    timings.push({ cmd, sec: Math.round((Date.now() - started) / 1000), ok: false })
     // 왜 실패했는지 안 남기면 다음 사람은 '0점'만 보고 무엇을 고쳐야 할지 모른다.
     // 점수판이 스스로 저지르면 안 되는 잘못이 바로 그것이다.
     failLog.push({ cmd, tail: out.split(String.fromCharCode(10)).filter(Boolean).slice(-12).join(String.fromCharCode(10)) })
@@ -209,6 +218,13 @@ say(`실글패스 사이트 점수 — ${new Date().toISOString().slice(0, 16).r
     if (overCls.length) notes.push(`흔들리는 면: ${overCls.slice(0, 5).map(m => `${m[1]}(${m[2]})`).join(', ')}`)
   } else notes.push('속도를 재지 못했다 → 0/10')
   cat('속도', got, 10, notes)
+}
+
+const slow = timings.filter(t => t.sec >= 120).sort((a, b) => b.sec - a.sec)
+if (slow.length) {
+  say(`
+[오래 걸린 검사]`)
+  for (const t of slow) say(`  ${String(t.sec).padStart(4)}초  ${t.ok ? "통과" : "실패"}  ${t.cmd.replace("npm run --silent ", "")}`)
 }
 
 if (failLog.length) {

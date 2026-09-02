@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo, useRef, useSyncExternalStore, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
+import { examTimerLevel } from '@/lib/examTimerLevel'
 import { Clock, ChevronLeft, ChevronRight, ChevronDown, Send, AlertCircle, CheckCircle2, FileText, Save } from 'lucide-react'
 import { submitSession, saveExamProgress } from '@/app/(main)/cbt/actions'
 import { readableActionError } from '@/lib/actionErrorMessage'
@@ -264,7 +265,8 @@ export default function ExamPlayer({
   const progress = (answeredCount / questions.length) * 100
   const minutes = Math.floor(timeLeft / 60)
   const seconds = timeLeft % 60
-  const timerWarning = timeLeft < 600 // 10분 미만
+  // 10분 내내 깜빡이면 문제를 못 읽는다. 알아차리는 단계와 서둘러야 하는 단계를 나눈다.
+  const timerLevel = examTimerLevel(timeLeft)
   const multipleCount = questions.filter(q => q.type === 'multiple').length
   const essayCount = questions.filter(q => q.type === 'essay').length
 
@@ -321,9 +323,16 @@ export default function ExamPlayer({
             </div>
           </div>
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-            <div className={`flex items-center gap-1.5 font-mono font-bold text-sm px-3 py-1.5 rounded-xl ${
-              timerWarning ? 'bg-red-50 text-red-700 animate-pulse' : 'bg-[#f1f5f9] text-[#334155]'
-            }`}>
+            <div
+              className={`flex items-center gap-1.5 font-mono font-bold text-sm px-3 py-1.5 rounded-xl ${
+                timerLevel === 'urgent' ? 'bg-red-100 text-red-800 motion-safe:animate-pulse'
+                  : timerLevel === 'soon' ? 'bg-amber-100 text-amber-900'
+                  : 'bg-[#f1f5f9] text-[#334155]'
+              }`}
+              role="timer"
+              aria-live={timerLevel === 'urgent' ? 'assertive' : 'off'}
+              aria-label={`남은 시간 ${minutes}분 ${seconds}초`}
+            >
               <Clock className="h-3.5 w-3.5" />
               {String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
             </div>
@@ -650,9 +659,24 @@ export default function ExamPlayer({
                 </div>
               )}
               {answeredCount < questions.length && (
-                <p className="text-amber-700 text-xs font-medium pt-1">
-                  ⚠ {questions.length - answeredCount}문항이 미완료 상태입니다.
-                </p>
+                <div className="pt-1">
+                  <p className="text-amber-700 text-xs font-medium">
+                    ⚠ {questions.length - answeredCount}문항이 미완료 상태입니다.
+                  </p>
+                  {/* 몇 개 비었는지만 알려 주고 갈 길을 안 주면, 창을 닫고 목록에서
+                      빈 칸을 눈으로 찾아야 한다. 바로 데려다준다. */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const first = questions.findIndex(q => !answers[q.id])
+                      if (first >= 0) setCurrentIdx(first)
+                      setShowConfirm(false)
+                    }}
+                    className="mt-2 inline-flex min-h-11 items-center gap-1 text-xs font-bold text-[#1e3a5f] underline underline-offset-4"
+                  >
+                    안 푼 첫 문항으로 가기
+                  </button>
+                </div>
               )}
             </div>
             <div className="flex gap-3">
