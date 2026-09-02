@@ -2,6 +2,19 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { CreditCard } from 'lucide-react'
 import PaymentsAdmin, { type PaymentRow } from './PaymentsAdmin'
 import { summarizeAttempts, type AttemptFunnel } from '@/lib/paymentAttemptFunnel'
+import DailySales from './DailySales'
+import { summarizeSales, type SubscriptionRow } from '@/lib/dailySales'
+
+/** 우리가 실제로 발급한 원장. 포트원 키가 없어도 이건 보여야 한다. */
+async function loadSales() {
+  const admin = createAdminClient()
+  const { data } = await admin
+    .from('subscriptions')
+    .select('created_at, amount, status, payment_key')
+    .order('created_at', { ascending: false })
+    .limit(1000)
+  return summarizeSales((data ?? []) as SubscriptionRow[], new Date())
+}
 
 export const dynamic = 'force-dynamic'
 
@@ -148,10 +161,13 @@ function AttemptSummary({ funnel }: { funnel: AttemptFunnel }) {
 }
 
 export default async function AdminPaymentsPage() {
-  const { rows, funnel, listError } = await loadRecentPayments()
+  // 매출 집계는 포트원 키와 무관하게 뜬다 — 목록 조회가 실패해도 '얼마 들어왔는지'는 보여야 한다.
+  const [{ rows, funnel, listError }, sales] = await Promise.all([loadRecentPayments(), loadSales()])
 
   return (
     <div>
+      <DailySales summary={sales} />
+
       <div className="mb-6 flex items-center gap-2">
         <CreditCard className="h-5 w-5 text-amber-500" />
         <h1 className="text-xl font-black text-gray-900">결제 복구</h1>
