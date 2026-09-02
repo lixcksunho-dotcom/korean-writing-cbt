@@ -76,6 +76,24 @@ try {
     else bad(`${path} 채점`, t.slice(0, 60))
   }
 
+  // ── 로그인 벽 ──────────────────────────────────────────────────────────
+  // '무료 CBT 모의고사'라고 해놓고 로그인을 요구하면 검색으로 온 사람은 거기서 끝난다.
+  // 30일 실측: 콘텐츠에 4,604명이 닿고 목록까지 온 사람은 382명뿐이었다.
+  // 설명 페이지의 CTA는 로그인 없이 되는 자리를 가리켜야 한다.
+  {
+    const fs2 = await import('node:fs')
+    const pages = fs2.readdirSync('src/app', { withFileTypes: true })
+      .filter(e => e.isDirectory() && !e.name.startsWith('(') && !e.name.startsWith('_'))
+      .map(e => `src/app/${e.name}/page.tsx`)
+      .filter(p => fs2.existsSync(p))
+    const walled = pages.filter(p => {
+      const src = fs2.readFileSync(p, 'utf8')
+      return /href="\/cbt"[\s\S]{0,240}무료/.test(src)
+    })
+    if (walled.length === 0) ok('설명 페이지가 로그인 벽으로 안 보낸다')
+    else bad('로그인 벽', `'무료'라 해놓고 로그인이 필요한 곳으로 보내는 페이지: ${walled.map(p => p.split('/')[2]).join(', ')}`)
+  }
+
   // 홈에서 이 화면으로 들어올 길이 있는가
   await page.goto(BASE, { waitUntil: 'domcontentloaded', timeout: 60000 })
   if (await page.locator('a[href="/try"]').count()) ok('첫 화면에서 들어갈 수 있다')

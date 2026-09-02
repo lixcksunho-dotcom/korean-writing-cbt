@@ -245,8 +245,8 @@ export default function SpellingPage() {
             <LogoGlyph className="h-7 w-7" />
             <span className="font-black text-[#1e3a5f]">실글패스</span>
           </Link>
-          <Link href="/cbt" className="text-sm font-semibold text-[#64748b] hover:text-[#1e3a5f] transition-colors py-3">
-            무료 CBT 모의고사 →
+          <Link href="/try" className="text-sm font-semibold text-[#64748b] hover:text-[#1e3a5f] transition-colors py-3">
+            가입 없이 문제 풀어보기 →
           </Link>
         </div>
       </header>
@@ -339,8 +339,8 @@ export default function SpellingPage() {
               <p className="text-lg font-black mb-1">맞춤법, 문제로 풀어야 진짜 는다</p>
               <p className="text-white/70 text-sm mb-5">한국실용글쓰기 CBT에서 맞춤법·어법을 유형별로 연습하고, 서술형은 AI 첨삭으로 표기 오류까지 짚어보세요. 무료로 시작할 수 있어요.</p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                <Link href="/cbt" className="btn-gold inline-flex items-center justify-center gap-1.5 font-bold py-3 px-6 rounded-xl text-sm">
-                  무료 CBT 모의고사 풀어보기
+                <Link href="/try" className="btn-gold inline-flex items-center justify-center gap-1.5 font-bold py-3 px-6 rounded-xl text-sm">
+                  가입 없이 문제 풀어보기
                 </Link>
                 <Link href="/signup" className="inline-flex items-center justify-center gap-1.5 font-bold py-3 px-6 rounded-xl text-sm bg-white/10 text-white border border-white/20 hover:bg-white/15 transition-colors">
                   무료로 시작하기

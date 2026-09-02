@@ -111,8 +111,8 @@ export default function ManuscriptGuidePage() {
             <LogoGlyph className="h-7 w-7" />
             <span className="font-black text-[#1e3a5f]">실글패스</span>
           </Link>
-          <Link href="/cbt" className="text-sm font-semibold text-[#64748b] hover:text-[#1e3a5f] transition-colors py-3">
-            무료 CBT 모의고사 →
+          <Link href="/try" className="text-sm font-semibold text-[#64748b] hover:text-[#1e3a5f] transition-colors py-3">
+            가입 없이 문제 풀어보기 →
           </Link>
         </div>
       </header>
@@ -237,8 +237,8 @@ export default function ManuscriptGuidePage() {
                 <Link href="/manuscript" className="btn-gold inline-flex items-center justify-center gap-1.5 font-bold py-3 px-6 rounded-xl text-sm">
                   원고지 AI 첨삭 받아보기
                 </Link>
-                <Link href="/cbt" className="inline-flex items-center justify-center gap-1.5 font-bold py-3 px-6 rounded-xl text-sm bg-white/10 text-white border border-white/20 hover:bg-white/15 transition-colors">
-                  무료 CBT 모의고사
+                <Link href="/try" className="inline-flex items-center justify-center gap-1.5 font-bold py-3 px-6 rounded-xl text-sm bg-white/10 text-white border border-white/20 hover:bg-white/15 transition-colors">
+                  가입 없이 문제 풀어보기
                 </Link>
               </div>
             </div>

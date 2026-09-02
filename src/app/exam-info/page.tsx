@@ -79,8 +79,8 @@ export default function ExamInfoPage() {
             <LogoGlyph className="h-7 w-7" />
             <span className="font-black text-[#1e3a5f]">실글패스</span>
           </Link>
-          <Link href="/cbt" className="text-sm font-semibold text-[#64748b] hover:text-[#1e3a5f] transition-colors py-3">
-            무료 CBT 모의고사 →
+          <Link href="/try" className="text-sm font-semibold text-[#64748b] hover:text-[#1e3a5f] transition-colors py-3">
+            가입 없이 문제 풀어보기 →
           </Link>
         </div>
       </header>
@@ -210,8 +210,8 @@ export default function ExamInfoPage() {
               <p className="text-lg font-black mb-1">지금 실력, 몇 점일까?</p>
               <p className="text-white/70 text-sm mb-5">모의고사 2회분은 무료 · 서술형 AI 첨삭도 무료로 체험할 수 있어요.</p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                <Link href="/cbt" className="btn-gold inline-flex items-center justify-center gap-1.5 font-bold py-3 px-6 rounded-xl text-sm">
-                  무료 CBT 모의고사 풀어보기
+                <Link href="/try" className="btn-gold inline-flex items-center justify-center gap-1.5 font-bold py-3 px-6 rounded-xl text-sm">
+                  가입 없이 문제 풀어보기
                 </Link>
                 <Link href="/signup" className="inline-flex items-center justify-center gap-1.5 font-bold py-3 px-6 rounded-xl text-sm bg-white/10 text-white border border-white/20 hover:bg-white/15 transition-colors">
                   무료로 시작하기
