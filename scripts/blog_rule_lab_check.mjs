@@ -8,7 +8,13 @@ import {
   MIN_IMAGES,
   TITLE_KEYWORDS,
 } from '../src/lib/blogPromoRules.ts'
-import { countPhotos, countBodyChars, fetchBlogPost } from '../src/lib/blogPromoFetch.ts'
+import {
+  blogFetchCandidates,
+  countBodyChars,
+  countPhotos,
+  fetchBlogPost,
+  naverBlockedReason,
+} from '../src/lib/blogPromoFetch.ts'
 import { extractPostBody } from '../src/lib/blogPostBody.ts'
 
 let pass = 0, fail = 0
@@ -117,6 +123,21 @@ ok('본인 확인 코드는 쓰지 않음', !fs.existsSync('src/lib/blogOwnerCod
   ok('글꼴은 보는 사람 브라우저 것을 쓴다(두부 방지)', img.includes('Malgun Gothic'))
   ok('그림 옆에 판정용 한 줄도 함께 준다', box.includes('DisclosureImage') && box.includes('{b.text}'))
   ok('그림만으로는 확인이 안 된다고 알린다', box.includes('기계가 읽지 못'))
+}
+
+// ── 못 보여주는 글 ─────────────────────────────────────────────────────────
+// 비공개·삭제 글은 네이버가 200으로 답하면서 본문 자리에 알림창 스크립트를 넣는다.
+// 이걸 못 알아채면 다음 후보를 읽다 결국 블로그 홈을 읽는다 — 실측에서 지워진 글이
+// 홈의 사진 57장·2,660자로 조건을 통과했다.
+{
+  const closed = `<html><body><script>var msg = '비공개 글 입니다.'; if(msg!=''){alert(msg);} location.replace('/PostList.naver?blogId=abc&fromClosedPost=true');</script></body></html>`
+  ok('비공개 글을 알아챈다', naverBlockedReason(closed)?.includes('비공개 글 입니다'), naverBlockedReason(closed) ?? '못 알아챔')
+  ok('멀쩡한 글은 막지 않는다', naverBlockedReason(good) === null, naverBlockedReason(good))
+
+  const naverCandidates = blogFetchCandidates('https://blog.naver.com/abc/224398488516')
+  ok('껍데기 주소는 아예 읽지 않는다',
+    !naverCandidates.some(u => /^https:\/\/blog\.naver\.com\/abc\/\d+$/.test(u)),
+    naverCandidates.join(' / '))
 }
 
 // 못 읽는 주소는 오류로 돌아와야 한다(조용히 통과하면 안 된다)

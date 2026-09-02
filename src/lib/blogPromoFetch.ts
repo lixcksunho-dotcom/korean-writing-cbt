@@ -19,11 +19,13 @@ export function blogFetchCandidates(raw: string): string[] {
   const naver = url.match(/blog\.naver\.com\/(?:PostView\.naver\?blogId=)?([A-Za-z0-9_-]+)[/&](?:logNo=)?(\d{6,})/)
   if (naver) {
     const [, id, logNo] = naver
+    // 원본 주소는 후보에서 뺐다. 그 주소는 껍데기(iframe)라, 글이 비공개로 바뀌면
+    // 그 글 대신 **블로그 홈**을 내준다 — 실측에서 지워진 글이 홈의 사진 57장·2,660자로
+    // 조건을 통과했다. 아예 안 읽는 편이 맞다.
     return [
       // 본문이 그대로 들어 있는 주소
       `https://blog.naver.com/PostView.naver?blogId=${id}&logNo=${logNo}&redirect=Dlog&widgetTypeCall=true&directAccess=false`,
       `https://m.blog.naver.com/${id}/${logNo}`,
-      url,
     ]
   }
   // 티스토리·워드프레스·브런치는 서버가 본문을 그대로 준다.
@@ -52,6 +54,19 @@ const UA = {
 
 export type FetchedPost = { html: string; via: string } | { html: null; reason: string }
 
+/**
+ * 네이버가 '이 글은 못 보여준다'고 답한 것인지 본다.
+ *
+ * 비공개·이웃공개·삭제 글은 200으로 오고, 본문 자리에 알림창을 띄운 뒤 글 목록으로
+ * 보내는 스크립트가 들어 있다. 이걸 못 알아채면 다음 후보로 넘어가다 결국 블로그
+ * 홈을 읽고 '조건 통과'라고 답한다(실측). 네이버가 쓴 문구를 그대로 돌려준다.
+ */
+export function naverBlockedReason(html: string): string | null {
+  if (!/location\.replace\(\s*['"]\/PostList/.test(html)) return null
+  const msg = html.match(/var\s+msg\s*=\s*'([^']+)'/)?.[1]?.trim()
+  return msg ? `네이버가 이렇게 답했어요: ${msg}` : '지금은 볼 수 없는 글이에요(비공개이거나 지워졌을 수 있어요)'
+}
+
 /** 후보를 차례로 읽어 본문이 들어 있는 문서를 돌려준다. */
 export async function fetchBlogPost(raw: string): Promise<FetchedPost> {
   let lastReason = '주소를 열지 못했어요'
@@ -60,6 +75,11 @@ export async function fetchBlogPost(raw: string): Promise<FetchedPost> {
       const res = await fetch(url, { headers: UA, redirect: 'follow', signal: AbortSignal.timeout(12000) })
       if (!res.ok) { lastReason = `주소를 열지 못했어요(${res.status})`; continue }
       const html = await res.text()
+
+      // 못 보여주는 글이면 여기서 끝낸다. 다음 후보로 넘어가면 엉뚱한 글을 읽는다.
+      const blocked = naverBlockedReason(html)
+      if (blocked) return { html: null, reason: blocked }
+
       const textLen = html.replace(/<script[\s\S]*?<\/script>/gi, ' ').replace(/<[^>]+>/g, ' ').replace(/\s+/g, '').length
       // 껍데기(iframe)는 글자가 거의 없다 — 다음 후보로 넘어간다.
       if (textLen >= 400) return { html, via: url }
