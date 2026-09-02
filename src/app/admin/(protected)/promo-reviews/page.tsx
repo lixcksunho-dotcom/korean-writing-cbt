@@ -1,5 +1,6 @@
 import { createAdminClient } from '@/lib/supabase/admin'
-import { PenLine } from 'lucide-react'
+import Link from 'next/link'
+import { PenLine, FlaskConical } from 'lucide-react'
 import { BLOG_REVIEW_PATH } from '@/lib/blogPromoRules'
 import ReviewClient, { type ReviewRow } from './ReviewClient'
 
@@ -47,6 +48,13 @@ export default async function AdminPromoReviewsPage() {
         {pending > 0 && (
           <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-bold text-amber-800">미처리 {pending}</span>
         )}
+        <Link
+          href="/admin/promo-reviews/test"
+          className="ml-auto inline-flex items-center gap-1.5 rounded-lg border border-[#e2e8f0] bg-white px-3 py-1.5 text-xs font-bold text-[#334155] hover:bg-[#f8fafc]"
+        >
+          <FlaskConical className="h-3.5 w-3.5" aria-hidden="true" />
+          판정 실험실
+        </Link>
       </div>
 
       <p className="mb-5 rounded-xl border border-[#e2e8f0] bg-white p-4 text-sm text-gray-600">
