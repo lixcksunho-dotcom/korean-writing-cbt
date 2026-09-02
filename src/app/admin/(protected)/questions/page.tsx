@@ -1,4 +1,5 @@
 import { questionBank } from '@/lib/questionBank'
+import { DEFAULT_PROGRAM } from '@/lib/programs'
 import Link from 'next/link'
 import { Plus, Edit2, BookOpen } from 'lucide-react'
 import DeleteButton from './DeleteButton'
@@ -9,6 +10,8 @@ export default async function AdminQuestionsPage() {
   const { data: questions } = await questionBank()
     .from('questions')
     .select('id, year, round, number, type, question')
+    // 이 서비스가 내보내는 문항만 관리한다 — KBS 문항은 kbspass 소관이다.
+    .eq('program', DEFAULT_PROGRAM)
     .order('year', { ascending: false })
     .order('round', { ascending: true })
     .order('number', { ascending: true })

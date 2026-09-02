@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { DEFAULT_PROGRAM } from '@/lib/programs'
 import { isActivePass } from '@/lib/subscription'
 import { REVOKED } from '@/lib/subscriptionRevocationPolicy'
 import { checkAiKey } from '@/lib/aiKeyStatus'
@@ -18,7 +19,9 @@ export default async function AdminHome() {
   const [alerts, aiKey, qCount, reviewRows, subRows, examDone, manuscriptCount, reportRows] = await Promise.all([
     recentOperatorAlerts(),
     checkAiKey(),
-    admin.from('questions').select('*', { count: 'exact', head: true }),
+    // KBS를 kbspass로 옮긴 뒤에도 이 표에는 KBS 문항 300개가 남아 있다.
+    // 안 거르면 대시보드가 이 서비스에 없는 문항까지 세어 보여 준다.
+    admin.from('questions').select('*', { count: 'exact', head: true }).eq('program', DEFAULT_PROGRAM),
     admin.from('reviews').select('proof_path, verified, is_visible'),
     admin.from('subscriptions').select('amount, status, expires_at'),
     admin.from('quiz_sessions').select('*', { count: 'exact', head: true }).not('completed_at', 'is', null),
