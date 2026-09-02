@@ -3,23 +3,44 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import Link from 'next/link'
-import { X, Gift, Check } from 'lucide-react'
+import { X, Gift, Check, CalendarDays, ExternalLink } from 'lucide-react'
 import { useDialogFocus } from '@/components/ui/dialogFocus'
 import { createClient } from '@/lib/supabase/client'
-import { BODY_KEYWORDS, MIN_CHARS, MIN_IMAGES, MIN_QA, REWARD_DAYS } from '@/lib/blogPromoRules'
+import { getSchedule, type Round } from '@/lib/examSchedule'
+import { BODY_KEYWORDS, MAX_REWARDS, MIN_CHARS, MIN_IMAGES, MIN_QA, REWARD_DAYS } from '@/lib/blogPromoRules'
 
 // 첫 화면에 이벤트를 알린다.
 //
 // 팝업은 쉽게 미움받는다. 세 가지로 줄였다.
 //   · 이미 이용권이 있는 사람에게는 띄우지 않는다(줄 것이 없다).
-//   · '오늘 하루 보지 않기'를 누르면 그날은 안 나온다. 그냥 닫으면 이번 방문만 쉰다.
+//   · '7일 동안 보지 않기'를 누르면 일주일간 안 나온다. 그냥 닫으면 이번 방문만 쉰다.
 //   · 첫 화면 말고는 어디에도 안 띄운다.
+//
+// 시험 일정도 여기서 같이 보여 준다. 예전엔 일정 안내와 이벤트가 따로 떠서 둘이 겹쳤다 —
+// 자동으로 뜨는 창이 둘이면 사람은 내용을 안 읽고 둘 다 닫는다.
 //
 // 저장은 브라우저에만 한다 — 안 뜨는 게 서버 문제로 번지면 안 된다.
 
 const KEY = 'sgp_event_popup_hidden_until'
+const HIDE_DAYS = 7
 
-function hiddenToday(): boolean {
+const WD = ['일', '월', '화', '수', '목', '금', '토']
+function fmt(iso: string) {
+  const d = new Date(`${iso}T00:00:00`)
+  return `${d.getMonth() + 1}.${d.getDate()}(${WD[d.getDay()]})`
+}
+function daysUntil(iso: string) {
+  const now = new Date()
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
+  return Math.ceil((new Date(`${iso}T00:00:00`).getTime() - today) / 86400000)
+}
+
+/** 아직 안 끝난 첫 회차. 다 지났으면 null — 지난 회차를 보여 주면 그냥 틀린 정보다. */
+function nextRound(rounds: Round[]): Round | null {
+  return rounds.find(r => daysUntil(r.examDate) >= 0) ?? null
+}
+
+function hiddenForNow(): boolean {
   try {
     const until = localStorage.getItem(KEY)
     return !!until && Date.now() < Number(until)
@@ -30,11 +51,15 @@ function hiddenToday(): boolean {
 
 export default function EventPopup({ enabled }: { enabled: boolean }) {
   const [open, setOpen] = useState(false)
+  const [left, setLeft] = useState<number | null>(null)
+  const { rounds, applyUrl } = getSchedule('silyong')
+  const round = nextRound(rounds)
+  const applyOpen = round ? daysUntil(round.applyEnd) >= 0 : false
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (!enabled) return
-    if (hiddenToday()) return
+    if (hiddenForNow()) return
 
     let cancelled = false
     let poll: ReturnType<typeof setInterval> | undefined
@@ -56,6 +81,16 @@ export default function EventPopup({ enabled }: { enabled: boolean }) {
         }
       } catch {
         // 확인에 실패하면 그냥 보여 준다 — 안 뜨는 것보다 낫다
+      }
+      if (cancelled) return
+
+      // 마감이면 아예 안 띄운다 — 끝난 행사를 광고하면 눌러 본 사람만 헛걸음한다.
+      try {
+        const quota = await (await fetch('/api/promo/quota', { cache: 'no-store' })).json()
+        if (quota.closed) return
+        if (typeof quota.left === 'number' && quota.total > 0) setLeft(quota.left)
+      } catch {
+        // 못 세면 그냥 보여 준다
       }
       if (cancelled) return
 
@@ -81,11 +116,9 @@ export default function EventPopup({ enabled }: { enabled: boolean }) {
   useDialogFocus(open, ref, () => setOpen(false))
 
 
-  function hideForToday() {
+  function hideForAWhile() {
     try {
-      const midnight = new Date()
-      midnight.setHours(24, 0, 0, 0)
-      localStorage.setItem(KEY, String(midnight.getTime()))
+      localStorage.setItem(KEY, String(Date.now() + HIDE_DAYS * 24 * 60 * 60 * 1000))
     } catch {
       // 저장이 막혀 있으면 이번 방문만 닫힌다
     }
@@ -126,7 +159,9 @@ export default function EventPopup({ enabled }: { enabled: boolean }) {
           <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-amber-400/15">
             <Gift className="h-5 w-5 text-amber-300" aria-hidden="true" />
           </div>
-          <p className="text-xs font-semibold text-amber-300">블로그 후기 이벤트</p>
+          <p className="text-xs font-semibold text-amber-300">
+            블로그 후기 이벤트{left !== null && ` · ${left}자리 남음`}
+          </p>
           <h2 id="event-popup-title" className="mt-1 text-xl font-black leading-snug">
             후기 한 편 쓰고
             <br />
@@ -137,7 +172,43 @@ export default function EventPopup({ enabled }: { enabled: boolean }) {
           </p>
         </div>
 
+        {/* 시험 일정 — 이벤트보다 먼저 본다. 사람들이 첫 화면에서 가장 자주 찾는 것이 이 날짜다. */}
+        {round && (
+          <div className="border-b border-[#e2e8f0] bg-[#f8fafc] px-6 py-4">
+            <div className="mb-2 flex items-center gap-1.5">
+              <CalendarDays className="h-4 w-4 text-[#b45309]" aria-hidden="true" />
+              <p className="text-xs font-bold text-[#0f172a]">{round.round}</p>
+              <span className={`ml-auto rounded-full px-2 py-0.5 text-[11px] font-bold ${
+                applyOpen ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-100 text-gray-500'
+              }`}>
+                {applyOpen ? `접수 D-${daysUntil(round.applyEnd)}` : '접수 마감'}
+              </span>
+            </div>
+            <dl className="grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
+              <div className="flex justify-between">
+                <dt className="text-[#64748b]">접수</dt>
+                <dd className="font-semibold text-[#334155]">~{fmt(round.applyEnd)}</dd>
+              </div>
+              <div className="flex justify-between">
+                <dt className="text-[#64748b]">시험</dt>
+                <dd className="font-semibold text-[#334155]">{fmt(round.examDate)}</dd>
+              </div>
+            </dl>
+            {applyOpen && (
+              <a
+                href={applyUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-2.5 inline-flex items-center gap-1 text-xs font-bold text-[#b45309] hover:underline"
+              >
+                공식 접수 페이지로 <ExternalLink className="h-3 w-3" aria-hidden="true" />
+              </a>
+            )}
+          </div>
+        )}
+
         <div className="px-6 py-5">
+          <p className="mb-2.5 text-xs font-bold text-[#0f172a]">이벤트 조건</p>
           <ul className="space-y-2">
             {conditions.map(c => (
               <li key={c} className="flex items-start gap-2 text-sm text-[#334155]">
@@ -156,7 +227,7 @@ export default function EventPopup({ enabled }: { enabled: boolean }) {
           </Link>
 
           <p className="mt-3 text-center text-[11px] leading-relaxed text-[#94a3b8]">
-            계정당 1회 · 대가를 받고 쓰는 글이므로 광고 표시가 필요합니다.
+            선착순 {MAX_REWARDS}명 · 계정당 1회 · 대가를 받고 쓰는 글이므로 광고 표시가 필요합니다.
             <br />
             지급 뒤 글을 내리면 이용권도 함께 꺼집니다.
           </p>
@@ -164,10 +235,10 @@ export default function EventPopup({ enabled }: { enabled: boolean }) {
 
         <button
           type="button"
-          onClick={hideForToday}
+          onClick={hideForAWhile}
           className="w-full border-t border-[#e2e8f0] py-3 text-xs font-semibold text-[#64748b] transition-colors hover:bg-[#f8fafc]"
         >
-          오늘 하루 보지 않기
+          {HIDE_DAYS}일 동안 보지 않기
         </button>
       </div>
     </div>,

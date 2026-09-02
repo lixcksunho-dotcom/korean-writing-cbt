@@ -5,6 +5,7 @@ import {
   BODY_KEYWORDS,
   DISCLOSURE_SAMPLE,
   MIN_CHARS,
+  MAX_REWARDS,
   MIN_IMAGES,
   TITLE_KEYWORDS,
   countSelfQa,
@@ -172,6 +173,24 @@ ok('본인 확인 코드는 쓰지 않음', !fs.existsSync('src/lib/blogOwnerCod
   const withIcon = doc.replace('</div></body>',
     '<img src="https://ssl.pstatic.net/static/blog/icon.png"></div></body>')
   ok('아이콘은 사진으로 세지 않는다', countPhotos(withIcon) === 5, `${countPhotos(withIcon)}장`)
+}
+
+// ── 선착순 한도 ───────────────────────────────────────────────────────────
+// 답례는 공짜가 아니다. 7일 이용권 하나가 AI 채점을 최대 210회 쓸 수 있고 그건 비용이다.
+// 자동 지급과 관리자 승인이 **같은 자리**를 써야 한다 — 한 쪽만 막으면 우회로가 된다.
+{
+  const auto = fs.readFileSync('src/app/(main)/subscribe/blog-review-actions.ts', 'utf8')
+  const admin = fs.readFileSync('src/app/admin/(protected)/promo-reviews/actions.ts', 'utf8')
+  const quota = fs.readFileSync('src/lib/blogRewardQuota.ts', 'utf8')
+
+  ok('한도가 코드에 하나로 있다', MAX_REWARDS === 20, `${MAX_REWARDS}명`)
+  ok('자동 지급이 한도를 본다', auto.includes('blogRewardQuota') && auto.includes('quota.closed'))
+  ok('관리자 승인도 같은 한도를 본다', admin.includes('blogRewardQuota') && admin.includes('quota.closed'))
+  ok('회수된 자리는 돌려준다', quota.includes("eq('status', 'active')"), '취소된 발급은 안 센다')
+  ok('행사 코드 발급과 자리를 섞지 않는다', quota.includes("'review-'"), '접두사로 갈린다')
+
+  // 마감이어도 접수는 받아야 한다 — 조건 갖춰 쓴 글을 없던 일로 만들면 헛수고가 된다
+  ok('마감이어도 접수는 받는다', auto.includes('접수는 해 두었으니'))
 }
 
 // 못 읽는 주소는 오류로 돌아와야 한다(조용히 통과하면 안 된다)

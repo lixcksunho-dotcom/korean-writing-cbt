@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient as createPublicClient } from "@supabase/supabase-js";
 import EventPopup from "@/components/promo/EventPopup";
+import { BLOG_EVENT_POPUP_ENABLED } from "@/lib/blogPromoRules";
 import { SB_URL, SB_ANON } from "@/lib/supabase/sanitize";
 import { FileText, BookOpen, PenLine, CheckCircle, ArrowRight, Sparkles, Star, Gift, RotateCcw, Wallet } from "lucide-react";
 import LogoGlyph from "@/components/layout/LogoGlyph";
@@ -492,7 +493,7 @@ export default async function HomePage() {
 
       <SiteFooter />
       <ScheduleModal />
-      <EventPopup enabled />
+      <EventPopup enabled={BLOG_EVENT_POPUP_ENABLED} />
       <StickyMobileCTA />
     </div>
   );

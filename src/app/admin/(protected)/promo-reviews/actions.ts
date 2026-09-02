@@ -3,6 +3,7 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getActiveSubscription } from '@/lib/subscription'
 import { REWARD_DAYS } from '@/lib/blogPromoRules'
+import { blogRewardQuota } from '@/lib/blogRewardQuota'
 import { revalidatePath } from 'next/cache'
 
 export type ApproveResult = { ok: true; expiresAt: string } | { ok: false; message: string }
@@ -23,6 +24,12 @@ export async function approveBlogReview(feedbackId: string): Promise<ApproveResu
     .maybeSingle()
   if (!row?.user_id) return { ok: false, message: '신청을 찾지 못했습니다(비회원 신청은 지급할 수 없습니다).' }
   if (row.resolved) return { ok: false, message: '이미 처리된 신청입니다.' }
+
+  // 자동 지급과 같은 자리를 쓴다 — 여기서 안 막으면 한도를 우회하는 문이 하나 열린다.
+  const quota = await blogRewardQuota()
+  if (quota.closed) {
+    return { ok: false, message: `선착순 ${quota.total}명이 마감됐습니다(${quota.used}/${quota.total}).` }
+  }
 
   // 이미 이용권이 있으면 남은 기간 뒤에 이어 붙인다 — 겹쳐 주면 돈 낸 사람이 손해다.
   const current = await getActiveSubscription(row.user_id)

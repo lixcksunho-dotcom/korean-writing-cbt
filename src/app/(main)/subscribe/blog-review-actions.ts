@@ -12,6 +12,7 @@ import {
 } from '@/lib/blogPromoRules'
 import { fetchBlogPost, countPhotos, countBodyChars } from '@/lib/blogPromoFetch'
 import { getActiveSubscription } from '@/lib/subscription'
+import { blogRewardQuota } from '@/lib/blogRewardQuota'
 
 export type SubmitResult =
   | { ok: true; autoPassed: boolean; granted: boolean; checks: RuleCheck[]; note: string }
@@ -59,6 +60,16 @@ export async function submitBlogReview(url: string): Promise<SubmitResult> {
   // 다 통과하면 사람을 기다리지 않고 그 자리에서 지급한다.
   // 제목·본문·사진·글자수·광고표시가 모두 맞은 상태다.
   let granted = false
+  if (autoPassed) {
+    // 자리가 남아 있어야 준다. 마감이어도 접수는 받는다 — 조건을 다 갖춰 쓴 글을
+    // '자리가 없다'는 이유로 없던 일로 만들면 그 사람은 헛수고를 한 것이 된다.
+    const quota = await blogRewardQuota()
+    if (quota.closed) {
+      note = `조건을 모두 만족했지만 선착순 ${quota.total}명이 마감됐어요. 접수는 해 두었으니 자리가 나면 알려 드릴게요.`
+      autoPassed = false
+    }
+  }
+
   if (autoPassed) {
     const current = await getActiveSubscription(user.id)
     const base = current ? new Date(current.expires_at) : new Date()

@@ -4,6 +4,7 @@ import { getActiveSubscription, daysUntilExpiry } from '@/lib/subscription'
 import PaymentSection from '@/components/subscribe/PaymentSection'
 import PromoCodeBox from '@/components/subscribe/PromoCodeBox'
 import BlogReviewForm from '@/components/subscribe/BlogReviewForm'
+import { blogRewardQuota } from '@/lib/blogRewardQuota'
 import EventTracker from '@/components/analytics/EventTracker'
 import { CheckCircle2, Sparkles, Shield, Zap, LogIn, Star, Ticket, ChevronDown } from 'lucide-react'
 
@@ -24,6 +25,7 @@ export default async function SubscribePage(
   const openPromo = (await searchParams).promo === '1'
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
+  const rewardQuota = await blogRewardQuota()
 
   const copy = {
     subtitle: 'AI 채점·분석까지, 5,500원 1회 결제로 30일 무제한',
@@ -216,7 +218,7 @@ export default async function SubscribePage(
           </summary>
           <div className="space-y-4 border-t border-[#e2e8f0] p-5">
             <PromoCodeBox />
-            <BlogReviewForm />
+            <BlogReviewForm left={rewardQuota.left} total={rewardQuota.total} />
           </div>
         </details>
       )}

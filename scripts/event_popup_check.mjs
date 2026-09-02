@@ -9,6 +9,12 @@
 import fs from 'node:fs'
 import { chromium } from 'playwright'
 
+// 팝업은 플래그로 켜고 끈다. 꺼져 있을 때는 '안 뜨는 것'이 정답이다 —
+// 껐다고 검사를 지우면, 다시 켰을 때 무엇이 보장되는지 아무도 모른다.
+const ENABLED = /BLOG_EVENT_POPUP_ENABLED = true/.test(
+  fs.readFileSync('src/lib/blogPromoRules.ts', 'utf8'),
+)
+
 const ENV = Object.fromEntries(
   fs.readFileSync('.env.local', 'utf-8').split('\n')
     .filter(l => l.includes('=') && !l.trim().startsWith('#'))
@@ -55,6 +61,20 @@ const seen = async page => {
 
 const browser = await chromium.launch()
 try {
+  if (!ENABLED) {
+    const ctx = await browser.newContext()
+    const page = await ctx.newPage()
+    await page.goto(BASE, { waitUntil: 'domcontentloaded', timeout: 60000 })
+    await page.waitForTimeout(5000)
+    if (await page.locator(POPUP).count() === 0) ok('보류 중 — 팝업이 뜨지 않는다', '플래그 off')
+    else bad('보류 실패', '꺼 뒀는데 뜬다')
+    await ctx.close()
+    await browser.close()
+    console.log(`
+${fail ? '팝업에 구멍이 있다.' : '보류 상태가 지켜진다.'}`)
+    process.exit(fail ? 1 : 0)
+  }
+
   // 1) 처음 온 사람에게는 뜬다
   {
     const ctx = await browser.newContext()
@@ -72,13 +92,18 @@ try {
     else bad('광고 표시 고지', '안내가 없다')
     if (/글을 내리면/.test(text)) ok('내리면 꺼진다고 미리 알린다')
     else bad('회수 고지', '안내가 없다')
+    if (/접수|시험/.test(text)) ok('시험 일정을 같은 창에서 함께 보여 준다')
+    else bad('일정 표시', '이벤트만 있고 일정이 없다')
+    const others = await page.locator('[role="dialog"]:not([aria-labelledby="event-popup-title"])').count()
+    if (others === 0) ok('자동으로 뜨는 창은 이것 하나뿐이다')
+    else bad('창 겹침', `다른 창 ${others}개가 함께 떠 있다`)
 
     // 2) '오늘 하루 보지 않기'를 누르면 다시 안 뜬다
-    await page.getByRole('button', { name: '오늘 하루 보지 않기' }).click()
+    await page.getByRole('button', { name: /일 동안 보지 않기/ }).click()
     await page.waitForTimeout(300)
     await page.reload({ waitUntil: 'domcontentloaded' })
-    if (!(await seen(page))) ok('오늘 하루 보지 않기를 누르면 다시 안 뜬다')
-    else bad('하루 숨기기', '또 뜬다')
+    if (!(await seen(page))) ok('일주일 보지 않기를 누르면 다시 안 뜬다')
+    else bad('일주일 숨기기', '또 뜬다')
     await ctx.close()
   }
 
@@ -92,7 +117,7 @@ try {
     await page.waitForTimeout(300)
     await page.reload({ waitUntil: 'domcontentloaded' })
     if (await seen(page)) ok('그냥 닫으면 다음 방문에 다시 뜬다')
-    else bad('닫기 동작', '하루 숨기기처럼 동작한다')
+    else bad('닫기 동작', '일주일 숨기기처럼 동작한다')
     await ctx.close()
   }
 

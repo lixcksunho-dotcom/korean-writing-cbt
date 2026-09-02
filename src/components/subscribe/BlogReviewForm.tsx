@@ -8,7 +8,7 @@ import DisclosureCopyBox from '@/components/subscribe/DisclosureCopyBox'
 
 // 블로그에 홍보 글을 쓰면 이용권을 드리는 신청 화면.
 // 조건을 '내고 나서' 알려 주면 늦다 — 쓰기 전에 보이도록 폼 위에 그대로 적는다.
-export default function BlogReviewForm() {
+export default function BlogReviewForm({ left, total }: { left?: number; total?: number }) {
   const [url, setUrl] = useState('')
   const [result, setResult] = useState<{ autoPassed: boolean; granted: boolean; checks: RuleCheck[]; note: string } | null>(null)
   const [error, setError] = useState('')
@@ -29,9 +29,17 @@ export default function BlogReviewForm() {
       <div className="flex items-center gap-1.5 mb-1.5">
         <PenLine className="h-4 w-4 text-[#d97706]" aria-hidden="true" />
         <h3 className="text-sm font-bold text-[#0f172a]">블로그에 소개하고 이용권 {REWARD_DAYS}일 받기</h3>
+        {typeof left === 'number' && (
+          <span className={`ml-auto shrink-0 rounded-full px-2 py-0.5 text-[11px] font-bold ${
+            left > 0 ? 'bg-amber-50 text-[#b45309]' : 'bg-gray-100 text-gray-500'
+          }`}>
+            {left > 0 ? `${left}자리 남음` : '마감'}
+          </span>
+        )}
       </div>
       <p className="text-xs text-[#64748b] mb-3.5">
         블로그에 실글패스 후기를 올리고 글 주소를 넣어 주세요. 확인되면 이용권을 드립니다.
+        {typeof total === 'number' && <> 선착순 <b>{total}명</b>입니다.</>}
       </p>
 
       <ol className="mb-4 space-y-2 rounded-lg bg-[#f8fafc] p-3.5 text-xs text-[#334155]">
