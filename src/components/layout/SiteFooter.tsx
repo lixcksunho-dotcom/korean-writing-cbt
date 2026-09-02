@@ -32,7 +32,7 @@ const STUDY_LINKS = [
   { href: '/business-writing', label: '공문서·이메일 예시' },
   { href: '/word-counter', label: '글자수 세기' },
   { href: '/blog', label: '독학 블로그' },
-  { href: '/cbt', label: '무료 CBT 모의고사' },
+  { href: '/try', label: '가입 없이 문제 풀어보기' },
 ]
 export default function SiteFooter() {
   return (

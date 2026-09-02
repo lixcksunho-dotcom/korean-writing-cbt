@@ -11,10 +11,10 @@ export default function BlogHeader() {
           <span className="font-black text-[#1e3a5f]">실글패스 블로그</span>
         </Link>
         <Link
-          href="/cbt"
+          href="/try"
           className="py-3 text-sm font-semibold text-[#64748b] hover:text-[#1e3a5f] transition-colors"
         >
-          무료 CBT 모의고사 →
+          가입 없이 문제 풀어보기 →
         </Link>
       </div>
     </header>

@@ -55,10 +55,10 @@ export default function BlogCTA({
           </a>
         ) : (
           <Link
-            href="/cbt"
+            href="/try"
             className="btn-gold inline-flex items-center justify-center gap-1.5 font-bold py-3 px-6 rounded-xl text-sm"
           >
-            무료 CBT 모의고사
+            가입 없이 문제 풀어보기
           </Link>
         )}
         <Link

@@ -91,6 +91,13 @@ try {
       const src = fs2.readFileSync(p, 'utf8')
       return /href="\/cbt"[\s\S]{0,240}무료/.test(src)
     })
+    // 푸터·블로그 CTA 같은 공용 부품도 모든 설명 페이지에 함께 뜬다 — 거기 남은
+    // 로그인 벽 하나가 페이지 스무 곳을 한꺼번에 막는다. 실제 화면에서도 확인한다.
+    await page.goto(`${BASE}/spelling`, { waitUntil: 'domcontentloaded', timeout: 60000 })
+    const liveWalled = await page.$$eval('a[href="/cbt"]', as => as.map(a => a.textContent?.trim() ?? ''))
+    if (liveWalled.length === 0) ok('설명 페이지 화면에 로그인 벽 링크가 없다')
+    else bad('로그인 벽(화면)', `${liveWalled.length}개 남음: ${liveWalled.slice(0, 3).join(', ')}`)
+
     if (walled.length === 0) ok('설명 페이지가 로그인 벽으로 안 보낸다')
     else bad('로그인 벽', `'무료'라 해놓고 로그인이 필요한 곳으로 보내는 페이지: ${walled.map(p => p.split('/')[2]).join(', ')}`)
   }
