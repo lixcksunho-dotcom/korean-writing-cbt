@@ -105,8 +105,8 @@ export default function KbsKoreanPage() {
             <LogoGlyph className="h-7 w-7" />
             <span className="font-black text-[#1e3a5f]">실글패스</span>
           </Link>
-          <a href="https://kbstest.cloud/cbt" className="text-sm font-semibold text-[#64748b] hover:text-[#1e3a5f] transition-colors py-3">
-            무료 CBT 모의고사 →
+          <a href="https://kbstest.cloud/try" className="text-sm font-semibold text-[#64748b] hover:text-[#1e3a5f] transition-colors py-3">
+            가입 없이 문제 풀어보기 →
           </a>
         </div>
       </header>

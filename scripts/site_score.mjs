@@ -57,12 +57,27 @@ function cat(name, got, max, notes) {
   for (const n of notes) say(`   · ${n}`)
 }
 
-const run = (cmd) => {
-  try { return { ok: true, out: execSync(cmd, { encoding: 'utf-8', stdio: 'pipe', timeout: 900_000 }) } }
-  catch (e) { return { ok: false, out: String(e.stdout ?? '') + String(e.stderr ?? '') } }
+// 점수는 **로컬 프로덕션 빌드**를 재서 매긴다.
+//
+// 처음엔 검사들이 기본값대로 프로덕션(kptest.cloud)을 봤는데, 시험 한 회차를 끝까지
+// 푸는 검사가 네트워크 왕복 때문에 15분을 넘겨 시간 초과로 죽었다. 그래서 멀쩡한
+// 기능이 0점으로 찍혔다(실측 — 같은 검사가 로컬에서는 13/13 통과).
+// 재는 자리가 흔들리면 점수는 아무 말도 못 한다. 배포된 것이 맞는지는 배포 뒤에 따로 본다.
+const LOCAL = process.env.SCORE_BASE ?? 'http://localhost:3399'
+const BASE_ENV = {
+  MANUSCRIPT_CHECK_BASE: LOCAL, PAID_ESSAY_BASE: LOCAL, EXAM_FLOW_BASE: LOCAL,
+  RESUME_BASE: LOCAL, PAST_RESULT_BASE: LOCAL, TRIAL_BASE: LOCAL,
+  CONTRAST_BASE: LOCAL, MOBILE_BASE: LOCAL, A11Y_CHECK_BASE: LOCAL,
+  SUB_GATE_BASE: LOCAL, VITALS_BASE: LOCAL,
 }
 
-say(`실글패스 사이트 점수 — ${new Date().toISOString().slice(0, 16).replace('T', ' ')}`)
+const run = (cmd) => {
+  try {
+    return { ok: true, out: execSync(cmd, { encoding: 'utf-8', stdio: 'pipe', timeout: 900_000, env: { ...process.env, ...BASE_ENV } }) }
+  } catch (e) { return { ok: false, out: String(e.stdout ?? '') + String(e.stderr ?? '') } }
+}
+
+say(`실글패스 사이트 점수 — ${new Date().toISOString().slice(0, 16).replace('T', ' ')} (${LOCAL})`)
 
 // ── 1. 문제 품질 (20) ───────────────────────────────────────────────────────
 {

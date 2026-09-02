@@ -46,12 +46,18 @@ const CHOOSE = [
     who: "실무 문서(공문서·이메일·보고서) 작성 능력을 증명하고 싶거나, 서술형·원고지 작문에 강점을 만들고 싶은 분. 직접 ‘써서’ 평가받는 비중이 커요.",
     href: "/exam-info",
     cta: "실용글쓰기 시험정보",
+    tryHref: "/try",
+    tryCta: "실용글쓰기 문제 풀어보기",
   },
   {
     pick: "KBS한국어능력시험이 맞아요",
     who: "듣기·읽기·어휘·어법까지 폭넓은 국어 능력을 객관식으로 종합 평가받고 싶은 분. 문항 수가 많고 영역이 넓어요.",
     href: "/kbs-korean",
     cta: "KBS한국어 시험정보",
+    // 이 페이지는 검색 착지 3위(30일 155명)인데 KBS를 고른 사람에게 줄 것이 없었다.
+    // KBS CBT는 kbstest.cloud로 옮겼으므로 거기 맛보기로 직접 보낸다.
+    tryHref: "https://kbstest.cloud/try",
+    tryCta: "KBS한국어 문제 풀어보기",
   },
 ];
 
@@ -162,7 +168,14 @@ export default function ExamComparePage() {
                 <div key={c.pick} className="rounded-xl border border-[#e2e8f0] bg-white p-5">
                   <p className="font-black text-[#0f172a] mb-1">{c.pick}</p>
                   <p className="text-sm text-[#475569] leading-relaxed mb-3">{c.who}</p>
-                  <Link href={c.href} className="inline-block py-3 text-sm font-bold text-[#1e3a5f] hover:underline">{c.cta} →</Link>
+                  <div className="flex flex-wrap items-center gap-x-4">
+                    <Link href={c.href} className="inline-flex min-h-[44px] items-center text-sm font-bold text-[#1e3a5f] hover:underline">{c.cta} →</Link>
+                    {c.tryHref.startsWith("http") ? (
+                      <a href={c.tryHref} className="inline-flex min-h-[44px] items-center text-sm font-bold text-[#d97706] hover:underline">{c.tryCta} →</a>
+                    ) : (
+                      <Link href={c.tryHref} className="inline-flex min-h-[44px] items-center text-sm font-bold text-[#d97706] hover:underline">{c.tryCta} →</Link>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
