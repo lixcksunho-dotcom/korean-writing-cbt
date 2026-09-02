@@ -289,6 +289,11 @@ try {
     else ok('세션 기록', `완료 기록 + ${row.score}/${row.total}점`)
   }
 } finally {
+  // 브라우저를 안 닫으면 결과를 다 찍고도 프로세스가 안 끝난다. 사람이 직접 돌리면
+  // 결과만 보고 넘어가지만, 점수판은 끝나기를 기다리다 30분 뒤 '실패'로 적었다 —
+  // 13/13 통과한 검사가 0점으로 찍혔다(실측).
+  await browser.close().catch(() => {})
+
   // 검사용 계정과 그 계정이 만든 것만 지운다
   for (const who of [uid]) {
     for (const t of ['quiz_answers', 'quiz_sessions', 'device_usage', 'manuscript_submissions']) {
