@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { approveBlogReview, rejectBlogReview } from './actions'
+import { approveBlogReview, rejectBlogReview, revokeBlogReview, revokeAutoGrant } from './actions'
 
 export type ReviewRow = {
   id: string
@@ -19,7 +19,27 @@ function Actions({ row }: { row: ReviewRow }) {
   const [msg, setMsg] = useState('')
 
   if (row.resolved) {
-    return <span className="text-xs font-bold text-gray-500">{row.granted ? '승인 · 지급 완료' : '처리됨'}</span>
+    return (
+      <div className="flex flex-col items-end gap-1">
+        <span className="text-xs font-bold text-gray-500">{row.granted ? '승인 · 지급 완료' : '처리됨'}</span>
+        {row.granted && (
+          // 글을 지웠거나 조건을 어긴 것이 확인됐을 때만 누른다. 사후 확인(cron)이
+          // 알려 주지만, 자동으로 뺏지는 않는다 — 서버가 잠깐 막힌 것과 구분이 안 된다.
+          <button
+            disabled={pending}
+            onClick={() => start(async () => {
+              const a = await revokeBlogReview(row.id)
+              const b = a.ok ? a : (row.user_id ? await revokeAutoGrant(row.user_id) : a)
+              setMsg(b.message)
+            })}
+            className="rounded-md border border-red-300 px-2.5 py-1 text-xs font-bold text-red-700 hover:bg-red-50 disabled:opacity-50"
+          >
+            {pending ? '…' : '이용권 회수'}
+          </button>
+        )}
+        {msg && <span className="text-xs text-gray-600">{msg}</span>}
+      </div>
+    )
   }
 
   return (

@@ -218,6 +218,25 @@ try {
   if (mine.length === 1 && mine[0].amount === 0) ok('발급은 한 건, 매출에 안 섞인다')
   else bad('발급 상태', JSON.stringify(mine).slice(0, 90))
 
+  // ── 회수: 글을 지운 사람에게서 되돌릴 수 있어야 한다 ──────────────────────
+  // 체험단에서 가장 흔히 새는 자리다 — 코드만 받고 글을 내린다.
+  const rev = await api(`/rest/v1/subscriptions?order_id=eq.${orderId}&status=eq.active`, {
+    method: 'PATCH', body: JSON.stringify({ status: 'cancelled', payment_key: 'promo:blog-review:revoked' }),
+  })
+  if (!rev.ok) bad('회수', `되돌리지 못한다: ${(await rev.text()).slice(0, 90)}`)
+  else {
+    const after = await (await api(`/rest/v1/subscriptions?user_id=eq.${uid}&select=status,payment_key`)).json()
+    // 기록은 남기고 효력만 끊는다 — 지우면 나중에 항의가 와도 아무것도 못 밝힌다.
+    // status는 DB가 active|cancelled만 허용한다. 회수라는 사실은 payment_key로 구분한다.
+    if (after.length === 1 && after[0].status === 'cancelled') ok('회수하면 기록은 남고 효력만 끊긴다', 'status=cancelled')
+    else bad('회수 결과', JSON.stringify(after).slice(0, 90))
+
+    // 활성 구독 조회(status=active)에 안 걸려야 진짜 회수다
+    const active = await (await api(`/rest/v1/subscriptions?user_id=eq.${uid}&status=eq.active&select=id`)).json()
+    if (Array.isArray(active) && active.length === 0) ok('회수 뒤에는 이용권이 잡히지 않는다')
+    else bad('회수 실효', `아직 활성 ${active.length}건`)
+  }
+
   await ctx.close()
 } catch (e) {
   bad('실행', String(e?.message ?? e).slice(0, 300))

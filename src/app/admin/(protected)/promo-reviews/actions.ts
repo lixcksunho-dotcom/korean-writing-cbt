@@ -57,3 +57,43 @@ export async function rejectBlogReview(feedbackId: string): Promise<{ ok: boolea
   revalidatePath('/admin/promo-reviews')
   return { ok: true }
 }
+
+/**
+ * 지급을 되돌린다 — 글을 지웠거나 조건을 어긴 것이 확인됐을 때.
+ *
+ * 이용권 행을 지우지 않고 status만 바꾼다. 지우면 '왜 없어졌는지'가 사라져
+ * 나중에 항의가 왔을 때 아무것도 못 밝힌다. 기록은 남기고 효력만 끊는다.
+ *
+ * status는 DB CHECK가 'active'|'cancelled' 두 값만 허용한다(004_subscriptions).
+ * 'revoked'를 새로 넣으려면 마이그레이션이 필요하므로, 값은 'cancelled'를 쓰고
+ * 회수라는 사실은 payment_key에 남긴다 — 결제 취소와 구분되어야 한다.
+ */
+export async function revokeBlogReview(feedbackId: string): Promise<{ ok: boolean; message: string }> {
+  const admin = createAdminClient()
+  const { data, error } = await admin
+    .from('subscriptions')
+    .update({ status: 'cancelled', payment_key: 'promo:blog-review:revoked' })
+    .eq('order_id', `review-${feedbackId}`)
+    .eq('status', 'active')
+    .select('id')
+  if (error) return { ok: false, message: `회수 실패: ${error.message}` }
+  if (!data?.length) return { ok: false, message: '되돌릴 지급이 없습니다(이미 회수됐거나 자동 지급 건입니다).' }
+
+  revalidatePath('/admin/promo-reviews')
+  return { ok: true, message: '이용권을 회수했습니다.' }
+}
+
+/** 자동 지급분(계정당 1회)도 회수할 수 있어야 한다 — order_id 규칙이 다르다. */
+export async function revokeAutoGrant(userId: string): Promise<{ ok: boolean; message: string }> {
+  const admin = createAdminClient()
+  const { data, error } = await admin
+    .from('subscriptions')
+    .update({ status: 'cancelled', payment_key: 'promo:blog-review:revoked' })
+    .eq('order_id', `review-auto-${userId}`)
+    .eq('status', 'active')
+    .select('id')
+  if (error) return { ok: false, message: `회수 실패: ${error.message}` }
+  if (!data?.length) return { ok: false, message: '되돌릴 자동 지급이 없습니다.' }
+  revalidatePath('/admin/promo-reviews')
+  return { ok: true, message: '자동 지급분을 회수했습니다.' }
+}
