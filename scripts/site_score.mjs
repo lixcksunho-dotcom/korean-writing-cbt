@@ -71,10 +71,18 @@ const BASE_ENV = {
   SUB_GATE_BASE: LOCAL, VITALS_BASE: LOCAL,
 }
 
+const failLog = []
+
 const run = (cmd) => {
   try {
     return { ok: true, out: execSync(cmd, { encoding: 'utf-8', stdio: 'pipe', timeout: 900_000, env: { ...process.env, ...BASE_ENV } }) }
-  } catch (e) { return { ok: false, out: String(e.stdout ?? '') + String(e.stderr ?? '') } }
+  } catch (e) {
+    const out = String(e.stdout ?? '') + String(e.stderr ?? '')
+    // 왜 실패했는지 안 남기면 다음 사람은 '0점'만 보고 무엇을 고쳐야 할지 모른다.
+    // 점수판이 스스로 저지르면 안 되는 잘못이 바로 그것이다.
+    failLog.push({ cmd, tail: out.split(String.fromCharCode(10)).filter(Boolean).slice(-12).join(String.fromCharCode(10)) })
+    return { ok: false, out }
+  }
 }
 
 say(`실글패스 사이트 점수 — ${new Date().toISOString().slice(0, 16).replace('T', ' ')} (${LOCAL})`)
@@ -201,6 +209,16 @@ say(`실글패스 사이트 점수 — ${new Date().toISOString().slice(0, 16).r
     if (overCls.length) notes.push(`흔들리는 면: ${overCls.slice(0, 5).map(m => `${m[1]}(${m[2]})`).join(', ')}`)
   } else notes.push('속도를 재지 못했다 → 0/10')
   cat('속도', got, 10, notes)
+}
+
+if (failLog.length) {
+  say(`
+[실패한 검사 ${failLog.length}건 — 마지막 줄들]`)
+  for (const f of failLog) {
+    say(`
+  $ ${f.cmd}`)
+    for (const line of f.tail.split(String.fromCharCode(10))) say(`    ${line}`)
+  }
 }
 
 say(`\n총점 ${total}/100`)

@@ -488,7 +488,16 @@ export default function ExamPlayer({
                   <span className="whitespace-nowrap">🎧 듣기</span>
                   <span className="text-[#64748b] font-medium">음성을 듣고 답하세요 (여러 번 들을 수 있어요)</span>
                 </div>
-                <audio controls preload="none" src={q.audio_url} className="w-full">
+                <audio
+                  controls
+                  // 브라우저 기본 메뉴(⋮)에 '다운로드'가 뜬다 — 만들어 둔 음성이 그대로 새어 나간다.
+                  // 완전히 막을 수는 없지만(주소를 직접 열면 된다) 화면에서 한 번 누르면 되는 길은 닫아 둔다.
+                  controlsList="nodownload noplaybackrate"
+                  onContextMenu={e => e.preventDefault()}
+                  preload="none"
+                  src={q.audio_url}
+                  className="w-full"
+                >
                   브라우저가 오디오 재생을 지원하지 않습니다.
                 </audio>
               </div>
