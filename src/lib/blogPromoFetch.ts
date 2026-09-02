@@ -11,6 +11,8 @@
 // 사진 수도 주의: PostView의 img 태그 72개에는 네이버 UI 아이콘이 섞여 있다.
 // 스마트에디터의 이미지 모듈(se-module-image) 22개가 실제 본문 사진 수에 가깝다.
 
+import { extractPostBody } from './blogPostBody.ts'
+
 /** 한 주소에 대해 시도할 후보들. 앞에서부터 읽어 본다. */
 export function blogFetchCandidates(raw: string): string[] {
   const url = raw.trim()
@@ -28,8 +30,10 @@ export function blogFetchCandidates(raw: string): string[] {
   return [url]
 }
 
-/** 본문 사진 수. 네이버는 에디터 이미지 모듈을, 그 외는 img 태그를 센다. */
-export function countPhotos(html: string): number {
+/** 본문 사진 수. 네이버는 에디터 이미지 모듈을, 그 외는 img 태그를 센다.
+ *  옆 메뉴·공지글 썸네일이 섞이지 않도록 본문 안에서만 센다. */
+export function countPhotos(raw: string): number {
+  const html = extractPostBody(raw).html
   const seModules = (html.match(/se-module-image/gi) ?? []).length
   if (seModules > 0) return seModules
   // 네이버 구 에디터: 사진 CDN 주소로 센다
@@ -74,7 +78,8 @@ export async function fetchBlogPost(raw: string): Promise<FetchedPost> {
  * 스마트에디터 텍스트 모듈(se-module-text) 합계는 2,089자였다. 전체로 재면
  * 짧은 글도 UI 덕에 통과해 버린다.
  */
-export function countBodyChars(html: string): number {
+export function countBodyChars(raw: string): number {
+  const html = extractPostBody(raw).html
   const strip = (s: string) =>
     s.replace(/<script[\s\S]*?<\/script>/gi, ' ')
       .replace(/<style[\s\S]*?<\/style>/gi, ' ')

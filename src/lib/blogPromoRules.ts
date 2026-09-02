@@ -9,6 +9,8 @@
 
 // 접수는 feedback 표를 재사용한다. path가 이 값이면 불편사항이 아니라 심사 신청이다.
 // ('use server' 파일에서는 상수를 export할 수 없어 규칙 파일에 둔다 — 빌드가 막힌다.)
+import { extractPostBody } from './blogPostBody.ts'
+
 export const BLOG_REVIEW_PATH = '#promo/blog-review'
 
 /** 제목에 이 중 하나는 들어가야 한다 */
@@ -110,10 +112,13 @@ export function countImages(html: string): number {
  */
 export function checkBlogHtml(html: string, photos?: number, bodyChars?: number): BlogPromoResult {
   const title = extractTitle(html)
-  const raw = textOf(html)
+  // 낱말·광고표시는 반드시 '글쓴이가 쓴 본문' 안에서만 본다. 문서 전체로 보면
+  // 옆 메뉴와 공지글 목록에 걸린 남의 글 제목이 조건을 통과시킨다(실측).
+  const post = extractPostBody(html)
+  const raw = textOf(post.html)
   const body = squash(raw)
-  // 본문이 거의 비어 있으면 스크립트로 그리는 블로그다 — 읽은 척하지 않는다.
-  const readable = body.length >= 400
+  // 본문 영역을 찾았으면 짧아도 읽은 것이다. 못 찾았을 때만 길이로 껍데기를 걸러낸다.
+  const readable = post.found || body.length >= 400
 
   const titleHit = TITLE_KEYWORDS.filter(k => squash(title).includes(squash(k)))
   const bodyMissing = BODY_KEYWORDS.filter(k => !body.includes(squash(k)))

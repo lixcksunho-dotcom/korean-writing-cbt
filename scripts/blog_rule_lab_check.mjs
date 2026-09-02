@@ -9,6 +9,7 @@ import {
   TITLE_KEYWORDS,
 } from '../src/lib/blogPromoRules.ts'
 import { countPhotos, countBodyChars, fetchBlogPost } from '../src/lib/blogPromoFetch.ts'
+import { extractPostBody } from '../src/lib/blogPostBody.ts'
 
 let pass = 0, fail = 0
 const ok = (n, c, d = '') => {
@@ -77,6 +78,46 @@ ok('글자가 몇 자 모자란지 알려줌',
   shortBody.checks.find(c => c.rule.includes('자 이상'))?.detail)
 
 ok('본인 확인 코드는 쓰지 않음', !fs.existsSync('src/lib/blogOwnerCode.ts') && !client.includes('확인 코드'))
+
+// ── 본문만 보고 판정하는가 ──────────────────────────────────────────────────
+// 실측(2026-09-02): 사진 0장·본문 8자짜리 빈 글이 '사진 1장, 낱말 2/4개'로 통과했다.
+// 네이버 PostView 문서에 옆 메뉴와 공지글 목록이 함께 들어 있어서다.
+{
+  const chrome =
+    '<div class="blog-menu"><ul>' +
+    '<li>공지 한국실용글쓰기 CBT 추천! 실전 모의고사로 독학 끝내기 공기업자격증</li>' +
+    '<li><img src="https://postfiles.pstatic.net/MjAyNjA5MDJfMjAy/thumbnail.jpg"></li>' +
+    '</ul></div>'
+  const post = '<div class="se-main-container">' +
+    '<div class="se-module se-module-text"><p>실글패스 테스트 !</p></div></div>'
+  const doc = `<html><head><title>실글패스 테스트 !</title></head><body>${chrome}${post}</body></html>`
+
+  const body = extractPostBody(doc)
+  ok('본문 영역을 찾아낸다', body.found && !body.html.includes('공지'), body.found ? '옆 메뉴가 섞였다' : '못 찾음')
+  ok('옆 메뉴 썸네일을 본문 사진으로 세지 않는다', countPhotos(doc) === 0, `${countPhotos(doc)}장으로 셌다`)
+
+  const verdict = checkBlogHtml(doc, countPhotos(doc), countBodyChars(doc))
+  const bodyItems = verdict.checks.find(c => c.rule.includes('본문에'))?.items ?? []
+  const found = bodyItems.filter(i => i.ok).map(i => i.label)
+  ok('옆 메뉴의 남의 글 제목으로는 낱말이 통과하지 않는다',
+    found.length === 1 && found[0] === BODY_KEYWORDS[0], `통과한 낱말: ${found.join(', ')}`)
+  ok('빈 글은 통과하지 못한다', !verdict.allPassed)
+  ok('짧은 글을 못 읽었다고 하지 않는다',
+    !verdict.checks.some(c => c.detail.includes('못 읽음')),
+    verdict.checks.filter(c => c.detail.includes('못 읽음')).map(c => c.rule).join(', '))
+}
+
+// ── 광고 표시 그림 ─────────────────────────────────────────────────────────
+// 그림만 주고 글자를 빼면 자동 판정이 통째로 무너진다 — 그림 속 글씨는 못 읽는다.
+{
+  const img = fs.readFileSync('src/components/subscribe/DisclosureImage.tsx', 'utf8')
+  const box = fs.readFileSync('src/components/subscribe/DisclosureCopyBox.tsx', 'utf8')
+  ok('광고 표시를 그림으로 만들어 준다', img.includes('canvas') && img.includes('toBlob'))
+  ok('그림을 저장·복사할 수 있다', img.includes('download') && img.includes('ClipboardItem'))
+  ok('글꼴은 보는 사람 브라우저 것을 쓴다(두부 방지)', img.includes('Malgun Gothic'))
+  ok('그림 옆에 판정용 한 줄도 함께 준다', box.includes('DisclosureImage') && box.includes('{b.text}'))
+  ok('그림만으로는 확인이 안 된다고 알린다', box.includes('기계가 읽지 못'))
+}
 
 // 못 읽는 주소는 오류로 돌아와야 한다(조용히 통과하면 안 된다)
 const dead = await fetchBlogPost('https://blog.naver.com/__nope__/000000000000')

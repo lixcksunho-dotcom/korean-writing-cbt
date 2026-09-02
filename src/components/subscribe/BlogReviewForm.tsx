@@ -68,13 +68,13 @@ export default function BlogReviewForm() {
         <li className="flex gap-2">
           <span className="font-bold text-[#d97706]">4</span>
           <span>
-            아래 문구를 <b>복사해서 그대로</b> 붙여 주세요 — 광고 표시는 법정 의무입니다.
+            아래 <b>광고 표시 그림과 한 줄</b>을 글 맨 위에 넣어 주세요 — 법정 의무입니다.
           </span>
         </li>
       </ol>
 
       <div className="mb-4">
-        <DisclosureCopyBox sample={DISCLOSURE_SAMPLE} />
+        <DisclosureCopyBox sample={DISCLOSURE_SAMPLE} fileName="실글패스-광고표시.png" />
       </div>
 
       {result ? (

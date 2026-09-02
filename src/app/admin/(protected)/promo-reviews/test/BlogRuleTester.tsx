@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react'
 import { Check, X, FlaskConical, Loader2 } from 'lucide-react'
 import { runBlogRuleTest, type RuleTestResult } from './actions'
+import DisclosureImage from '@/components/subscribe/DisclosureImage'
 
 export default function BlogRuleTester({ sample }: { sample: string }) {
   const [url, setUrl] = useState('')
@@ -110,9 +111,15 @@ export default function BlogRuleTester({ sample }: { sample: string }) {
         </div>
       )}
 
-      <p className="rounded-xl bg-[#f8fafc] p-3 text-xs leading-relaxed text-[#64748b]">
-        광고 표시 문구 예시 — <span className="font-mono text-[#334155]">{sample}</span>
-      </p>
+      <div className="rounded-xl bg-[#f8fafc] p-3">
+        <p className="mb-2 text-xs font-bold text-[#334155]">신청자에게 주는 광고 표시</p>
+        <DisclosureImage sample={sample} fileName="실글패스-광고표시.png" />
+        <p className="mt-2 text-xs leading-relaxed text-[#64748b]">
+          함께 붙이게 하는 한 줄 — <span className="font-mono text-[#334155]">{sample}</span>
+          <br />
+          그림 속 글씨는 기계가 못 읽으므로, 판정은 이 한 줄로 합니다.
+        </p>
+      </div>
     </div>
   )
 }
