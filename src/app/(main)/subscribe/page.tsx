@@ -6,7 +6,7 @@ import PromoCodeBox from '@/components/subscribe/PromoCodeBox'
 import BlogReviewForm from '@/components/subscribe/BlogReviewForm'
 import { blogOwnerCode } from '@/lib/blogOwnerCode'
 import EventTracker from '@/components/analytics/EventTracker'
-import { CheckCircle2, Sparkles, Shield, Zap, LogIn, Star } from 'lucide-react'
+import { CheckCircle2, Sparkles, Shield, Zap, LogIn, Star, Ticket, ChevronDown } from 'lucide-react'
 
 const FEATURES = [
   'AI 예상 점수·합격 등급 판정 (지금 실력이면 몇 점?)',
@@ -167,15 +167,6 @@ export default async function SubscribePage() {
             </div>
           )}
 
-          {/* 행사 코드 — 블로그 홍보 답례로 받은 코드를 이용권으로 바꾼다.
-              결제하러 온 사람이 코드를 갖고 있으면 여기서 멈춰야 한다. */}
-          {user && (
-            <div className="mt-4 space-y-4">
-              <PromoCodeBox />
-              <BlogReviewForm ownerCode={blogOwnerCode(user.id)} />
-            </div>
-          )}
-
           {/* 환불 보장 */}
           <div className="mt-4 flex items-center justify-center gap-2 bg-emerald-50 border border-emerald-100 rounded-xl px-4 py-2.5 text-xs text-emerald-700">
             <Shield className="h-4 w-4 shrink-0" />
@@ -207,6 +198,25 @@ export default async function SubscribePage() {
           </p>
         </div>
       </div>
+
+      {/* 무료로 받는 두 경로는 결제 카드 **밖**, 접힌 채로 둔다.
+          결제 버튼 바로 아래에 펼쳐 두면 돈을 내려던 사람이 공짜 경로를 보고 멈춘다.
+          그렇다고 감추면 코드를 들고 온 사람이 길을 잃으므로, 한 줄로 눈에는 띄게 한다. */}
+      {user && (
+        <details className="group mt-4 rounded-2xl border border-[#e2e8f0] bg-white">
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-2 px-5 py-4 text-sm font-bold text-[#334155]">
+            <span className="flex items-center gap-2">
+              <Ticket className="h-4 w-4 text-[#d97706]" aria-hidden="true" />
+              행사 코드가 있거나, 블로그 후기로 받고 싶으신가요?
+            </span>
+            <ChevronDown className="h-4 w-4 shrink-0 text-[#94a3b8] transition-transform group-open:rotate-180" aria-hidden="true" />
+          </summary>
+          <div className="space-y-4 border-t border-[#e2e8f0] p-5">
+            <PromoCodeBox />
+            <BlogReviewForm ownerCode={blogOwnerCode(user.id)} />
+          </div>
+        </details>
+      )}
     </div>
   )
 }
