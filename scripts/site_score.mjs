@@ -94,6 +94,35 @@ const run = (cmd) => {
   }
 }
 
+
+// 재는 대상이 멀쩡한지 먼저 본다.
+//
+// 실측: 빌드가 깨져 CSS가 통째로 안 실린 서버를 그대로 채점했다. 링크가 브라우저 기본
+// 파란색으로 나와 명암비가 떨어지고, 버튼이 24px로 줄어 휴대폰 검사가 깨지고, 시험
+// 화면에서 보기를 못 눌러 0/39가 됐다 — 앱은 멀쩡한데 점수만 94에서 80으로 떨어졌다.
+// 잘못된 바탕 위에서 잰 숫자는 아무 말도 못 한다. 그때는 채점을 아예 하지 않는다.
+{
+  let html = ''
+  try {
+    html = await (await fetch(LOCAL, { signal: AbortSignal.timeout(20000) })).text()
+  } catch (e) {
+    console.error(`채점 대상(${LOCAL})에 닿지 못했습니다 — 서버부터 띄우세요.`)
+    process.exit(1)
+  }
+  const cssHref = html.match(/href="(\/_next\/static\/[^"]+\.css)"/)?.[1]
+  if (!cssHref) {
+    console.error(`채점 대상에 CSS가 없습니다(${LOCAL}) — 빌드가 깨졌습니다.`)
+    console.error('rm -rf .next && npm run build 로 다시 만든 뒤 채점하세요.')
+    process.exit(1)
+  }
+  const css = await fetch(`${LOCAL}${cssHref}`, { signal: AbortSignal.timeout(20000) }).catch(() => null)
+  const size = css?.ok ? (await css.text()).length : 0
+  if (size < 10000) {
+    console.error(`채점 대상의 CSS가 비어 있습니다(${size}바이트) — 빌드가 깨졌습니다.`)
+    process.exit(1)
+  }
+}
+
 say(`실글패스 사이트 점수 — ${new Date().toISOString().slice(0, 16).replace('T', ' ')} (${LOCAL})`)
 
 // ── 1. 문제 품질 (20) ───────────────────────────────────────────────────────
