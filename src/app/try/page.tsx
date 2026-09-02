@@ -4,6 +4,7 @@ import LogoGlyph from '@/components/layout/LogoGlyph'
 import SiteFooter from '@/components/layout/SiteFooter'
 import TrialQuiz, { type TrialQuestion } from '@/components/try/TrialQuiz'
 import { questionBank } from '@/lib/questionBank'
+import { TRIAL_TOPICS, findTrialTopic } from '@/lib/trialTopics'
 
 export const revalidate = 3600
 
@@ -26,18 +27,30 @@ export const metadata: Metadata = {
 //
 // 다 열지는 않는다 — 5문항만. 우리가 파는 것(전 회차·서술형 AI 채점·약점 분석)은 그대로 두고,
 // '이 사이트 문제가 쓸 만하다'는 것만 확인시킨다.
-export default async function TryPage() {
+export default async function TryPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ t?: string }>
+}) {
+  // 검색은 '맞춤법 문제'·'띄어쓰기 문제'처럼 유형으로 들어온다. 주소에 유형이 있으면
+  // 그 사람이 찾던 것을 첫 화면에 바로 보여 준다. 없으면 여러 유형을 섞어 준다.
+  const topic = findTrialTopic((await searchParams).t)
+
   // program 필터가 반드시 있어야 한다 — 이 표에는 KBS 문항 300개가 아직 남아 있고,
   // 안 거르면 실글패스 화면에 [듣기] 문항이 섞여 나온다.
-  const { data } = await questionBank()
+  let query = questionBank()
     .from('questions')
     .select('id, number, question, passage, options, correct_answer, explanation')
     .eq('program', 'silyong')
     .eq('type', 'multiple')
-    .eq('round', 1)
-    .lte('number', 30)
-    .order('number')
-    .limit(5)
+
+  if (topic) {
+    query = query.ilike('question', `%${topic.keyword}%`).order('id').limit(5)
+  } else {
+    // 유형을 안 고른 사람에게는 1회차 앞부분을 준다 — 실제 시험이 시작되는 모습 그대로다.
+    query = query.eq('round', 1).lte('number', 30).order('number').limit(5)
+  }
+  const { data } = await query
 
   const questions: TrialQuestion[] = (data ?? []).map(q => ({
     id: String(q.id),
@@ -68,13 +81,37 @@ export default async function TryPage() {
           <div className="mb-8 border-t-4 border-[#0f1f3d] pt-6">
             <p className="mb-3 text-xs font-semibold tracking-[0.2em] text-[#94a3b8]">회원가입 없이 · 무료</p>
             <h1 className="mb-4 text-3xl font-black leading-tight text-[#0f1f3d] sm:text-4xl">
-              한국실용글쓰기 문제,
+              {topic ? `한국실용글쓰기 ${topic.label} 문제,` : '한국실용글쓰기 문제,'}
               <br />
               지금 바로 풀어 보세요
             </h1>
             <p className="leading-relaxed text-[#475569]">
               실제 출제 유형 그대로입니다. 채점과 해설까지 로그인 없이 볼 수 있어요.
             </p>
+          </div>
+
+          {/* 유형을 고르면 그 유형만 나온다. 설명 페이지에서 '다른 유형도'를 누른 사람에게
+              같은 문항을 또 주지 않기 위해서이기도 하다. */}
+          <div className="mb-6 flex flex-wrap gap-2">
+            <Link
+              href="/try"
+              className={`inline-flex min-h-11 items-center rounded-full border px-4 text-sm font-bold transition-colors ${
+                topic ? 'border-[#e2e8f0] bg-white text-[#475569] hover:bg-[#f1f5f9]' : 'border-[#0f1f3d] bg-[#0f1f3d] text-white'
+              }`}
+            >
+              전체
+            </Link>
+            {TRIAL_TOPICS.map(t => (
+              <Link
+                key={t.slug}
+                href={`/try?t=${t.slug}`}
+                className={`inline-flex min-h-11 items-center rounded-full border px-4 text-sm font-bold transition-colors ${
+                  topic?.slug === t.slug ? 'border-[#0f1f3d] bg-[#0f1f3d] text-white' : 'border-[#e2e8f0] bg-white text-[#475569] hover:bg-[#f1f5f9]'
+                }`}
+              >
+                {t.label}
+              </Link>
+            ))}
           </div>
 
           <TrialQuiz questions={questions} />

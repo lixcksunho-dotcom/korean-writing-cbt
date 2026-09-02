@@ -6,6 +6,7 @@
 // 끝까지 도는지가 전부다. 로그인이 끼어들면 만든 이유가 사라진다.
 
 import { chromium } from 'playwright'
+import { TRIAL_TOPICS } from '../src/lib/trialTopics.ts'
 
 const BASE = process.env.TRIAL_BASE ?? 'http://localhost:3399'
 let pass = 0, fail = 0
@@ -92,6 +93,27 @@ try {
     })
     if (walled.length === 0) ok('설명 페이지가 로그인 벽으로 안 보낸다')
     else bad('로그인 벽', `'무료'라 해놓고 로그인이 필요한 곳으로 보내는 페이지: ${walled.map(p => p.split('/')[2]).join(', ')}`)
+  }
+
+  // ── 유형별 맛보기 ───────────────────────────────────────────────────────
+  // 설명 페이지에서 '다른 유형도 풀어보기'를 눌렀는데 같은 문항이 또 나오면
+  // 다른 것을 준다고 해놓고 같은 것을 준 셈이다. 유형마다 실제로 달라야 한다.
+  {
+    const seen = new Map()
+    for (const t of TRIAL_TOPICS) {
+      await page.goto(`${BASE}/try?t=${t.slug}`, { waitUntil: 'networkidle', timeout: 60000 })
+      const items = page.locator('ol > li')
+      const n = await items.count()
+      if (n === 0) { bad(`${t.label} 맛보기`, '문항이 없다'); continue }
+      // 문항 본문만 뽑는다 — 줄 번호로 자르면 번호 배지나 빈 줄을 비교하게 된다.
+      const first = await items.first().locator('p').first().innerText().catch(() => '')
+      if (new RegExp(t.keyword).test(await page.locator('ol').innerText())) ok(`${t.label} — 그 유형 문항이 나온다`, `${n}문항`)
+      else bad(`${t.label} 유형`, '다른 유형 문항이 나온다')
+      const prev = seen.get(first)
+      if (prev) bad('유형별 차이', `${t.label}과 ${prev}가 같은 문항으로 시작한다`)
+      seen.set(first, t.label)
+    }
+    if (seen.size === TRIAL_TOPICS.length) ok('유형마다 첫 문항이 다르다', `${seen.size}가지`)
   }
 
   // 홈에서 이 화면으로 들어올 길이 있는가

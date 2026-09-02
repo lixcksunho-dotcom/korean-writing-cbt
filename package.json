@@ -63,7 +63,7 @@
     "check:blog-lab": "node --experimental-strip-types scripts/blog_rule_lab_check.mjs",
     "check:audit-revoke": "node --experimental-strip-types scripts/blog_audit_revoke_check.mjs",
     "check:popup": "node scripts/event_popup_check.mjs",
-    "check:trial": "node scripts/trial_check.mjs",
+    "check:trial": "node --experimental-strip-types scripts/trial_check.mjs",
     "check:sales": "node --experimental-strip-types scripts/daily_sales_check.mjs",
     "score": "node --experimental-strip-types scripts/site_score.mjs",
     "check:blog-cta": "node --experimental-strip-types scripts/blog_cta_check.mjs",
