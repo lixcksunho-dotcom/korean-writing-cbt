@@ -52,7 +52,14 @@ const UA = {
   'Accept-Language': 'ko-KR,ko;q=0.9',
 }
 
-export type FetchedPost = { html: string; via: string } | { html: null; reason: string }
+export type FetchedPost =
+  | { html: string; via: string }
+  | {
+      html: null
+      reason: string
+      /** 네이버가 '못 보여준다'고 명시한 경우. 일시적 실패와 구분해야 회수를 판단할 수 있다. */
+      blocked?: boolean
+    }
 
 /**
  * 네이버가 '이 글은 못 보여준다'고 답한 것인지 본다.
@@ -78,7 +85,7 @@ export async function fetchBlogPost(raw: string): Promise<FetchedPost> {
 
       // 못 보여주는 글이면 여기서 끝낸다. 다음 후보로 넘어가면 엉뚱한 글을 읽는다.
       const blocked = naverBlockedReason(html)
-      if (blocked) return { html: null, reason: blocked }
+      if (blocked) return { html: null, reason: blocked, blocked: true }
 
       const textLen = html.replace(/<script[\s\S]*?<\/script>/gi, ' ').replace(/<[^>]+>/g, ' ').replace(/\s+/g, '').length
       // 껍데기(iframe)는 글자가 거의 없다 — 다음 후보로 넘어간다.

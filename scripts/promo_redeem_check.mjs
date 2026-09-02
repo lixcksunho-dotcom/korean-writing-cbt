@@ -21,7 +21,7 @@ const ENV = Object.fromEntries(
     .map(l => { const i = l.indexOf('='); return [l.slice(0, i).trim(), l.slice(i + 1).trim().replace(/^["']|["']$/g, '')] }),
 )
 const BASE = process.env.PROMO_BASE ?? 'https://kptest.cloud'
-const CODE = process.env.PROMO_CODE ?? 'BLOG30'
+const CODE = process.env.PROMO_CODE ?? 'BLOG7'
 const api = (p, init) => fetch(`${ENV.NEXT_PUBLIC_SUPABASE_URL}${p}`, {
   ...init,
   headers: {
@@ -39,6 +39,12 @@ const ok = (n, d = '') => console.log(`  ○ ${n}${d ? ` — ${d}` : ''}`)
 const bad = (n, d = '') => { console.error(`  × ${n}${d ? ` — ${d}` : ''}`); failed = true }
 
 async function apply(page, code) {
+  // 무료 경로는 접힌 상자 안에 있다 — 사람이 누르는 것과 같은 순서로 연다
+  await page.evaluate(() => {
+    const box = document.querySelector('#promo-code')?.closest('details')
+    if (box) box.open = true
+  })
+  await page.waitForTimeout(400)
   await page.fill('#promo-code', code)
   await page.locator('form:has(#promo-code) button[type="submit"]').click()
   await page.waitForTimeout(2500)

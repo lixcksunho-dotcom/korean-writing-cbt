@@ -26,9 +26,9 @@ export type PromoCampaign = {
 // 행사 목록. 끝난 행사도 지우지 말 것 — 지우면 '이 코드가 뭐였는지'를 못 찾는다.
 export const PROMO_CAMPAIGNS: PromoCampaign[] = [
   {
-    code: 'BLOG30',
-    label: '블로그 후기 이벤트 · 1개월',
-    days: 30,
+    code: 'BLOG7',
+    label: '블로그 후기 이벤트 · 1주일',
+    days: 7,
     maxUses: 100,
     startsAt: '2026-09-01T00:00:00+09:00',
     endsAt: '2026-12-31T23:59:59+09:00',

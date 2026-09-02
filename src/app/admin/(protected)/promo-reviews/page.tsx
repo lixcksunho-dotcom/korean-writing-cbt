@@ -1,7 +1,7 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import Link from 'next/link'
 import { PenLine, FlaskConical } from 'lucide-react'
-import { BLOG_REVIEW_PATH } from '@/lib/blogPromoRules'
+import { BLOG_REVIEW_PATH, REWARD_DAYS } from '@/lib/blogPromoRules'
 import ReviewClient, { type ReviewRow } from './ReviewClient'
 
 export const dynamic = 'force-dynamic'
@@ -58,7 +58,7 @@ export default async function AdminPromoReviewsPage() {
       </div>
 
       <p className="mb-5 rounded-xl border border-[#e2e8f0] bg-white p-4 text-sm text-gray-600">
-        승인을 누르면 <b>그 자리에서 이용권 30일이 지급</b>됩니다(무료 발급 0원, 매출에 안 섞임).
+        승인을 누르면 <b>그 자리에서 이용권 {REWARD_DAYS}일이 지급</b>됩니다(무료 발급 0원, 매출에 안 섞임).
         같은 신청으로 두 번 지급되지 않습니다 — <code className="rounded bg-gray-100 px-1 text-xs">order_id</code>의
         unique 제약이 막습니다. 자동 확인은 거들 뿐이라 <b>네이버·티스토리는 못 읽는 경우가 흔합니다</b>.
         그때는 글을 직접 열어 보고 판단해 주세요.

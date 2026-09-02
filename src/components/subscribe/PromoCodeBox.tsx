@@ -52,7 +52,7 @@ export default function PromoCodeBox() {
           id="promo-code"
           value={code}
           onChange={e => setCode(e.target.value)}
-          placeholder="예: BLOG30"
+          placeholder="예: BLOG7"
           autoComplete="off"
           spellCheck={false}
           className="min-w-0 flex-1 rounded-xl border border-[#e2e8f0] bg-[#f8fafc] px-3 py-2.5 text-sm text-[#0f172a] placeholder:text-[#94a3b8] uppercase tracking-wider focus:outline-none focus:border-[#1e3a5f] focus:bg-white transition-colors"

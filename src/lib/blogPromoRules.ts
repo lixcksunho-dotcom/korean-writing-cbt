@@ -27,7 +27,7 @@ export const MIN_IMAGES = 5
 export const MIN_CHARS = 1500
 
 /** 승인 시 지급 일수 */
-export const REWARD_DAYS = 30
+export const REWARD_DAYS = 7
 
 // ── 공정위 표시 의무 ────────────────────────────────────────────────────────
 //
