@@ -17,7 +17,11 @@ const FEATURES = [
 
 // 비로그인 방문자도 상품·가격·환불정책을 볼 수 있어야 한다(간편결제 가맹 심사 요건).
 // 실제 결제(PaymentSection)만 로그인 뒤에 노출하고, 비로그인은 로그인 유도 버튼으로 대체한다.
-export default async function SubscribePage() {
+export default async function SubscribePage(
+  { searchParams }: { searchParams: Promise<{ promo?: string }> },
+) {
+  // 이벤트 안내에서 들어오면 접힌 상자를 펴 둔다 — 눌러서 찾게 하면 거기서 떨어져 나간다.
+  const openPromo = (await searchParams).promo === '1'
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -202,7 +206,7 @@ export default async function SubscribePage() {
           결제 버튼 바로 아래에 펼쳐 두면 돈을 내려던 사람이 공짜 경로를 보고 멈춘다.
           그렇다고 감추면 코드를 들고 온 사람이 길을 잃으므로, 한 줄로 눈에는 띄게 한다. */}
       {user && (
-        <details className="group mt-4 rounded-2xl border border-[#e2e8f0] bg-white">
+        <details id="blog-review" open={openPromo} className="group mt-4 rounded-2xl border border-[#e2e8f0] bg-white">
           <summary className="flex cursor-pointer list-none items-center justify-between gap-2 px-5 py-4 text-sm font-bold text-[#334155]">
             <span className="flex items-center gap-2">
               <Ticket className="h-4 w-4 text-[#d97706]" aria-hidden="true" />
