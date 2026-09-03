@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import * as PortOne from '@portone/browser-sdk/v2'
 import { trackEvent } from '@/lib/analytics/trackEvent'
 
@@ -84,6 +84,21 @@ export default function PaymentButton({
   const [notice, setNotice] = useState('')
   const [agreed, setAgreed] = useState(false)
   const [phone, setPhone] = useState('')
+  // 결제창까지 못 간 사람 14명의 사유가 전화번호 미입력 7·약관 미동의 7이었다(성공 20명 대비).
+  // 두 칸 다 버튼 **위에** 있는데도 그냥 누른다. 안내는 버튼 아래에 떠서, 고쳐야 할 칸과
+  // 떨어져 있었다 — 좁은 화면에서는 둘이 한 화면에 안 들어온다.
+  // 그래서 말만 하지 않고 그 칸으로 데려간다.
+  const [missing, setMissing] = useState<'phone' | 'agree' | null>(null)
+  const phoneRef = useRef<HTMLInputElement>(null)
+  const agreeRef = useRef<HTMLInputElement>(null)
+
+  /** 빠진 칸을 화면 가운데로 올리고 커서를 얹는다(모바일은 자판까지 열린다). */
+  function pointAt(field: 'phone' | 'agree') {
+    setMissing(field)
+    const el = field === 'phone' ? phoneRef.current : agreeRef.current
+    el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    el?.focus({ preventScroll: true })
+  }
 
   // 잠가 두면 누른 사람은 아무 반응도 못 받고 이유도 모른다(아래 동의 가드와 같은 원칙).
   // 눌리게 두고 왜 안 되는지 말해 준 다음, 원한 수단을 세어 둔다.
@@ -99,6 +114,7 @@ export default function PaymentButton({
     // 여기서 막힌 사람은 퍼널에 아예 안 보였다(구독 페이지 조회는 있는데 결제 시작이 0인 구간이 있었다).
     if (!agreed) {
       setError('결제 전 이용약관·환불정책에 동의해 주세요.')
+      pointAt('agree')
       trackEvent('payment_blocked', 'no_agree')
       return
     }
@@ -107,6 +123,7 @@ export default function PaymentButton({
     const phoneDigits = phone.replace(/\D/g, '')
     if (!/^01[0-9]\d{7,8}$/.test(phoneDigits)) {
       setError('휴대폰 번호를 정확히 입력해 주세요. (예: 010-1234-5678)')
+      pointAt('phone')
       trackEvent('payment_blocked', phoneDigits ? 'bad_phone' : 'no_phone')
       return
     }
@@ -122,6 +139,7 @@ export default function PaymentButton({
     }
 
     setError('')
+    setMissing(null)
     setLoading(method)
     trackEvent('payment_started', method)  // 결제창 진입(체크아웃 인텐트) 전환 측정
     try {
@@ -180,6 +198,7 @@ export default function PaymentButton({
     if (d.length >= 4 && d.length < 8) out = `${d.slice(0, 3)}-${d.slice(3)}`
     else if (d.length >= 8) out = `${d.slice(0, 3)}-${d.slice(3, 7)}-${d.slice(7)}`
     setPhone(out)
+    if (missing === 'phone') setMissing(null)
   }
 
   return (
@@ -188,18 +207,31 @@ export default function PaymentButton({
       <div>
         <label className="block text-xs font-semibold text-[#475569] mb-1.5">휴대폰 번호 <span className="text-red-600">*</span></label>
         <input
+          ref={phoneRef}
           type="tel"
           inputMode="numeric"
           value={phone}
           onChange={e => onPhoneChange(e.target.value)}
           placeholder="010-1234-5678"
-          className="w-full rounded-xl border border-[#e2e8f0] px-3.5 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#1e3a5f]/30 focus:border-[#1e3a5f]"
+          aria-invalid={missing === 'phone'}
+          className={`w-full rounded-xl border px-3.5 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#1e3a5f]/30 focus:border-[#1e3a5f] ${
+            missing === 'phone' ? 'border-red-600 ring-2 ring-red-100' : 'border-[#e2e8f0]'
+          }`}
         />
       </div>
 
       {/* 약관·환불정책 동의 (결제 필수) */}
-      <label className="flex items-start gap-2 text-xs text-[#475569] bg-[#f8fafc] border border-[#e2e8f0] rounded-xl px-3.5 py-3 cursor-pointer">
-        <input type="checkbox" checked={agreed} onChange={e => setAgreed(e.target.checked)} className="mt-0.5 h-4 w-4 accent-[#1e3a5f] shrink-0" />
+      <label className={`flex items-start gap-2 text-xs text-[#475569] bg-[#f8fafc] border rounded-xl px-3.5 py-3 cursor-pointer ${
+        missing === 'agree' ? 'border-red-600 ring-2 ring-red-100' : 'border-[#e2e8f0]'
+      }`}>
+        <input
+          ref={agreeRef}
+          type="checkbox"
+          checked={agreed}
+          onChange={e => { setAgreed(e.target.checked); if (e.target.checked) setMissing(null) }}
+          aria-invalid={missing === 'agree'}
+          className="mt-0.5 h-4 w-4 accent-[#1e3a5f] shrink-0"
+        />
         <span>
           <a href="/terms" target="_blank" className="text-[#1e3a5f] font-semibold underline">이용약관</a> 및{' '}
           <a href="/refund" target="_blank" className="text-[#1e3a5f] font-semibold underline">취소·환불 정책</a>을 확인했으며,
