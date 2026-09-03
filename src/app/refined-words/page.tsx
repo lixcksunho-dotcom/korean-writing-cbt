@@ -88,6 +88,11 @@ export default function RefinedWordsPage() {
             공문서·보고서·한국실용글쓰기 서술형에서 어려운 말을 다듬을 때 참고하세요.
           </p>
 
+          {/* 다듬은 말을 찾아온 사람에게 가장 가까운 실제 문항은 외래어 표기다.
+              표 뒤에 두면 36.9화면 아래라 사실상 안 보인다(실측). 여기는 찾아보는
+              페이지라 끝까지 읽지 않는다 — 머리말 바로 뒤가 눈에 닿는 자리다. */}
+          <InlineQuiz topic={{ keyword: "외래어", label: "외래어 표기" }} />
+
           {GROUPS.map((g) => (
             <section key={g.cat} className="mb-8">
               <h2 className="text-2xl font-black text-[#0f172a] mb-3">{g.cat} <span className="text-sm font-semibold text-[#64748b]">{g.items.length}</span></h2>
@@ -155,8 +160,6 @@ export default function RefinedWordsPage() {
             {" · "}
             <Link href="/exam-info" className="underline hover:text-[#1e3a5f]">시험정보</Link>
           </section>
-          {/* 다듬은 말을 찾아온 사람에게 가장 가까운 실제 문항은 외래어 표기다. */}
-          <InlineQuiz topic={{ keyword: "외래어", label: "외래어 표기" }} />
           <RelatedBlogPosts category="grammar" seed="refined-words" />
         </div>
       </main>

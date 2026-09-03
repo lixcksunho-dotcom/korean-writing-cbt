@@ -126,7 +126,7 @@ export default function HonorificsPage() {
           <section className="mb-10">
             <h2 className="text-2xl font-black text-[#0f172a] mb-3">자주 틀리는 사물 존대 (과잉 높임)</h2>
             <div className="space-y-2.5">
-              {ERRORS.map((e) => (
+              {ERRORS.slice(0, 5).map((e) => (
                 <div key={e.bad} className="rounded-xl border border-[#e2e8f0] bg-white p-4">
                   <p className="text-sm">
                     <span className="font-bold text-[#64748b] line-through">{e.bad}</span>
@@ -139,8 +139,25 @@ export default function HonorificsPage() {
             </div>
           </section>
 
-          {/* 읽고 끝나지 않게 — 읽은 자리에서 바로 풀어보고 실전으로 잇는다 */}
+          {/* 읽고 끝나지 않게 — 읽은 자리에서 바로 풀어보고 실전으로 잇는다.
+              목록을 다 지나면 2.2화면 아래라 다섯 개에서 끊는다(다른 페이지는 1화면 안이다). */}
           <TopicQuiz topic="honorifics" />
+
+          <section className="mb-10">
+            <h2 className="text-2xl font-black text-[#0f172a] mb-3">사물 존대 더 보기</h2>
+            <div className="space-y-2.5">
+              {ERRORS.slice(5).map((e) => (
+                <div key={e.bad} className="rounded-xl border border-[#e2e8f0] bg-white p-4">
+                  <p className="text-sm">
+                    <span className="font-bold text-[#64748b] line-through">{e.bad}</span>
+                    <span className="mx-1.5 text-[#64748b]">→</span>
+                    <span className="font-black text-[#1e3a5f]">{e.good}</span>
+                  </p>
+                  <p className="mt-1 text-sm text-[#64748b] leading-relaxed">{e.why}</p>
+                </div>
+              ))}
+            </div>
+          </section>
 
           {/* 높임 어휘 */}
           <section className="mb-10">

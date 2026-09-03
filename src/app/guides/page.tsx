@@ -88,7 +88,7 @@ export default function GuidesPage() {
             무료로 보고, 실전 CBT로 문제까지 풀어보세요.
           </p>
 
-          {SECTIONS.map((s) => (
+          {SECTIONS.slice(0, 1).map((s) => (
             <section key={s.heading} className="mb-8">
               <h2 className="text-2xl font-black text-[#0f172a] mb-3">{s.heading}</h2>
               <div className="grid sm:grid-cols-2 gap-3">
@@ -106,8 +106,27 @@ export default function GuidesPage() {
             </section>
           ))}
 
-          {/* 자료 목록만 보고 나가지 않게 — '문제로 굳히기'를 권하기 전에 한 문제를 풀려 본다. */}
+          {/* 목록을 다 지나야 문제가 나오면 2.4화면을 내려야 한다(실측). 첫 묶음을 본
+              자리에서 한 번 풀린다 — 다른 설명 페이지도 1화면 안에서 풀린다. */}
           <InlineQuiz topic={{ keyword: "문장", label: "문장 고르기" }} />
+
+          {SECTIONS.slice(1).map((s) => (
+            <section key={s.heading} className="mb-8">
+              <h2 className="text-2xl font-black text-[#0f172a] mb-3">{s.heading}</h2>
+              <div className="grid sm:grid-cols-2 gap-3">
+                {s.cards.map((c) => (
+                  <Link
+                    key={c.href}
+                    href={c.href}
+                    className="card-hover group block rounded-xl border border-[#e2e8f0] bg-white p-4 shadow-[0_4px_16px_rgba(15,31,61,0.06)]"
+                  >
+                    <p className="font-black text-[#1e3a5f] group-hover:text-[#0f1f3d]">{c.title}</p>
+                    <p className="mt-1 text-sm text-[#64748b] leading-relaxed">{c.desc}</p>
+                  </Link>
+                ))}
+              </div>
+            </section>
+          ))}
 
           {/* CTA */}
           <section className="mb-10 mt-10">

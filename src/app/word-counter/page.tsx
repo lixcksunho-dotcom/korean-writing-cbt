@@ -83,6 +83,10 @@ export default function WordCountPage() {
 
           <WordCounter />
 
+          {/* 분량을 세러 온 사람은 방금 답안을 쓴 사람이다 — 그 다음 할 일이 고쳐쓰기다.
+              설명 아래에 두면 2.1화면을 내려야 나온다(실측). 도구 바로 뒤가 그 자리다. */}
+          <InlineQuiz topic={{ keyword: "고쳐", label: "고쳐쓰기" }} />
+
           {/* SEO 본문 */}
           <section className="mt-12 prose-sm">
             <h2 className="text-2xl font-black text-[#0f172a] mb-4">자주 묻는 질문</h2>
@@ -98,8 +102,6 @@ export default function WordCountPage() {
               ))}
             </div>
           </section>
-          {/* 분량을 세러 온 사람은 방금 답안을 쓴 사람이다 — 그 다음 할 일이 고쳐쓰기다. */}
-          <InlineQuiz topic={{ keyword: "고쳐", label: "고쳐쓰기" }} />
           <RelatedBlogPosts category="writing" seed="word-counter" />
         </div>
       </main>

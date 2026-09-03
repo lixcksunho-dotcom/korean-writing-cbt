@@ -145,7 +145,7 @@ export default function StandardWordsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {PAIRS.map((p) => (
+                  {PAIRS.slice(0, 12).map((p) => (
                     <tr key={p.wrong} className="border-t border-[#e2e8f0]">
                       <td className="px-3 py-2 text-[#64748b] line-through">{p.wrong}</td>
                       <td className="px-3 py-2 font-bold text-[#1e3a5f]">{p.right}</td>
@@ -156,8 +156,31 @@ export default function StandardWordsPage() {
             </div>
           </section>
 
-          {/* 읽고 끝나지 않게 — 읽은 자리에서 바로 풀어보고 실전으로 잇는다 */}
+          {/* 읽고 끝나지 않게 — 읽은 자리에서 바로 풀어보고 실전으로 잇는다.
+              표를 다 지나면 2.7화면 아래라 12행에서 끊는다(다른 페이지는 1화면 안이다). */}
           <TopicQuiz topic="standard-words" />
+
+          <section className="mb-10">
+            <h2 className="text-2xl font-black text-[#0f172a] mb-3">비표준어 → 표준어 더 보기</h2>
+            <div className="overflow-hidden rounded-xl border border-[#e2e8f0]">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-[#f8fafc] text-[#475569]">
+                    <th className="px-3 py-2 text-left font-bold">비표준어</th>
+                    <th className="px-3 py-2 text-left font-bold">표준어</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {PAIRS.slice(12).map((p) => (
+                    <tr key={p.wrong} className="border-t border-[#e2e8f0]">
+                      <td className="px-3 py-2 text-[#64748b] line-through">{p.wrong}</td>
+                      <td className="px-3 py-2 font-bold text-[#1e3a5f]">{p.right}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
 
           {/* 웃/윗/위 */}
           <section className="mb-10">

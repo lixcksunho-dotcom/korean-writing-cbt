@@ -262,10 +262,12 @@ export default function SpellingPage() {
           </p>
 
           {/* 헷갈리는 규칙 */}
+          {/* 규칙 29개를 다 지나야 문제가 나오면 4.3화면을 스크롤해야 한다(실측). 다른 설명
+              페이지는 1화면 안에서 풀린다 — 여기만 유독 멀어서 다섯 개 읽은 자리에서 끊는다. */}
           <section className="mb-10">
             <h2 className="text-2xl font-black text-[#0f172a] mb-3">헷갈리는 맞춤법 규칙</h2>
             <div className="space-y-2.5">
-              {RULES.map((r) => (
+              {RULES.slice(0, 5).map((r) => (
                 <div key={r.topic} className="rounded-xl border border-[#e2e8f0] bg-white p-4">
                   <div className="flex flex-wrap items-baseline gap-x-2">
                     <span className="font-black text-[#1e3a5f]">{r.topic}</span>
@@ -279,6 +281,21 @@ export default function SpellingPage() {
 
           {/* 읽고 끝나지 않게 — 읽은 자리에서 바로 풀어보고 실전으로 잇는다 */}
           <TopicQuiz topic="spelling" />
+
+          <section className="mb-10">
+            <h2 className="text-2xl font-black text-[#0f172a] mb-3">맞춤법 규칙 더 보기</h2>
+            <div className="space-y-2.5">
+              {RULES.slice(5).map((r) => (
+                <div key={r.topic} className="rounded-xl border border-[#e2e8f0] bg-white p-4">
+                  <div className="flex flex-wrap items-baseline gap-x-2">
+                    <span className="font-black text-[#1e3a5f]">{r.topic}</span>
+                    <span className="text-sm font-semibold text-[#334155]">{r.correct}</span>
+                  </div>
+                  <p className="mt-1 text-sm text-[#64748b] leading-relaxed">{r.tip}</p>
+                </div>
+              ))}
+            </div>
+          </section>
 
           {/* 틀림 → 바름 */}
           <section className="defer-render mb-10" style={{ containIntrinsicSize: 'auto 4268px' }}>
