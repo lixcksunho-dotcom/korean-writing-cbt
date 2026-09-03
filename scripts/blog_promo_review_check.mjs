@@ -213,6 +213,21 @@ if (!isLikelyBlogPostUrl('https://blog.naver.com') && isLikelyBlogPostUrl('https
   ok('블로그 첫 화면은 글 주소로 안 본다')
 } else bad('주소 판정', '첫 화면과 글 주소를 구분 못 한다')
 
+// ── 자리 ─────────────────────────────────────────────────────────────────────
+// 행사는 결제 화면에서 떼어 제 페이지로 옮겼다. 되돌아가면 두 가지가 같이 망가진다 —
+// 결제 버튼 옆에서 공짜 경로를 팔게 되고, 행사를 보러 온 사람은 가격표부터 만난다.
+{
+  const sub = fs.readFileSync('src/app/(main)/subscribe/page.tsx', 'utf8')
+  if (!sub.includes('BlogReviewForm')) ok('결제 화면에는 행사 폼이 없다')
+  else bad('자리', '결제 화면에 행사 폼이 다시 들어왔다')
+  if (sub.includes('/event/blog-review')) ok('결제 화면에서 행사로 가는 길은 있다', '한 줄 링크')
+  else bad('길 끊김', '행사로 갈 방법이 없다')
+
+  const popup = fs.readFileSync('src/components/promo/EventPopup.tsx', 'utf8')
+  if (popup.includes('href="/event/blog-review"')) ok('팝업이 행사 페이지로 보낸다')
+  else bad('팝업 목적지', '무료 경로를 찾아온 사람을 가격 페이지로 보낸다')
+}
+
 // ── 2~5) 실제 화면 ──────────────────────────────────────────────────────────
 const browser = await chromium.launch()
 try {
@@ -224,6 +239,29 @@ try {
   const ctx = await browser.newContext()
   await ctx.addInitScript(() => { try { localStorage.setItem('silyong_mode_intro_v1', '1') } catch { /* 막혀도 진행 */ } })
   const page = await ctx.newPage()
+
+  // 조건은 로그인 없이도 다 보여야 한다. 다섯 가지라 미리 읽고 판단하는 내용인데,
+  // 로그인 뒤에만 보이면 뭘 해야 하는지도 모르고 가입부터 해야 한다.
+  {
+    await page.goto(`${BASE}${EVENT_PATH}`, { waitUntil: 'networkidle', timeout: 60000 })
+    await page.waitForTimeout(800)
+    const outside = await page.evaluate(() => {
+      const t = document.body.innerText
+      const link = [...document.querySelectorAll('a[href*="/login"]')].map(a => a.getAttribute('href'))
+      return {
+        conditions: ['제목에', '본문에', '사진', '광고 표시'].filter(w => t.includes(w)).length,
+        hasInput: !!document.querySelector('#blog-url'),
+        loginHrefs: link,
+      }
+    })
+    if (outside.conditions === 4) ok('로그인 전에도 조건이 다 보인다')
+    else bad('조건 감춤', `${outside.conditions}/4개만 보인다`)
+    if (!outside.hasInput) ok('로그인 전에는 넣는 칸을 안 보여 준다', '넣어도 안 되는 칸은 헛걸음이다')
+    else bad('빈 칸', '로그인 전인데 주소 칸이 있다')
+    if (outside.loginHrefs.some(h => h && h.includes('next=/event/blog-review')))
+      ok('로그인하면 이 자리로 돌아온다', 'next=/event/blog-review')
+    else bad('돌아올 길', `로그인 뒤 다른 곳으로 간다 — ${outside.loginHrefs.join(', ') || '링크 없음'}`)
+  }
 
   let logged = false
   for (let a = 0; a < 3 && !logged; a++) {
