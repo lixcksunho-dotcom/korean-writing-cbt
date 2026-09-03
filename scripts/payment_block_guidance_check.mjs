@@ -69,7 +69,11 @@ try {
   const phone = page.locator('input[type="tel"]').first()
   const agree = page.locator('input[type="checkbox"]').first()
   const payBtn = page.locator('button', { hasText: /카드|결제/ }).first()
-  if (!(await phone.count()) || !(await agree.count()) || !(await payBtn.count())) {
+  // 결제가 아직 안 열린 서비스는 이 화면 자체가 없다 — 고장이 아니라 순서다.
+  const notOpen = (await page.getByText(/결제 준비 중|유료 이용권은 준비 중/).count()) > 0
+  if (notOpen && !(await phone.count())) {
+    console.log('  · 아직 결제가 열려 있지 않아 건너뛴다(포트원 키 미설정). 열리면 이 검사가 돈다.')
+  } else if (!(await phone.count()) || !(await agree.count()) || !(await payBtn.count())) {
     bad('결제 화면을 못 찾았다', '이용권 화면 구조가 바뀌었나')
   } else {
     // ── 아무것도 안 채우고 누른다 (동의가 먼저 걸린다) ─────────────────────
