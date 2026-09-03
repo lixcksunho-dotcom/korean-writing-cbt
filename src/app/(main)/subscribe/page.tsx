@@ -3,7 +3,6 @@ import Link from 'next/link'
 import { getActiveSubscription, daysUntilExpiry } from '@/lib/subscription'
 import PaymentSection from '@/components/subscribe/PaymentSection'
 import PromoCodeBox from '@/components/subscribe/PromoCodeBox'
-import BlogReviewForm from '@/components/subscribe/BlogReviewForm'
 import { blogRewardQuota } from '@/lib/blogRewardQuota'
 import EventTracker from '@/components/analytics/EventTracker'
 import { CheckCircle2, Sparkles, Shield, Zap, LogIn, Star, Ticket, ChevronDown } from 'lucide-react'
@@ -204,23 +203,33 @@ export default async function SubscribePage(
         </div>
       </div>
 
-      {/* 무료로 받는 두 경로는 결제 카드 **밖**, 접힌 채로 둔다.
-          결제 버튼 바로 아래에 펼쳐 두면 돈을 내려던 사람이 공짜 경로를 보고 멈춘다.
-          그렇다고 감추면 코드를 들고 온 사람이 길을 잃으므로, 한 줄로 눈에는 띄게 한다. */}
+      {/* 코드 넣는 자리만 결제 화면에 남긴다 — 코드를 들고 온 사람은 결제하려던 사람이다.
+          블로그 후기 이벤트는 조건이 다섯 가지라 여기서 다룰 일이 아니고, 무엇보다
+          결제 버튼 옆에서 공짜 경로를 같이 팔면 돈을 내려던 사람이 멈춘다.
+          제 페이지로 옮기고 여기서는 한 줄로만 잇는다. */}
       {user && (
-        <details id="blog-review" open={openPromo} className="group mt-4 rounded-2xl border border-[#e2e8f0] bg-white">
+        <details id="promo-code" open={openPromo} className="group mt-4 rounded-2xl border border-[#e2e8f0] bg-white">
           <summary className="flex cursor-pointer list-none items-center justify-between gap-2 px-5 py-4 text-sm font-bold text-[#334155]">
             <span className="flex items-center gap-2">
               <Ticket className="h-4 w-4 text-[#d97706]" aria-hidden="true" />
-              행사 코드가 있거나, 블로그 후기로 받고 싶으신가요?
+              행사 코드가 있으신가요?
             </span>
             <ChevronDown className="h-4 w-4 shrink-0 text-[#94a3b8] transition-transform group-open:rotate-180" aria-hidden="true" />
           </summary>
-          <div className="space-y-4 border-t border-[#e2e8f0] p-5">
+          <div className="border-t border-[#e2e8f0] p-5">
             <PromoCodeBox />
-            <BlogReviewForm left={rewardQuota.left} total={rewardQuota.total} />
           </div>
         </details>
+      )}
+
+      {rewardQuota.total > 0 && !rewardQuota.closed && (
+        <p className="mt-3 text-center text-xs text-[#64748b]">
+          블로그에 후기를 쓰고 이용권을 받는{' '}
+          <Link href="/event/blog-review" className="font-semibold text-[#1e3a5f] underline underline-offset-2">
+            후기 이벤트
+          </Link>
+          도 있어요.
+        </p>
       )}
     </div>
   )

@@ -1,14 +1,32 @@
 'use client'
 
+import Link from 'next/link'
 import { useState, useTransition } from 'react'
-import { PenLine, CheckCircle2, AlertCircle, Check, X } from 'lucide-react'
+import { PenLine, CheckCircle2, AlertCircle, Check, X, LogIn } from 'lucide-react'
 import { submitBlogReview } from '@/app/(main)/subscribe/blog-review-actions'
 import { TITLE_KEYWORDS, BODY_KEYWORDS, MIN_IMAGES, MIN_CHARS, MIN_QA, REWARD_DAYS, DISCLOSURE_SAMPLE, type RuleCheck } from '@/lib/blogPromoRules'
 import DisclosureCopyBox from '@/components/subscribe/DisclosureCopyBox'
 
 // 블로그에 홍보 글을 쓰면 이용권을 드리는 신청 화면.
 // 조건을 '내고 나서' 알려 주면 늦다 — 쓰기 전에 보이도록 폼 위에 그대로 적는다.
-export default function BlogReviewForm({ left, total }: { left?: number; total?: number }) {
+export default function BlogReviewForm({
+  left,
+  total,
+  /**
+   * 로그인한 사람인가. 아니면 조건은 그대로 다 보여 주고 넣는 칸만 로그인으로 바꾼다.
+   *
+   * 조건이 다섯 가지라 미리 읽고 판단해야 하는데, 로그인해야 보이면 '뭘 해야 하는지도
+   * 모르고' 가입부터 하게 된다. 조건을 감출 이유가 없다 — 감춰서 얻는 것도 없다.
+   */
+  signedIn = true,
+  /**
+   * 이 부품 위에 이미 같은 말을 하는 머리말이 있는가.
+   *
+   * 결제 화면 안 접힌 상자였을 때는 제목이 필요했다. 전용 페이지에서는 머리말이
+   * 같은 문장과 남은 자리 수를 이미 말하고 있어, 그대로 두면 두 번 읽힌다.
+   */
+  headed = true,
+}: { left?: number; total?: number; signedIn?: boolean; headed?: boolean }) {
   const [url, setUrl] = useState('')
   const [result, setResult] = useState<{ autoPassed: boolean; granted: boolean; checks: RuleCheck[]; note: string } | null>(null)
   const [error, setError] = useState('')
@@ -26,21 +44,30 @@ export default function BlogReviewForm({ left, total }: { left?: number; total?:
 
   return (
     <section className="rounded-xl border border-[#e2e8f0] bg-white p-5">
-      <div className="flex items-center gap-1.5 mb-1.5">
-        <PenLine className="h-4 w-4 text-[#d97706]" aria-hidden="true" />
-        <h3 className="text-sm font-bold text-[#0f172a]">블로그에 소개하고 이용권 {REWARD_DAYS}일 받기</h3>
-        {typeof left === 'number' && (
-          <span className={`ml-auto shrink-0 rounded-full px-2 py-0.5 text-[11px] font-bold ${
-            left > 0 ? 'bg-amber-50 text-[#b45309]' : 'bg-gray-100 text-gray-500'
-          }`}>
-            {left > 0 ? `${left}자리 남음` : '마감'}
-          </span>
-        )}
-      </div>
-      <p className="text-xs text-[#64748b] mb-3.5">
-        블로그에 실글패스 후기를 올리고 글 주소를 넣어 주세요. 확인되면 이용권을 드립니다.
-        {typeof total === 'number' && <> 선착순 <b>{total}명</b>입니다.</>}
-      </p>
+      {headed ? (
+        <>
+          <div className="flex items-center gap-1.5 mb-1.5">
+            <PenLine className="h-4 w-4 text-[#d97706]" aria-hidden="true" />
+            <h3 className="text-sm font-bold text-[#0f172a]">블로그에 소개하고 이용권 {REWARD_DAYS}일 받기</h3>
+            {typeof left === 'number' && (
+              <span className={`ml-auto shrink-0 rounded-full px-2 py-0.5 text-[11px] font-bold ${
+                left > 0 ? 'bg-amber-50 text-[#b45309]' : 'bg-gray-100 text-gray-500'
+              }`}>
+                {left > 0 ? `${left}자리 남음` : '마감'}
+              </span>
+            )}
+          </div>
+          <p className="text-xs text-[#64748b] mb-3.5">
+            블로그에 실글패스 후기를 올리고 글 주소를 넣어 주세요. 확인되면 이용권을 드립니다.
+            {typeof total === 'number' && <> 선착순 <b>{total}명</b>입니다.</>}
+          </p>
+        </>
+      ) : (
+        <h2 className="mb-3.5 flex items-center gap-1.5 text-sm font-bold text-[#0f172a]">
+          <PenLine className="h-4 w-4 text-[#d97706]" aria-hidden="true" />
+          이렇게 써 주시면 됩니다
+        </h2>
+      )}
 
       <ol className="mb-4 space-y-2 rounded-lg bg-[#f8fafc] p-3.5 text-xs text-[#334155]">
         <li className="flex gap-2">
@@ -150,6 +177,27 @@ export default function BlogReviewForm({ left, total }: { left?: number; total?:
               ))}
             </ul>
           )}
+        </div>
+      ) : !signedIn ? (
+        <div className="rounded-lg border border-[#e2e8f0] bg-[#f8fafc] p-4 text-center">
+          <p className="text-xs leading-relaxed text-[#475569]">
+            글 주소를 넣는 것만 로그인이 필요해요 — 이용권을 어느 계정에 넣어 드릴지
+            알아야 하기 때문입니다.
+          </p>
+          <Link
+            href="/login?next=/event/blog-review"
+            className="btn-primary mt-3 flex min-h-[44px] items-center justify-center gap-2 rounded-xl text-sm font-bold text-white"
+          >
+            <LogIn className="h-4 w-4" aria-hidden="true" />
+            로그인하고 신청하기
+          </Link>
+          <p className="mt-2.5 text-xs text-[#64748b]">
+            아직 계정이 없다면{' '}
+            <Link href="/signup?next=/event/blog-review" className="font-semibold text-[#1e3a5f] underline">
+              무료로 가입
+            </Link>
+            할 수 있어요.
+          </p>
         </div>
       ) : (
         <form onSubmit={submit} className="flex flex-col gap-2 sm:flex-row">

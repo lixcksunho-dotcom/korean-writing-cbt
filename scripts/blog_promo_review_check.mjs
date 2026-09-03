@@ -32,7 +32,12 @@ const ENV = Object.fromEntries(
 )
 // 무료 경로는 접힌 상자 안에 있다 — 사람이 누르는 것과 같은 순서로 연다.
 // 화면을 다시 불러오면 도로 접히므로 채우기 전마다 부른다.
+// 행사는 결제 화면 안 접힌 상자에서 제 페이지로 옮겼다 — 결제 화면 옆에서 공짜 경로를
+// 같이 팔면 돈을 내려던 사람이 멈추고, 반대로 행사를 보러 온 사람은 가격표부터 만난다.
+const EVENT_PATH = '/event/blog-review'
+
 async function openPromoBox(page) {
+  // 옛 구조(접힌 상자)에서도 열리도록 남겨 둔다 — 전용 페이지에서는 할 일이 없다.
   await page.evaluate(() => {
     const box = document.querySelector('#blog-url')?.closest('details')
     if (box) box.open = true
@@ -233,7 +238,7 @@ try {
   }
   if (!logged) throw new Error('로그인이 되지 않음')
 
-  await page.goto(`${BASE}/subscribe`, { waitUntil: 'networkidle', timeout: 60000 })
+  await page.goto(`${BASE}${EVENT_PATH}`, { waitUntil: 'networkidle', timeout: 60000 })
   await page.waitForTimeout(1200)
 
   await openPromoBox(page)
@@ -263,7 +268,7 @@ try {
   ok('접수가 기록된다', `${subs.length}건`)
 
   // 같은 글 재신청 차단
-  await page.goto(`${BASE}/subscribe`, { waitUntil: 'networkidle' })
+  await page.goto(`${BASE}${EVENT_PATH}`, { waitUntil: 'networkidle' })
   await page.waitForTimeout(1000)
   await openPromoBox(page)
   await page.fill('#blog-url', testUrl)

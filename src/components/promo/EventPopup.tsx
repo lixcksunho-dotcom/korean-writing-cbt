@@ -230,7 +230,7 @@ export default function EventPopup({
           </ul>
 
           <Link
-            href="/subscribe?promo=1#blog-review"
+            href="/event/blog-review"
             onClick={() => setOpen(false)}
             className="mt-5 flex w-full items-center justify-center rounded-xl bg-[#1e3a5f] py-3.5 text-sm font-bold text-white transition-all hover:-translate-y-0.5 hover:shadow-lg"
           >
