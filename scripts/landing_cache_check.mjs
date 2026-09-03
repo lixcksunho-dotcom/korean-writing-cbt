@@ -5,8 +5,8 @@
 // 캐시가 살아 있을 때는 91ms였다. 홈 방문이 하루 13회인데 만료가 10분이었으니
 // (하루 144번 만료) 거의 모든 방문자가 그 첫 사람이었다.
 //
-// 만료를 6시간으로 늘리고, 3시간마다 도는 예약 작업(ops\warm_pages.bat)이 대신
-// 재생성을 맞도록 했다. 그래서 두 가지를 함께 지켜야 한다.
+// 만료를 6시간으로 늘리고, 1시간마다 도는 예약 작업(ops\warm_pages.bat)이 대신
+// 재생성을 맞도록 했다. 예열 뒤 홈 첫바이트는 2,861ms에서 91ms가 됐다. 그래서 두 가지를 함께 지켜야 한다.
 //   · 들어오는 문(홈·맛보기)의 만료가 예열 주기보다 넉넉히 길 것
 //   · 만료가 길어진 만큼, 내용이 바뀌는 자리에서 즉시 갱신을 걸어 둘 것
 //     (안 그러면 빨라진 대신 낡은 것을 보여 준다 — 더 나쁘다)
@@ -21,7 +21,8 @@ const bad = (n, d = '') => { fail++; console.log(`  × ${n}${d ? ` — ${d}` : '
 
 console.log('\n첫 방문자가 재생성을 기다리지 않는가\n')
 
-/** 예열은 3시간마다 돈다. 만료가 그보다 짧으면 사람이 먼저 만나는 창이 생긴다. */
+// 예열은 1시간마다 돈다. 만료가 그보다 짧으면 사람이 먼저 만나는 창이 생긴다.
+// 여유를 두고 3시간을 바닥으로 잡는다 — 예열이 한두 번 밀려도 사람이 안 맞도록.
 const WARM_INTERVAL_SEC = 3 * 60 * 60
 const MIN_REVALIDATE = WARM_INTERVAL_SEC + 1
 
@@ -40,8 +41,8 @@ for (const file of DOORS) {
   }
   const sec = Number(m[1])
   const h = (sec / 3600).toFixed(1).replace(/\.0$/, '')
-  if (sec >= MIN_REVALIDATE) ok(`${file} 만료 ${h}시간`, `예열 주기 3시간보다 길다`)
-  else bad(`${file} 만료 ${h}시간`, `3시간보다 짧다 — 예열 사이에 사람이 재생성을 맞는다`)
+  if (sec >= MIN_REVALIDATE) ok(`${file} 만료 ${h}시간`, '예열 주기(1시간)보다 넉넉하다')
+  else bad(`${file} 만료 ${h}시간`, '3시간보다 짧다 — 예열 사이에 사람이 재생성을 맞는다')
 }
 
 // 만료가 길어진 값을 낡게 두지 않으려면, 바꾸는 쪽에서 즉시 갱신을 걸어야 한다.
@@ -61,7 +62,7 @@ for (const { file, needs, what } of MUTATIONS) {
 // 예열 스크립트가 실제로 있는지. 없으면 위 만료 시간은 근거를 잃는다.
 {
   const warm = 'C:/Users/선호/ops/warm_pages.bat'
-  if (fs.existsSync(warm)) ok('예열 스크립트가 있다', 'ops\\warm_pages.bat (3시간마다)')
+  if (fs.existsSync(warm)) ok('예열 스크립트가 있다', 'ops\\warm_pages.bat (1시간마다)')
   else console.log('  · 예열 스크립트를 못 찾았다 — 이 컴퓨터가 아닐 수 있어 실패로 세지 않는다')
 }
 
