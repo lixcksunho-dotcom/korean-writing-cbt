@@ -40,6 +40,10 @@ export async function createQuestion(data: QuestionInput) {
   if (error) throw new Error(error.message)
   revalidatePath('/admin/questions')
   revalidatePath('/cbt')
+  // 홈의 '9회분·351문항'과 맛보기 문제도 여기서 나온다. 안 걸어 두면 문항을 고쳐도
+  // 만료될 때까지 옛 숫자·옛 문제가 걸려 있다.
+  revalidatePath('/')
+  revalidatePath('/try', 'layout')
 }
 
 export async function updateQuestion(id: string, data: QuestionInput) {
@@ -51,6 +55,10 @@ export async function updateQuestion(id: string, data: QuestionInput) {
   if (error) throw new Error(error.message)
   revalidatePath('/admin/questions')
   revalidatePath('/cbt')
+  // 홈의 '9회분·351문항'과 맛보기 문제도 여기서 나온다. 안 걸어 두면 문항을 고쳐도
+  // 만료될 때까지 옛 숫자·옛 문제가 걸려 있다.
+  revalidatePath('/')
+  revalidatePath('/try', 'layout')
 }
 
 export async function deleteQuestion(id: string) {
@@ -59,4 +67,8 @@ export async function deleteQuestion(id: string) {
   if (error) throw new Error(error.message)
   revalidatePath('/admin/questions')
   revalidatePath('/cbt')
+  // 홈의 '9회분·351문항'과 맛보기 문제도 여기서 나온다. 안 걸어 두면 문항을 고쳐도
+  // 만료될 때까지 옛 숫자·옛 문제가 걸려 있다.
+  revalidatePath('/')
+  revalidatePath('/try', 'layout')
 }

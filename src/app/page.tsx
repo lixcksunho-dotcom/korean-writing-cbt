@@ -14,7 +14,11 @@ import { questionBank } from '@/lib/questionBank'
 
 // ISR 캐시로 빠르게 응답(매 요청 SSR 시 Supabase 왕복으로 7초+ 느려지던 문제 해소).
 // 통계가 0으로 굳는 문제는 아래 roundCount/questionCount 폴백(|| 9, || 393)으로 방지.
-export const revalidate = 600
+// 6시간. 예전엔 10분이었는데, 홈 방문이 하루 13회라 캐시가 만료된 뒤 오는 사람이
+// 거의 전부였다 — 그 첫 사람이 재생성을 기다렸다(실측 2,835ms, 캐시가 살아 있으면 91ms).
+// 여기 숫자(회차·문항·후기)는 저절로 변하지 않는다. 후기 작성과 문항 수정은 각각
+// revalidatePath('/')로 즉시 반영하므로, 만료를 늘려도 낡은 숫자가 걸려 있지 않는다.
+export const revalidate = 21600
 
 const features = [
   {

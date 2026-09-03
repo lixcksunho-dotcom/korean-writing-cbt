@@ -75,7 +75,8 @@
     "check:alert-triage": "node --experimental-strip-types scripts/alert_triage_check.mjs",
     "check:nav": "node scripts/navigation_speed_check.mjs",
     "check:first-click": "node scripts/first_click_check.mjs",
-    "check:region": "node scripts/server_region_check.mjs"
+    "check:region": "node scripts/server_region_check.mjs",
+    "check:landing-cache": "node scripts/landing_cache_check.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.100.1",
