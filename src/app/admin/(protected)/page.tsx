@@ -1,4 +1,6 @@
 import Link from 'next/link'
+import DailySales from '@/app/admin/(protected)/payments/DailySales'
+import { summarizeSales, type SubscriptionRow } from '@/lib/dailySales'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { DEFAULT_PROGRAM } from '@/lib/programs'
 import { isActivePass } from '@/lib/subscription'
@@ -12,12 +14,23 @@ import { BookOpen, Star, CreditCard, Wallet, FileCheck2, PenLine, ChevronRight, 
 
 export const dynamic = 'force-dynamic'
 
+/** 대시보드에서도 쓰는 매출 원장 요약. 결제 화면과 같은 계산을 쓴다. */
+async function loadSales() {
+  const { data } = await createAdminClient()
+    .from('subscriptions')
+    .select('created_at, amount, status, payment_key')
+    .order('created_at', { ascending: false })
+    .limit(1000)
+  return summarizeSales((data ?? []) as SubscriptionRow[], new Date())
+}
+
 export default async function AdminHome() {
   // 관리자 권한은 admin/layout.tsx에서 이미 검증됨. 통계는 service_role로 집계.
   const admin = createAdminClient()
 
-  const [alerts, aiKey, qCount, reviewRows, subRows, examDone, manuscriptCount, reportRows] = await Promise.all([
+  const [alerts, sales, aiKey, qCount, reviewRows, subRows, examDone, manuscriptCount, reportRows] = await Promise.all([
     recentOperatorAlerts(),
+    loadSales(),
     checkAiKey(),
     // KBS를 kbspass로 옮긴 뒤에도 이 표에는 KBS 문항 300개가 남아 있다.
     // 안 거르면 대시보드가 이 서비스에 없는 문항까지 세어 보여 준다.
@@ -67,6 +80,10 @@ export default async function AdminHome() {
       </div>
 
       <AlertChannelCard status={describeAlertChannel(alertChannelEnv())} />
+
+      {/* 매출은 가장 먼저 보고 싶은 숫자다. 결제 화면에만 두면 한 번 더 눌러야 보인다.
+          여기서는 숫자와 흐름만, 날짜별·주별 표는 결제 화면에서 본다. */}
+      <DailySales summary={sales} compact />
 
       {/* 최근 사고. 텔레그램 설정이 없어도 여기엔 남는다 — 알림이 설정에 의존하면
           설정이 빠진 동안은 없는 것과 같다(결제 실패 1건을 16일간 몰랐다). */}

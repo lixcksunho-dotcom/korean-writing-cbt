@@ -15,7 +15,9 @@ function Stat({ label, count, amount, accent }: { label: string; count: number; 
 
 // 날짜별 판매. 막대는 그날 매출을 기간 최대치에 견줘 그린다 —
 // 절대 높이가 아니라 서로 견주는 것이 목적이라 세로 눈금은 붙이지 않는다.
-export default function DailySales({ summary }: { summary: SalesSummary }) {
+// compact: 대시보드용. 사장님이 가장 먼저 여는 화면이라 숫자와 흐름만 보여 주고,
+// 날짜별·주별 표는 결제 화면에 둔다(같은 것을 두 곳에 길게 늘어놓지 않는다).
+export default function DailySales({ summary, compact = false }: { summary: SalesSummary; compact?: boolean }) {
   const max = Math.max(1, ...summary.days.map(d => d.amount))
   const active = summary.days.filter(d => d.count > 0)
   const avgPerActiveDay = active.length ? Math.round(summary.last30.amount / active.length) : 0
@@ -65,7 +67,7 @@ export default function DailySales({ summary }: { summary: SalesSummary }) {
           <span>{summary.days[summary.days.length - 1]?.date.slice(5)}</span>
         </div>
 
-        {active.length > 0 && (
+        {!compact && active.length > 0 && (
           <table className="mt-4 w-full text-sm">
             <thead>
               <tr className="border-b border-[#e2e8f0] text-left text-xs text-[#475569]">
@@ -92,7 +94,7 @@ export default function DailySales({ summary }: { summary: SalesSummary }) {
 
         {/* 주별 — 하루 단위는 들쭉날쭉해서 '늘고 있나'를 못 읽는다.
             앞 주와 견줘 얼마나 달라졌는지까지 적는다(숫자만 보면 방향을 못 본다). */}
-        {summary.weeks.length > 1 && (
+        {!compact && summary.weeks.length > 1 && (
           <div className="mt-6 border-t border-[#e2e8f0] pt-4">
             <p className="mb-2 text-xs font-semibold text-[#475569]">주별 (월~일)</p>
             <table className="w-full text-sm">
@@ -138,7 +140,7 @@ export default function DailySales({ summary }: { summary: SalesSummary }) {
           무료 발급 {summary.freeTotal}건(행사·답례)은 매출에서 뺐고, 취소 {summary.cancelledTotal}건도 뺐습니다.
         </p>
 
-        {summary.suspicious.length > 0 && (
+        {!compact && summary.suspicious.length > 0 && (
           // 조용히 빼면 숫자가 왜 다른지 나중에 아무도 못 밝힌다. 넣되 드러낸다.
           <div className="mt-3 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900">
             <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
