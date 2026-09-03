@@ -72,7 +72,8 @@
     "check:exam-timer": "node --experimental-strip-types scripts/exam_timer_check.mjs",
     "check:exit-hygiene": "node scripts/check_exit_hygiene_check.mjs",
     "check:bundle": "node scripts/public_page_bundle_check.mjs",
-    "check:alert-triage": "node --experimental-strip-types scripts/alert_triage_check.mjs"
+    "check:alert-triage": "node --experimental-strip-types scripts/alert_triage_check.mjs",
+    "check:nav": "node scripts/navigation_speed_check.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.100.1",
