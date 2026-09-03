@@ -49,7 +49,17 @@ function hiddenForNow(): boolean {
   }
 }
 
-export default function EventPopup({ enabled }: { enabled: boolean }) {
+export default function EventPopup({
+  enabled,
+  /**
+   * 관리자 실험실에서 실제 모습을 보려고 띄우는 경우.
+   *
+   * 손님에게 보일 때 걸리는 문(7일 숨김·이미 이용권 있음)을 건너뛴다. 그 문들 때문에
+   * 정작 만든 사람이 화면을 한 번도 못 보는 일이 생긴다 — 한 번 닫으면 일주일간 안 뜬다.
+   * 남은 자리 수와 마감 판정은 그대로 둔다. 실제와 다르게 보이면 미리보기가 아니다.
+   */
+  preview = false,
+}: { enabled: boolean; preview?: boolean }) {
   const [open, setOpen] = useState(false)
   const [left, setLeft] = useState<number | null>(null)
   const { rounds, applyUrl } = getSchedule('silyong')
@@ -59,7 +69,7 @@ export default function EventPopup({ enabled }: { enabled: boolean }) {
 
   useEffect(() => {
     if (!enabled) return
-    if (hiddenForNow()) return
+    if (!preview && hiddenForNow()) return
 
     let cancelled = false
     let poll: ReturnType<typeof setInterval> | undefined
@@ -67,6 +77,7 @@ export default function EventPopup({ enabled }: { enabled: boolean }) {
       // 이미 이용권이 있는 사람에게 '무료로 받으세요'는 실례다. 첫 화면은 정적으로 그려서
       // 서버가 로그인 상태를 모르므로 여기서 확인한다(첫 그림을 늦추지 않게 나중에 한 번).
       try {
+        if (preview) throw new Error('미리보기 — 이용권 확인을 건너뛴다')
         const supabase = createClient()
         const { data: { user } } = await supabase.auth.getUser()
         if (user) {
@@ -111,7 +122,7 @@ export default function EventPopup({ enabled }: { enabled: boolean }) {
     }, 900)
 
     return () => { cancelled = true; clearTimeout(timer); if (poll) clearInterval(poll) }
-  }, [enabled])
+  }, [enabled, preview])
 
   useDialogFocus(open, ref, () => setOpen(false))
 
@@ -226,10 +237,15 @@ export default function EventPopup({ enabled }: { enabled: boolean }) {
             어떻게 쓰는지 보기
           </Link>
 
-          <p className="mt-3 text-center text-[11px] leading-relaxed text-[#94a3b8]">
+          {/* 여기는 '작은 글씨'가 아니라 고지다. 광고 표시 의무와 회수 조건은 이 창에서
+              읽고 결정하는 내용이라, 흐리게 쓰면 안 읽힌다 — 예전엔 #94a3b8 11px이라
+              흰 배경 대비가 2.6:1이었다(기준 4.5). 색을 올리고 한 급 키웠다.
+              '꺼진다'만 쓰고 '되살아난다'를 빼면 한쪽만 말하는 것이 된다. */}
+          <p className="mt-3 text-center text-xs leading-relaxed text-[#475569]">
             선착순 {MAX_REWARDS}명 · 계정당 1회 · 대가를 받고 쓰는 글이므로 광고 표시가 필요합니다.
             <br />
-            지급 뒤 글을 내리면 이용권도 함께 꺼집니다.
+            받은 뒤 {REWARD_DAYS}일 동안 글이 공개돼 있어야 하고, 내리면 남은 기간이 멈춰요
+            (다시 공개하면 되살아납니다).
           </p>
         </div>
 

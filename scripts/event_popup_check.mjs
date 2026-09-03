@@ -59,6 +59,38 @@ const seen = async page => {
   return (await page.locator(POPUP).count()) ? 1 : 0
 }
 
+// ── 꺼져 있어도 확인하는 것 ────────────────────────────────────────────────
+// 팝업은 플래그가 꺼져 있으면 화면에 안 뜬다. 그래서 켜기 전까지는 아무도 안 본다 —
+// 정작 켜는 날 처음 보게 되는데, 그때 고치면 이미 손님이 본 뒤다.
+// 화면 없이도 볼 수 있는 것은 여기서 미리 본다.
+{
+  const src = fs.readFileSync('src/components/promo/EventPopup.tsx', 'utf8')
+
+  // 고지는 한쪽만 말하면 안 된다. '내리면 멈춘다'만 쓰고 '다시 올리면 되살아난다'를
+  // 빼면, 읽는 사람은 한 번 실수하면 끝이라고 이해한다.
+  if (/멈춰|꺼집니다|멈춥니다/.test(src)) ok('내리면 멈춘다고 밝힌다')
+  else bad('회수 고지', '없다')
+  if (/되살아납니다|되살아나요/.test(src)) ok('다시 올리면 되살아난다고 함께 밝힌다')
+  else bad('한쪽만 고지', '멈춘다는 말만 있고 되살아난다는 말이 없다')
+
+  // 광고 표시 의무와 회수 조건은 이 창에서 읽고 결정하는 내용이다. 흐리게 쓰면 안 읽힌다.
+  // 예전엔 #94a3b8 11px이었고, 흰 배경 대비가 2.6:1이었다(기준 4.5).
+  const TOO_LIGHT = ['#94a3b8', '#cbd5e1', '#a8a29e', 'text-slate-400', 'text-gray-400']
+  const notice = src.split('\n').filter(l => /선착순|공개돼 있어야/.test(l))
+  const around = src.split('\n')
+  const noticeBlock = around
+    .map((l, i) => ({ l, i }))
+    .filter(({ l }) => /선착순 \{MAX_REWARDS\}/.test(l))
+    .flatMap(({ i }) => around.slice(Math.max(0, i - 3), i + 1))
+    .join('\n')
+  const light = TOO_LIGHT.filter(c => noticeBlock.includes(c))
+  if (!light.length) ok('고지 문구가 흐리지 않다')
+  else bad('고지 대비', `${light.join(', ')} — 흰 배경에서 4.5:1을 못 넘긴다`)
+  if (notice.length) ok('고지 문구가 팝업 안에 있다')
+  else bad('고지 문구', '못 찾았다')
+}
+
+let heldBack = false
 const browser = await chromium.launch()
 try {
   if (!ENABLED) {
@@ -69,14 +101,13 @@ try {
     if (await page.locator(POPUP).count() === 0) ok('보류 중 — 팝업이 뜨지 않는다', '플래그 off')
     else bad('보류 실패', '꺼 뒀는데 뜬다')
     await ctx.close()
-    await browser.close()
-    console.log(`
-${fail ? '팝업에 구멍이 있다.' : '보류 상태가 지켜진다.'}`)
-    process.exit(fail ? 1 : 0)
+    // 여기서 process.exit를 부르면 플레이라이트 핸들이 닫히는 중이라 윈도우에서
+    // libuv가 죽는다. 아래 finally가 브라우저를 닫도록 두고, 끝났다고만 표시한다.
+    heldBack = true
   }
 
   // 1) 처음 온 사람에게는 뜬다
-  {
+  if (!heldBack) {
     const ctx = await browser.newContext()
     const page = await ctx.newPage()
     await page.goto(BASE, { waitUntil: 'domcontentloaded', timeout: 60000 })
@@ -108,7 +139,7 @@ ${fail ? '팝업에 구멍이 있다.' : '보류 상태가 지켜진다.'}`)
   }
 
   // 3) 그냥 닫으면 다음 방문에는 다시 뜬다(하루 숨기기와 구분돼야 한다)
-  {
+  if (!heldBack) {
     const ctx = await browser.newContext()
     const page = await ctx.newPage()
     await page.goto(BASE, { waitUntil: 'domcontentloaded', timeout: 60000 })
@@ -122,7 +153,7 @@ ${fail ? '팝업에 구멍이 있다.' : '보류 상태가 지켜진다.'}`)
   }
 
   // 4) 이미 이용권이 있는 사람에게는 안 뜬다
-  {
+  if (!heldBack) {
     uid = (await (await api('/auth/v1/admin/users', {
       method: 'POST', body: JSON.stringify({ email, password, email_confirm: true }),
     })).json()).id
@@ -161,4 +192,4 @@ ${fail ? '팝업에 구멍이 있다.' : '보류 상태가 지켜진다.'}`)
 }
 
 console.log(`\n${fail ? '팝업에 구멍이 있다.' : '뜰 사람에게만 뜬다.'}`)
-process.exit(fail ? 1 : 0)
+process.exitCode = fail ? 1 : 0
