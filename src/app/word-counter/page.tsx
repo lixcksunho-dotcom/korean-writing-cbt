@@ -6,6 +6,7 @@ import BreadcrumbLd from "@/components/seo/BreadcrumbLd";
 import StickyMobileCTA from "@/components/landing/StickyMobileCTA";
 import WordCounter from "./WordCounter";
 import RelatedBlogPosts from '@/components/blog/RelatedBlogPosts'
+import InlineQuiz from '@/components/try/InlineQuiz'
 
 export const metadata: Metadata = {
   title: "글자수 세기 — 공백 포함·제외, 원고지 칸수까지 무료 계산",
@@ -97,6 +98,8 @@ export default function WordCountPage() {
               ))}
             </div>
           </section>
+          {/* 분량을 세러 온 사람은 방금 답안을 쓴 사람이다 — 그 다음 할 일이 고쳐쓰기다. */}
+          <InlineQuiz topic={{ keyword: "고쳐", label: "고쳐쓰기" }} />
           <RelatedBlogPosts category="writing" seed="word-counter" />
         </div>
       </main>

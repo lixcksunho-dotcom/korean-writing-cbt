@@ -3,6 +3,7 @@ import Link from "next/link";
 import LogoGlyph from "@/components/layout/LogoGlyph";
 import SiteFooter from "@/components/layout/SiteFooter";
 import StickyMobileCTA from "@/components/landing/StickyMobileCTA";
+import InlineQuiz from '@/components/try/InlineQuiz';
 
 export const metadata: Metadata = {
   title: "학습 자료 모음 — 어휘·어법·작문 국어 자료 총정리",
@@ -104,6 +105,9 @@ export default function GuidesPage() {
               </div>
             </section>
           ))}
+
+          {/* 자료 목록만 보고 나가지 않게 — '문제로 굳히기'를 권하기 전에 한 문제를 풀려 본다. */}
+          <InlineQuiz topic={{ keyword: "문장", label: "문장 고르기" }} />
 
           {/* CTA */}
           <section className="mb-10 mt-10">

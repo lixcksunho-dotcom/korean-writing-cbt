@@ -77,7 +77,8 @@
     "check:first-click": "node scripts/first_click_check.mjs",
     "check:region": "node scripts/server_region_check.mjs",
     "check:landing-cache": "node scripts/landing_cache_check.mjs",
-    "check:pay-guide": "node scripts/payment_block_guidance_check.mjs"
+    "check:pay-guide": "node scripts/payment_block_guidance_check.mjs",
+    "check:page-quiz": "node scripts/content_page_quiz_check.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.100.1",
