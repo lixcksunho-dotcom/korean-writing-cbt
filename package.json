@@ -70,7 +70,8 @@
     "check:next-round": "node --experimental-strip-types scripts/next_round_check.mjs",
     "check:audio-guard": "node scripts/audio_download_guard_check.mjs",
     "check:exam-timer": "node --experimental-strip-types scripts/exam_timer_check.mjs",
-    "check:exit-hygiene": "node scripts/check_exit_hygiene_check.mjs"
+    "check:exit-hygiene": "node scripts/check_exit_hygiene_check.mjs",
+    "check:alert-triage": "node --experimental-strip-types scripts/alert_triage_check.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.100.1",

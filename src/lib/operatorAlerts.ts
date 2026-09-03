@@ -1,4 +1,6 @@
 import { createAdminClient } from '@/lib/supabase/admin'
+import { triageAlert, type AlertTriage } from '@/lib/operatorAlertTriage'
+import { isCheckArtifact } from '@/lib/operatorAlertTriage'
 
 // 운영자가 알아야 하는 사고를 한 곳으로 모은다.
 //
@@ -43,6 +45,11 @@ export async function recordOperatorAlert(
   } catch {
     // 알림 기록 실패가 결제·채점 흐름을 막으면 안 된다
   }
+
+  // 검사가 만든 자국은 폰을 울리지 않는다. 기록은 위에서 이미 남겼다 —
+  // 검사가 돌았다는 사실은 쓸모가 있지만, 그것 때문에 새벽에 알림이 오면 안 된다.
+  // 아홉 개가 가짜면 사람은 목록을 안 읽게 되고, 그때 진짜 하나가 묻힌다.
+  if (isCheckArtifact(`${summary} ${ref ?? ''}`)) return
 
   const sent = await sendTelegram(telegramText ?? `⚠️ ${KIND_LABEL[kind]}
 
@@ -92,9 +99,22 @@ export async function sendTelegram(text: string): Promise<{ ok: boolean; detail:
 }
 
 
-export type OperatorAlert = { kind: AlertKind; label: string; summary: string; ref: string | null; at: string }
+export type OperatorAlert = {
+  kind: AlertKind
+  label: string
+  summary: string
+  ref: string | null
+  at: string
+  /** 사람이 봐야 하는가, 검사 자국인가, 스스로 끝난 일인가 */
+  triage: AlertTriage
+}
 
-/** 관리자 화면용. 최근 사고를 새 것부터 돌려준다. */
+/**
+ * 관리자 화면용. 최근 사고를 새 것부터 돌려준다.
+ *
+ * 검사 자국이 섞여 있어 그냥 12개를 자르면 진짜 사고가 밀려 안 보인다(실측: 12건 중
+ * 9건이 검사 자국이었다). 넉넉히 읽고 갈라서 돌려준다.
+ */
 export async function recentOperatorAlerts(days = 14, limit = 12): Promise<OperatorAlert[]> {
   const since = new Date(Date.now() - days * 86400_000).toISOString()
   const { data } = await createAdminClient()
@@ -103,16 +123,25 @@ export async function recentOperatorAlerts(days = 14, limit = 12): Promise<Opera
     .like('path', '#event/alert_%')
     .gte('created_at', since)
     .order('created_at', { ascending: false })
-    .limit(limit)
+    .limit(Math.max(limit * 6, 60))
 
-  return (data ?? []).map(r => {
+  const all = (data ?? []).map(r => {
     const kind = String(r.path).replace('#event/alert_', '') as AlertKind
+    const summary = r.referrer ?? ''
+    const ref = r.visitor_id ?? null
     return {
       kind,
       label: KIND_LABEL[kind] ?? kind,
-      summary: r.referrer ?? '',
-      ref: r.visitor_id ?? null,
+      summary,
+      ref,
       at: r.created_at as string,
+      triage: triageAlert(summary, ref),
     }
   })
+
+  // 사람이 볼 것을 먼저 채운다. 자리가 남으면 나머지도 준다 —
+  // 화면에서 접어 두되, 있었다는 사실 자체는 숨기지 않는다.
+  const actionable = all.filter(a => a.triage === 'actionable')
+  const rest = all.filter(a => a.triage !== 'actionable')
+  return [...actionable.slice(0, limit), ...rest.slice(0, limit)]
 }

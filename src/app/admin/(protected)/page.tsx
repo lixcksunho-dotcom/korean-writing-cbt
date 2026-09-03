@@ -70,21 +70,49 @@ export default async function AdminHome() {
 
       {/* 최근 사고. 텔레그램 설정이 없어도 여기엔 남는다 — 알림이 설정에 의존하면
           설정이 빠진 동안은 없는 것과 같다(결제 실패 1건을 16일간 몰랐다). */}
-      {alerts.length > 0 && (
-        <div className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4">
-          <h2 className="text-sm font-bold text-red-800 mb-2.5">최근 2주 사고 {alerts.length}건</h2>
-          <ul className="space-y-1.5">
-            {alerts.map((a, i) => (
-              <li key={i} className="text-xs text-red-800 leading-relaxed">
-                <span className="font-semibold">[{a.label}]</span>{' '}
-                {new Date(a.at).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}{' '}
-                — {a.summary}
-                {a.ref && <span className="block font-mono text-[11px] text-red-700 break-all">{a.ref}</span>}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+      {(() => {
+        // 볼 것과 안 봐도 되는 것을 가른다. 12건 중 9건이 검사 자국이던 적이 있는데,
+        // 그렇게 되면 사람은 목록을 안 읽게 되고 그때 진짜 하나가 묻힌다.
+        const todo = alerts.filter(a => a.triage === 'actionable')
+        const noise = alerts.filter(a => a.triage !== 'actionable')
+        const row = (a: (typeof alerts)[number], i: number) => (
+          <li key={`${a.at}-${i}`} className="text-xs leading-relaxed">
+            <span className="font-semibold">[{a.label}]</span>{' '}
+            {new Date(a.at).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}{' '}
+            — {a.summary}
+            {a.ref && <span className="block font-mono text-[11px] break-all opacity-80">{a.ref}</span>}
+          </li>
+        )
+        return (
+          <>
+            {todo.length > 0 && (
+              <div className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-red-800">
+                <h2 className="mb-2.5 text-sm font-bold">봐야 할 사고 {todo.length}건 (최근 2주)</h2>
+                <ul className="space-y-1.5">{todo.map(row)}</ul>
+              </div>
+            )}
+            {todo.length === 0 && alerts.length > 0 && (
+              <div className="mb-6 rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+                <p className="text-sm font-bold text-emerald-800">봐야 할 사고 없음 (최근 2주)</p>
+                <p className="mt-0.5 text-xs text-emerald-700">
+                  기록된 {alerts.length}건은 모두 자동 검사가 남긴 자국이거나 스스로 끝난 일입니다.
+                </p>
+              </div>
+            )}
+            {noise.length > 0 && (
+              <details className="mb-6 rounded-xl border border-[#e2e8f0] bg-white p-4">
+                <summary className="cursor-pointer text-sm font-semibold text-[#475569]">
+                  안 봐도 되는 기록 {noise.length}건
+                  <span className="ml-1.5 font-normal text-xs">
+                    (검사 자국 {noise.filter(a => a.triage === 'test').length} · 스스로 끝남 {noise.filter(a => a.triage === 'settled').length})
+                  </span>
+                </summary>
+                <ul className="mt-2.5 space-y-1.5 text-[#475569]">{noise.map(row)}</ul>
+              </details>
+            )}
+          </>
+        )
+      })()}
 
       {/* AI 채점 연결 상태 — 키가 빠지면 채점이 전부 실패하는데 사용자 화면에만 뜬다.
           요금이 붙지 않는 모델 조회로 확인한다(잔액은 이 방법으로 알 수 없다). */}
