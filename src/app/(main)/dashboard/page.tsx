@@ -35,10 +35,10 @@ export default async function DashboardPage() {
   const program = await getActiveProgram();
   const cfg = getProgram(program);
 
-  // 로그인 뒤 첫 화면이라 왕복 수가 곧 체감이다(실측 3957ms — 훑은 화면 50개 중 가장 느렸다).
-  // 예전엔 이 아래로 체험횟수 → 지난 이용권 → 결제이탈 흔적이 줄줄이 순차 실행됐다.
-  // 셋 다 user.id만 있으면 되는 조회라 여기서 함께 던진다. 유료 회원에게는 뒤 두 개가
-  // 쓰이지 않고 버려지지만, 둘 다 한 행짜리 조회이고 무료 회원이 대부분이라 이 편이 빠르다.
+  // 로그인 뒤 첫 화면이라 왕복 수가 곧 체감이다(처음 실측 3957ms — 훑은 화면 50개 중 가장 느렸다).
+  // 예전엔 이 아래로 체험횟수 → 지난 이용권 → 결제이탈 흔적 → 처리된 문의가 줄줄이 순차였다.
+  // 전부 user.id만 있으면 되는 조회라 여기서 함께 던진다. 유료 회원에게는 몇 개가
+  // 쓰이지 않고 버려지지만, 다들 한 행짜리 조회이고 무료 회원이 대부분이라 이 편이 빠르다.
   const [
     { data: sessions },
     { data: manuscripts },
@@ -46,6 +46,7 @@ export default async function DashboardPage() {
     trialUsed,
     { data: lastSub },
     startedRecently,
+    { data: resolvedFeedback },
   ] = await Promise.all([
     supabase
       .from("quiz_sessions")
@@ -70,6 +71,17 @@ export default async function DashboardPage() {
       .limit(1)
       .maybeSingle(),
     hasAbandonedCheckout(user.id),
+    // 권한으로는 자기가 쓴 글도 빈 배열로 돌아온다. 정책을 더하는 것은 DB 변경이라
+    // 사람이 결정할 일이므로, 서버에서 본인 id로만 좁혀 읽는다.
+    // user.id는 세션에서 나온 값이라 남의 글에는 닿지 않는다. 연락처·기기 정보는
+    // 가져오지 않는다 — 화면에 필요한 것만 읽는다.
+    createAdminClient()
+      .from('feedback')
+      .select('id, message, created_at')
+      .eq('user_id', user.id)
+      .eq('resolved', true)
+      .order('created_at', { ascending: false })
+      .limit(3),
   ]);
   const manuscriptCount = manuscripts?.length ?? 0;
 
@@ -169,17 +181,6 @@ export default async function DashboardPage() {
   // 문의를 고쳐 놓고도 알릴 길이 없어, 남긴 사람은 읽혔는지조차 몰랐다.
   //
   // service_role로 읽는 까닭: feedback 표에는 읽기 정책이 없어서(넣기만 된다) 사용자
-  // 권한으로는 자기가 쓴 글도 빈 배열로 돌아온다. 정책을 더하는 것은 DB 변경이라
-  // 사람이 결정할 일이므로, 서버에서 본인 id로만 좁혀 읽는다.
-  // user.id는 세션에서 나온 값이라 남의 글에는 닿지 않는다. 연락처·기기 정보는
-  // 가져오지 않는다 — 화면에 필요한 것만 읽는다.
-  const { data: resolvedFeedback } = await createAdminClient()
-    .from('feedback')
-    .select('id, message, created_at')
-    .eq('user_id', user.id)
-    .eq('resolved', true)
-    .order('created_at', { ascending: false })
-    .limit(3)
 
   return (
     <div className="animate-fade-up">
