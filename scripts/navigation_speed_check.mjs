@@ -39,10 +39,6 @@ try {
       downloadThroughput: 1.6 * 1024 * 1024 / 8, uploadThroughput: 750 * 1024 / 8,
     })
     await cdp.send('Emulation.setCPUThrottlingRate', { rate: 4 })
-    // 일정 안내를 이미 본 것으로 두고 시작한다 — 여기서 재려는 것은 이동 시간이다.
-    await page.addInitScript(() => {
-      try { sessionStorage.setItem('kpt_schedule_seen_silyong', '1') } catch { /* 저장이 막힌 브라우저 */ }
-    })
 
     try {
       await page.goto(BASE + '/', { waitUntil: 'load', timeout: 60000 })
