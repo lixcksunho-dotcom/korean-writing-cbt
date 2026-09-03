@@ -3,6 +3,7 @@ import "./globals.css";
 
 import Analytics from "@/components/analytics/Analytics";
 import TrafficTracker from "@/components/analytics/TrafficTracker";
+import RoutePrefetcher from "@/components/navigation/RoutePrefetcher";
 
 // 웹폰트(Noto Sans KR)를 걷어내고 시스템 한글 글꼴로 그린다. 글꼴 지정은 globals.css.
 //
@@ -128,6 +129,7 @@ export default function RootLayout({
         {children}
         <Analytics />
         <TrafficTracker />
+        <RoutePrefetcher />
       </body>
     </html>
   );

@@ -4,6 +4,7 @@ import ScheduleModal from "@/components/schedule/ScheduleModal";
 import { createClient } from "@/lib/supabase/server";
 import { getActiveProgram } from "@/lib/programContext";
 import { getProgram } from "@/lib/programs";
+import RoutePrefetcher from '@/components/navigation/RoutePrefetcher'
 
 export default async function MainLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
@@ -26,6 +27,8 @@ export default async function MainLayout({ children }: { children: React.ReactNo
       </a>
       <main id="main" tabIndex={-1} className="flex-1 max-w-6xl w-full mx-auto px-4 pt-8 pb-24">
         {children}
+        {/* 로그인 뒤의 이동은 대부분 이 셋 사이에서 일어난다(최근 30일 조회 상위). */}
+        <RoutePrefetcher routes={['/dashboard', '/cbt', '/practice']} />
       </main>
       <SiteFooter />
       {/* 시험일정 팝업 — 활성 모드에 맞는 일정(실글=klata / KBS=kbskorean) */}
