@@ -20,10 +20,6 @@ function daysBetween(fromIso: string) {
   const target = new Date(`${fromIso}T00:00:00`)
   return Math.ceil((target.getTime() - startOfToday().getTime()) / 86400000)
 }
-function todayKey() {
-  const d = new Date()
-  return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`
-}
 
 // 접수 마감(closed)과 시험 종료(done)는 다르다. 예전엔 접수가 끝나면 회차를 화면에서
 // 통째로 뺐는데, 그러면 **이미 접수한 사람이 자기 시험일을 못 본다** — 접수 마감 뒤에도
@@ -63,27 +59,15 @@ export default function ScheduleModal({ program = 'silyong' }: { program?: strin
   const quiet = QUIET_ROUTES.some(re => re.test(pathname))
   // 활성 시험(실글/KBS)에 맞는 일정·제목·링크
   const { title, rounds, applyUrl, scheduleUrl } = getSchedule(program)
-  const HIDE_KEY = `kpt_schedule_hide_${program}`
-  const SEEN_KEY = `kpt_schedule_seen_${program}`
 
-  // 세션당 1회 자동 노출. 단 '오늘 하루 안 열기'를 누른 날(localStorage)에는 자동으로 안 뜬다.
-  useEffect(() => {
-    if (typeof window === 'undefined' || quiet) return
-    const today = todayKey()
-    if (localStorage.getItem(HIDE_KEY) === today) return
-    if (!sessionStorage.getItem(SEEN_KEY)) {
-      sessionStorage.setItem(SEEN_KEY, '1')
-      // 동기 setState(cascading render) 회피 — 마운트 직후 한 프레임 뒤 노출
-      const id = requestAnimationFrame(() => setOpen(true))
-      return () => cancelAnimationFrame(id)
-    }
-  }, [HIDE_KEY, SEEN_KEY, quiet])
-
-  // 오늘 하루 자동 노출 끄기 (floating 버튼으로는 언제든 다시 열 수 있음)
-  function hideForToday() {
-    if (typeof window !== 'undefined') localStorage.setItem(HIDE_KEY, todayKey())
-    setOpen(false)
-  }
+  // 자동으로 띄우지 않는다.
+  //
+  // 예전엔 세션당 1회 저절로 전면을 덮었다. 첫 방문자가 홈에 들어오면 아무것도 읽기 전에
+  // 화면 전체가 가려지고, '가입 없이 문제 풀어보기' 버튼이 눌리지 않았다 — 실제로 재다가
+  // 클릭이 막혀서 알았다. 알리려던 마감일보다 먼저 만나는 것이 벽이면 안 된다.
+  //
+  // 대신 마감일을 아래 떠 있는 버튼에 붙였다. 닫으면 사라지는 팝업보다, 늘 보이는
+  // 'D-4'가 오래 남는다.
 
   // ESC로 닫기 + 열렸을 때 배경 스크롤 잠금
   useEffect(() => {
@@ -130,6 +114,12 @@ export default function ScheduleModal({ program = 'silyong' }: { program?: strin
       >
         <CalendarDays className="h-4 w-4 text-[#f59e0b]" />
         <span className="hidden sm:inline">시험일정</span>
+        {/* 접수 기간에만 남은 날을 보여 준다. 좁은 화면에서도 이건 남긴다 — 이게 요점이다. */}
+        {canApply(primaryStatus) && (
+          <span className="text-xs font-black text-[#f59e0b] tabular-nums">
+            {dday === 0 ? 'D-DAY' : `D-${dday}`}
+          </span>
+        )}
       </button>
 
       {/* body로 빼서 띄운다 — 변환(transform)이 걸린 조상 안에 있으면 position:fixed가
@@ -249,14 +239,8 @@ export default function ScheduleModal({ program = 'silyong' }: { program?: strin
               </p>
             </div>
 
-            {/* 하단 바: 오늘 하루 안 열기 / 닫기 */}
-            <div className="flex items-center justify-between border-t border-[#eef2f7] px-5 py-3">
-              <button
-                onClick={hideForToday}
-                className="text-xs font-semibold text-[#64748b] hover:text-[#64748b] transition-colors"
-              >
-                오늘 하루 안 열기
-              </button>
+            {/* 저절로 뜨지 않으니 '오늘 하루 안 열기'는 뜻이 없다 — 직접 연 창은 닫기만 있으면 된다. */}
+            <div className="flex items-center justify-end border-t border-[#eef2f7] px-5 py-3">
               <button
                 onClick={() => setOpen(false)}
                 className="text-xs font-bold text-[#1e3a5f] hover:underline"
