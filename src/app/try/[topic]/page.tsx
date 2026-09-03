@@ -1,25 +1,48 @@
 import type { Metadata } from 'next'
+import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import LogoGlyph from '@/components/layout/LogoGlyph'
 import SiteFooter from '@/components/layout/SiteFooter'
 import TrialQuiz, { type TrialQuestion } from '@/components/try/TrialQuiz'
 import { questionBank } from '@/lib/questionBank'
-import { TRIAL_TOPICS } from '@/lib/trialTopics'
+import { TRIAL_TOPICS, findTrialTopic } from '@/lib/trialTopics'
 
 export const revalidate = 3600
 
 // 유형별 주소를 사이트맵에 넣었으므로 제목·설명도 유형마다 달라야 한다.
 // 여섯 주소가 같은 제목을 달고 있으면 검색엔진에는 같은 문서 여섯 개이고,
 // '띄어쓰기 문제'로 찾는 사람에게 걸릴 이유가 없어진다.
-export const metadata: Metadata = {
-  title: '한국실용글쓰기 문제 풀어보기 — 회원가입 없이 5문항',
-  description:
-    '한국실용글쓰기 시험 문제를 회원가입 없이 바로 풀어 보세요. 채점과 해설까지 무료입니다. 맞춤법·외래어 표기·띄어쓰기 등 실제 출제 유형 그대로.',
-  keywords: [
-    '한국실용글쓰기 문제', '한국실용글쓰기 기출문제', '한국실용글쓰기 모의고사',
-    '실용글쓰기 문제풀이', '실용글쓰기 무료 문제', '실용글쓰기CBT',
-  ],
-  alternates: { canonical: '/try' },
+// 여섯 유형을 미리 만들어 둔다 — 주소에 유형이 있으면 정적으로 구울 수 있다.
+export function generateStaticParams() {
+  return TRIAL_TOPICS.map(t => ({ topic: t.slug }))
+}
+
+export async function generateMetadata(
+  { params }: { params: Promise<{ topic: string }> },
+): Promise<Metadata> {
+  const topic = findTrialTopic((await params).topic)
+  if (!topic) {
+    return {
+      title: '한국실용글쓰기 문제 풀어보기 — 회원가입 없이 5문항',
+      description:
+        '한국실용글쓰기 시험 문제를 회원가입 없이 바로 풀어 보세요. 채점과 해설까지 무료입니다. 맞춤법·외래어 표기·띄어쓰기 등 실제 출제 유형 그대로.',
+      keywords: [
+        '한국실용글쓰기 문제', '한국실용글쓰기 기출문제', '한국실용글쓰기 모의고사',
+        '실용글쓰기 문제풀이', '실용글쓰기 무료 문제', '실용글쓰기CBT',
+      ],
+      alternates: { canonical: '/try' },
+    }
+  }
+  return {
+    title: `${topic.label} 문제 풀어보기 — 회원가입 없이 5문항`,
+    description:
+      `한국실용글쓰기 ${topic.label} 문제를 회원가입 없이 바로 풀어 보세요. 채점과 해설까지 무료입니다. 실제 출제 유형 그대로예요.`,
+    keywords: [
+      `${topic.label} 문제`, `${topic.label} 문제풀이`, `${topic.label} 연습문제`,
+      `한국실용글쓰기 ${topic.label}`, '실용글쓰기 무료 문제',
+    ],
+    alternates: { canonical: `/try/${topic.slug}` },
+  }
 }
 
 
@@ -31,25 +54,31 @@ export const metadata: Metadata = {
 //
 // 다 열지는 않는다 — 5문항만. 우리가 파는 것(전 회차·서술형 AI 채점·약점 분석)은 그대로 두고,
 // '이 사이트 문제가 쓸 만하다'는 것만 확인시킨다.
-// searchParams 를 받으면 이 화면이 통째로 '매 요청 새로 그리기'가 된다(실측:
-// Cache-Control no-store, 첫 응답 635ms). 검색 유입의 관문이라 그러면 안 된다.
-// 유형은 주소 경로(/try/[topic])로 받아 각각 미리 구워 둔다.
-export default async function TryPage() {
+export default async function TryTopicPage({
+  params,
+}: {
+  params: Promise<{ topic: string }>
+}) {
+  // 검색은 '맞춤법 문제'·'띄어쓰기 문제'처럼 유형으로 들어온다. 주소에 유형이 있으면
+  // 그 사람이 찾던 것을 첫 화면에 바로 보여 준다. 없으면 여러 유형을 섞어 준다.
+  const topic = findTrialTopic((await params).topic)
+  if (!topic) notFound()
 
   // program 필터가 반드시 있어야 한다 — 이 표에는 KBS 문항 300개가 아직 남아 있고,
   // 안 거르면 실글패스 화면에 [듣기] 문항이 섞여 나온다.
-  const { data } = await questionBank()
+  let query = questionBank()
     .from('questions')
     .select('id, number, question, passage, options, correct_answer, explanation')
-    // program 필터가 반드시 있어야 한다 — 이 표에는 KBS 문항 300개가 아직 남아 있고,
-    // 안 거르면 실글패스 화면에 [듣기] 문항이 섞여 나온다.
     .eq('program', 'silyong')
     .eq('type', 'multiple')
+
+  if (topic) {
+    query = query.ilike('question', `%${topic.keyword}%`).order('id').limit(5)
+  } else {
     // 유형을 안 고른 사람에게는 1회차 앞부분을 준다 — 실제 시험이 시작되는 모습 그대로다.
-    .eq('round', 1)
-    .lte('number', 30)
-    .order('number')
-    .limit(5)
+    query = query.eq('round', 1).lte('number', 30).order('number').limit(5)
+  }
+  const { data } = await query
 
   const questions: TrialQuestion[] = (data ?? []).map(q => ({
     id: String(q.id),
@@ -80,7 +109,7 @@ export default async function TryPage() {
           <div className="mb-8 border-t-4 border-[#0f1f3d] pt-6">
             <p className="mb-3 text-xs font-semibold tracking-[0.2em] text-[#94a3b8]">회원가입 없이 · 무료</p>
             <h1 className="mb-4 text-3xl font-black leading-tight text-[#0f1f3d] sm:text-4xl">
-              한국실용글쓰기 문제,
+              {topic ? `한국실용글쓰기 ${topic.label} 문제,` : '한국실용글쓰기 문제,'}
               <br />
               지금 바로 풀어 보세요
             </h1>
@@ -94,7 +123,9 @@ export default async function TryPage() {
           <div className="mb-6 flex flex-wrap gap-2">
             <Link
               href="/try"
-              className="inline-flex min-h-11 items-center rounded-full border border-[#0f1f3d] bg-[#0f1f3d] px-4 text-sm font-bold text-white"
+              className={`inline-flex min-h-11 items-center rounded-full border px-4 text-sm font-bold transition-colors ${
+                topic ? 'border-[#e2e8f0] bg-white text-[#475569] hover:bg-[#f1f5f9]' : 'border-[#0f1f3d] bg-[#0f1f3d] text-white'
+              }`}
             >
               전체
             </Link>
@@ -102,7 +133,9 @@ export default async function TryPage() {
               <Link
                 key={t.slug}
                 href={`/try/${t.slug}`}
-                className="inline-flex min-h-11 items-center rounded-full border border-[#e2e8f0] bg-white px-4 text-sm font-bold text-[#475569] transition-colors hover:bg-[#f1f5f9]"
+                className={`inline-flex min-h-11 items-center rounded-full border px-4 text-sm font-bold transition-colors ${
+                  topic?.slug === t.slug ? 'border-[#0f1f3d] bg-[#0f1f3d] text-white' : 'border-[#e2e8f0] bg-white text-[#475569] hover:bg-[#f1f5f9]'
+                }`}
               >
                 {t.label}
               </Link>

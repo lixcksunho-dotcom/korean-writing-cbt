@@ -44,7 +44,17 @@ const nextConfig: NextConfig = {
   // 위 주석대로 배포 환경에서 미들웨어가 안 돌던 전례가 있고, 정적 리다이렉트는
   // 설정 계층이 가장 확실하다.
   async redirects() {
+    // /try?t=slug 로 이미 내보낸 주소가 있다(사이트맵에 실렸다). 경로 방식으로 바꾸면서
+    // 옛 주소가 죽으면 색인된 것이 통째로 사라진다 — 새 주소로 넘겨 준다. (try-topic-legacy)
+    // 질의 문자열은 has 로 받고, 목적지에는 붙이지 않는다.
+
     return [
+      {
+        source: '/try',
+        has: [{ type: 'query', key: 't', value: '(?<topic>[a-z]+)' }],
+        destination: '/try/:topic',
+        permanent: true,
+      },
       { source: '/practice/kbs-types', destination: 'https://kbstest.cloud/practice', permanent: true },
       { source: '/cbt/kbs-:examId', destination: 'https://kbstest.cloud/cbt', permanent: true },
       { source: '/cbt/kbs-:examId/:path*', destination: 'https://kbstest.cloud/cbt', permanent: true },

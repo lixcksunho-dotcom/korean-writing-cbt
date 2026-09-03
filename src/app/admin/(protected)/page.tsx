@@ -78,6 +78,13 @@ export default async function AdminHome() {
         const row = (a: (typeof alerts)[number], i: number) => (
           <li key={`${a.at}-${i}`} className="text-xs leading-relaxed">
             <span className="font-semibold">[{a.label}]</span>{' '}
+            {a.resolved !== null && (
+              <span className={`mr-1 rounded px-1.5 py-0.5 text-[11px] font-bold ${
+                a.resolved ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-900'
+              }`}>
+                {a.resolved ? '처리됨' : '미처리'}
+              </span>
+            )}
             {new Date(a.at).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}{' '}
             — {a.summary}
             {a.ref && <span className="block font-mono text-[11px] break-all opacity-80">{a.ref}</span>}
@@ -104,7 +111,7 @@ export default async function AdminHome() {
                 <summary className="cursor-pointer text-sm font-semibold text-[#475569]">
                   안 봐도 되는 기록 {noise.length}건
                   <span className="ml-1.5 font-normal text-xs">
-                    (검사 자국 {noise.filter(a => a.triage === 'test').length} · 스스로 끝남 {noise.filter(a => a.triage === 'settled').length})
+                    (검사 자국 {noise.filter(a => a.triage === 'test').length} · 처리·자동해결 {noise.filter(a => a.triage === 'settled').length})
                   </span>
                 </summary>
                 <ul className="mt-2.5 space-y-1.5 text-[#475569]">{noise.map(row)}</ul>

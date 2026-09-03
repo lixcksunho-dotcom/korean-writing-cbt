@@ -108,7 +108,7 @@ try {
   {
     const seen = new Map()
     for (const t of TRIAL_TOPICS) {
-      await page.goto(`${BASE}/try?t=${t.slug}`, { waitUntil: 'networkidle', timeout: 60000 })
+      await page.goto(`${BASE}/try/${t.slug}`, { waitUntil: 'networkidle', timeout: 60000 })
       const items = page.locator('ol > li')
       const n = await items.count()
       if (n === 0) { bad(`${t.label} 맛보기`, '문항이 없다'); continue }
@@ -129,7 +129,7 @@ try {
   {
     const titles = new Map()
     for (const t of TRIAL_TOPICS) {
-      await page.goto(`${BASE}/try?t=${t.slug}`, { waitUntil: 'domcontentloaded', timeout: 60000 })
+      await page.goto(`${BASE}/try/${t.slug}`, { waitUntil: 'domcontentloaded', timeout: 60000 })
       const title = await page.title()
       if (titles.has(title)) bad('제목 중복', `${t.label}과 ${titles.get(title)}의 제목이 같다`)
       titles.set(title, t.label)
@@ -138,6 +138,17 @@ try {
     }
     if (titles.size === TRIAL_TOPICS.length) ok('제목이 유형마다 다르다', `${titles.size}가지`)
   }
+  // 검색 유입의 관문이라 캐시가 살아 있어야 한다. searchParams 를 받으면 이 화면이
+  // 통째로 '매 요청 새로 그리기'가 된다(실측: no-store, 첫 응답 635ms).
+  {
+    for (const path of ['/try', `/try/${TRIAL_TOPICS[0].slug}`]) {
+      const res = await fetch(`${BASE}${path}`, { signal: AbortSignal.timeout(30000) })
+      const cc = res.headers.get('cache-control') ?? ''
+      if (!/no-store/.test(cc)) ok(`${path} 는 캐시된다`, cc.slice(0, 46))
+      else bad(`${path} 캐시`, '매 요청 새로 그린다 — searchParams 가 들어갔는지 보라')
+    }
+  }
+
   // 홈에서 이 화면으로 들어올 길이 있는가
   await page.goto(BASE, { waitUntil: 'domcontentloaded', timeout: 60000 })
   if (await page.locator('a[href="/try"]').count()) ok('첫 화면에서 들어갈 수 있다')
