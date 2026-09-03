@@ -8,6 +8,7 @@ import {
   REWARD_DAYS,
   checkBlogHtml,
   isLikelyBlogPostUrl,
+  normalizeBlogUrl,
   type RuleCheck,
 } from '@/lib/blogPromoRules'
 import { fetchBlogPost, countPhotos, countBodyChars } from '@/lib/blogPromoFetch'
@@ -31,15 +32,25 @@ export async function submitBlogReview(url: string): Promise<SubmitResult> {
 
   const admin = createAdminClient()
 
-  // 같은 사람이 같은 글을 또 내는 것을 막는다. 다른 글이면 다시 낼 수 있다.
-  const { data: dup } = await admin
+  // 같은 글은 한 번만 받는다.
+  //
+  // 예전에는 '같은 사람 + 같은 주소'만 막았다. 그러면 한 사람이 쓴 글 주소를 여러 명이
+  // 나눠 내면 각자 이용권을 받는다 — 홍보는 한 편인데 값은 여러 번 나가는 셈이다.
+  // 주소는 모양이 여러 가지라(m.blog·끝 슬래시·꼬리표) 다듬어서 견준다.
+  const key = normalizeBlogUrl(link)
+  const { data: prior } = await admin
     .from('feedback')
-    .select('id')
-    .eq('user_id', user.id)
+    .select('user_id, contact')
     .eq('path', BLOG_REVIEW_PATH)
-    .eq('contact', link)
-    .limit(1)
-  if (dup?.length) return { ok: false, message: '이미 신청한 글이에요. 심사 결과를 기다려 주세요.' }
+    .not('contact', 'is', null)
+    .order('created_at', { ascending: false })
+    .limit(500)
+  const same = (prior ?? []).find(r => normalizeBlogUrl(String(r.contact)) === key)
+  if (same) {
+    return same.user_id === user.id
+      ? { ok: false, message: '이미 신청한 글이에요. 심사 결과를 기다려 주세요.' }
+      : { ok: false, message: '이미 다른 분이 신청한 글이에요. 직접 쓰신 글 주소를 넣어 주세요.' }
+  }
 
   // 자동 확인. 네이버는 원본 주소가 껍데기라 본문이 들어 있는 주소로 바꿔 읽는다.
   let checks: RuleCheck[] = []

@@ -102,6 +102,14 @@ export default function BlogRuleTester({ sample }: { sample: string }) {
             ))}
           </ul>
 
+          {/* 본문 영역을 못 찾으면 판정이 통째로 달라진다 — 조용히 넘어가면 안 된다. */}
+          {!res.bodyFound && (
+            <p className="rounded-xl border border-amber-300 bg-amber-50 p-3 text-xs font-semibold text-amber-800">
+              글쓴이 본문 영역을 못 찾았습니다. 문서 전체를 대신 읽었으니, 아래 본문이
+              옆 메뉴·공지 목록까지 섞여 있을 수 있어요.
+            </p>
+          )}
+
           <details className="rounded-xl border border-[#e2e8f0] bg-white p-4">
             <summary className="cursor-pointer text-xs font-bold text-[#334155]">
               판정기가 읽은 본문 앞부분 (조건이 왜 걸렸는지 확인용)

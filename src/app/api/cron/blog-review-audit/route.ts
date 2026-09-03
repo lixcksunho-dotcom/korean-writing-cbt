@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { recordOperatorAlert } from '@/lib/operatorAlerts'
-import { BLOG_REVIEW_PATH, checkBlogHtml } from '@/lib/blogPromoRules'
+import { BLOG_REVIEW_PATH, DISCLOSURE_RULE, checkBlogHtml } from '@/lib/blogPromoRules'
 import { fetchBlogPost, countPhotos, countBodyChars } from '@/lib/blogPromoFetch'
 
 export const dynamic = 'force-dynamic'
@@ -79,15 +79,38 @@ export async function GET(req: Request) {
 
   const admin = createAdminClient()
 
-  // 지급이 끝난 신청만 본다 — 아직 심사 전인 것은 볼 이유가 없다.
-  const { data: rows } = await admin
+  // **이용권이 실제로 나간 신청**만 본다. 아직 아무것도 안 준 신청은 볼 이유가 없다.
+  //
+  // 예전에는 resolved=true 로 골랐는데, 그건 '사람이 승인한 것'만 뜻한다. 조건을 모두
+  // 갖춰 그 자리에서 자동 지급된 신청은 resolved=false 로 남아서 **한 번도 재확인되지
+  // 않았다** — 자동 지급이 주된 경로인데 그쪽이 통째로 사각지대였다. 받고 바로 글을
+  // 지워도 아무 일이 없었다는 뜻이다.
+  //
+  // 그래서 승인 여부가 아니라 '준 것이 있는가'로 고른다. 회수된 건도 함께 본다 —
+  // 다시 공개했을 때 되살리려면 계속 지켜봐야 한다.
+  const { data: candidates } = await admin
     .from('feedback')
     .select('id, user_id, contact, created_at')
     .eq('path', BLOG_REVIEW_PATH)
-    .eq('resolved', true)
     .not('contact', 'is', null)
     .order('created_at', { ascending: false })
-    .limit(50)
+    .limit(200)
+
+  const orderIds = [...new Set(
+    (candidates ?? []).flatMap(r => [`review-${r.id}`, ...(r.user_id ? [`review-auto-${r.user_id}`] : [])]),
+  )]
+  const granted = new Set<string>()
+  if (orderIds.length) {
+    const { data: subs } = await admin
+      .from('subscriptions')
+      .select('order_id')
+      .in('order_id', orderIds)
+    for (const s of subs ?? []) granted.add(String(s.order_id))
+  }
+
+  const rows = (candidates ?? [])
+    .filter(r => granted.has(`review-${r.id}`) || (r.user_id && granted.has(`review-auto-${r.user_id}`)))
+    .slice(0, 50)
 
   const results: AuditRow[] = []
 
@@ -122,12 +145,29 @@ export async function GET(req: Request) {
     const failed = check.checks.filter(c => !c.ok)
 
     if (failed.length > 0) {
-      results.push({
-        id: r.id,
-        url,
-        state: 'changed',
-        detail: failed.map(c => `${c.rule}(${c.detail})`).join(' / '),
-      })
+      const detail = failed.map(c => `${c.rule}(${c.detail})`).join(' / ')
+
+      // 광고 표시가 사라진 것은 다른 조건과 다르다. 사진이 한 장 줄어든 것은 알리고
+      // 말면 되지만, 이건 없는 채로 두면 광고주인 우리가 제재를 받는다.
+      // 비공개와 같은 절차로 다룬다 — 한 번 더 읽어 같은 답이면 회수한다.
+      if (failed.some(c => c.rule === DISCLOSURE_RULE)) {
+        const again = await fetchBlogPost(url)
+        const stillGone = again.html !== null
+          && checkBlogHtml(again.html, countPhotos(again.html), countBodyChars(again.html))
+            .checks.some(c => c.rule === DISCLOSURE_RULE && !c.ok)
+        if (stillGone) {
+          const revoked = await revokeGrants(admin, r.id, r.user_id)
+          results.push({
+            id: r.id,
+            url,
+            state: revoked > 0 ? 'revoked' : 'changed',
+            detail: revoked > 0 ? `광고 표시가 사라졌습니다 — 이용권을 회수했습니다` : detail,
+          })
+          continue
+        }
+      }
+
+      results.push({ id: r.id, url, state: 'changed', detail })
       continue
     }
 

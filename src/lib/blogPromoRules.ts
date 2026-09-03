@@ -61,6 +61,14 @@ export const MIN_QA = 2
 //           '소정의 수수료를 지급받을 수 있음'처럼 조건부·불확정 표현
 
 /** 이 중 하나가 글에 있어야 한다(지침의 표준 문구 계열) */
+/**
+ * 광고 표시 규칙의 이름.
+ *
+ * 사후 확인에서 이 규칙만 따로 다룬다 — 다른 조건이 어긋난 것은 알리기만 하지만,
+ * 이건 없으면 광고주인 우리가 제재를 받는다. 그래서 이름을 문자열로 두 곳에 적지 않는다.
+ */
+export const DISCLOSURE_RULE = '광고임을 밝히는 문구(글 첫머리)'
+
 export const DISCLOSURE_PHRASES = [
   '광고',            // '유료광고'·'광고 포함'도 이 낱말을 품는다
   '유료 광고',
@@ -208,7 +216,7 @@ export function checkBlogHtml(html: string, photos?: number, bodyChars?: number)
     const inHead = DISCLOSURE_PHRASES.some(k => head.includes(squash(k)))
     const weakOnly = !hasPhrase && DISCLOSURE_NOT_ENOUGH.some(k => anywhere.includes(squash(k)))
     checks.push({
-      rule: '광고임을 밝히는 문구(글 첫머리)',
+      rule: DISCLOSURE_RULE,
       ok: readable && hasPhrase && inHead,
       detail: !readable ? '본문을 못 읽음'
         : !hasPhrase ? (weakOnly ? "'체험단'·'AD' 같은 말로는 부족합니다 — '광고' 또는 '대가를 받고'가 들어가야 해요" : '못 찾음')
@@ -219,6 +227,23 @@ export function checkBlogHtml(html: string, photos?: number, bodyChars?: number)
 
 
   return { readable, checks, allPassed: readable && checks.every(c => c.ok) }
+}
+
+/**
+ * 같은 글인지 견주기 위한 형태로 주소를 다듬는다.
+ *
+ * 같은 글이 여러 주소로 온다 — m.blog와 blog, 끝 슬래시, ?fromRss 같은 꼬리표.
+ * 다듬지 않고 문자열만 견주면 한 글을 여러 사람이 각자 다른 모양으로 내도 못 알아챈다.
+ */
+export function normalizeBlogUrl(raw: string): string {
+  try {
+    const u = new URL(raw.trim())
+    const host = u.hostname.toLowerCase().replace(/^m\./, '').replace(/^www\./, '')
+    const path = u.pathname.replace(/\/+$/, '')
+    return `${host}${path}`   // 질의 문자열과 # 뒤는 같은 글을 가리키므로 뺀다
+  } catch {
+    return raw.trim().toLowerCase()
+  }
 }
 
 /** 신청 주소가 블로그 글 주소로 보이는지 — 오타·홈 주소 제출을 걸러 준다. */

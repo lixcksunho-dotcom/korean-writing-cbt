@@ -13,6 +13,7 @@ import {
   type RuleCheck,
 } from '@/lib/blogPromoRules'
 import { countBodyChars, countPhotos, fetchBlogPost } from '@/lib/blogPromoFetch'
+import { extractPostBody } from '@/lib/blogPostBody'
 
 export type RuleTestResult =
   | {
@@ -25,6 +26,8 @@ export type RuleTestResult =
       allPassed: boolean
       /** 판정기가 실제로 읽어 낸 본문 — 규칙이 왜 걸렸는지 눈으로 확인한다 */
       excerpt: string
+      /** 글쓴이 본문 영역을 찾아냈는지. 못 찾으면 판정이 통째로 달라진다. */
+      bodyFound: boolean
     }
   | { ok: false; message: string }
 
@@ -47,10 +50,14 @@ export async function runBlogRuleTest(url: string): Promise<RuleTestResult> {
   const chars = countBodyChars(fetched.html)
   const result = checkBlogHtml(fetched.html, photos, chars)
 
-  // 태그를 걷어낸 본문 앞부분. 광고 문구가 '글 첫머리'에 있는지는 이 순서로 판정된다.
-  const excerpt = fetched.html
-    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
-    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+  // 판정기가 실제로 읽는 것과 **같은 본문**을 보여 준다.
+  //
+  // 예전에는 문서 전체에서 태그만 걷어내 보여 줬다. 그런데 판정은 글쓴이가 쓴 본문만
+  // 떼어내서 본다(옆 메뉴·공지 목록이 조건을 통과시키던 일이 있었다). 둘이 다르면
+  // 화면에는 광고 문구가 보이는데 판정은 '못 찾음'이라고 답하는 일이 생긴다 —
+  // 실험실이 거짓말을 하는 셈이라, 규칙을 고칠 때 엉뚱한 곳을 뜯게 된다.
+  const post = extractPostBody(fetched.html)
+  const excerpt = post.html
     .replace(/<[^>]+>/g, ' ')
     .replace(/&nbsp;|​/g, ' ')
     .replace(/\s+/g, ' ')
@@ -66,6 +73,7 @@ export async function runBlogRuleTest(url: string): Promise<RuleTestResult> {
     checks: result.checks,
     allPassed: result.allPassed,
     excerpt,
+    bodyFound: post.found,
   }
 }
 
