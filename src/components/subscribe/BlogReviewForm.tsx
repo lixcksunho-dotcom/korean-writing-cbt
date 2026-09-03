@@ -92,6 +92,25 @@ export default function BlogReviewForm({ left, total }: { left?: number; total?:
         <DisclosureCopyBox sample={DISCLOSURE_SAMPLE} fileName="실글패스-광고표시.png" />
       </div>
 
+      {/* 받은 뒤에 무슨 일이 생기는지 **쓰기 전에** 밝힌다.
+          사후 확인은 글이 내려가거나 광고 표시가 사라지면 이용권을 중지시킨다. 그걸
+          미리 안 알리고 나중에 끊으면, 조건을 몰랐던 사람에게 말없이 뺏는 셈이 된다. */}
+      <div className="mb-4 rounded-lg border border-[#e2e8f0] bg-white p-3.5 text-xs leading-relaxed text-[#475569]">
+        <p className="mb-1.5 font-bold text-[#0f172a]">받으신 뒤에</p>
+        <ul className="space-y-1">
+          <li>
+            · 이용권을 쓰는 <b>{REWARD_DAYS}일 동안</b>은 글이 공개돼 있어야 해요.
+            비공개로 돌리거나 지우면 남은 기간이 멈춥니다 — 다시 공개하면 되살아나요.
+          </li>
+          <li>· 광고 표시를 지우셔도 같은 방식으로 멈춥니다(법정 의무라 그래요).</li>
+          <li>· {REWARD_DAYS}일이 지난 뒤에는 글을 어떻게 하셔도 이용권에 영향이 없어요.</li>
+          <li>
+            · <b>내용은 자유롭게</b> 쓰시면 됩니다. 좋게 써 달라고 부탁드리지 않아요 —
+            느낀 그대로 쓰신 글이 읽는 사람에게도 쓸모가 있습니다.
+          </li>
+        </ul>
+      </div>
+
       {result ? (
         <div className={`rounded-lg border p-4 ${result.autoPassed ? 'border-emerald-200 bg-emerald-50' : 'border-amber-200 bg-amber-50'}`} role="status">
           <p className={`flex items-center gap-1.5 text-sm font-bold ${result.autoPassed ? 'text-emerald-900' : 'text-amber-900'}`}>
