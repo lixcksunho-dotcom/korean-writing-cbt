@@ -90,6 +90,50 @@ export default function DailySales({ summary }: { summary: SalesSummary }) {
           </table>
         )}
 
+        {/* 주별 — 하루 단위는 들쭉날쭉해서 '늘고 있나'를 못 읽는다.
+            앞 주와 견줘 얼마나 달라졌는지까지 적는다(숫자만 보면 방향을 못 본다). */}
+        {summary.weeks.length > 1 && (
+          <div className="mt-6 border-t border-[#e2e8f0] pt-4">
+            <p className="mb-2 text-xs font-semibold text-[#475569]">주별 (월~일)</p>
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-[#e2e8f0] text-left text-xs text-[#475569]">
+                  <th className="pb-1.5 font-medium">주</th>
+                  <th className="pb-1.5 text-right font-medium">건수</th>
+                  <th className="pb-1.5 text-right font-medium">매출</th>
+                  <th className="pb-1.5 text-right font-medium">전주 대비</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[...summary.weeks].reverse().map((w, i, arr) => {
+                  const prev = arr[i + 1]
+                  const diff = prev ? w.amount - prev.amount : null
+                  return (
+                    <tr key={w.start} className="border-b border-[#f1f5f9] last:border-0">
+                      <td className="py-1.5 tabular-nums text-[#334155]">
+                        {w.start.slice(5)} ~ {w.end.slice(5)}
+                      </td>
+                      <td className="py-1.5 text-right tabular-nums text-[#334155]">{w.count}</td>
+                      <td className="py-1.5 text-right font-semibold tabular-nums text-[#0f172a]">{won(w.amount)}</td>
+                      <td className="py-1.5 text-right tabular-nums">
+                        {diff === null ? (
+                          <span className="text-[#475569]">—</span>
+                        ) : diff === 0 ? (
+                          <span className="text-[#475569]">그대로</span>
+                        ) : (
+                          <span className={diff > 0 ? 'text-emerald-700' : 'text-red-700'}>
+                            {diff > 0 ? '+' : '−'}{won(Math.abs(diff))}
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+
         <p className="mt-3 text-xs text-[#475569]">
           무료 발급 {summary.freeTotal}건(행사·답례)은 매출에서 뺐고, 취소 {summary.cancelledTotal}건도 뺐습니다.
         </p>

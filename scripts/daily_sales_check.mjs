@@ -74,6 +74,31 @@ else bad('한국 시간 경계', kstDate('2026-09-02T15:00:00Z'))
   else bad('기간 구분', `전체 ${s.all.amount} / 30일 ${s.last30.amount}`)
 }
 
+// ── 주별 묶음 ──────────────────────────────────────────────────────────────
+// 하루 단위는 들쭉날쭉해서 '늘고 있나'를 못 읽는다. 주는 월요일에 시작한다.
+{
+  const rows = [
+    // 2026-08-31은 월요일, 2026-09-06은 일요일
+    { created_at: '2026-08-31T01:00:00Z', amount: 5500, status: 'active', payment_key: 'A' },
+    { created_at: '2026-09-06T14:00:00Z', amount: 5500, status: 'active', payment_key: 'B' },
+    // 2026-09-07은 다음 주 월요일 — 여기서 주가 갈려야 한다
+    { created_at: '2026-09-06T15:00:00Z', amount: 5500, status: 'active', payment_key: 'C' },
+  ]
+  const s = summarizeSales(rows, new Date('2026-09-08T05:00:00Z'))
+  const w1 = s.weeks.find(w => w.start === '2026-08-31')
+  const w2 = s.weeks.find(w => w.start === '2026-09-07')
+  if (w1 && w1.count === 2 && w1.amount === 11000) ok('월~일을 한 주로 묶는다', `${w1.start}~${w1.end} ${w1.count}건`)
+  else bad('주 묶기', JSON.stringify(w1))
+  if (w2 && w2.count === 1) ok('한국 시간 월요일에 주가 갈린다', 'UTC 15:00 = KST 월요일 00:00')
+  else bad('주 경계', JSON.stringify(w2))
+  if (s.weeks.every(w => w.end > w.start)) ok('주의 끝이 시작보다 뒤다')
+  else bad('주 범위', JSON.stringify(s.weeks.slice(0, 2)))
+  const dayTotal = s.days.reduce((a, d) => a + d.amount, 0)
+  const weekTotal = s.weeks.reduce((a, w) => a + w.amount, 0)
+  if (dayTotal === weekTotal) ok('일별 합계와 주별 합계가 같다', `${weekTotal}원`)
+  else bad('합계 불일치', `일별 ${dayTotal} / 주별 ${weekTotal}`)
+}
+
 // ── 실제 원장으로 한 번 돌려 본다 ─────────────────────────────────────────
 {
   const ENV = Object.fromEntries(

@@ -14,10 +14,15 @@ eq('webpack 기본 문구', isStaleChunkError('ChunkLoadError: Loading chunk 42 
 eq('CSS 조각도 마찬가지', isStaleChunkError('Loading CSS chunk 5 failed'), true)
 eq('사파리 문구', isStaleChunkError('Importing a module script failed.'), true)
 eq('vite/esm 문구', isStaleChunkError('Failed to fetch dynamically imported module: /assets/x.js'), true)
+// 2026-09-02 16:14 실제 신고: /cbt/2025-1/result — Load failed
+// 사파리는 'chunk'라는 말을 아예 안 써서 위 조건에 하나도 안 걸렸다.
+eq('사파리는 Load failed 라고만 한다', isStaleChunkError('Load failed'), true)
+eq('파이어폭스 문구', isStaleChunkError('error loading dynamically imported module'), true)
 
 // 이런 것까지 새로고침으로 덮으면 진짜 버그를 영영 못 본다
 eq('일반 자바스크립트 오류는 아니다', isStaleChunkError("Cannot read properties of undefined (reading 'map')"), false)
 eq('네트워크 오류는 아니다', isStaleChunkError('Failed to fetch'), false)
+eq('비슷하지만 다른 문구', isStaleChunkError('Image failed to load'), false)
 eq('서버 액션 오류는 아니다', isStaleChunkError('An error occurred in the Server Components render'), false)
 eq('빈 값', isStaleChunkError(''), false)
 eq('없음', isStaleChunkError(undefined), false)

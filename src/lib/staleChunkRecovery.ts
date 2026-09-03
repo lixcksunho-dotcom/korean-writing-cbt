@@ -17,7 +17,15 @@ export function isStaleChunkError(message?: string | null): boolean {
     m.includes('chunkloaderror') ||
     (m.includes('chunk') && (m.includes('failed') || m.includes('loading'))) ||
     m.includes('failed to fetch dynamically imported module') ||
-    m.includes('importing a module script failed')
+    m.includes('importing a module script failed') ||
+    // 사파리는 조각을 못 받으면 그냥 'Load failed'라고만 한다. 'chunk'라는 말이
+    // 어디에도 없어서 위 조건에 하나도 안 걸렸다 — 2026-09-02 16:14 결과 화면에서
+    // 실제로 신고가 들어왔다(/cbt/2025-1/result — Load failed).
+    m === 'load failed' ||
+    m.includes('load failed') ||
+    // 파이어폭스·엣지가 쓰는 문구
+    m.includes('error loading dynamically imported module') ||
+    m.includes('networkerror when attempting to fetch resource')
   )
 }
 

@@ -26,8 +26,19 @@ export type DayBucket = {
   free: number
 }
 
+export type WeekBucket = {
+  /** 그 주 월요일 (YYYY-MM-DD, 한국 시간) */
+  start: string
+  /** 그 주 일요일 */
+  end: string
+  count: number
+  amount: number
+}
+
 export type SalesSummary = {
   days: DayBucket[]
+  /** 최근 주간 묶음 — 오래된 주가 앞이다 */
+  weeks: WeekBucket[]
   today: DayBucket
   last7: { count: number; amount: number }
   last30: { count: number; amount: number }
@@ -108,8 +119,29 @@ export function summarizeSales(rows: SubscriptionRow[], now: Date, dayCount = 30
     }
   }
 
+  // 주 단위로 다시 묶는다. 하루 단위는 들쭉날쭉해서 '늘고 있나'를 못 읽는다 —
+  // 주말에 몰리는 서비스라 요일 편차가 큰 것이 정상이다.
+  // 주는 월요일에 시작한다(한국에서 '이번 주'는 보통 월~일이다).
+  const weeks: WeekBucket[] = []
+  for (const d of days) {
+    const dt = new Date(`${d.date}T00:00:00Z`)
+    const dow = dt.getUTCDay()            // 0=일
+    const back = dow === 0 ? 6 : dow - 1  // 월요일까지 며칠 되돌리나
+    const monday = new Date(dt.getTime() - back * 86400000).toISOString().slice(0, 10)
+    let w = weeks.find(x => x.start === monday)
+    if (!w) {
+      const sunday = new Date(new Date(`${monday}T00:00:00Z`).getTime() + 6 * 86400000)
+        .toISOString().slice(0, 10)
+      w = { start: monday, end: sunday, count: 0, amount: 0 }
+      weeks.push(w)
+    }
+    w.count += d.count
+    w.amount += d.amount
+  }
+
   return {
     days,
+    weeks,
     today: byDate.get(todayKey) ?? { date: todayKey, count: 0, amount: 0, cancelled: 0, free: 0 },
     last7: sum(7),
     last30: sum(30),
