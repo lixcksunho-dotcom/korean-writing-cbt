@@ -1,5 +1,71 @@
 # REPORT
 
+## 유입 경로별 결제 전환 (work/inflow-to-payment)
+
+- 날짜: 2026-09-05
+- 백로그: "유입 경로별 결제 전환 `scripts/inflow_to_payment.mjs`"
+- 범위: **읽기 전용.** 포트원 `getPayments`·Supabase REST 조회만. 추적 코드·외부 분석도구 추가 없음. 고객 식별값은 출력하지 않고(집계만), referrer 는 호스트명만.
+
+### 지시문과 달랐던 점 (중요)
+
+- **"가입 시 기록된 referrer·utm"은 존재하지 않는다.** 실물 대조: 회원 130명의 `user_metadata` 키는 avatar_url·email·name·provider_id 등 OAuth 프로필뿐이고 `app_metadata`는 provider·ai_trial_used 뿐. public 스키마 11개 테이블 중 유입 관련 열은 `page_views.referrer` 하나다. 가입 이벤트(`signup`)의 meta 도 provider(email/google)만 싣는다(`src/app/(auth)/signup/page.tsx:71`, `src/app/auth/callback/route.ts:49`).
+- 따라서 지시문 그대로면 결제 시도자 **전원 "미상"** 이 되어 표가 한 줄이다. 그래서 스크립트는 ①지시문대로의 원장 표(전원 미상 + "수집 안 되고 있음" 명시)에 더해 ②**대리 지표**로 비콘(`page_views`)에서 `payment_started`를 찍은 브라우저의 최초 방문 referrer·결제 세션 referrer를 세는 표를 낸다. ①과 ②는 조인 키가 없어 **서로 이어지지 않는 별개 모집단**이며 출력에 그렇게 적었다.
+- 지시문의 "결제창 완결률 9건 중 5건"은 8/28 시점 숫자다. 지금 30일 기준은 원장 20/22명(진입 40건/22명 → 완결 20건/20명).
+
+### 결과 (실제 실행 출력, `npm run report:inflow`, 2026-08-06 ~ 09-05)
+
+```
+① 원장(포트원) 기준 — 탈퇴·검증 계정 5건 제외, 현재 회원 130명 기준
+   결제창 진입 40건/22명 · 완결 20건/20명
+   경로      진입(명)  완결(명)
+   미상          22       20
+   ⚠ 가입 시 유입 정보(referrer·utm)는 수집 안 되고 있음
+
+② 비콘(page_views) 기준 — payment_started 40건/25브라우저 · purchase_success 22건/20브라우저
+   (a) 브라우저의 최초 방문 referrer            진입  완결   주 도착 페이지
+   search.naver.com                               8     8   /×3, /blog/category/guide×2
+   blog.naver.com                                 5     5   /×5
+   m.search.naver.com                             5     3   /blog/category/guide×2, /blog/실글패스-무료-기능-총정리×1
+   chatgpt.com                                    2     2   /×2
+   m.blog.naver.com                               2     1   /×2
+   직접 유입 / 앱 (referrer 없음)                 1     0   /×1
+   로컬 개발 브라우저 (127.0.0.1)                 1     1   /dashboard×1
+   google.com                                     1     0   /×1
+   (b) 결제 시도 세션의 첫 페이지 referrer: search.naver 7/6, m.search.naver 6/3, 직접 4/3, blog.naver 4/4, google 2/2, chatgpt 2/2
+```
+
+### 읽는 법과 결론 (단정 아님 — 표본 25브라우저)
+
+- **결제창까지 온 사람은 어느 경로에서 왔든 대부분 낸다.** 원장 22명 중 20명, 비콘 25브라우저 중 20. 경로별로 봐도 네이버 검색 8/8, 네이버 블로그 5/5, chatgpt 2/2. 완결이 빠진 5건은 m.search.naver 2, m.blog.naver 1, 직접 1, google 1로 흩어져 있어 특정 경로의 결제 문제로 보이지 않는다.
+- **유입은 사실상 네이버 한 곳이다.** 최초 방문 기준 25 중 20이 네이버(검색 13 + 블로그 7). 그 다음이 chatgpt 2, google 1. 병목이 "결제수단"이 아니라 "결제창에 오는 사람 수"라는 앞선 결론과 맞고, 그 사람 수가 **단일 채널(네이버 검색·블로그)에 의존**한다는 점이 새로 보인다. 다음 개선을 유입에 건다면 네이버 검색 노출(블로그 글·가이드 카테고리)이 가장 짧은 지렛대고, 구글은 30일간 결제 시도자 1명뿐이라 별도 여지가 있다.
+- **주 도착 페이지는 홈(`/`)과 `/blog/category/guide`.** 블로그 글이 결제자의 첫 접점인 경우가 실제로 있다(`실글패스-무료-기능-총정리` 1건 포함).
+- 로컬 개발 브라우저(127.0.0.1 → /dashboard) 1건은 사람 유입이 아니라 개발자 발자국이다. 숨기지 않고 이름을 붙여 표시했다(제외하면 24브라우저).
+- 비율(%)은 일부러 쓰지 않았다. 한 자릿수 표본에 비율을 붙이면 과대해석된다.
+
+### 무엇을 남겨야 하는가 (구현하지 않음 — 범위 밖)
+
+지금 구조에서 "가입자별 유입 경로"를 알려면 **가입 시점에 브라우저가 이미 갖고 있는 정보를 회원에 붙여 두기만** 하면 된다. 개인정보를 늘리지 않는 최소안:
+
+1. **첫 방문 정보를 브라우저에 보관**: `TrafficTracker`가 `kpt_vid`를 처음 만들 때 `document.referrer`의 **호스트명**, 도착 `pathname`, 그리고 URL의 `utm_source/medium/campaign`(있을 때만)을 localStorage 에 함께 저장. 전체 URL·쿼리는 저장하지 않는다.
+2. **가입 시 회원에 부착**: 이메일 가입은 `supabase.auth.signUp({ options: { data: { signup_referrer_host, signup_landing_path, signup_utm_source, … } } })`로 `user_metadata`에 싣고, OAuth 가입은 `/auth/callback` 의 `signup` 서버 이벤트 meta 에 같은 값을 붙인다(현재 provider만). 이 스크립트의 `inflowOf`는 `referr|utm|source|landing` 키를 자동 탐지하므로 **키가 생기면 ① 표가 그대로 채워진다.**
+3. **utm 은 비콘에도 없다**: `/api/track`는 `pathname`만 받으므로 utm 을 붙인 링크를 뿌려도 어디에도 남지 않는다. 페이지뷰 비콘에 utm 3개를 선택적으로 실어 `page_views.referrer` 옆에 저장하려면 열 추가(DB 스키마 변경 → NEED_HUMAN)가 필요하다. 열 없이 하려면 referrer 문자열에 `?utm_source=…`를 덧붙이는 편법이 있으나 관리자 트래픽 화면의 호스트 분류를 흔들 수 있어 권하지 않는다.
+4. 원장↔비콘 조인(결제 건별로 클라이언트 유입을 묻는 것)은 `docs/checkout_dropoff_plan.md` ②(C)의 paymentId 전달과 같은 문제이며 결제 코드(`PaymentButton.tsx`) 변경이라 NEED_HUMAN 대상이다. 위 1·2만으로도 "가입자 기준 경로별 결제 전환"은 나온다.
+
+### 변경 파일
+
+- `scripts/inflow_to_payment.mjs` (신규)
+- `package.json` — `report:inflow` 항목 추가
+- `REPORT.md` (본 절)
+
+### 테스트 방법과 실제 실행 결과
+
+- `npm run report:inflow` → 위 출력, 종료 코드 0.
+- `npm run report:inflow -- --days 7` → 7일 창(8/29~9/5) 원장 진입 12건/11명·완결 9건/9명 출력 확인.
+- `npm run report:inflow -- --days x` → "--days 는 1~365 정수여야 한다: x" 출력 후 종료 코드 1.
+- 대조: `npm run report:payments -- --from 2026-08-06` → "탈퇴·검증 계정 5건 제외 / 건 단위 20/40건 완결" — 이 스크립트의 원장 숫자(40건 진입·20건 완결·5건 제외)와 일치.
+- 합계 검증: ②(a)·(b) 각 표의 진입 합은 25 = payment_started 브라우저 수.
+- `git status`: 변경은 위 3개 파일뿐. `src/`·DB·배포 무변경.
+
 ## 카카오페이 7일 대 7일 비교 실행 (work/method-impact-7d)
 
 - **검수 통과 (2026-09-05):** `npm run report:method-impact`·`node scripts/daily_revenue.mjs --days 17` 재실행해 대조 — 진입 9/8→15/12, 시도 6/5→12/10, 완결 5/5→10/10, 순매출 27,500원(5건)→49,500원(10건) 전부 일치. 변경은 REPORT.md뿐, 코드·DB·배포 무변경. main에 merge.
