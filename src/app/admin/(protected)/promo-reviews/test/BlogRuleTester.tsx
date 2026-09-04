@@ -2,15 +2,25 @@
 
 import { useState, useTransition } from 'react'
 import { Check, X, FlaskConical, Loader2 } from 'lucide-react'
-import { runBlogRuleTest, type RuleTestResult } from './actions'
+import { runBlogRuleTest, runBlogRuleTestOnHtml, type RuleTestResult } from './actions'
 import DisclosureImage from '@/components/subscribe/DisclosureImage'
 
 export default function BlogRuleTester({ sample }: { sample: string }) {
   const [url, setUrl] = useState('')
+  // 주소로 못 읽는 글도 시험할 수 있어야 한다 — 비공개, 아직 안 올린 초안,
+  // 네이버가 우리를 막은 경우. 규칙을 고칠 때 가장 보고 싶은 것이 바로 그런 글이다.
+  const [mode, setMode] = useState<'url' | 'paste'>('url')
+  const [paste, setPaste] = useState('')
+  const [pasteTitle, setPasteTitle] = useState('')
   const [res, setRes] = useState<RuleTestResult | null>(null)
   const [pending, start] = useTransition()
 
   function run() {
+    if (mode === 'paste') {
+      if (paste.trim().length < 50) return
+      start(async () => setRes(await runBlogRuleTestOnHtml(paste, pasteTitle)))
+      return
+    }
     if (!url.trim()) return
     start(async () => setRes(await runBlogRuleTest(url)))
   }
@@ -18,6 +28,55 @@ export default function BlogRuleTester({ sample }: { sample: string }) {
   return (
     <div className="space-y-4">
       <div className="rounded-xl border border-[#e2e8f0] bg-white p-4">
+        <div className="mb-3 flex gap-1.5">
+          {([['url', '주소로'], ['paste', '붙여넣기로']] as const).map(([k, label]) => (
+            <button
+              key={k}
+              onClick={() => { setMode(k); setRes(null) }}
+              className={`rounded-lg px-3 py-1.5 text-xs font-bold transition-colors ${
+                mode === k ? 'bg-[#1e3a5f] text-white' : 'bg-[#f1f5f9] text-[#475569] hover:bg-[#e2e8f0]'
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
+        {mode === 'paste' ? (
+          <>
+            <label htmlFor="paste-title" className="mb-1 block text-xs font-bold text-[#334155]">제목(선택)</label>
+            <input
+              id="paste-title"
+              value={pasteTitle}
+              onChange={e => setPasteTitle(e.target.value)}
+              placeholder="실글패스 한 달 써 본 후기"
+              className="mb-2 w-full rounded-lg border border-[#e2e8f0] px-3 py-2 text-sm"
+            />
+            <label htmlFor="paste-body" className="mb-1 block text-xs font-bold text-[#334155]">
+              글 내용 (HTML이든 맨 글이든)
+            </label>
+            <textarea
+              id="paste-body"
+              value={paste}
+              onChange={e => setPaste(e.target.value)}
+              rows={8}
+              placeholder="블로그 편집기에서 복사해 붙여넣거나, 아직 안 올린 초안을 그대로 넣어 보세요."
+              className="w-full rounded-lg border border-[#e2e8f0] px-3 py-2 font-mono text-xs"
+            />
+            <p className="mt-1 text-xs text-[#64748b]">
+              맨 글을 넣으면 본문 영역으로 감싸서 판정합니다. 사진 수는 HTML을 넣어야 셀 수 있어요.
+            </p>
+            <button
+              onClick={run}
+              disabled={pending || paste.trim().length < 50}
+              className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-[#1e3a5f] px-4 py-2 text-sm font-bold text-white disabled:opacity-50"
+            >
+              {pending ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : <FlaskConical className="h-4 w-4" aria-hidden="true" />}
+              {pending ? '판정 중' : '판정 돌리기'}
+            </button>
+          </>
+        ) : (
+        <>
         <label htmlFor="test-url" className="mb-1 block text-xs font-bold text-[#334155]">글 주소</label>
         <div className="flex flex-wrap gap-2">
           <input
@@ -37,6 +96,8 @@ export default function BlogRuleTester({ sample }: { sample: string }) {
             {pending ? '읽는 중' : '판정 돌리기'}
           </button>
         </div>
+        </>
+        )}
       </div>
 
       {res && !res.ok && (

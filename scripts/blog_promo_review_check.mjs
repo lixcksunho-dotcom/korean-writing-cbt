@@ -14,6 +14,7 @@
 
 import fs from 'node:fs'
 import { chromium } from 'playwright'
+import { passingPostHtml, missingDisclosureHtml } from '../src/lib/blogPromoFixture.ts'
 import {
   checkBlogHtml,
   isLikelyBlogPostUrl,
@@ -212,6 +213,26 @@ else bad('글자수 기준', charCheck ? charCheck.detail : '기준 자체가 �
 if (!isLikelyBlogPostUrl('https://blog.naver.com') && isLikelyBlogPostUrl('https://blog.naver.com/me/123')) {
   ok('블로그 첫 화면은 글 주소로 안 본다')
 } else bad('주소 판정', '첫 화면과 글 주소를 구분 못 한다')
+
+// ── 판정기가 아직 살아 있는가 ───────────────────────────────────────────────
+// 판정은 네이버가 내려주는 HTML 모양에 기대고 있다. 저쪽이 구조를 바꾸면 우리 추출기가
+// 조용히 빈 본문을 읽고 **모든 신청이 조건 미달로 떨어진다.** 화면도 빌드도 멀쩡하니
+// 아무도 모른다 — '신청이 안 들어온다'와 구분이 안 된다.
+//
+// 그래서 '이런 글이면 반드시 통과한다'를 표본으로 박아 두고 여기서 돌린다.
+// 이게 떨어지면 신청자 글이 아니라 판정기가 고장 난 것이다.
+{
+  const good = passingPostHtml()
+  const g = checkBlogHtml(good, countPhotos(good), countBodyChars(good))
+  if (g.allPassed) ok('조건을 갖춘 표본은 통과시킨다', '판정기가 살아 있다')
+  else bad('판정기 고장', `표본이 떨어졌다 — ${g.checks.filter(c => !c.ok).map(c => `${c.rule}(${c.detail})`).join(' / ')}`)
+
+  const bad1 = missingDisclosureHtml()
+  const b = checkBlogHtml(bad1, countPhotos(bad1), countBodyChars(bad1))
+  const onlyDisclosure = !b.allPassed && b.checks.filter(c => !c.ok).length === 1
+  if (onlyDisclosure) ok('광고 표시를 뺀 표본은 그 규칙만 걸린다', '다른 규칙까지 흔들리지 않는다')
+  else bad('규칙이 서로 흔들린다', `실패 ${b.checks.filter(c => !c.ok).length}개 — 하나여야 한다`)
+}
 
 // ── 자리 ─────────────────────────────────────────────────────────────────────
 // 행사는 결제 화면에서 떼어 제 페이지로 옮겼다. 되돌아가면 두 가지가 같이 망가진다 —

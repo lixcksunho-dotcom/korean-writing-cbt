@@ -13,6 +13,7 @@ import {
   type RuleCheck,
 } from '@/lib/blogPromoRules'
 import { countBodyChars, countPhotos, fetchBlogPost } from '@/lib/blogPromoFetch'
+import { passingPostHtml, missingDisclosureHtml } from '@/lib/blogPromoFixture'
 import { extractPostBody } from '@/lib/blogPostBody'
 
 export type RuleTestResult =
@@ -86,5 +87,70 @@ export async function blogRuleSummary() {
     minChars: MIN_CHARS,
     minQa: MIN_QA,
     disclosureSample: DISCLOSURE_SAMPLE,
+  }
+}
+
+/**
+ * 붙여넣은 글로 판정한다. 주소를 못 읽는 상황에서도 규칙을 시험할 수 있어야 한다.
+ *
+ * 왜 필요한가: 비공개 글, 아직 안 올린 초안, 네이버가 우리를 막은 경우에는 주소로
+ * 시험할 방법이 없다. 그런데 규칙을 고칠 때 가장 보고 싶은 것이 바로 그런 글이다.
+ *
+ * 태그가 없는 맨 글이면 본문 영역으로 감싸 준다 — 안 그러면 추출기가 본문을 못 찾는다.
+ */
+export async function runBlogRuleTestOnHtml(raw: string, title = ''): Promise<RuleTestResult> {
+  const text = (raw ?? '').trim()
+  if (text.length < 50) return { ok: false, message: '글을 붙여넣어 주세요(50자 이상).' }
+
+  const looksLikeHtml = /<[a-z][\s\S]*>/i.test(text)
+  const html = looksLikeHtml
+    ? text
+    : [
+        '<html><head>',
+        `<meta property="og:title" content="${title.replace(/"/g, '&quot;')}">`,
+        `<title>${title}</title>`,
+        '</head><body><div class="se-main-container">',
+        // 빈 줄로 문단을 나누고, 한 줄 바꿈은 <br>로 둔다.
+        text.split(/\n{2,}/).map(p => `<p>${p.replace(/\n/g, '<br>')}</p>`).join(''),
+        '</div></body></html>',
+      ].join('')
+
+  const photos = countPhotos(html)
+  const chars = countBodyChars(html)
+  const result = checkBlogHtml(html, photos, chars)
+  const post = extractPostBody(html)
+
+  return {
+    ok: true,
+    via: looksLikeHtml ? '붙여넣은 HTML' : '붙여넣은 글(본문으로 감쌈)',
+    title: extractTitle(html) || (title || '(제목 없음)'),
+    photos,
+    chars,
+    checks: result.checks,
+    allPassed: result.allPassed,
+    excerpt: post.html.replace(/<[^>]+>/g, ' ').replace(/&nbsp;|​/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 1200),
+    bodyFound: post.found,
+  }
+}
+
+/**
+ * 판정기가 아직 살아 있는지 스스로 확인한다.
+ *
+ * 판정은 네이버 HTML 모양에 기대고 있어서, 저쪽이 바뀌면 우리 추출기가 조용히 빈 본문을
+ * 읽고 **모든 신청이 조건 미달로 떨어진다.** 화면도 빌드도 멀쩡해서 아무도 모르고,
+ * '신청이 안 들어온다'와 구분이 안 된다. 그래서 실험실을 열 때마다 표본으로 확인한다.
+ */
+export async function judgeSelfTest() {
+  const good = passingPostHtml()
+  const bad = missingDisclosureHtml()
+  const goodResult = checkBlogHtml(good, countPhotos(good), countBodyChars(good))
+  const badResult = checkBlogHtml(bad, countPhotos(bad), countBodyChars(bad))
+  const badDisclosureOnly =
+    !badResult.allPassed && badResult.checks.filter(c => !c.ok).length === 1
+
+  return {
+    passes: goodResult.allPassed,
+    catchesMissingDisclosure: badDisclosureOnly,
+    failedRules: goodResult.checks.filter(c => !c.ok).map(c => `${c.rule} (${c.detail})`),
   }
 }
