@@ -44,6 +44,10 @@ export async function requireSite(base, expect) {
     console.log(`\n  × 엉뚱한 곳을 보고 있다 — ${r.reason}`)
     console.log('    다른 제품의 서버가 같은 포트에 떠 있을 수 있다. 주소를 확인하고 다시 돌린다.\n')
     process.exitCode = 1
+    // 방금 fetch가 잡은 연결이 닫히는 중에 process.exit을 부르면 윈도우에서 libuv가 죽고
+    // 종료 코드가 127로 나온다 — 실패는 맞지만 '명령을 못 찾음'으로 읽히는 값이다.
+    // 정리될 틈을 주고 넘긴다.
+    await new Promise(r => setTimeout(r, 300))
     return false
   }
   if (r.unknown) console.log(`  · ${r.reason}`)
