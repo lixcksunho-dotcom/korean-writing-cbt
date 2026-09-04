@@ -2,6 +2,7 @@
 
 ## 카카오페이 7일 대 7일 비교 실행 (work/method-impact-7d)
 
+- **검수 통과 (2026-09-05):** `npm run report:method-impact`·`node scripts/daily_revenue.mjs --days 17` 재실행해 대조 — 진입 9/8→15/12, 시도 6/5→12/10, 완결 5/5→10/10, 순매출 27,500원(5건)→49,500원(10건) 전부 일치. 변경은 REPORT.md뿐, 코드·DB·배포 무변경. main에 merge.
 - 날짜: 2026-09-05
 - 백로그: "카카오페이 7일 대 7일 비교 실행 `npm run report:method-impact` 재실행 후 결론 기록"
 - 범위: **스크립트 무수정·조회 전용.** 포트원 `getPayments` 조회만 호출, 새 스케줄·알림 없음. 고객 식별자는 앞 8자만.
