@@ -75,12 +75,22 @@ export default async function AdminTrafficPage() {
   const admin = createAdminClient()
   const { since, d7, d30 } = timeWindows()
 
-  const { data, error } = await admin
-    .from('page_views')
-    .select('path, visitor_id, referrer, created_at')
-    .gte('created_at', since)
-    .order('created_at', { ascending: false })
-    .limit(50000)
+  // limit(50000)으로는 1,000건만 왔다 — 서버 상한이 요청 limit 을 이긴다.
+  // 최신순이라 새 1,000건만 남았고, 30일 통계가 실은 며칠치였다(30일 5,070건 중 1,000건).
+  const data: Row[] = []
+  let error: { message: string } | null = null
+  for (let from = 0; from <= 100_000; from += 1000) {
+    const res = await admin
+      .from('page_views')
+      .select('path, visitor_id, referrer, created_at')
+      .gte('created_at', since)
+      .order('created_at', { ascending: false })
+      .range(from, from + 999)
+    if (res.error) { error = res.error; break }
+    if (!res.data?.length) break
+    data.push(...(res.data as Row[]))
+    if (res.data.length < 1000) break
+  }
 
   if (error) {
     return (
