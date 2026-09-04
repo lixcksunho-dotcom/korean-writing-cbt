@@ -54,6 +54,14 @@ const stamp = String(Date.now())
 const DAY = 86400_000
 
 const fresh = await assertFreshLocalServer(BASE)
+// 서버가 안 떠 있으면 건너뛴다 — 이건 지역 빌드를 보는 검사다. 실패로 세면
+// 묶음 검사에서 늘 빨간불이 되고, 그러면 아무도 안 돌려서 아무것도 못 지킨다.
+if (fresh.running === false) {
+  console.log(`  · ${fresh.reason}`)
+  console.log(`    이 검사는 지역 빌드를 봅니다: npm run build && npx next start -p ${new URL(BASE).port} 뒤에 다시 돌리세요.`)
+  process.exitCode = 0
+  process.exit(0)
+}
 console.log(fresh.checked ? `  서버 빌드 확인됨 (${fresh.buildId})` : `  서버 빌드 비교 안 함 — ${fresh.reason}`)
 
 const browser = await chromium.launch()

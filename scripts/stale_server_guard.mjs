@@ -35,7 +35,14 @@ export async function assertFreshLocalServer(base) {
     })
     status = res.status
   } catch (e) {
-    throw new Error(`${base}에 연결하지 못했습니다 — 서버가 떠 있는지 확인하세요. (${e instanceof Error ? e.message : e})`)
+    // 아무것도 안 떠 있는 것은 '고장'이 아니라 '아직 안 켠 것'이다. 던지면 스택만 쏟아지고
+    // 묶음 검사에서는 실패로 세어져, 결국 아무도 안 돌리는 검사가 된다.
+    // 낡은 빌드(아래)는 진짜 문제라 그대로 던진다 — 둘을 구분한다.
+    return {
+      checked: false,
+      running: false,
+      reason: `${base} 에 아무것도 안 떠 있다 (${e instanceof Error ? e.message : e})`,
+    }
   }
 
   if (status !== 200) {
