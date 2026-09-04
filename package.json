@@ -46,6 +46,7 @@
     "report:funnel-daily": "node --experimental-strip-types --no-warnings scripts/payment_funnel_daily.mjs",
     "report:method-impact": "node --experimental-strip-types --no-warnings scripts/payment_method_impact.mjs",
     "report:inflow": "node --experimental-strip-types --no-warnings scripts/inflow_to_payment.mjs",
+    "report:free-to-paid": "node --experimental-strip-types --no-warnings scripts/free_to_paid.mjs",
     "trace:refund": "node scripts/same_day_refund_trace.mjs",
     "verify:payment": "node --experimental-strip-types --no-warnings scripts/verify_latest_payment.mjs",
     "audit:refunds": "node --experimental-strip-types --no-warnings scripts/revoke_refunded_subscriptions.mjs",
