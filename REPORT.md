@@ -68,6 +68,15 @@
 - 실행 중 DB 쓰기 없음(코드상 `fetch` 는 전부 기본 GET, 포트원은 `getPayments` 만). `.env.local` 값 미노출.
 - 실물 대조 중 발견한 부수 사실(수정하지 않음): `ai_trial_usage` 표가 프로덕션에 없다(PGRST205) — 마이그레이션 035 미적용 상태로, `readTrialUsed` 는 `app_metadata` 폴백으로 동작 중. 035의 동시성 수정이 아직 살아 있지 않다는 뜻이다. DB 마이그레이션은 NEED_HUMAN 대상이라 여기 적어 두기만 한다.
 
+### 검수 통과 (리뷰어)
+
+- 커밋 `5fd61db` diff 재확인: `REPORT.md`·`package.json`(스크립트 1줄)·`scripts/free_to_paid.mjs`(신규) 3건뿐. `src/`·DB 스키마·배포 관련 변경 없음.
+- 스크립트 실물 확인: Supabase 호출은 전부 기본 `fetch`(GET), 포트원은 `getPayments` 조회 1건뿐 — 쓰기·삭제·취소 계열 호출 없음. `id8()` 로 모든 사용자 id를 앞 8자까지만 출력. 표본 10명 미만 층은 `share()` 가드로 비율을 내지 않음(①이 실제로 그렇게 출력됨).
+- `npm run report:free-to-paid` 재실행 → REPORT에 인용된 출력과 정확히 일치(회원 130명·원장 결제자 28명, ① 1명 중 0명, ② 67명 중 18명(27%), ③ 19명 중 11명(58%)).
+- 실행 후 `git status` 로 워킹트리 변화 없음 확인 — 주장대로 읽기 전용.
+- 지시문과 실물이 다르다는 점(무료 발급 행이 1건뿐)을 숨기지 않고 앞세워, 대리 지표 ②③을 별도로 낸 점이 백로그의 "왜"에 더 부합함을 확인.
+- main에 fast-forward 병합.
+
 ## 유입 경로별 결제 전환 (work/inflow-to-payment)
 
 ### 검수 통과 (리뷰어)
