@@ -2,6 +2,17 @@
 
 ## 유입 경로별 결제 전환 (work/inflow-to-payment)
 
+### 검수 통과 (리뷰어)
+
+- diff는 `REPORT.md`·`package.json`(스크립트 1줄)·`scripts/inflow_to_payment.mjs`(신규) 3건뿐. `src/`·DB·배포 무변경.
+- 스크립트 실물 확인: 포트원 호출은 `client.payment.getPayments` 조회뿐, Supabase 호출도 전부 GET(`fetch` 기본 메서드) — 쓰기·삭제 없음.
+- `npm run report:inflow` 재실행 → REPORT 인용 블록과 완전히 일치(원장 40건/22명·완결20/20, 비콘 payment_started 40건/25브라우저 등).
+- `npm run report:inflow -- --days 7` 재실행 → "진입 12건/11명·완결 9건/9명" REPORT 기재와 일치.
+- `npm run report:inflow -- --days x` 재실행 → 에러 메시지 일치, 종료 코드 1 확인.
+- 개인정보: 집계표에 customerId 미노출(요구한 id 앞 8자보다 더 보수적), referrer는 호스트명만 출력됨을 코드·출력에서 확인.
+- 지시문 전제("가입 시 기록된 referrer·utm") 불일치를 실물 대조로 확인 후 대리 지표로 보완한 처리 타당.
+- main에 fast-forward 병합, BACKLOG 항목 `[x]` 처리, work 브랜치 삭제 완료.
+
 - 날짜: 2026-09-05
 - 백로그: "유입 경로별 결제 전환 `scripts/inflow_to_payment.mjs`"
 - 범위: **읽기 전용.** 포트원 `getPayments`·Supabase REST 조회만. 추적 코드·외부 분석도구 추가 없음. 고객 식별값은 출력하지 않고(집계만), referrer 는 호스트명만.
