@@ -104,6 +104,13 @@ export default function EssayGuidePage() {
           </div>
 
           <section className="mb-10">
+            {/* 배점을 모르면 시간 배분이 안 된다 — 39번 하나가 300점이다. */}
+            <p className="mb-4 rounded-xl border border-[#e2e8f0] bg-[#f8fafc] p-3.5 text-sm text-[#475569]">
+              서술형 700점은 고르게 퍼져 있지 않습니다 — <b>39번 한 문항이 300점</b>이에요.{' '}
+              <Link href="/essay-scoring" className="font-semibold text-[#1e3a5f] underline underline-offset-2">배점 지도와 시간 배분</Link>
+              을 먼저 보고 오시면 아래 공략이 더 잘 붙습니다.
+            </p>
+
             <h2 className="text-2xl font-black text-[#0f172a] mb-4">유형별 공략</h2>
             <div className="space-y-3">
               {TYPES.map((t, i) => (
