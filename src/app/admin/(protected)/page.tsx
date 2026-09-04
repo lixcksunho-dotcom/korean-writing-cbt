@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import DailySales from '@/app/admin/(protected)/payments/DailySales'
+import { summarizeAiCost } from '@/lib/aiGradingCost'
 import { summarizeSales, type SubscriptionRow } from '@/lib/dailySales'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { DEFAULT_PROGRAM } from '@/lib/programs'
@@ -24,6 +25,36 @@ async function loadSales() {
   return summarizeSales((data ?? []) as SubscriptionRow[], new Date())
 }
 
+// AI 채점 원가. 유료는 '무제한'이라 많이 쓸수록 그 사람에게서 남는 돈이 줄고,
+// 어느 지점을 넘으면 받은 돈보다 더 쓴다. 매출만 보고 있으면 그 뒤집힘을 못 본다.
+// quiz_answers 에는 시각이 없어 세션의 완료 시각으로 기간을 가른다.
+async function loadAiCost(revenue30: number) {
+  const admin = createAdminClient()
+  const since = new Date(Date.now() - 30 * 86400000).toISOString()
+  const [{ data: sessions }, { data: answers }, { data: manuscripts }] = await Promise.all([
+    admin.from('quiz_sessions').select('id, user_id').gte('completed_at', since).limit(2000),
+    admin.from('quiz_answers').select('session_id').not('ai_score', 'is', null).limit(5000),
+    admin.from('manuscript_submissions').select('user_id').gte('created_at', since).limit(2000),
+  ])
+  const owner = Object.fromEntries((sessions ?? []).map(s => [s.id, s.user_id]))
+  const perUser: Record<string, number> = {}
+  let essayCount = 0
+  for (const a of answers ?? []) {
+    const u = owner[a.session_id as string]
+    if (!u) continue                       // 30일 밖 세션
+    essayCount += 1
+    perUser[u] = (perUser[u] ?? 0) + 1
+  }
+  return summarizeAiCost(
+    {
+      essayCount,
+      manuscriptCount: manuscripts?.length ?? 0,
+      perUser: Object.entries(perUser).map(([userId, count]) => ({ userId, count })),
+    },
+    revenue30,
+  )
+}
+
 export default async function AdminHome() {
   // 관리자 권한은 admin/layout.tsx에서 이미 검증됨. 통계는 service_role로 집계.
   const admin = createAdminClient()
@@ -41,6 +72,8 @@ export default async function AdminHome() {
     admin.from('manuscript_submissions').select('*', { count: 'exact', head: true }),
     admin.from('question_reports').select('resolved'),
   ])
+  // 매출을 알아야 '매출 대비 몇 %'를 낼 수 있어서 묶음이 끝난 뒤에 잰다.
+  const aiCost = await loadAiCost(sales.last30.amount)
   const reportPending = (reportRows.data ?? []).filter(r => !r.resolved).length
 
   const reviews = reviewRows.data ?? []
@@ -84,6 +117,33 @@ export default async function AdminHome() {
       {/* 매출은 가장 먼저 보고 싶은 숫자다. 결제 화면에만 두면 한 번 더 눌러야 보인다.
           여기서는 숫자와 흐름만, 날짜별·주별 표는 결제 화면에서 본다. */}
       <DailySales summary={sales} compact />
+
+      {/* 매출 바로 아래에 원가를 둔다 — 따로 두면 '늘고 있다'만 보고 판단하게 된다. */}
+      <section className="mt-3 rounded-2xl border border-[#e2e8f0] bg-white p-4">
+        <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+          <h2 className="text-sm font-bold text-[#0f172a]">AI 채점 원가 (30일)</h2>
+          <span className="text-xs text-[#64748b]">
+            {aiCost.totalCount.toLocaleString('ko-KR')}건 · 한 건 {aiCost.krwPerGrading}원
+          </span>
+        </div>
+        <div className="mt-2 flex flex-wrap items-baseline gap-x-4 gap-y-1">
+          <span className="text-2xl font-black tabular-nums text-[#0f172a]">
+            {aiCost.krw.toLocaleString('ko-KR')}원
+          </span>
+          {aiCost.shareOfRevenue !== null && (
+            <span className={`text-sm font-bold ${aiCost.shareOfRevenue >= 50 ? 'text-red-700' : 'text-[#475569]'}`}>
+              매출의 {aiCost.shareOfRevenue}%
+            </span>
+          )}
+        </div>
+        <p className="mt-2 text-xs leading-relaxed text-[#475569]">
+          한 사람이 <b>{aiCost.breakEvenCount}건</b>을 넘기면 그 사람에게 받은 5,500원을 넘어섭니다.
+          {aiCost.heavy.length > 0 && (
+            <> 지금 가장 많이 쓴 사람은 <b>{aiCost.heavy[0].count}건</b>이에요
+              {aiCost.heavy[0].overBreakEven ? ' — 이미 넘었습니다.' : '.'}</>
+          )}
+        </p>
+      </section>
 
       {/* 최근 사고. 텔레그램 설정이 없어도 여기엔 남는다 — 알림이 설정에 의존하면
           설정이 빠진 동안은 없는 것과 같다(결제 실패 1건을 16일간 몰랐다). */}
