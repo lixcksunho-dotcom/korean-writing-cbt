@@ -32,7 +32,23 @@ const SECURITY_HEADERS = [
   { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=(), interest-cohort=()' },
 ];
 
+// 빌드 시점의 커밋을 값으로 박는다. 배포가 뒤처졌는지 밖에서 물어볼 수 있어야 한다.
+function buildCommit(): string {
+  const fromVercel = process.env.VERCEL_GIT_COMMIT_SHA
+  if (fromVercel) return fromVercel.slice(0, 7)
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    return require('node:child_process').execSync('git rev-parse --short HEAD').toString().trim()
+  } catch {
+    return 'unknown'   // git이 없는 빌드 환경에서도 빌드는 깨지지 않아야 한다
+  }
+}
+
 const nextConfig: NextConfig = {
+  env: {
+    NEXT_PUBLIC_BUILD_COMMIT: buildCommit(),
+    NEXT_PUBLIC_BUILD_TIME: new Date().toISOString(),
+  },
   turbopack: {
     root: process.cwd(),
   },
