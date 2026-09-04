@@ -9,9 +9,10 @@
 // 이런 어긋남은 화면이 안 깨지므로 눈으로는 안 보인다. 그래서 검사로 고정한다.
 
 import fs from 'node:fs'
+import { requireSite } from './assertSite.mjs'
 import { blogPostService } from '../src/lib/blogPostService.ts'
 
-const BASE = process.env.BLOG_CTA_BASE ?? 'http://localhost:3399'
+const BASE = process.env.BLOG_CTA_BASE ?? 'https://kptest.cloud'
 const SAMPLE = Number(process.env.BLOG_CTA_SAMPLE ?? 3)
 
 let pass = 0, fail = 0
@@ -19,6 +20,9 @@ const ok = (n, d = '') => { pass++; console.log(`  ○ ${n}${d ? ` — ${d}` : '
 const bad = (n, d = '') => { fail++; console.log(`  × ${n}${d ? ` — ${d}` : ''}`) }
 
 console.log(`\n블로그 글이 파는 것 — ${BASE}\n`)
+
+// 다른 제품의 서버가 같은 포트에 떠 있으면 남의 결과로 내 사이트를 판단하게 된다.
+if (!(await requireSite(BASE, '실글패스'))) process.exit(1)
 
 const posts = fs.readdirSync('src/content/blog')
   .filter(f => f.endsWith('.json'))

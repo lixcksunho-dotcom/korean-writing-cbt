@@ -6,14 +6,18 @@
 // 끝까지 도는지가 전부다. 로그인이 끼어들면 만든 이유가 사라진다.
 
 import { chromium } from 'playwright'
+import { requireSite } from './assertSite.mjs'
 import { TRIAL_TOPICS } from '../src/lib/trialTopics.ts'
 
-const BASE = process.env.TRIAL_BASE ?? 'http://localhost:3399'
+const BASE = process.env.TRIAL_BASE ?? 'https://kptest.cloud'
 let pass = 0, fail = 0
 const ok = (n, d = '') => { pass++; console.log(`  ○ ${n}${d ? ` — ${d}` : ''}`) }
 const bad = (n, d = '') => { fail++; console.log(`  × ${n}${d ? ` — ${d}` : ''}`) }
 
 console.log(`\n가입 없이 풀어보기 — ${BASE}\n`)
+
+// 다른 제품의 서버가 같은 포트에 떠 있으면 남의 결과로 내 사이트를 판단하게 된다.
+if (!(await requireSite(BASE, '실글패스'))) process.exit(1)
 
 const browser = await chromium.launch()
 try {

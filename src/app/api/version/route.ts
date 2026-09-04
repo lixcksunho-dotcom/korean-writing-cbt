@@ -15,6 +15,10 @@ export const dynamic = 'force-dynamic'
 
 export function GET() {
   return NextResponse.json({
+    // 어느 사이트인지 밝힌다. 검사가 다른 제품의 로컬 서버를 보고 '통과'라고 답한 적이 있다 —
+    // 두 저장소가 같은 포트(3399)를 기본값으로 쓰고 있었다. 주소만 믿지 말고 이걸 보고 확인한다.
+    site: '실글패스',
+    host: 'kptest.cloud',
     commit: process.env.NEXT_PUBLIC_BUILD_COMMIT ?? process.env.VERCEL_GIT_COMMIT_SHA ?? 'unknown',
     builtAt: process.env.NEXT_PUBLIC_BUILD_TIME ?? 'unknown',
   })

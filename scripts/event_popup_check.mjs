@@ -7,6 +7,7 @@
 // 검사가 만든 계정·발급만 지운다.
 
 import fs from 'node:fs'
+import { requireSite } from './assertSite.mjs'
 import { chromium } from 'playwright'
 
 // 팝업은 플래그로 켜고 끈다. 꺼져 있을 때는 '안 뜨는 것'이 정답이다 —
@@ -22,7 +23,7 @@ const ENV = Object.fromEntries(
 )
 const SB = ENV.NEXT_PUBLIC_SUPABASE_URL
 const KEY = ENV.SUPABASE_SERVICE_ROLE_KEY
-const BASE = process.env.POPUP_BASE ?? 'http://localhost:3399'
+const BASE = process.env.POPUP_BASE ?? 'https://kptest.cloud'
 
 let pass = 0, fail = 0
 const ok = (n, d = '') => { pass++; console.log(`  ○ ${n}${d ? ` — ${d}` : ''}`) }
@@ -42,6 +43,9 @@ const password = `Pop-${stamp}-aA1!`
 let uid = null
 
 console.log(`\n첫 화면 이벤트 팝업 — ${BASE}\n`)
+
+// 다른 제품의 서버가 같은 포트에 떠 있으면 남의 결과로 내 사이트를 판단하게 된다.
+if (!(await requireSite(BASE, '실글패스'))) process.exit(1)
 
 const POPUP = '[role="dialog"][aria-labelledby="event-popup-title"]'
 

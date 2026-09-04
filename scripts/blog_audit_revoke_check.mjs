@@ -8,6 +8,7 @@
 // 검사가 만든 계정·신청·발급만 지운다.
 
 import fs from 'node:fs'
+import { requireSite } from './assertSite.mjs'
 import { naverBlockedReason } from '../src/lib/blogPromoFetch.ts'
 import { BLOG_REVIEW_PATH, REWARD_DAYS, DISCLOSURE_RULE, normalizeBlogUrl, checkBlogHtml } from '../src/lib/blogPromoRules.ts'
 
@@ -19,7 +20,7 @@ const ENV = Object.fromEntries(
 const SB = ENV.NEXT_PUBLIC_SUPABASE_URL
 const KEY = ENV.SUPABASE_SERVICE_ROLE_KEY
 const H = { apikey: KEY, Authorization: `Bearer ${KEY}`, 'Content-Type': 'application/json' }
-const BASE = process.env.BLOG_PROMO_BASE ?? 'http://localhost:3399'
+const BASE = process.env.BLOG_PROMO_BASE ?? 'https://kptest.cloud'
 
 let pass = 0, fail = 0
 const ok = (n, d = '') => { pass++; console.log(`  ○ ${n}${d ? ` — ${d}` : ''}`) }
@@ -28,6 +29,9 @@ const bad = (n, d = '') => { fail++; console.log(`  × ${n}${d ? ` — ${d}` : '
 const api = (p, init) => fetch(`${SB}${p}`, { ...init, headers: { ...H, ...(init?.headers ?? {}) } })
 
 console.log(`\n블로그 홍보 사후 확인 — ${BASE}\n`)
+
+// 다른 제품의 서버가 같은 포트에 떠 있으면 남의 결과로 내 사이트를 판단하게 된다.
+if (!(await requireSite(BASE, '실글패스'))) process.exit(1)
 
 // ── 순수 판정: 무엇을 회수 신호로 볼 것인가 ────────────────────────────────
 const closed = `<html><body><script>var msg = '비공개 글 입니다.'; alert(msg); location.replace('/PostList.naver?blogId=x&fromClosedPost=true');</script></body></html>`
