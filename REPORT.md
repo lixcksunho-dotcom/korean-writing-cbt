@@ -1,5 +1,26 @@
 # REPORT
 
+## 결제 퍼널 일일 요약에 회원 필터 + 1000행 상한 대비 검사 (관리자 직접, main, 2026-09-07)
+
+- 백로그: "결제 퍼널 일일 요약에 회원 필터 붙이기" · "1000행 조용한 상한 대비 검사"
+- 범위: 스크립트만(조회 전용). `src/`·DB·배포 무변경.
+
+### 1. 회원 필터 — `scripts/current_members.mjs` 신설, 두 리포트가 같이 쓴다
+
+- `payment_attempt_report.mjs:38-47` 에 있던 "지금 회원인 사람만" 로직을 `fetchMemberIds(ENV)`·`splitByMembership(items, ids)` 로 빼고, `payment_funnel_daily.mjs` 도 같은 함수를 부른다. 제외 건수는 두 리포트 모두 출력한다.
+- 함께 고친 것: 0건 경로의 `process.exit(0)` 을 없앴다. fetch 연결이 남은 채 강제 종료하면 Windows Node 가 `Assertion failed: !(handle->flags & UV_HANDLE_CLOSING)` 로 0이 아닌 코드를 내며 죽는다(이번 검증 중 실측). 본문을 `printFunnel()` 로 감싸 자연 종료로 바꿨다.
+- 실행 결과
+  - `report:funnel-daily -- --date 2026-08-23` → 종전 "진입 2건(2명) → 시도 0건" 이 **"결제창 진입 0건 — 결제 활동 없음 (검증·탈퇴 계정 2건 제외)"** 로 바뀜, exit 0. 설계서(`docs/checkout_dropoff_plan.md`)가 예상한 그대로.
+  - `-- --date 2026-09-05` → "진입 1건(1명) → 시도 1건 → 완결 1건, 사람 완결률 100%" — 종전과 동일(회원 건이라 필터 영향 없음).
+  - `report:payments` → "(탈퇴·검증 계정 5건 제외) … 사람 단위 29/31명 완결" — 종전과 동일 출력.
+
+### 2. `scripts/row_cap_check.mjs` + `npm run check:row-cap`
+
+- 상한을 박은 자리 5곳(관리자 화면 4 + 위 회원 필터의 per_page=1000)의 실제 행 수를 `HEAD … Prefer: count=exact` 로 세어 상한 대비 % 를 출력, 80% 이상이면 exit 1.
+- 덤으로 `src/` 전체에서 `.range/.limit/.single` 없이 전량을 읽는 select 를 훑어, 가리키는 테이블이 500행 이상인 자리만 나열한다(수정 금지, 자리 목록이지 결함 목록이 아님 — 필터가 붙은 조회는 실제 행이 더 적다).
+- 실행 결과(2026-09-07): `subscriptions` 30행(3%) · 회원 135명(14%) → **상한까지 여유 있음, exit 0**. 전량 읽기 자리 중 큰 테이블: `questions`(연습 화면 다수)·`quiz_answers` 3,673행(result/insights/wrong)·`page_views` 11,770행(resolved-notice-actions·admin feedback). `quiz_answers`·`page_views` 는 사용자/기간 필터가 붙어 있어 지금은 잘리지 않으나, 무필터 집계를 추가할 때는 이 목록을 먼저 볼 것.
+- 다음 항목 후보(별도): 회원이 800명을 넘기 전에 관리자 회원·결제 화면과 `current_members.mjs` 에 페이지네이션.
+
 ## 무료 체험에서 유료로 넘어간 비율 (work/free-to-paid)
 
 - 날짜: 2026-09-05

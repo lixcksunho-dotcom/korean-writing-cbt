@@ -83,7 +83,8 @@
     "check:page-quiz": "node scripts/content_page_quiz_check.mjs",
     "check:deployed": "node scripts/deploy_freshness_check.mjs",
     "check:ai-cost": "node --experimental-strip-types --no-warnings scripts/ai_cost_check.mjs",
-    "check:own-copy": "node scripts/own_copy_spelling_check.mjs"
+    "check:own-copy": "node scripts/own_copy_spelling_check.mjs",
+    "check:row-cap": "node scripts/row_cap_check.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.100.1",

@@ -11,6 +11,7 @@
 import fs from 'node:fs'
 import { PortOneClient } from '@portone/server-sdk'
 import { summarizeAttempts } from '../src/lib/paymentAttemptFunnel.ts'
+import { fetchMemberIds, splitByMembership } from './current_members.mjs'
 
 const ENV = Object.fromEntries(
   fs.readFileSync('.env.local', 'utf-8').split('\n')
@@ -35,16 +36,11 @@ for (let page = 0; ; page++) {
   if (got.length < 100) break
 }
 
-// 지금 회원인 사람의 시도만 센다 — 탈퇴·검증 계정이 섞이면 '안 낸 사람'이 부풀고,
-// 정작 연락할 수 있는 사람이 몇 명인지가 흐려진다(관리자 화면도 같은 규칙).
-const userRes = await fetch(`${ENV.NEXT_PUBLIC_SUPABASE_URL}/auth/v1/admin/users?per_page=1000`, {
-  headers: { apikey: ENV.SUPABASE_SERVICE_ROLE_KEY, Authorization: `Bearer ${ENV.SUPABASE_SERVICE_ROLE_KEY}` },
-})
-const memberIds = new Set(((await userRes.json())?.users ?? []).map((u) => u.id))
-const dropped = items.filter((p) => !memberIds.has(p.customer?.id ?? p.customer?.customerId ?? ''))
+// 지금 회원인 사람의 시도만 센다 — 규칙은 current_members.mjs 한 곳(일일 요약과 공유).
+const { kept, dropped } = splitByMembership(items, await fetchMemberIds(ENV))
 if (dropped.length) console.log(`(탈퇴·검증 계정 ${dropped.length}건 제외)`)
 
-const rows = items.filter((p) => memberIds.has(p.customer?.id ?? p.customer?.customerId ?? '')).map((p) => ({
+const rows = kept.map((p) => ({
   id: p.id,
   status: p.status,
   customerId: p.customer?.id ?? p.customer?.customerId ?? null,

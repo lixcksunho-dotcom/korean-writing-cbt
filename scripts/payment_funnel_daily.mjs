@@ -14,6 +14,7 @@
 import fs from 'node:fs'
 import { PortOneClient } from '@portone/server-sdk'
 import { summarizeAttempts } from '../src/lib/paymentAttemptFunnel.ts'
+import { fetchMemberIds, splitByMembership } from './current_members.mjs'
 
 const ENV = Object.fromEntries(
   fs.readFileSync('.env.local', 'utf-8').split('\n')
@@ -49,39 +50,49 @@ for (let page = 0; ; page++) {
 
 const label = DATE === defaultDate ? `어제(${DATE})` : DATE
 
-if (!items.length) {
-  console.log(`${label} 결제 퍼널: 결제창 진입 0건 — 결제 활동 없음`)
-  process.exit(0)
+// 회원이 아닌 계정(탈퇴·검증 스크립트)의 건은 세지 않는다 — report:payments 와 같은 규칙.
+// 안 거르면 검증 스크립트가 연 결제창이 "진입했는데 안 낸 사람"으로 매일 아침 보고된다(8/23 실사례).
+const { kept, dropped } = splitByMembership(items, await fetchMemberIds(ENV))
+const excluded = dropped.length ? ` (검증·탈퇴 계정 ${dropped.length}건 제외)` : ''
+
+// 0건이면 여기서 끝 — process.exit() 로 끊지 않는다: fetch 연결이 남은 채 강제 종료하면
+// Windows Node 가 종료 어설션(UV_HANDLE_CLOSING)을 내며 0이 아닌 코드로 죽는다.
+if (!kept.length) {
+  console.log(`${label} 결제 퍼널: 결제창 진입 0건 — 결제 활동 없음${excluded}`)
+} else {
+  printFunnel(kept)
 }
 
-const rows = items.map((p) => ({
-  id: p.id,
-  status: p.status,
-  customerId: p.customer?.id ?? p.customer?.customerId ?? null,
-  requestedAt: p.requestedAt ?? null,
-  paidAt: p.paidAt ?? null,
-  failureReason: p.failure?.reason ?? null,
-}))
+function printFunnel(payments) {
+  const rows = payments.map((p) => ({
+    id: p.id,
+    status: p.status,
+    customerId: p.customer?.id ?? p.customer?.customerId ?? null,
+    requestedAt: p.requestedAt ?? null,
+    paidAt: p.paidAt ?? null,
+    failureReason: p.failure?.reason ?? null,
+  }))
 
-const f = summarizeAttempts(rows)
-// '시도'는 summarizeAttempts 가 따로 세 주지 않는다 — READY 를 넘어간 건만 거른다.
-// 사람 단위는 같은 묶음 규칙(customerId 없으면 건 하나 = 한 사람)으로 센다.
-const triedRows = rows.filter((r) => r.status !== 'READY').length
-const triedPeople = new Set(
-  rows.filter((r) => r.status !== 'READY').map((r) => r.customerId || `payment:${r.id}`),
-).size
+  const f = summarizeAttempts(rows)
+  // '시도'는 summarizeAttempts 가 따로 세 주지 않는다 — READY 를 넘어간 건만 거른다.
+  // 사람 단위는 같은 묶음 규칙(customerId 없으면 건 하나 = 한 사람)으로 센다.
+  const triedRows = rows.filter((r) => r.status !== 'READY').length
+  const triedPeople = new Set(
+    rows.filter((r) => r.status !== 'READY').map((r) => r.customerId || `payment:${r.id}`),
+  ).size
 
-const pct = (r) => `${Math.round(r * 1000) / 10}%`
+  const pct = (r) => `${Math.round(r * 1000) / 10}%`
 
-console.log(`${label} 결제 퍼널 (00:00~24:00 KST)`)
-console.log(`  진입(결제창 열림)   ${f.attempts.total}건 / ${f.people.total}명`)
-console.log(`  시도(READY 제외)    ${triedRows}건 / ${triedPeople}명`)
-console.log(`  완결                ${f.attempts.paid}건 / ${f.people.paid}명 (사람 단위 ${pct(f.people.ratio)})`)
-if (f.failureReasons.length) {
-  console.log('  실패 사유(포트원 기록)')
-  for (const r of f.failureReasons) console.log(`    ${r.count}건  ${r.reason}`)
+  console.log(`${label} 결제 퍼널 (00:00~24:00 KST)${excluded}`)
+  console.log(`  진입(결제창 열림)   ${f.attempts.total}건 / ${f.people.total}명`)
+  console.log(`  시도(READY 제외)    ${triedRows}건 / ${triedPeople}명`)
+  console.log(`  완결                ${f.attempts.paid}건 / ${f.people.paid}명 (사람 단위 ${pct(f.people.ratio)})`)
+  if (f.failureReasons.length) {
+    console.log('  실패 사유(포트원 기록)')
+    for (const r of f.failureReasons) console.log(`    ${r.count}건  ${r.reason}`)
+  }
+  console.log(
+    `요약: ${DATE} 진입 ${f.attempts.total}건(${f.people.total}명) → 시도 ${triedRows}건(${triedPeople}명)` +
+    ` → 완결 ${f.attempts.paid}건(${f.people.paid}명), 사람 완결률 ${pct(f.people.ratio)}`,
+  )
 }
-console.log(
-  `요약: ${DATE} 진입 ${f.attempts.total}건(${f.people.total}명) → 시도 ${triedRows}건(${triedPeople}명)` +
-  ` → 완결 ${f.attempts.paid}건(${f.people.paid}명), 사람 완결률 ${pct(f.people.ratio)}`,
-)
