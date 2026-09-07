@@ -21,12 +21,16 @@ export default async function AdminFeedbackPage() {
   const resolvedIds = rows.filter((r) => r.resolved).map((r) => r.id)
   const ackAt: Record<string, string> = {}
   if (resolvedIds.length) {
-    const { data: acks } = await createAdminClient()
-      .from('page_views')
-      .select('visitor_id, created_at')
-      .eq('path', '#event/feedback_ack')
-      .in('visitor_id', resolvedIds)
+    const admin = createAdminClient()
+    const [{ data: acks }, { data: replies }] = await Promise.all([
+      admin.from('page_views').select('visitor_id, created_at').eq('path', '#event/feedback_ack').in('visitor_id', resolvedIds),
+      admin.from('page_views').select('visitor_id, referrer').eq('path', '#event/feedback_reply').in('visitor_id', resolvedIds),
+    ])
     for (const a of acks ?? []) if (a.visitor_id) ackAt[a.visitor_id] = a.created_at
+    // 운영자 답글 — 목록에서 무엇이라 답했는지 같이 보인다
+    const replyById: Record<string, string> = {}
+    for (const r of replies ?? []) if (r.visitor_id && r.referrer) replyById[r.visitor_id] = r.referrer
+    for (const r of rows) r.reply = replyById[r.id] ?? null
   }
 
   return (

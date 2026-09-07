@@ -2,24 +2,41 @@
 
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { deleteAccountKeepingPayments, DELETE_CONFIRM_WORD } from '@/lib/accountDeletion'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { deleteAccountKeepingPayments } from '@/lib/accountDeletion'
+import { DELETE_REASONS, DELETE_REASON_PATH } from '@/lib/accountDeletionConstants'
 import { recordOperatorAlert } from '@/lib/operatorAlerts'
 
 export type DeleteMyAccountResult = { ok: false; message: string }
+export type DeleteMyAccountInput = { confirmEmail: string; reason: string; detail?: string }
 
 /**
- * 본인 탈퇴. 확인 낱말을 정확히 적어야 한다.
+ * 본인 탈퇴. 사유를 골랐고 가입 이메일을 그대로 적었을 때만 지운다.
  *
  * 성공하면 세션을 끊고 완료 화면으로 보낸다(redirect 는 throw 라 반환값이 없다).
  * 결제 기록 보관에 실패하면 지우지 않고 운영자에게 알린다 — 사람이 하루 안에 처리한다.
  */
-export async function deleteMyAccount(confirm: string): Promise<DeleteMyAccountResult> {
+export async function deleteMyAccount(input: DeleteMyAccountInput): Promise<DeleteMyAccountResult> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { ok: false, message: '로그인이 풀렸어요. 다시 로그인한 뒤 진행해 주세요.' }
-  if ((confirm ?? '').trim() !== DELETE_CONFIRM_WORD) {
-    return { ok: false, message: `확인 칸에 "${DELETE_CONFIRM_WORD}" 두 글자를 정확히 적어 주세요.` }
+
+  const reason = (input?.reason ?? '').trim()
+  if (!(DELETE_REASONS as readonly string[]).includes(reason)) {
+    return { ok: false, message: '떠나시는 이유를 하나 골라 주세요.' }
   }
+  if ((input?.confirmEmail ?? '').trim().toLowerCase() !== (user.email ?? '').toLowerCase()) {
+    return { ok: false, message: '가입하신 이메일과 다르게 적혔어요. 위에 보이는 이메일을 그대로 적어 주세요.' }
+  }
+
+  // 사유는 계정을 지우기 전에 남긴다(user_id 는 삭제 뒤 NULL 이 되고 글만 남는다). 실패해도 탈퇴는 막지 않는다.
+  const detail = (input.detail ?? '').trim().slice(0, 200)
+  await createAdminClient().from('feedback').insert({
+    user_id: user.id,
+    path: DELETE_REASON_PATH,
+    message: detail ? `${reason} — ${detail}` : reason,
+    resolved: true,
+  }).then(() => {}, () => {})
 
   // 서버 액션에서 던지면 사용자는 오류 화면(코드만 있는)을 본다 — 어떤 실패든 말로 돌려준다.
   const result = await deleteAccountKeepingPayments(user.id).catch((e: unknown) => ({

@@ -86,6 +86,17 @@ export default async function DashboardPage() {
   ]);
   const manuscriptCount = manuscripts?.length ?? 0;
 
+  // 운영자 답글 — 해결 띠에 실을 글. 문의마다 다르므로 문의 id 로 찾는다(page_views 재사용, 마이그레이션 없음).
+  const replyByFeedback: Record<string, string> = {};
+  if (resolvedFeedback?.length) {
+    const { data: replies } = await createAdminClient()
+      .from('page_views')
+      .select('visitor_id, referrer')
+      .eq('path', '#event/feedback_reply')
+      .in('visitor_id', resolvedFeedback.map(f => f.id as string));
+    for (const r of replies ?? []) if (r.visitor_id && r.referrer) replyByFeedback[r.visitor_id as string] = r.referrer as string;
+  }
+
   const aiTrial = { remaining: sub ? 0 : Math.max(0, FREE_AI_TRIAL - trialUsed) };
 
   // 재구독 유도: 활성 구독이 없지만 과거 결제 이력(만료)이 있으면 '이어가기' 대상
@@ -193,6 +204,7 @@ export default async function DashboardPage() {
           id: f.id as string,
           message: (f.message as string) ?? '',
           createdAt: f.created_at as string,
+          reply: replyByFeedback[f.id as string] ?? null,
         }))}
       />
 

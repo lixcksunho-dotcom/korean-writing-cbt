@@ -12,8 +12,8 @@ import { createAdminClient } from '@/lib/supabase/admin'
 // 그 밖의 개인 기록(풀이 세션·답안·원고·후기·북마크·기기·AI 체험)은 FK CASCADE 로 함께 지워지고,
 // 불편사항·문항 신고는 SET NULL 로 글만 남는다.
 
-import { DELETE_CONFIRM_WORD, WITHDRAWN_HOLDER_EMAIL } from './accountDeletionConstants'
-export { DELETE_CONFIRM_WORD, WITHDRAWN_HOLDER_EMAIL }
+import { WITHDRAWN_HOLDER_EMAIL } from './accountDeletionConstants'
+export { WITHDRAWN_HOLDER_EMAIL }
 
 type Admin = ReturnType<typeof createAdminClient>
 

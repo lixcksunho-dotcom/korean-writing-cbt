@@ -10,7 +10,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
-import { DELETE_CONFIRM_WORD, WITHDRAWN_HOLDER_EMAIL } from '../src/lib/accountDeletionConstants.ts'
+import { DELETE_REASONS, WITHDRAWN_HOLDER_EMAIL } from '../src/lib/accountDeletionConstants.ts'
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const { chromium } = await import(pathToFileURL(path.join(ROOT, 'node_modules', 'playwright', 'index.mjs')).href)
@@ -75,13 +75,26 @@ try {
   if (text.includes('회원 탈퇴') && text.includes(email)) ok('계정 화면에 내 정보와 탈퇴 절이 있다')
   else bad('계정 화면', text.slice(0, 120))
 
-  // 확인 낱말 없이는 버튼이 눌리지 않는다.
+  // 세 문턱: 사유·동의·이메일이 다 채워지기 전엔 버튼이 잠겨 있고, 마지막엔 확인 창이 뜬다.
   const btn = page.locator('button[type="submit"]', { hasText: '탈퇴하기' })
-  if (await btn.isDisabled()) ok('낱말을 안 적으면 탈퇴 버튼이 잠겨 있다')
+  if (await btn.isDisabled()) ok('사유·동의·이메일 전에는 탈퇴 버튼이 잠겨 있다')
   else bad('탈퇴 버튼 잠금', '빈 상태에서 눌린다')
 
+  await page.locator(`input[type="radio"][value="${DELETE_REASONS[0]}"]`).check({ force: true })
   await page.locator('input[type="checkbox"]').first().check({ force: true })
-  await page.fill('input[aria-label="탈퇴 확인 낱말"]', DELETE_CONFIRM_WORD)
+  await page.fill('input[aria-label="탈퇴 확인 이메일"]', 'wrong@example.com')
+  if (await btn.isDisabled()) ok('이메일이 다르면 여전히 잠겨 있다')
+  else bad('이메일 대조', '다른 이메일로도 열린다')
+  await page.fill('input[aria-label="탈퇴 확인 이메일"]', email)
+
+  // 첫 확인 창은 '취소' — 아무 일도 없어야 한다. 두 번째는 '확인'.
+  let dialogs = 0
+  page.once('dialog', (d) => { dialogs++; d.dismiss() })
+  await btn.click()
+  await page.waitForTimeout(1500)
+  if (dialogs === 1 && !page.url().includes('/account/deleted')) ok('확인 창에서 취소하면 탈퇴되지 않는다')
+  else bad('확인 창', `창 ${dialogs}개 · ${new URL(page.url()).pathname}`)
+  page.once('dialog', (d) => { dialogs++; d.accept() })
   await btn.click()
   for (let i = 0; i < 30 && !page.url().includes('/account/deleted'); i++) await page.waitForTimeout(1000)
   if (page.url().includes('/account/deleted')) ok('탈퇴하면 완료 화면으로 간다', new URL(page.url()).pathname)
@@ -102,6 +115,12 @@ try {
     if (Array.isArray(left) && left.length === 0) ok('학습 기록(시험 세션)이 함께 지워졌다')
     else bad('학습 기록 삭제', JSON.stringify(left).slice(0, 80))
   }
+  // 사유가 남았는지 — 계정은 없어졌으니 user_id 는 NULL 이고 글만 남는다.
+  const reasons = await (await api(`/rest/v1/feedback?path=eq.${encodeURIComponent('#account/delete-reason')}&message=eq.${encodeURIComponent(DELETE_REASONS[0])}&order=created_at.desc&limit=1&select=id,user_id,created_at`)).json()
+  const recent = Array.isArray(reasons) && reasons[0] && Date.now() - Date.parse(reasons[0].created_at) < 5 * 60_000
+  if (recent && reasons[0].user_id === null) { ok('탈퇴 사유가 글로 남는다(사람 연결은 끊김)', DELETE_REASONS[0]); await api(`/rest/v1/feedback?id=eq.${reasons[0].id}`, { method: 'DELETE' }) }
+  else bad('탈퇴 사유 기록', JSON.stringify(reasons).slice(0, 100))
+
   const kept = await (await api(`/rest/v1/subscriptions?order_id=eq.${orderId}&select=id,user_id`)).json()
   if (Array.isArray(kept) && kept.length === 1) {
     const holder = await (await api(`/auth/v1/admin/users/${kept[0].user_id}`)).json()

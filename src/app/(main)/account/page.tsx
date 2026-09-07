@@ -64,7 +64,7 @@ export default async function AccountPage() {
           )}
           <li>같은 이메일로 다시 가입할 수 있지만, 지운 기록과 이용권은 돌아오지 않아요.</li>
         </ul>
-        <DeleteAccountForm />
+        <DeleteAccountForm email={user.email ?? ''} />
       </section>
     </div>
   )
