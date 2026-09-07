@@ -119,6 +119,14 @@ https://kptest.cloud · 훑은 화면 25개 (실글/KBS 두 모드)
 - 실행 결과(2026-09-07): `subscriptions` 30행(3%) · 회원 135명(14%) → **상한까지 여유 있음, exit 0**. 전량 읽기 자리 중 큰 테이블: `questions`(연습 화면 다수)·`quiz_answers` 3,673행(result/insights/wrong)·`page_views` 11,770행(resolved-notice-actions·admin feedback). `quiz_answers`·`page_views` 는 사용자/기간 필터가 붙어 있어 지금은 잘리지 않으나, 무필터 집계를 추가할 때는 이 목록을 먼저 볼 것.
 - 다음 항목 후보(별도): 회원이 800명을 넘기 전에 관리자 회원·결제 화면과 `current_members.mjs` 에 페이지네이션.
 
+### 검수 통과 (리뷰어, 2026-09-08)
+- diff 재확인(`main..work/admin-paging`, 11파일): 결제 코드(`api/portone/**`, 결제창 호출부, 금액·상품 정의) 무변경, DB 스키마·마이그레이션 없음, 삭제·환불 실행 없음.
+- `tsc --noEmit` 0 · `eslint`(변경 파일 9곳) 0.
+- `npm run check:row-cap` 재실행 → exit 0, REPORT 표와 일치("상한까지 여유 있음").
+- `npm run check:admin-paging` 재실행 → **13/13 통과**, REPORT 로그와 항목·숫자 동일 재현(회원 147명·유료 22명·2쪽, 결제 54건·3쪽). 검증용 계정 1개(uid 스코프) 삭제, 시드 전체 삭제 없음 — `git status` 로 잔여 없음 확인.
+- 집계(총원·유료·매출)가 전체 기준으로 유지됨을 diff에서 확인 — `countPaidMembers`·`loadSales` 모두 `fetchAllRows`/`listAllUsers` 로 전량을 읽은 뒤 집계.
+- main에 병합(`--no-ff`), BACKLOG 체크, work/admin-paging 삭제. origin push는 아직 안 함.
+
 ## 무료 체험에서 유료로 넘어간 비율 (work/free-to-paid)
 
 - 날짜: 2026-09-05
