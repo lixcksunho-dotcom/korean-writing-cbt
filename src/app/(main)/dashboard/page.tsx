@@ -266,13 +266,13 @@ export default async function DashboardPage() {
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-0.5">
-                <h2 className="text-base font-black text-indigo-900">무제한 AI 첨삭, 이용 중이에요</h2>
+                <h2 className="text-base font-black text-indigo-900">AI 첨삭 이용 중이에요</h2>
                 <span className="text-xs font-bold text-white bg-indigo-500 px-2 py-0.5 rounded-full">PRO</span>
               </div>
               <p className="text-sm text-indigo-800/80">
                 {manuscriptCount > 0
                   ? <>지금까지 <b>{manuscriptCount}회</b> 채점받으셨어요. 서술형 답안을 더 채점받아 약점을 잡으세요.</>
-                  : <>아직 AI 채점을 안 받으셨어요. 서술형 답안을 AI가 <b>점수·첨삭</b>으로 분석해 드려요 — 무제한이니 지금 받아보세요.</>}
+                  : <>아직 AI 채점을 안 받으셨어요. 서술형 답안을 AI가 <b>점수·첨삭</b>으로 분석해 드려요 — 기간 중 하루 30회까지, 지금 받아보세요.</>}
               </p>
             </div>
             <ChevronRight className="h-5 w-5 text-indigo-600 shrink-0 group-hover:translate-x-1 transition-transform" />

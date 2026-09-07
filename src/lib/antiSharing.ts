@@ -1,5 +1,6 @@
 import { cookies } from 'next/headers'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { kstYmd } from '@/lib/examDday'
 
 // 계정 돌려쓰기(공유) 방지 — 유료 이용 시에만 적용.
 //  - 기기 수 제한: 한 계정이 사용할 수 있는 활성 기기는 최대 DEVICE_LIMIT 대
@@ -33,8 +34,9 @@ async function getDeviceId(): Promise<string> {
 }
 
 function todayKey(): string {
-  // 서버 기준 날짜(YYYY-MM-DD)
-  return new Date().toISOString().slice(0, 10)
+  // 한국 날짜(YYYY-MM-DD). 예전엔 서버(UTC) 날짜라 한도가 한국 시간 오전 9시에 풀렸다 —
+  // "내일 다시"라는 안내와 어긋나 밤에 한도에 걸린 사람이 자정을 넘겨도 계속 막혔다(2026-09-07 문의).
+  return kstYmd()
 }
 
 /**
@@ -78,7 +80,7 @@ export async function paidUsageBlock(userId: string): Promise<string | null> {
     .maybeSingle()
   const used = (row?.grade_count as number | undefined) ?? 0
   if (used >= DAILY_GRADE_LIMIT) {
-    return `오늘 AI 첨삭 한도(${DAILY_GRADE_LIMIT}회)를 모두 사용했어요. 내일 다시 이용해 주세요.`
+    return `오늘 AI 첨삭 한도(${DAILY_GRADE_LIMIT}회)를 모두 사용했어요. 이용권 기간 중 매일 ${DAILY_GRADE_LIMIT}회까지 받을 수 있고, 한국 시간 자정에 다시 열려요.`
   }
 
   return null
