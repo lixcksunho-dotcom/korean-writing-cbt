@@ -4,16 +4,24 @@ import PaymentsAdmin, { type PaymentRow } from './PaymentsAdmin'
 import { summarizeAttempts, type AttemptFunnel } from '@/lib/paymentAttemptFunnel'
 import DailySales from './DailySales'
 import { summarizeSales, type SubscriptionRow } from '@/lib/dailySales'
+import { fetchAllRows, listAllUsers, parsePage } from '@/lib/adminPaging'
+import AdminPager from '../AdminPager'
 
-/** 우리가 실제로 발급한 원장. 포트원 키가 없어도 이건 보여야 한다. */
+/**
+ * 우리가 실제로 발급한 원장. 포트원 키가 없어도 이건 보여야 한다.
+ * 합계라서 전량이 필요하다 — `.limit(1000)` 은 1000행에서 조용히 잘려 누적 매출이 줄어든다.
+ */
 async function loadSales() {
   const admin = createAdminClient()
-  const { data } = await admin
-    .from('subscriptions')
-    .select('created_at, amount, status, payment_key')
-    .order('created_at', { ascending: false })
-    .limit(1000)
-  return summarizeSales((data ?? []) as SubscriptionRow[], new Date())
+  const rows = await fetchAllRows<SubscriptionRow>((from, to) =>
+    admin
+      .from('subscriptions')
+      .select('created_at, amount, status, payment_key')
+      .order('created_at', { ascending: false })
+      .order('payment_key', { ascending: true })
+      .range(from, to),
+  )
+  return summarizeSales(rows, new Date())
 }
 
 export const dynamic = 'force-dynamic'
@@ -23,11 +31,13 @@ export const dynamic = 'force-dynamic'
 const WINDOW_DAYS = 60
 const TABLE_ROWS = 20
 
-async function loadRecentPayments(): Promise<{ rows: PaymentRow[]; funnel: AttemptFunnel | null; listError: string | null }> {
+type Recent = { rows: PaymentRow[]; total: number; page: number; funnel: AttemptFunnel | null; listError: string | null }
+
+async function loadRecentPayments(wantedPage: number): Promise<Recent> {
   const secret = process.env.PORTONE_API_SECRET
   const storeId = process.env.NEXT_PUBLIC_PORTONE_STORE_ID
   if (!secret || !storeId) {
-    return { rows: [], funnel: null, listError: '포트원 키(PORTONE_API_SECRET/STORE_ID) 미설정' }
+    return { rows: [], total: 0, page: 1, funnel: null, listError: '포트원 키(PORTONE_API_SECRET/STORE_ID) 미설정' }
   }
 
   try {
@@ -52,10 +62,10 @@ async function loadRecentPayments(): Promise<{ rows: PaymentRow[]; funnel: Attem
     }
 
     // Payment는 상태별 유니온이라 느슨하게 접근(렌더 전용).
-    const items = all
-      .slice()
-      .sort((a, b) => String(b.requestedAt ?? '').localeCompare(String(a.requestedAt ?? '')))
-      .slice(0, TABLE_ROWS)
+    // 표는 20건씩 이전/다음 — 주소의 page 가 범위를 넘으면 마지막 쪽.
+    const sorted = all.slice().sort((a, b) => String(b.requestedAt ?? '').localeCompare(String(a.requestedAt ?? '')))
+    const page = Math.min(wantedPage, Math.max(1, Math.ceil(sorted.length / TABLE_ROWS)))
+    const items = sorted.slice((page - 1) * TABLE_ROWS, page * TABLE_ROWS)
     const ids = items.map(p => String(p.id ?? '')).filter(Boolean)
 
     // 발급된 order_id 집합
@@ -83,8 +93,8 @@ async function loadRecentPayments(): Promise<{ rows: PaymentRow[]; funnel: Attem
     // 지금 회원인 사람의 시도만 센다.
     // 탈퇴했거나 검증용으로 만들었다 지운 계정의 시도가 섞이면 '결제창까지 왔는데 안 낸 사람'이
     // 부풀고, 정작 연락할 수 있는 사람이 몇 명인지가 흐려진다(실제로 검증 계정 3건이 섞였다).
-    const { data: userList } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 })
-    const memberIds = new Set((userList?.users ?? []).map(u => u.id))
+    // 전원이 필요하니 100명씩 끝까지 읽는다(perPage 1000 은 1000명에서 조용히 잘린다).
+    const memberIds = new Set((await listAllUsers(admin)).map(u => u.id))
     const fromMembers = all.filter(p => {
       const customer = p.customer as { id?: string; customerId?: string } | undefined
       const id = customer?.id ?? customer?.customerId
@@ -104,9 +114,9 @@ async function loadRecentPayments(): Promise<{ rows: PaymentRow[]; funnel: Attem
       }
     }))
 
-    return { rows, funnel, listError: null }
+    return { rows, total: sorted.length, page, funnel, listError: null }
   } catch (e) {
-    return { rows: [], funnel: null, listError: (e as Error).message }
+    return { rows: [], total: 0, page: 1, funnel: null, listError: (e as Error).message }
   }
 }
 
@@ -160,9 +170,17 @@ function AttemptSummary({ funnel }: { funnel: AttemptFunnel }) {
   )
 }
 
-export default async function AdminPaymentsPage() {
+export default async function AdminPaymentsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string }>
+}) {
+  const sp = await searchParams
   // 매출 집계는 포트원 키와 무관하게 뜬다 — 목록 조회가 실패해도 '얼마 들어왔는지'는 보여야 한다.
-  const [{ rows, funnel, listError }, sales] = await Promise.all([loadRecentPayments(), loadSales()])
+  const [{ rows, total, page, funnel, listError }, sales] = await Promise.all([
+    loadRecentPayments(parsePage(sp.page)),
+    loadSales(),
+  ])
 
   return (
     <div>
@@ -178,7 +196,14 @@ export default async function AdminPaymentsPage() {
         결제는 됐는데 구독이 발급되지 않은 건을 재발급합니다. 평상시엔 포트원 웹훅이 자동 처리하며,
         여기는 누락·과거 사고를 수동 복구하는 안전망입니다.
       </p>
-      <PaymentsAdmin rows={rows} listError={listError} />
+      <PaymentsAdmin
+        rows={rows}
+        listError={listError}
+        caption={`최근 결제 (${WINDOW_DAYS}일 · ${TABLE_ROWS}건씩)`}
+        pager={total > 0 ? (
+          <AdminPager page={page} pageSize={TABLE_ROWS} total={total} href={p => (p > 1 ? `/admin/payments?page=${p}` : '/admin/payments')} />
+        ) : null}
+      />
     </div>
   )
 }

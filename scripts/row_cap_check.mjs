@@ -3,8 +3,9 @@
 //
 // 왜 필요한가: PostgREST 는 limit 을 얼마로 적든 한 번에 1000행에서 조용히 자른다. 오류가 없고
 // 화면은 멀쩡하니 숫자가 틀린 채로 아무도 모른다 — 이 저장소의 30일 방문 통계가 그래서
-// 며칠치만 나왔었다(커밋 b80e086). 관리자 화면 네 곳이 `.limit(1000)`·`perPage: 1000` 을
-// 박아 두었는데, 행이 그 선을 넘는 순간부터 매출·회원 수가 조용히 작아진다.
+// 며칠치만 나왔었다(커밋 b80e086). 관리자 화면이 `.limit(1000)`·`perPage: 1000` 을
+// 박아 두면, 행이 그 선을 넘는 순간부터 매출·회원 수가 조용히 작아진다.
+// 회원·결제 화면과 current_members.mjs 는 2026-09-08 에 페이지 단위로 바꿨다(src/lib/adminPaging.ts).
 // 이 검사는 실제 행 수를 세어 상한 대비 몇 % 인지 말하고, 80% 를 넘으면 exit 1 로 알린다.
 //
 // 읽기 전용 — 서비스 키로 count 만 읽는다. 화면 코드는 건드리지 않는다.
@@ -41,14 +42,34 @@ async function countMembers() {
   return { n: users.length, exact: users.length < CAP }
 }
 
-// 1) 상한을 박아 둔 관리자 화면 — 자리와 대상은 실물(2026-09-07 grep) 그대로.
+/** src·scripts 의 ts/tsx/mjs 파일 */
+const walk = (dir, out = []) => {
+  for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+    const p = path.join(dir, e.name)
+    if (e.isDirectory()) walk(p, out)
+    else if (/\.(ts|tsx|mjs)$/.test(e.name)) out.push(p)
+  }
+  return out
+}
+// 1) 아직 상한을 박아 둔 자리 — 실물(2026-09-08 grep) 그대로. 없어진 자리는 여기서도 지운다.
 const CAPPED = [
   { where: 'src/app/admin/(protected)/page.tsx:24', what: 'subscriptions .limit(1000)', table: 'subscriptions' },
-  { where: 'src/app/admin/(protected)/payments/page.tsx:15', what: 'subscriptions .limit(1000)', table: 'subscriptions' },
-  { where: 'src/app/admin/(protected)/members/page.tsx:15', what: 'listUsers perPage 1000', table: '(auth users)' },
-  { where: 'src/app/admin/(protected)/payments/page.tsx:86', what: 'listUsers perPage 1000', table: '(auth users)' },
-  { where: 'scripts/current_members.mjs', what: 'admin/users per_page=1000', table: '(auth users)' },
+  // 아래 넷은 9/7 목록에 빠져 있던 자리 — 이번 대조 규칙이 찾아냈다. 화면 밖(리포트·탈퇴)이라 별도 항목으로.
+  { where: 'src/lib/subscriberReport.ts:93', what: 'listUsers perPage 1000 (검증 계정 거르기)', table: '(auth users)' },
+  { where: 'src/lib/accountDeletion.ts:33', what: 'listUsers perPage 1000 × 10쪽 반복 — 10,000명까지는 안전', table: '(auth users)', cap: 10000 },
+  { where: 'scripts/free_to_paid.mjs:61', what: 'admin/users per_page=1000', table: '(auth users)' },
+  { where: 'scripts/inflow_to_payment.mjs:63', what: 'admin/users per_page=1000', table: '(auth users)' },
 ]
+// 위 목록이 실물과 어긋나면(자리가 사라졌거나 새로 생겼거나) 검사가 거짓말을 한다 — 소스에서 대조한다.
+const capRe = /\.limit\(1000\)|perPage:\s*1000|per_page=1000/
+const capSpots = []
+for (const file of ['src', 'scripts'].flatMap((d) => walk(d))) {
+  if (file.endsWith('row_cap_check.mjs')) continue
+  const lines = fs.readFileSync(file, 'utf-8').split('\n')
+  lines.forEach((l, i) => {
+    if (capRe.test(l) && !/^\s*(\/\/|\*)/.test(l)) capSpots.push(`${path.relative('.', file).replace(/\\/g, '/')}:${i + 1}`)
+  })
+}
 
 const counts = {}
 counts.subscriptions = await countRows('subscriptions')
@@ -57,26 +78,25 @@ counts['(auth users)'] = m.n
 
 let bad = 0
 console.log(`1000행 상한 대비 (경고선 ${WARN_AT * 100}%)\n`)
+const listed = [...new Set(CAPPED.map((c) => c.where))]
+const drift = capSpots.filter((sp) => !listed.includes(sp)).concat(listed.filter((w) => !capSpots.includes(w)))
+if (drift.length) {
+  console.log(`  ✖ 상한 자리 목록이 실물과 다르다 — 소스: ${capSpots.join(', ') || '없음'} / 목록: ${listed.join(', ')}\n`)
+  bad++
+}
 for (const c of CAPPED) {
   const n = counts[c.table]
   if (n == null) { console.log(`  ?  ${c.where}  ${c.what} — 행 수를 못 읽었다`); bad++; continue }
-  const ratio = n / CAP
+  const cap = c.cap ?? CAP
+  const ratio = n / cap
   const mark = ratio >= 1 ? '✖' : ratio >= WARN_AT ? '△' : '○'
   if (ratio >= WARN_AT) bad++
   const exact = c.table === '(auth users)' && !m.exact ? '+ (1000 이상, 정확한 총원 미상)' : ''
-  console.log(`  ${mark}  ${c.where}  ${c.what}  →  ${n}${exact} / ${CAP} (${Math.round(ratio * 100)}%)`)
+  console.log(`  ${mark}  ${c.where}  ${c.what}  →  ${n}${exact} / ${cap} (${Math.round(ratio * 100)}%)`)
 }
 
 // 2) 덤: 전량을 읽는 select 중 큰 테이블을 가리키는 자리 — 나열만 한다(수정 금지).
 //    한 문장(.from(...) 부터 다음 세미콜론/빈 줄까지)에 range·limit·single·head 가 없으면 전량 읽기로 본다.
-const walk = (dir, out = []) => {
-  for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
-    const p = path.join(dir, e.name)
-    if (e.isDirectory()) walk(p, out)
-    else if (/\.(ts|tsx)$/.test(e.name)) out.push(p)
-  }
-  return out
-}
 const unbounded = []
 for (const file of walk('src')) {
   const text = fs.readFileSync(file, 'utf-8')

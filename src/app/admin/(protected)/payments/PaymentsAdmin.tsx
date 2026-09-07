@@ -39,7 +39,15 @@ function RegrantButton({ paymentId, onDone }: { paymentId: string; onDone: () =>
   )
 }
 
-export default function PaymentsAdmin({ rows, listError }: { rows: PaymentRow[]; listError: string | null }) {
+export default function PaymentsAdmin({
+  rows, listError, caption = '최근 결제', pager = null,
+}: {
+  rows: PaymentRow[]
+  listError: string | null
+  caption?: string
+  /** 이전/다음 — 서버 컴포넌트(AdminPager)를 그대로 받는다 */
+  pager?: React.ReactNode
+}) {
   const [manualId, setManualId] = useState('')
   const [manualRes, setManualRes] = useState<{ ok: boolean; message: string } | null>(null)
   const [pending, start] = useTransition()
@@ -72,7 +80,7 @@ export default function PaymentsAdmin({ rows, listError }: { rows: PaymentRow[];
 
       {/* 최근 결제 목록 — 미발급 PAID 건을 한눈에 */}
       <section className="rounded-xl border border-gray-200 bg-white p-5">
-        <h2 className="mb-3 text-sm font-bold text-gray-900">최근 결제 (최대 20건)</h2>
+        <h2 className="mb-3 text-sm font-bold text-gray-900">{caption}</h2>
         {listError ? (
           <p className="text-xs text-red-600">
             결제 목록을 불러오지 못했습니다: {listError}. 위 수동 재발급은 정상 동작합니다.
@@ -120,6 +128,7 @@ export default function PaymentsAdmin({ rows, listError }: { rows: PaymentRow[];
             </table>
           </div>
         )}
+        {!listError && pager}
       </section>
     </div>
   )

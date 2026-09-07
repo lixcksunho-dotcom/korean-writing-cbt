@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useMemo, useTransition } from 'react'
+import { useState, useTransition } from 'react'
 import { Search, UserPlus, Trash2, Loader2, Crown, Mail, X } from 'lucide-react'
+import Link from 'next/link'
 import { createMember, deleteMember, setMemberPaid } from './actions'
 import type { RefundJudgement } from '@/lib/refundEligibility'
 
@@ -16,30 +17,38 @@ export type AdminMember = {
   refund: RefundJudgement
 }
 
-export default function MembersClient({ members }: { members: AdminMember[] }) {
-  const [q, setQ] = useState('')
+/**
+ * @param members 이 쪽(100명)의 회원 — 전체가 아니다. 쪽 넘김은 page.tsx 의 AdminPager.
+ * @param q 지금 적용된 검색어. 검색은 서버가 전원을 대상으로 한다(한 쪽 안에서만 거르면 다른 쪽 회원을 못 찾는다).
+ */
+export default function MembersClient({ members, q }: { members: AdminMember[]; q: string }) {
   const [showAdd, setShowAdd] = useState(false)
   const [globalErr, setGlobalErr] = useState('')
 
-  const filtered = useMemo(() => {
-    const k = q.trim().toLowerCase()
-    if (!k) return members
-    return members.filter(m => m.email.toLowerCase().includes(k) || m.name.toLowerCase().includes(k))
-  }, [q, members])
-
   return (
     <div>
-      {/* 검색 + 추가 */}
+      {/* 검색(서버, 전원 대상) + 추가 */}
       <div className="flex items-center gap-2 mb-4">
-        <div className="relative flex-1">
-          <Search className="h-4 w-4 text-gray-600 absolute left-3 top-1/2 -translate-y-1/2" />
-          <input
-            value={q}
-            onChange={e => setQ(e.target.value)}
-            placeholder="이메일 또는 이름 검색"
-            className="w-full bg-white border rounded-lg pl-9 pr-3 py-2 text-sm focus:outline-none focus:border-gray-500"
-          />
-        </div>
+        <form action="/admin/members" method="get" role="search" className="relative flex-1 flex items-center gap-2">
+          <div className="relative flex-1">
+            <Search className="h-4 w-4 text-gray-600 absolute left-3 top-1/2 -translate-y-1/2" aria-hidden="true" />
+            <input
+              name="q"
+              defaultValue={q}
+              placeholder="이메일 또는 이름 검색 (전체 회원)"
+              aria-label="이메일 또는 이름 검색"
+              className="w-full bg-white border rounded-lg pl-9 pr-3 py-2 text-sm focus:outline-none focus:border-gray-500"
+            />
+          </div>
+          <button type="submit" className="min-h-11 px-3 rounded-lg text-sm font-bold border border-gray-300 bg-white text-gray-900 hover:bg-gray-50 shrink-0">
+            검색
+          </button>
+          {q && (
+            <Link href="/admin/members" className="min-h-11 inline-flex items-center px-2 text-sm text-gray-600 hover:text-gray-900 shrink-0">
+              지우기
+            </Link>
+          )}
+        </form>
         <button
           onClick={() => setShowAdd(v => !v)}
           className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-bold bg-gray-900 text-white hover:bg-gray-700 transition-colors shrink-0"
@@ -57,8 +66,8 @@ export default function MembersClient({ members }: { members: AdminMember[] }) {
           <span>회원</span><span>가입</span><span>유료</span><span>삭제</span>
         </div>
         <div className="divide-y">
-          {filtered.length === 0 && <p className="text-sm text-gray-600 text-center py-10">검색 결과가 없습니다.</p>}
-          {filtered.map(m => <Row key={m.id} m={m} onError={setGlobalErr} />)}
+          {members.length === 0 && <p className="text-sm text-gray-600 text-center py-10">{q ? '검색 결과가 없습니다.' : '회원이 없습니다.'}</p>}
+          {members.map(m => <Row key={m.id} m={m} onError={setGlobalErr} />)}
         </div>
       </div>
     </div>
