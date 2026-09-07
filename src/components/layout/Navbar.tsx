@@ -5,7 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
-import { BookOpen, LayoutDashboard, Menu, X, LogOut, PenLine, Sparkles, ListChecks } from "lucide-react";
+import { BookOpen, LayoutDashboard, Menu, X, LogOut, PenLine, Sparkles, ListChecks, UserRound } from "lucide-react";
 import LogoGlyph from "@/components/layout/LogoGlyph";
 
 const navItems = [
@@ -82,10 +82,22 @@ export default function Navbar({
             </Link>
             <div className="w-px h-5 bg-white/10 mx-1" />
             {userEmail && (
-              <span className="text-xs text-white/40 max-w-[140px] truncate hidden xl:block">
+              <Link
+                href="/account"
+                title="계정 관리"
+                className="text-xs text-white/40 max-w-[140px] truncate hidden xl:block hover:text-white"
+              >
                 {userEmail}
-              </span>
+              </Link>
             )}
+            {/* 계정 화면(탈퇴)으로 가는 길 — 이메일을 누르면 되지만 좁은 화면에선 이메일이 안 보인다 */}
+            <Link
+              href="/account"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium text-white/50 hover:text-white hover:bg-white/8 transition-all"
+            >
+              <UserRound className="h-4 w-4" />
+              계정
+            </Link>
             <button
               onClick={handleLogout}
               className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium text-white/50 hover:text-white hover:bg-white/8 transition-all"
@@ -132,6 +144,14 @@ export default function Navbar({
                 {userEmail}
               </div>
             )}
+            <Link
+              href="/account"
+              onClick={() => setMenuOpen(false)}
+              className="flex items-center gap-2.5 px-3 py-3 rounded-xl text-sm font-medium text-white/60 hover:bg-white/8 hover:text-white transition-colors"
+            >
+              <UserRound className="h-4 w-4" />
+              계정 관리
+            </Link>
             <button
               onClick={handleLogout}
               className="w-full flex items-center gap-2.5 px-3 py-3 rounded-xl text-sm font-medium text-white/50 hover:bg-white/8 hover:text-white transition-colors"

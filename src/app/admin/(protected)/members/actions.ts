@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { deleteAccountKeepingPayments } from '@/lib/accountDeletion'
 import { revalidatePath } from 'next/cache'
 
 // 서버 액션은 레이아웃 가드와 별개이므로 호출 시마다 관리자 권한을 재확인한다.
@@ -44,29 +45,9 @@ export async function createMember(email: string, password: string, name?: strin
  */
 export async function deleteMember(userId: string) {
   await assertAdmin()
-  const admin = createAdminClient()
-
-  const { data: paid } = await admin
-    .from('subscriptions')
-    .select('id')
-    .eq('user_id', userId)
-    .limit(1)
-
-  if (paid && paid.length > 0) {
-    const { error: unlinkError } = await admin
-      .from('subscriptions')
-      .update({ user_id: null })
-      .eq('user_id', userId)
-    if (unlinkError) {
-      throw new Error(
-        '이 회원에게 결제 기록이 있어 지금 삭제하면 결제 기록도 함께 사라집니다. ' +
-        'supabase/migrations/036_keep_payment_records.sql 을 먼저 실행해 주세요.'
-      )
-    }
-  }
-
-  const { error } = await admin.auth.admin.deleteUser(userId)
-  if (error) throw new Error(error.message)
+  // 본인 탈퇴와 같은 길 — 결제 기록은 탈퇴 회원 보관 계정으로 옮기고 사람만 지운다(마이그레이션 036 불필요).
+  const r = await deleteAccountKeepingPayments(userId)
+  if (!r.ok) throw new Error(`삭제하지 않았습니다(${r.reason}): ${r.detail}`)
   revalidatePath('/admin/members')
 }
 
