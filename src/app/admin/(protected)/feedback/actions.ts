@@ -12,8 +12,9 @@ async function assertAdmin() {
   if (!user || !adminEmails.includes(user.email ?? '')) throw new Error('Forbidden')
 }
 
-/** 운영자 답글이 남는 자리(page_views.path). 회원 화면의 해결 띠가 이걸 읽어 보여 준다. */
-export const FEEDBACK_REPLY_PATH = '#event/feedback_reply'
+// 운영자 답글이 남는 자리(page_views.path). 회원 화면의 해결 띠가 이걸 읽어 보여 준다.
+// ('use server' 파일은 async 함수만 export 할 수 있어 상수는 밖으로 내지 않는다 — Vercel 빌드에서 실제로 막혔다.)
+const FEEDBACK_REPLY_PATH = '#event/feedback_reply'
 
 /**
  * 처리함/되돌리기. 답글을 같이 주면 그 사람의 해결 띠에 그 글이 실린다.
