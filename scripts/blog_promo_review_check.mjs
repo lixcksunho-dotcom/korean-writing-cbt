@@ -18,6 +18,7 @@ import { passingPostHtml, missingDisclosureHtml } from '../src/lib/blogPromoFixt
 import {
   checkBlogHtml,
   isLikelyBlogPostUrl,
+  MAX_REWARDS,
   MIN_IMAGES,
   MIN_CHARS,
   TITLE_KEYWORDS,
@@ -213,6 +214,26 @@ else bad('글자수 기준', charCheck ? charCheck.detail : '기준 자체가 �
 if (!isLikelyBlogPostUrl('https://blog.naver.com') && isLikelyBlogPostUrl('https://blog.naver.com/me/123')) {
   ok('블로그 첫 화면은 글 주소로 안 본다')
 } else bad('주소 판정', '첫 화면과 글 주소를 구분 못 한다')
+
+// ── 선착순 한도 ───────────────────────────────────────────────────────────
+// 답례는 공짜가 아니다. 자동 지급과 관리자 승인이 **같은 자리**를 써야 한다 —
+// 한 쪽만 막으면 그것이 우회로가 된다. (KBS패스에서 가져옴, 2026-09-07)
+{
+  const auto = fs.readFileSync('src/app/(main)/subscribe/blog-review-actions.ts', 'utf8')
+  const adminAct = fs.readFileSync('src/app/admin/(protected)/promo-reviews/actions.ts', 'utf8')
+  const quota = fs.readFileSync('src/lib/blogRewardQuota.ts', 'utf8')
+
+  if (MAX_REWARDS === 20) ok('한도가 코드에 하나로 있다', `${MAX_REWARDS}명`)
+  else bad('한도', String(MAX_REWARDS))
+  if (auto.includes('blogRewardQuota') && auto.includes('quota.closed')) ok('자동 지급이 한도를 본다')
+  else bad('자동 지급 한도', '한도를 안 본다')
+  if (adminAct.includes('blogRewardQuota') && adminAct.includes('quota.closed')) ok('관리자 승인도 같은 한도를 본다')
+  else bad('승인 한도', '우회로가 열려 있다')
+  if (quota.includes("eq('status', 'active')")) ok('회수된 자리는 돌려준다')
+  else bad('자리 회수', '취소된 발급도 자리를 먹는다')
+  if (auto.includes('접수는 해 두었으니')) ok('마감이어도 접수는 받는다')
+  else bad('마감 처리', '조건 갖춘 글이 헛수고가 된다')
+}
 
 // ── 판정기가 아직 살아 있는가 ───────────────────────────────────────────────
 // 판정은 네이버가 내려주는 HTML 모양에 기대고 있다. 저쪽이 구조를 바꾸면 우리 추출기가

@@ -71,7 +71,7 @@ export default async function BlogReviewEventPage() {
       <div className="mt-6 rounded-2xl border border-[#e2e8f0] bg-[#f8fafc] p-5">
         <p className="text-sm font-bold text-[#0f172a]">이용권으로 뭘 할 수 있나요?</p>
         <p className="mt-1 text-xs leading-relaxed text-[#475569]">
-          서술형 AI 채점·첨삭 무제한, 잠긴 모의고사 전 회차, 영역별 집중 연습을 씁니다.
+          서술형 AI 채점·첨삭 무제한, 모의고사 전 회차, 영역별 집중 연습을 씁니다.
         </p>
         <Link
           href="/subscribe"

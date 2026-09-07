@@ -38,13 +38,17 @@ export async function submitBlogReview(url: string): Promise<SubmitResult> {
   // 나눠 내면 각자 이용권을 받는다 — 홍보는 한 편인데 값은 여러 번 나가는 셈이다.
   // 주소는 모양이 여러 가지라(m.blog·끝 슬래시·꼬리표) 다듬어서 견준다.
   const key = normalizeBlogUrl(link)
+  // 최근 N건만 훑으면 오래된 신청은 창 밖으로 밀려 같은 글이 다시 통한다. 주소의 경로 부분으로
+  // 좁혀 뽑고(ilike 는 넓게 잡을 수 있으니) 다듬은 값으로 정확히 견준다.
+  const pathPart = (() => { try { return new URL(link).pathname.replace(/\/+$/, '') } catch { return '' } })()
   const { data: prior } = await admin
     .from('feedback')
     .select('user_id, contact')
     .eq('path', BLOG_REVIEW_PATH)
     .not('contact', 'is', null)
+    .ilike('contact', `%${pathPart.replace(/[%_]/g, (c) => `\\${c}`)}%`)
     .order('created_at', { ascending: false })
-    .limit(500)
+    .limit(50)
   const same = (prior ?? []).find(r => normalizeBlogUrl(String(r.contact)) === key)
   if (same) {
     return same.user_id === user.id

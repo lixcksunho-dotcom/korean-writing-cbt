@@ -8,6 +8,7 @@ import { useDialogFocus } from '@/components/ui/dialogFocus'
 import { createClient } from '@/lib/supabase/client'
 import { getSchedule, type Round } from '@/lib/examSchedule'
 import { BODY_KEYWORDS, MAX_REWARDS, MIN_CHARS, MIN_IMAGES, MIN_QA, REWARD_DAYS } from '@/lib/blogPromoRules'
+import { daysUntil as kstDaysUntil } from '@/lib/examDday'
 
 // 첫 화면에 이벤트를 알린다.
 //
@@ -29,11 +30,8 @@ function fmt(iso: string) {
   const d = new Date(`${iso}T00:00:00`)
   return `${d.getMonth() + 1}.${d.getDate()}(${WD[d.getDay()]})`
 }
-function daysUntil(iso: string) {
-  const now = new Date()
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
-  return Math.ceil((new Date(`${iso}T00:00:00`).getTime() - today) / 86400000)
-}
+// '오늘'은 한국 날짜로 — 서버(UTC)와 브라우저가 새벽 0~9시에 다른 날을 잡으면 hydration 이 어긋난다(ScheduleModal 사고).
+const daysUntil = (iso: string) => kstDaysUntil(iso)
 
 /** 아직 안 끝난 첫 회차. 다 지났으면 null — 지난 회차를 보여 주면 그냥 틀린 정보다. */
 function nextRound(rounds: Round[]): Round | null {

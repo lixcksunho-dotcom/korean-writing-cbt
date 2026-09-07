@@ -11,6 +11,7 @@ import { getActiveProgram } from "@/lib/programContext";
 import { getProgram, type GradeCut } from "@/lib/programs";
 import { formatExamId } from "@/lib/examId";
 import ResolvedFeedbackNotice from "@/components/feedback/ResolvedFeedbackNotice";
+import BlogReviewEventCard from "@/components/blog/BlogReviewEventCard";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 function getGreeting() {
@@ -446,6 +447,11 @@ export default async function DashboardPage() {
           <ChevronRight className="h-5 w-5 text-[#64748b] group-hover:translate-x-1 transition-transform" />
         </Link>
       )}
+
+      {/* 후기 이벤트 — 로그인한 사람만 신청할 수 있으니 여기가 맞는 자리. 결제 닫힘·마감이면 스스로 안 그린다 */}
+      <div className="mb-8">
+        <BlogReviewEventCard />
+      </div>
 
       {/* 바로가기 카드 */}
       <div className={`grid ${cfg.hasManuscript ? 'md:grid-cols-2' : 'grid-cols-1'} gap-4 mb-8`}>
