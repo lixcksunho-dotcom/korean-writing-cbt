@@ -1,5 +1,49 @@
 # REPORT
 
+## 관리자 회원·결제 화면 페이지네이션 (work/admin-paging, 2026-09-08)
+
+- 백로그: "관리자 회원·결제 화면 페이지네이션 — `listUsers({ perPage: 1000 })`·`subscriptions .limit(1000)` 을 100건 단위 이전/다음으로, 집계는 전체 기준 유지, `current_members.mjs` 도 같은 방식".
+- 범위: 두 화면과 하위 컴포넌트 + 공용 헬퍼 2파일 + 스크립트. 결제 코드·DB·배포 무변경.
+
+### 바꾼 것
+- `src/lib/adminPaging.ts`(신설): `listUsersPage`(100명 한 쪽, 총원은 GoTrue X-Total-Count) · `listAllUsers`(100명씩 끝까지) · `fetchAllRows`(`.range()` 1000행씩 끝까지) · `parsePage`. auth-js 의 `lastPage`/`nextPage` 는 Link 헤더 page 값의 **첫 글자만** 읽어(`substring(0, 1)`) 10쪽부터 틀리므로 총원으로 직접 계산한다.
+- `src/app/admin/(protected)/AdminPager.tsx`(신설): 서버 컴포넌트 이전/다음(주소 `?page=`), "1–100명 / 전체 147명 · 1/2쪽".
+- 회원 화면 `members/page.tsx`: 한 쪽 100명. **총원**은 GoTrue 총원, **유료**는 활성 이용권(`status=active`·미만료) user_id 를 전량 읽어 distinct 로 센다(쪽만 세면 줄어든다). 이용권·환불 판정은 그 쪽의 100명 것만 `.in('user_id', …)` 로 읽는다. **검색**은 브라우저 안 필터(그 쪽만 걸러짐)에서 서버 검색(`?q=`, 전원을 100명씩 훑어 이메일·이름 대조)으로 — 한 쪽 안에서만 거르면 다른 쪽 회원을 못 찾는다. 범위 밖 `page=` 는 마지막 쪽.
+- 결제 화면 `payments/page.tsx`: 날짜별 판매 합계는 **합계라서 이전/다음이 성립하지 않는다** — `.limit(1000)` 대신 `fetchAllRows` 로 전량(1000행씩 끝까지). 회원 대조용 `listUsers perPage 1000` → `listAllUsers`. 최근 결제 표는 20건씩 이전/다음(`?page=`, 60일 54건 → 3쪽).
+- `scripts/current_members.mjs`: `per_page=1000` 한 번 → 100명씩 끝까지. 두 리포트(`report:payments`·`report:funnel-daily`)가 그대로 쓴다.
+- `scripts/row_cap_check.mjs`: 없어진 자리 4곳을 목록에서 지우고, **목록이 실물과 어긋나면 exit 1** 로 대조하는 규칙을 추가. 그 규칙이 9/7 목록에 빠져 있던 상한 자리 4곳을 찾아냈다 — `src/lib/subscriberReport.ts:93`·`scripts/free_to_paid.mjs:61`·`scripts/inflow_to_payment.mjs:63`(각 perPage/per_page 1000 한 번)·`src/lib/accountDeletion.ts:33`(10쪽 반복이라 10,000명까지 안전). 목록에 올려 두기만 했다(수정 안 함, 이 항목 범위 밖).
+- `scripts/admin_paging_check.mjs` + `npm run check:admin-paging`(신설): 임시 관리자 계정·로컬 운영빌드로 **실제로 눌러 본다** — 이전/다음 클릭, 총원·유료가 DB 직접 집계와 같은지, 마지막 쪽 회원이 검색으로 찾아지는지, `page=999` 클램프, 결제 표 3쪽 넘김. 다른 단추(삭제·유료 토글·재발급)는 누르지 않는다.
+
+### 실행 결과(전부 2026-09-08)
+- `tsc --noEmit` 0 · `eslint`(변경 파일) 0.
+- `npm run check:row-cap` → exit 0: `page.tsx:24 subscriptions 33/1000(3%)` · 회원 146명/1000(15%) ×3 · accountDeletion 146/10000. "상한까지 여유 있음".
+- `npm run check:admin-paging` → **13/13 통과**:
+```
+기대값 — 회원 147명(임시 계정 포함) · 유료 22명 · 2쪽, 마지막 쪽 47명
+  ✓ 회원 1쪽 100명 — 100명 (기대 100)
+  ✓ 회원 1쪽 안내 문구 — 1–100명 / 전체 147명 · 1/2쪽
+  ✓ 1쪽에서 이전 잠김
+  ✓ 1쪽에서 다음 열림
+  ✓ 총원·유료가 DB 와 같음 — 전체 147명 · 유료 22명
+  ✓ 다음 눌러 2쪽 도달 — 47명 (기대 47) · http://127.0.0.1:3118/admin/members?page=2
+  ✓ 마지막 쪽에서 다음 잠김
+  ✓ 이전 눌러 한 쪽 뒤로 — http://127.0.0.1:3118/admin/members
+  ✓ 검색이 마지막 쪽의 회원을 찾음 — 'lix…@gmail.com' → 1명
+  ✓ 범위 밖 page=999 → 마지막 쪽 — 47명 · 101–147명 / 전체 147명 · 2/2쪽
+  ✓ 결제 1쪽 20건씩 — 20건 · 1–20건 / 전체 54건 · 1/3쪽
+  ✓ 결제 다음 눌러 2쪽 — 20건 · http://127.0.0.1:3118/admin/payments?page=2
+  ✓ 결제 이전 눌러 1쪽 — http://127.0.0.1:3118/admin/payments
+관리자 쪽 넘김 검사 — 13항목 중 통과 13            (exit 0)
+```
+  첫 실행은 10/13 이었다 — 둘 다 검사 스크립트 쪽 결함(이전 클릭을 느슨한 URL 패턴으로 기다려 넘어가기 전에 통과, 결제 표 행 수를 날짜별 판매 표까지 세어 38건). 정확한 주소 대기·쪽 넘김이 붙은 절의 표만 세도록 고친 뒤 13/13.
+- `npm run check:admin` → exit 0: 10면 중 10면 봄 · 명암비 1199개 중 미달 0 · 아이콘 1057개 중 0 · 휴대폰 기준 미달 0(권장 미달 34건은 종전과 같은 11px 배지·40px 단추, 새로 넣은 이전/다음·검색 단추는 44px).
+- `npm run report:funnel-daily -- --date 2026-08-23` → "결제창 진입 0건 — 결제 활동 없음 (검증·탈퇴 계정 2건 제외)" — 9/7 과 동일(회원 필터가 100명씩 읽어도 같은 답).
+
+### 지시문과 달랐던 점
+- 회원 135명·이용권 30건이라 적혀 있었으나 실물은 회원 146명·subscriptions 33행(검사 중엔 임시 계정 포함 147명). 판단에 영향 없음.
+- 결제 화면의 `.limit(1000)` 은 목록이 아니라 **합계**(날짜별 판매)라 "이전/다음"이 성립하지 않는다 — 전량을 쪽 단위로 끝까지 읽는 방식으로 상한만 없앴고, 이전/다음은 그 화면의 최근 결제 표(20건씩)에 붙였다.
+- 대시보드 `src/app/admin/(protected)/page.tsx:24` 의 같은 `.limit(1000)` 은 지시 범위("두 화면") 밖이라 그대로 두었다 — `check:row-cap` 목록에 남아 있다. 결제 화면의 `loadSales` 와 같은 코드이므로 다음 항목에서 `fetchAllRows` 로 바꾸면 된다(한 줄).
+
 ## 라이브 새벽 검사 — 시험일정 시간대 수정 최종 확인 (work/live-dday-check, 2026-09-08 04:21 KST)
 
 - 백로그: "⏸️ KST 00:00~09:00 사이에만 라이브 화면 검사로 시간대 수정 최종 확인" — 조건 충족(실행 시각 KST 04:21, 서버 UTC 날짜는 아직 9/7). 코드 무변경, 검사 실행·기록만.

@@ -5,13 +5,25 @@
 // 회원 목록에 없는 검증 계정 2건이었다 — REPORT 8/28), 정작 연락할 수 있는 사람 수가 흐려진다.
 // 관리자 화면도 같은 규칙으로 센다.
 
-/** Supabase auth 의 현재 회원 id 집합. 서비스 키로만 읽는다(개인정보는 id 만 쓴다). */
+/** 관리자 화면(src/lib/adminPaging.ts)과 같은 쪽 크기 */
+const PAGE = 100
+
+/**
+ * Supabase auth 의 현재 회원 id 집합. 서비스 키로만 읽는다(개인정보는 id 만 쓴다).
+ * 100명씩 끝까지 — per_page=1000 은 1000명에서 조용히 잘렸다(관리자 회원 화면과 같은 방식).
+ */
 export async function fetchMemberIds(ENV) {
-  // per_page 상한은 1000 — 회원이 그 이상이면 뒤가 잘린다. check:row-cap 이 80% 에서 경고한다.
-  const res = await fetch(`${ENV.NEXT_PUBLIC_SUPABASE_URL}/auth/v1/admin/users?per_page=1000`, {
-    headers: { apikey: ENV.SUPABASE_SERVICE_ROLE_KEY, Authorization: `Bearer ${ENV.SUPABASE_SERVICE_ROLE_KEY}` },
-  })
-  return new Set(((await res.json())?.users ?? []).map((u) => u.id))
+  const ids = new Set()
+  for (let page = 1; ; page++) {
+    const res = await fetch(`${ENV.NEXT_PUBLIC_SUPABASE_URL}/auth/v1/admin/users?page=${page}&per_page=${PAGE}`, {
+      headers: { apikey: ENV.SUPABASE_SERVICE_ROLE_KEY, Authorization: `Bearer ${ENV.SUPABASE_SERVICE_ROLE_KEY}` },
+    })
+    if (!res.ok) throw new Error(`회원 목록 ${page}쪽을 읽지 못했다: HTTP ${res.status}`)
+    const users = (await res.json())?.users ?? []
+    for (const u of users) ids.add(u.id)
+    if (users.length < PAGE) break
+  }
+  return ids
 }
 
 /** 포트원 결제건 목록을 회원/비회원으로 가른다. 반환: { kept, dropped } */
