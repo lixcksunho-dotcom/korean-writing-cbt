@@ -82,6 +82,7 @@
     "check:pay-guide": "node scripts/payment_block_guidance_check.mjs",
     "check:page-quiz": "node scripts/content_page_quiz_check.mjs",
     "check:deployed": "node scripts/deploy_freshness_check.mjs",
+    "check:dday": "node scripts/exam_dday_check.mjs",
     "check:ai-cost": "node --experimental-strip-types --no-warnings scripts/ai_cost_check.mjs",
     "check:own-copy": "node scripts/own_copy_spelling_check.mjs",
     "check:row-cap": "node scripts/row_cap_check.mjs"

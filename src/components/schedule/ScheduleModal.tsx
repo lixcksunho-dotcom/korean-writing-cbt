@@ -6,37 +6,16 @@ import { usePathname } from 'next/navigation'
 import { CalendarDays, X, ExternalLink, ArrowRight } from 'lucide-react'
 import { useDialogFocus } from '@/components/ui/dialogFocus'
 import { getSchedule, type Round } from '@/lib/examSchedule'
+// '오늘'·상태·D-day 는 한국 날짜 기준으로 한 곳(examDday)에서만 계산한다 — 서버(UTC)와 브라우저(KST)가
+// 새벽 0~9시에 다른 '오늘'을 잡아 hydration 이 어긋나는 사고(KBS패스 2026-09-07) 예방.
+import { roundStatus, canApply, primaryRound, type RoundStatus } from '@/lib/examDday'
 
 const WD = ['일', '월', '화', '수', '목', '금', '토']
 function fmt(iso: string) {
   const d = new Date(`${iso}T00:00:00`)
   return `${d.getFullYear()}.${d.getMonth() + 1}.${d.getDate()}(${WD[d.getDay()]})`
 }
-function startOfToday() {
-  const n = new Date()
-  return new Date(n.getFullYear(), n.getMonth(), n.getDate())
-}
-function daysBetween(fromIso: string) {
-  const target = new Date(`${fromIso}T00:00:00`)
-  return Math.ceil((target.getTime() - startOfToday().getTime()) / 86400000)
-}
-
-// 접수 마감(closed)과 시험 종료(done)는 다르다. 예전엔 접수가 끝나면 회차를 화면에서
-// 통째로 뺐는데, 그러면 **이미 접수한 사람이 자기 시험일을 못 본다** — 접수 마감 뒤에도
-// 시험까지 2~3주가 남는다. 그 사람에게는 그게 지금 가장 중요한 날짜다.
-type Status = 'open' | 'addon' | 'upcoming' | 'closed' | 'done'
-function statusOf(r: Round): Status {
-  const today = startOfToday().getTime()
-  const start = new Date(`${r.applyStart}T00:00:00`).getTime()
-  const end = new Date(`${r.applyEnd}T23:59:59`).getTime()
-  const addon = r.addonEnd ? new Date(`${r.addonEnd}T23:59:59`).getTime() : null
-  const exam = new Date(`${r.examDate}T23:59:59`).getTime()
-  if (today < start) return 'upcoming'
-  if (today <= end) return 'open'
-  if (addon !== null && today <= addon) return 'addon'
-  if (today <= exam) return 'closed'
-  return 'done'
-}
+const statusOf = (r: Round) => roundStatus(r)
 
 /** 추가접수는 정기접수 마감 다음 날 시작한다. 'YYYY-MM-DD 다음날'로 적으면 읽기 나쁘다. */
 function dayAfter(ymd: string): string {
@@ -44,9 +23,6 @@ function dayAfter(ymd: string): string {
   d.setDate(d.getDate() + 1)
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
-
-/** 아직 낼 수 있는가(정기 또는 추가접수 중) */
-const canApply = (st: Status) => st === 'open' || st === 'addon'
 
 // 시험을 푸는 화면(시간 제한 CBT·연습 풀이)에서는 어떤 것도 답안 위를 덮으면 안 된다.
 const QUIET_ROUTES = [/^\/cbt\/[^/]+$/, /^\/practice\/(multiple|essay|types|refine|wrong|bookmarks)/, /^\/manuscript$/, /^\/subscribe/]
@@ -83,19 +59,7 @@ export default function ScheduleModal({ program = 'silyong' }: { program?: strin
 
   // 접수중이면 그 회차, 아니면 가장 가까운 회차를 대표로(배열은 날짜순).
   // 접수만 마감된 회차도 남긴다 — 시험이 아직 안 지났으면 그게 제일 급한 날짜다.
-  const upcoming = rounds.filter(r => statusOf(r) !== 'done')
-  const primary = upcoming.find(r => canApply(statusOf(r))) ?? upcoming[0] ?? rounds[rounds.length - 1]
-  const primaryStatus = statusOf(primary)
-  const dday =
-    primaryStatus === 'open'
-      ? daysBetween(primary.applyEnd)
-      : primaryStatus === 'addon'
-        ? daysBetween(primary.addonEnd!)
-        : primaryStatus === 'upcoming'
-          ? daysBetween(primary.applyStart)
-          : primaryStatus === 'closed'
-            ? daysBetween(primary.examDate)
-            : 0
+  const { primary, status: primaryStatus, dday, upcoming } = primaryRound(rounds)
 
   useDialogFocus(open, dialogRef, closeDialog)
 
@@ -265,7 +229,7 @@ function Row({ label, value, highlight }: { label: string; value: string; highli
   )
 }
 
-function StatusBadge({ status }: { status: Status }) {
+function StatusBadge({ status }: { status: RoundStatus }) {
   const map = {
     open: { t: '접수중', c: 'bg-emerald-100 text-emerald-700' },
     upcoming: { t: '예정', c: 'bg-slate-100 text-slate-500' },

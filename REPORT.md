@@ -1,5 +1,12 @@
 # REPORT
 
+## 시험일정 '오늘'을 한국 날짜로 — 서버(UTC) 새벽 hydration 불일치 예방 (관리자 직접, main, 2026-09-07)
+
+- 계기: 자매 저장소 KBS패스에서 2026-09-07 새벽 KBS 모드 7화면에 React #418 발생. 원인은 `ScheduleModal` 이 `new Date()` **로컬 날짜**로 '오늘'을 잡는 것 — Vercel 서버는 UTC 라 한국 새벽 0~9시엔 서버의 오늘이 하루 전이고, 접수 경계일엔 상태("접수 예정"↔"접수 중")가, 접수 중엔 D-숫자가 서버·브라우저에서 달라진다. 이 저장소의 `ScheduleModal` 은 같은 코드였고 **제121회 접수 마감이 2026-09-07** 이라 9/8 00:00~09:00 KST 에 kptest.cloud 에서 같은 사고(서버 "접수 중 D-0" vs 브라우저 "접수 마감")가 예정돼 있었다.
+- 변경: `src/lib/examDday.ts` 신설(Intl Asia/Seoul 로 오늘, `Date.UTC` 날짜 번호로 비교, `roundStatus`/`daysUntil`/`primaryRound`), `ScheduleModal` 은 이 함수만 쓴다(자체 `startOfToday`/`daysBetween`/`statusOf` 제거). 화면 문구·구조 무변경.
+- 검사: `scripts/exam_dday_check.mjs` + `npm run check:dday` — 마감 당일 새벽(2026-09-06T23:30Z)·마감 직후 자정(2026-09-07T15:00Z)·시험일·122회 접수 시작 등 7순간을 TZ=UTC 와 TZ=Asia/Seoul 자식 프로세스로 계산해 같은 답인지 대조. 실행 결과 7/7 통과, `tsc` 0, `eslint` 0.
+- 라이브 확인: 9/8 새벽 0~9시에 `check:pages` 0건이면 완결(관리 틱에서).
+
 ## 결제 퍼널 일일 요약에 회원 필터 + 1000행 상한 대비 검사 (관리자 직접, main, 2026-09-07)
 
 - 백로그: "결제 퍼널 일일 요약에 회원 필터 붙이기" · "1000행 조용한 상한 대비 검사"
