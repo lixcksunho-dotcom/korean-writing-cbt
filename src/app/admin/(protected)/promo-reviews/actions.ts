@@ -2,7 +2,7 @@
 
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getActiveSubscription } from '@/lib/subscription'
-import { REWARD_DAYS } from '@/lib/blogPromoRules'
+import { REWARD_DAYS, BLOG_REVIEW_PATH } from '@/lib/blogPromoRules'
 import { blogRewardQuota } from '@/lib/blogRewardQuota'
 import { revalidatePath } from 'next/cache'
 
@@ -84,10 +84,23 @@ export async function revokeBlogReview(feedbackId: string): Promise<{ ok: boolea
     .eq('status', 'active')
     .select('id')
   if (error) return { ok: false, message: `회수 실패: ${error.message}` }
-  if (!data?.length) return { ok: false, message: '되돌릴 지급이 없습니다(이미 회수됐거나 자동 지급 건입니다).' }
+  if (data?.length) {
+    revalidatePath('/admin/promo-reviews')
+    return { ok: true, message: '이용권을 회수했습니다.' }
+  }
 
-  revalidatePath('/admin/promo-reviews')
-  return { ok: true, message: '이용권을 회수했습니다.' }
+  // 승인 지급이 없으면 자동 지급(order_id 가 review-auto-<user>)일 수 있다. 관리자는 신청 목록에서
+  // 신청 id 만 쥐고 있으므로, 신청 행에서 user_id 를 찾아 같은 버튼으로 회수한다 — 따로 userId 를 알 필요 없게.
+  const { data: fb } = await admin
+    .from('feedback')
+    .select('user_id, path')
+    .eq('id', feedbackId)
+    .maybeSingle()
+  if (fb?.user_id && fb.path === BLOG_REVIEW_PATH) {
+    const auto = await revokeAutoGrant(String(fb.user_id))
+    if (auto.ok) return auto
+  }
+  return { ok: false, message: '되돌릴 지급이 없습니다(이미 회수됐거나 지급된 적이 없습니다).' }
 }
 
 /** 자동 지급분(계정당 1회)도 회수할 수 있어야 한다 — order_id 규칙이 다르다. */
