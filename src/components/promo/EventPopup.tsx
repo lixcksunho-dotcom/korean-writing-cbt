@@ -7,7 +7,7 @@ import { X, Gift, Check, CalendarDays, ExternalLink } from 'lucide-react'
 import { useDialogFocus } from '@/components/ui/dialogFocus'
 import { createClient } from '@/lib/supabase/client'
 import { getSchedule, type Round } from '@/lib/examSchedule'
-import { BODY_KEYWORDS, MAX_REWARDS, MIN_CHARS, MIN_IMAGES, MIN_QA, REWARD_DAYS } from '@/lib/blogPromoRules'
+import { BODY_KEYWORDS, MAX_REWARDS, MIN_CHARS, MIN_IMAGES, MIN_QA, REWARD_DAYS, RECOMMENDED_KEEP_DAYS } from '@/lib/blogPromoRules'
 import { daysUntil as kstDaysUntil } from '@/lib/examDday'
 
 // 첫 화면에 이벤트를 알린다.
@@ -244,6 +244,8 @@ export default function EventPopup({
             <br />
             받은 뒤 {REWARD_DAYS}일 동안 글이 공개돼 있어야 하고, 내리면 그때부터 못 씁니다
             (다시 공개하면 되살아나지만, 만료일은 그대로예요).
+            <br />
+            되도록 {RECOMMENDED_KEEP_DAYS}일은 그대로 둬 주세요(부탁이고, 의무는 아니에요).
           </p>
         </div>
 

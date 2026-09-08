@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useState, useTransition } from 'react'
 import { PenLine, CheckCircle2, AlertCircle, Check, X, LogIn } from 'lucide-react'
 import { submitBlogReview } from '@/app/(main)/subscribe/blog-review-actions'
-import { TITLE_KEYWORDS, BODY_KEYWORDS, MIN_IMAGES, MIN_CHARS, MIN_QA, REWARD_DAYS, DISCLOSURE_SAMPLE, type RuleCheck } from '@/lib/blogPromoRules'
+import { TITLE_KEYWORDS, BODY_KEYWORDS, MIN_IMAGES, MIN_CHARS, MIN_QA, REWARD_DAYS, RECOMMENDED_KEEP_DAYS, DISCLOSURE_SAMPLE, type RuleCheck } from '@/lib/blogPromoRules'
 import DisclosureCopyBox from '@/components/subscribe/DisclosureCopyBox'
 
 // 블로그에 홍보 글을 쓰면 이용권을 드리는 신청 화면.
@@ -132,6 +132,10 @@ export default function BlogReviewForm({
           </li>
           <li>· 광고 표시를 지우셔도 같은 방식으로 끊깁니다(법정 의무라 그래요).</li>
           <li>· {REWARD_DAYS}일이 지난 뒤에는 글을 어떻게 하셔도 이용권에 영향이 없어요.</li>
+          <li>
+            · 그래도 <b>{RECOMMENDED_KEEP_DAYS}일은 그대로 둬 주시길 부탁드려요.</b> 검색에 자리 잡는 데
+            그만큼 걸려서, 그때부터 글이 제 몫을 합니다(부탁이고 의무는 아니에요 — 안 지키셔도 회수하지 않아요).
+          </li>
           <li>
             · <b>내용은 자유롭게</b> 쓰시면 됩니다. 좋게 써 달라고 부탁드리지 않아요 —
             느낀 그대로 쓰신 글이 읽는 사람에게도 쓸모가 있습니다.
