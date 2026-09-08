@@ -3,7 +3,7 @@ import { redirectToLogin } from '@/lib/loginRedirect'
 import Link from "next/link";
 import { BookOpen, PenLine, Trophy, Clock, ChevronRight, ArrowUpRight, Sparkles, CheckCircle2, Gift, TrendingUp, Lock, Gauge } from "lucide-react";
 import ReviewWriteModal from "@/components/review/ReviewWriteModal";
-import { getActiveSubscription, daysUntilExpiry, isExpiringSoon } from "@/lib/subscription";
+import { getActiveSubscription, daysUntilExpiry, isExpiringSoon, passLabel } from "@/lib/subscription";
 import { FREE_AI_TRIAL, readTrialUsed } from "@/lib/aiTrial";
 import { hasAbandonedCheckout } from "@/lib/abandonedCheckout";
 import { tierFor } from "@/lib/grade";
@@ -512,7 +512,8 @@ export default async function DashboardPage() {
               <CheckCircle2 className="h-5 w-5 text-white" />
             </div>
             <div>
-              <p className="font-bold text-emerald-900 text-sm">프리미엄 플랜 구독 중</p>
+              {/* 무료로 받은 이용권(후기·행사·관리자 지급)은 그 이름과 실제 기간으로 부른다 — 7일권을 '프리미엄 플랜'이라 하면 사실과 다르다 */}
+              <p className="font-bold text-emerald-900 text-sm">{Number(sub.amount) ? '프리미엄 플랜 구독 중' : `${passLabel(sub)} 이용 중`}</p>
               <p className="text-emerald-700 text-xs">
                 {new Date(sub.expires_at).toLocaleDateString('ko-KR')} 만료 · {daysUntilExpiry(sub.expires_at)}일 남음
               </p>
