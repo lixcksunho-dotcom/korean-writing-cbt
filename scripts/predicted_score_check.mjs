@@ -10,6 +10,8 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
+import { predictScore } from '../src/lib/predictedScore.ts'
+import { getProgram } from '../src/lib/programs.ts'
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const { chromium } = await import(pathToFileURL(path.join(ROOT, 'node_modules', 'playwright', 'index.mjs')).href)
@@ -56,6 +58,12 @@ async function makeUser(tag, paid) {
   }
   return { email, password, id: u.id }
 }
+
+// 기대 점수는 추정기에서 그대로 뽑는다 — 숫자를 손으로 적어 두면 계산이 좋아질 때마다
+// 검사가 먼저 틀린다(실제로 600 → 627 로 바뀌며 한 번 걸렸다).
+const EXPECTED = predictScore({
+  objectiveCorrect: 24, objectiveAnswered: 40, essays: [], weight: getProgram('silyong').weight,
+})
 
 // 완료한 모의고사 한 회를 심는다 — 객관식 24/40(=60%)이면 예상 600점.
 async function seedExam(userId) {
@@ -129,10 +137,16 @@ try {
       if (c.includes('구독하고 예상 점수 확인')) ok('무료·기록있음 → 흐린 미리보기 + 구독 유도')
       else bad('무료·기록있음', c.replace(/\n/g, ' | ').slice(0, 160))
     } else {
-      if (c.includes('600점') || /\b600\n?점/.test(c)) ok('유료·기록있음 → 실제 예상 점수 600점')
-      else bad('유료·기록있음(600점 기대)', c.replace(/\n/g, ' | ').slice(0, 160))
+      if (c.includes(`${EXPECTED.score}점`)) ok('유료·기록있음 → 실제 예상 점수', `${EXPECTED.score}점`)
+      else bad(`유료·기록있음(${EXPECTED.score}점 기대)`, c.replace(/\n/g, ' | ').slice(0, 160))
     }
 
+    if (who === 'paid') {
+      if (c.includes(`${EXPECTED.low}~${EXPECTED.high}점`)) ok('점수와 함께 범위를 말한다', `${EXPECTED.low}~${EXPECTED.high}점`)
+      else bad('범위 표시', c.replace(/\n/g, ' | ').slice(0, 160))
+      if (c.includes('평균으로 잡았어요')) ok('서술형을 안 받았다는 것을 밝힌다')
+      else bad('근거 표시', '무엇에 기대어 낸 숫자인지 말하지 않는다')
+    }
     if (errs.length) bad(`${who}: 콘솔 오류`, errs.join(' / '))
     else ok(`${who}: 콘솔 오류 없음`)
     await ctx.close()

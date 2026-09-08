@@ -7,6 +7,7 @@ import { getActiveSubscription, daysUntilExpiry, isExpiringSoon, passLabel } fro
 import { FREE_AI_TRIAL, readTrialUsed } from "@/lib/aiTrial";
 import { hasAbandonedCheckout } from "@/lib/abandonedCheckout";
 import { tierFor } from "@/lib/grade";
+import { predictScore, predictionBasisLabel } from "@/lib/predictedScore";
 import { getActiveProgram } from "@/lib/programContext";
 import { getProgram, type GradeCut } from "@/lib/programs";
 import { formatExamId } from "@/lib/examId";
@@ -139,8 +140,9 @@ export default async function DashboardPage() {
   const expiringSoon = !!sub && isExpiringSoon(sub);
 
   // ── AI 예상 점수(유료 핵심) ──
-  // 객관식 정답률(→300점) + 서술형 AI 채점 평균(→700점)으로 1000점 환산 예상 점수 추정.
-  let essayRate: number | null = null;
+  // 계산은 predictedScore(순수 함수)에 있다 — 관리자 통계도 같은 함수를 쓴다.
+  type EssayJoin = { ai_score: number | null; questions: { points?: number } | null };
+  let essays: EssayJoin[] = [];
   if (sub && completedSessions.length > 0) {
     // 한 번의 조인 쿼리로 ai_score + 문항 배점을 함께 가져온다(쿼리 2→1).
     const { data: ea } = await supabase
@@ -148,21 +150,24 @@ export default async function DashboardPage() {
       .select("ai_score, questions(points)")
       .in("session_id", completedSessions.map(s => s.id))
       .not("ai_score", "is", null);
-    if (ea && ea.length) {
-      const sumAi = ea.reduce((s, a) => s + (Number(a.ai_score) || 0), 0);
-      const sumP = ea.reduce((s, a) => s + (Number((a.questions as { points?: number } | null)?.points) || 0), 0);
-      essayRate = sumP > 0 ? sumAi / sumP : null;
-    }
+    essays = (ea ?? []) as unknown as EssayJoin[];
   }
-  const objRate = totalAnswered > 0 ? totalCorrect / totalAnswered : null;
-  // 시험별 배점 가중치(실용글쓰기 객300/서700, KBS는 다름)로 만점 환산
+  // 시험별 배점 가중치(실용글쓰기 객300/서700)로 만점 환산
   const wObj = cfg.weight.objective;
   const wEssay = cfg.weight.essay;
-  // 서술형 미채점 시 객관식률로 잠정 추정
-  const predicted = objRate == null ? null : Math.round(objRate * wObj + (essayRate ?? objRate) * wEssay);
+  const prediction = predictScore({
+    objectiveCorrect: totalCorrect,
+    objectiveAnswered: totalAnswered,
+    essays: essays.map(e => ({ aiScore: e.ai_score, points: e.questions?.points ?? null })),
+    weight: cfg.weight,
+    maxScore: cfg.maxScore,
+  });
+  const predicted = prediction?.score ?? null;
   const predictedTier = predicted != null ? tierFor(predicted, program) : null;
-  const objPart = objRate != null ? Math.round(objRate * wObj) : null;
-  const essayPart = essayRate != null ? Math.round(essayRate * wEssay) : null;
+  const objPart = prediction?.objectivePart ?? null;
+  // 서술형은 '그 사람 채점'이 있을 때만 숫자로 말한다 — 평균으로 잡은 값을 그 사람 점수처럼
+  // 보여 주면, 채점을 받은 뒤 숫자가 뒤집혀도 왜 그런지 알 길이 없다.
+  const essayPart = prediction && prediction.basis !== 'baseline' ? prediction.essayPart : null;
   // 비구독자 미리보기에는 '그 사람의' 추정치를 쓴다.
   // 예전에는 만점의 74%를 고정으로 보여 줬는데(모두에게 '준2급 예상'), 카드 문구가
   // "지금 실력이면 몇 점·몇 등급"이라 사용자는 그 흐린 숫자를 자기 점수로 읽는다.
@@ -400,9 +405,9 @@ export default async function DashboardPage() {
               <h2 className="text-base font-bold text-[#0f172a]">AI 예상 점수</h2>
               <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">AI 추정</span>
             </div>
-            <p className="text-xs text-[#64748b] mb-4">객관식 정답률과 서술형 AI 채점 평균을 {cfg.maxScore}점으로 환산한 추정치예요.</p>
+            <p className="text-xs text-[#64748b] mb-4">객관식 정답률과 서술형 AI 채점을 {cfg.maxScore}점으로 환산한 추정치예요.</p>
 
-            <div className="flex items-end gap-3 mb-4">
+            <div className="flex items-end gap-3 mb-1">
               <span className="text-4xl font-black text-[#0f172a] tracking-tight">{predicted}<span className="text-lg text-[#64748b]">점</span></span>
               {predictedTier && (
                 <span className={`mb-1.5 inline-flex items-center px-3 py-1 rounded-full text-sm font-black ${
@@ -415,16 +420,27 @@ export default async function DashboardPage() {
               )}
             </div>
 
+            {/* 한 숫자만 보여 주면 그 숫자를 확정으로 읽는다. 표본이 적을수록 폭이 넓어진다. */}
+            {prediction && (
+              <p className="mb-4 text-xs text-[#64748b]">
+                대체로 <b className="text-[#334155]">{prediction.low}~{prediction.high}점</b> 사이예요
+                <span className="text-[#94a3b8]"> · 푼 문제가 늘수록 좁아져요</span>
+              </p>
+            )}
+
             {/* 등급 게이지 */}
             <ScoreGauge predicted={predicted ?? 0} cuts={cfg.cuts} maxScore={cfg.maxScore} />
 
             <div className="flex items-center gap-4 mt-4 text-xs">
               <span className="text-[#64748b]">객관식 <b className="text-[#0f172a]">{objPart}</b>/{wObj}</span>
-              <span className="text-[#64748b]">서술형 <b className="text-[#0f172a]">{essayPart ?? '미채점'}</b>/{wEssay}</span>
+              <span className="text-[#64748b]">서술형 <b className="text-[#0f172a]">{essayPart ?? '평균 적용'}</b>/{wEssay}</span>
             </div>
-            {essayPart == null && (
-              <Link href="/cbt" className="mt-3 inline-flex items-center gap-1 text-xs font-bold text-amber-700 hover:underline py-3">
-                서술형 AI 채점을 받으면 예상 점수가 더 정확해져요 <ChevronRight className="h-3.5 w-3.5" />
+            {prediction && (
+              <p className="mt-2 text-xs leading-relaxed text-[#64748b]">{predictionBasisLabel(prediction)}</p>
+            )}
+            {prediction && prediction.basis !== 'own' && (
+              <Link href="/cbt" className="mt-1 inline-flex items-center gap-1 text-xs font-bold text-amber-700 hover:underline py-3">
+                서술형 AI 채점 받으러 가기 <ChevronRight className="h-3.5 w-3.5" />
               </Link>
             )}
           </div>

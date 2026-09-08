@@ -4,6 +4,8 @@
 // 몇 점을 받는지"는 아무 데도 없었다(운영자 지시 2026-09-08). 이용권을 늘릴지, AI 한도를 올릴지,
 // 문제 난이도를 어떻게 할지가 전부 이 숫자에 달려 있다.
 
+import { predictScore } from './predictedScore'
+
 /** 모의고사 한 회 결과 — 객관식 맞은 수/전체 */
 export type ExamRow = { userId: string; score: number | null; total: number | null; completedAt: string | null }
 /** 서술형 AI 채점 — 받은 점수/배점 */
@@ -29,11 +31,8 @@ export type PaidMember = {
   bestScore: number | null
 }
 
-/** 객관식 정답률과 서술형 득점률을 시험 배점으로 환산한 예상 점수(대시보드와 같은 방식). */
-export function scaledScore(objRate: number | null, essayRate: number | null, weight: { objective: number; essay: number }): number | null {
-  if (objRate == null) return null
-  return Math.round(objRate * weight.objective + (essayRate ?? objRate) * weight.essay)
-}
+// 예상 점수 계산은 predictedScore 한 곳에만 둔다 — 예전에는 여기와 대시보드가 각자 계산했고,
+// 둘 다 서술형을 안 받은 사람의 서술형 득점률을 객관식 정답률로 대신했다(실측 오차 22.2%p).
 
 const dayKey = (iso: string) => iso.slice(0, 10)
 
@@ -53,14 +52,11 @@ export function buildPaidMembers(input: {
   const now = input.now ?? new Date()
   const since7 = new Date(now.getTime() - 7 * 86400_000).toISOString().slice(0, 10)
 
-  // 사람별 서술형 득점률(전체 합계 기준 — 회차 정보가 없어 사람 단위로만 낸다)
-  const essayByUser = new Map<string, { got: number; max: number }>()
+  // 서술형 채점은 사람 단위로 모은다(회차 정보가 없다). 축소·평균 처리는 predictScore 가 한다.
+  const essayByUser = new Map<string, { aiScore: number | null; points: number | null }[]>()
   for (const e of input.essays) {
     if (e.aiScore == null || !e.points) continue
-    const cur = essayByUser.get(e.userId) ?? { got: 0, max: 0 }
-    cur.got += e.aiScore
-    cur.max += e.points
-    essayByUser.set(e.userId, cur)
+    essayByUser.set(e.userId, [...(essayByUser.get(e.userId) ?? []), { aiScore: e.aiScore, points: e.points }])
   }
 
   const examByUser = new Map<string, ExamRow[]>()
@@ -74,10 +70,14 @@ export function buildPaidMembers(input: {
 
   return input.passes.map(p => {
     const ex = examByUser.get(p.userId) ?? []
-    const er = essayByUser.get(p.userId)
-    const essayRate = er && er.max > 0 ? er.got / er.max : null
+    const userEssays = essayByUser.get(p.userId) ?? []
     const perExam = ex
-      .map(x => scaledScore(x.total ? (x.score ?? 0) / x.total : null, essayRate, input.weight))
+      .map(x => predictScore({
+        objectiveCorrect: x.score ?? 0,
+        objectiveAnswered: x.total ?? 0,
+        essays: userEssays,
+        weight: input.weight,
+      })?.score)
       .filter((v): v is number => v != null)
     const use = usageByUser.get(p.userId) ?? []
     return {
