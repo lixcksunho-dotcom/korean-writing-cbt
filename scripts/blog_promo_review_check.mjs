@@ -252,7 +252,7 @@ if (!isLikelyBlogPostUrl('https://blog.naver.com') && isLikelyBlogPostUrl('https
   const adminAct = fs.readFileSync('src/app/admin/(protected)/promo-reviews/actions.ts', 'utf8')
   const quota = fs.readFileSync('src/lib/blogRewardQuota.ts', 'utf8')
 
-  if (MAX_REWARDS === 20) ok('한도가 코드에 하나로 있다', `${MAX_REWARDS}명`)
+  if (MAX_REWARDS === 5) ok('한도가 코드에 하나로 있다', `${MAX_REWARDS}명`)
   else bad('한도', String(MAX_REWARDS))
   if (auto.includes('blogRewardQuota') && auto.includes('quota.closed')) ok('자동 지급이 한도를 본다')
   else bad('자동 지급 한도', '한도를 안 본다')

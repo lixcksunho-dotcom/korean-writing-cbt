@@ -63,6 +63,7 @@
     "check:exit-save": "node scripts/exit_save_check.mjs",
     "check:promo": "node scripts/promo_redeem_check.mjs",
     "check:pace": "node --experimental-strip-types scripts/exam_pace_check.mjs",
+    "check:quota-cap": "node --experimental-strip-types --no-warnings scripts/blog_quota_cap_check.mjs",
     "check:blog-promo": "node --experimental-strip-types scripts/blog_promo_review_check.mjs",
     "check:spelling-consistency": "node scripts/spelling_consistency_check.mjs",
     "check:blog-lab": "node --experimental-strip-types scripts/blog_rule_lab_check.mjs",

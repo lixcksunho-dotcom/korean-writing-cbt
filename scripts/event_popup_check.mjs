@@ -125,8 +125,10 @@ try {
     else bad('지급 일수', text.slice(0, 60))
     if (/광고 표시/.test(text)) ok('광고 표시가 필요하다고 미리 알린다')
     else bad('광고 표시 고지', '안내가 없다')
-    if (/글을 내리면/.test(text)) ok('내리면 꺼진다고 미리 알린다')
-    else bad('회수 고지', '안내가 없다')
+    // 문구를 다듬어도 통과하게 낱말로 본다 — 예전엔 '글을 내리면'이라는 한 문장을 통째로
+    // 찾다가, 같은 뜻으로 고쳐 쓴 문구를 '고지가 없다'고 잘못 짚었다.
+    if (/내리면[\s\S]*멈/.test(text) && /되살아/.test(text)) ok('내리면 꺼지고 다시 올리면 되살아난다고 미리 알린다')
+    else bad('회수 고지', text.slice(0, 120).replace(/\n/g, ' | '))
     if (/접수|시험/.test(text)) ok('시험 일정을 같은 창에서 함께 보여 준다')
     else bad('일정 표시', '이벤트만 있고 일정이 없다')
     const others = await page.locator('[role="dialog"]:not([aria-labelledby="event-popup-title"])').count()
