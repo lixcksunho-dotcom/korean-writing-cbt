@@ -10,8 +10,8 @@ import { DAILY_GRADE_LIMIT } from '@/lib/antiSharingLimits'
 // 하루 AI 첨삭 한도에 걸린 사람에게 '왜·언제까지'를 설명하는 창.
 //
 // 왜 필요한가: 한 줄 빨간 글씨("한도를 모두 사용했어요")만 보면 유료 회원은 "유료인데 왜 제한?"이라고
-// 묻는다(2026-09-07 실제 문의). 상한은 그대로 두되(운영자 결정), 걸린 순간 이유·풀리는 시각·
-// 정상 이용자의 출구(고객센터에서 늘려 준다)를 한 화면에 보여 준다.
+// 묻는다(2026-09-07 실제 문의). 상한은 그대로 두되(운영자 결정), 걸린 순간 이유·풀리는 시각을 보여 주고
+// 궁금하면 문의하라고만 한다 — '늘려 준다'는 약속은 하지 않는다(운영자 지시 2026-09-08).
 
 /** 한국 시간 자정까지 남은 시간(분). 서버·브라우저 시간대와 무관하게 Asia/Seoul 로 센다. */
 function minutesToKstMidnight(now = new Date()): number {
@@ -59,11 +59,11 @@ export default function DailyLimitDialog({ open, onClose }: { open: boolean; onC
           <ul className="list-disc pl-5 space-y-1 text-[#475569]">
             <li>오늘 받은 첨삭 결과는 그대로 남아 있어요 — 결과 화면에서 다시 볼 수 있어요.</li>
             <li>자정이 지나면 아무것도 안 해도 다시 {DAILY_GRADE_LIMIT}회가 열려요.</li>
-            <li>정상적으로 공부하다 걸리셨다면 알려 주세요. 확인 뒤 늘려 드려요.</li>
+            <li>궁금한 점이 있으면 고객센터로 문의해 주세요.</li>
           </ul>
           <div className="flex gap-2 pt-1">
             <button onClick={onClose} className="flex-1 min-h-[44px] rounded-xl bg-[#1e3a5f] text-white text-sm font-bold">알겠어요</button>
-            <Link href="/support" className="flex-1 min-h-[44px] inline-flex items-center justify-center rounded-xl border border-[#e2e8f0] text-sm font-bold text-[#0f172a]">고객센터에 알리기</Link>
+            <Link href="/support" className="flex-1 min-h-[44px] inline-flex items-center justify-center rounded-xl border border-[#e2e8f0] text-sm font-bold text-[#0f172a]">고객센터 문의</Link>
           </div>
         </div>
       </div>
