@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirectToLogin } from '@/lib/loginRedirect'
 import Link from 'next/link'
 import { ArrowLeft, Receipt, CheckCircle2, XCircle, Clock } from 'lucide-react'
-import { isActivePass } from '@/lib/subscription'
+import { isActivePass, passLabel } from '@/lib/subscription'
 
 export const dynamic = 'force-dynamic'
 
@@ -13,7 +13,7 @@ export default async function PaymentHistoryPage() {
 
   const { data: rows } = await supabase
     .from('subscriptions')
-    .select('id, amount, status, started_at, expires_at, order_id')
+    .select('id, amount, status, started_at, expires_at, order_id, payment_key')
     .eq('user_id', user.id)
     .order('started_at', { ascending: false })
 
@@ -53,7 +53,8 @@ export default async function PaymentHistoryPage() {
             return (
               <div key={s.id as string} className="bg-white rounded-2xl border border-[#e2e8f0] shadow-[0_4px_16px_rgba(15,31,61,0.06)] p-5">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="font-bold text-[#0f172a]">AI 채점 30일 이용권</span>
+                  {/* 이름은 실제 기간·발급 경로에서 만든다 — 7일 후기 이용권을 '30일'이라 부르지 않게 */}
+                  <span className="font-bold text-[#0f172a]">{passLabel(s as Parameters<typeof passLabel>[0])}</span>
                   <span className={`inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full ${badge.cls}`}>{badge.icon}{badge.text}</span>
                 </div>
                 <div className="flex items-center justify-between text-sm">

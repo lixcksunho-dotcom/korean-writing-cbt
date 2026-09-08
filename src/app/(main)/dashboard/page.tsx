@@ -3,7 +3,7 @@ import { redirectToLogin } from '@/lib/loginRedirect'
 import Link from "next/link";
 import { BookOpen, PenLine, Trophy, Clock, ChevronRight, ArrowUpRight, Sparkles, CheckCircle2, Gift, TrendingUp, Lock, Gauge } from "lucide-react";
 import ReviewWriteModal from "@/components/review/ReviewWriteModal";
-import { getActiveSubscription, daysUntilExpiry } from "@/lib/subscription";
+import { getActiveSubscription, daysUntilExpiry, isExpiringSoon } from "@/lib/subscription";
 import { FREE_AI_TRIAL, readTrialUsed } from "@/lib/aiTrial";
 import { hasAbandonedCheckout } from "@/lib/abandonedCheckout";
 import { tierFor } from "@/lib/grade";
@@ -134,7 +134,9 @@ export default async function DashboardPage() {
 
   // 이용권 만료 임박(7일 이내) 여부
   const expiryDays = sub ? daysUntilExpiry(sub.expires_at) : null;
-  const expiringSoon = expiryDays !== null && expiryDays <= 7;
+  // 남은 기간이 전체의 4분의 1 이하일 때만 '연장하세요'. 예전엔 '7일 이하'라 7일짜리 후기 이용권이
+  // 받는 순간 만료 임박으로 떴다(2026-09-08 실제 지급으로 확인).
+  const expiringSoon = !!sub && isExpiringSoon(sub);
 
   // ── AI 예상 점수(유료 핵심) ──
   // 객관식 정답률(→300점) + 서술형 AI 채점 평균(→700점)으로 1000점 환산 예상 점수 추정.

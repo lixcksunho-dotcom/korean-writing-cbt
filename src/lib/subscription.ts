@@ -1,5 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
 
+// 화면 표시용 순수 함수는 subscriptionDisplay.ts 에 있다(검사 스크립트·브라우저에서도 읽어야 해서).
+// 기존 import 경로를 깨지 않도록 여기서 다시 내보낸다.
+export { daysUntilExpiry, isActivePass, passDays, isExpiringSoon, passLabel } from './subscriptionDisplay'
+
 export type Subscription = {
   id: string
   user_id: string
@@ -23,14 +27,4 @@ export async function getActiveSubscription(userId: string): Promise<Subscriptio
     .limit(1)
     .maybeSingle()
   return data
-}
-
-export function daysUntilExpiry(expiresAt: string): number {
-  const diff = new Date(expiresAt).getTime() - Date.now()
-  return Math.ceil(diff / (1000 * 60 * 60 * 24))
-}
-
-/** 결제 건이 현재 시점 기준 유효(이용 중)한지 — 서버 컴포넌트 렌더에서 Date.now() 직접 호출을 피하려고 lib에 캡슐화 */
-export function isActivePass(status: string, expiresAt: string): boolean {
-  return status === 'active' && new Date(expiresAt).getTime() >= Date.now()
 }

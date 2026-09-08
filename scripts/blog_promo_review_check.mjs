@@ -19,6 +19,7 @@ import {
   checkBlogHtml,
   isLikelyBlogPostUrl,
   MAX_REWARDS,
+  REWARD_DAYS,
   MIN_IMAGES,
   MIN_CHARS,
   TITLE_KEYWORDS,
@@ -214,6 +215,34 @@ else bad('글자수 기준', charCheck ? charCheck.detail : '기준 자체가 �
 if (!isLikelyBlogPostUrl('https://blog.naver.com') && isLikelyBlogPostUrl('https://blog.naver.com/me/123')) {
   ok('블로그 첫 화면은 글 주소로 안 본다')
 } else bad('주소 판정', '첫 화면과 글 주소를 구분 못 한다')
+
+// ── 받은 뒤 화면이 사실을 말하는가 ─────────────────────────────────────────
+// 2026-09-08 진짜 글로 한 바퀴 돌려 보니(운영자 지시 "직접 돌려봐") 지급은 정확한데 화면이 둘 다 틀렸다.
+// ①결제 내역이 7일짜리 후기 이용권을 "AI 채점 30일 이용권"이라 불렀다 ②받는 순간 "7일 뒤 만료 · 연장하세요"가 떴다.
+{
+  const { passDays, passLabel, isExpiringSoon } = await import('../src/lib/subscriptionDisplay.ts')
+  // totalDays 짜리 이용권이 leftDays 남은 상태(기본은 막 받은 상태).
+  const mk = (totalDays, key, amount, leftDays = totalDays) => ({
+    payment_key: key, amount,
+    started_at: new Date(Date.now() - (totalDays - leftDays) * 86400_000 - 1000).toISOString(),
+    expires_at: new Date(Date.now() + leftDays * 86400_000).toISOString(),
+  })
+  const review = mk(REWARD_DAYS, 'promo:blog-review', 0)
+  const paid = mk(30, 'toss-xxx', 5500)
+
+  if (passDays(review.started_at, review.expires_at) === REWARD_DAYS) ok(`후기 이용권 기간을 ${REWARD_DAYS}일로 센다`)
+  else bad('기간 계산', String(passDays(review.started_at, review.expires_at)))
+  if (passLabel(review).includes(`${REWARD_DAYS}일`) && !passLabel(review).includes('30일')) ok('후기 이용권 이름에 실제 기간이 들어간다', passLabel(review))
+  else bad('이용권 이름', `${passLabel(review)} — 7일짜리를 30일이라 부르면 안 된다`)
+  if (passLabel(paid).includes('30일')) ok('결제 이용권은 그대로 30일로 표시', passLabel(paid))
+  else bad('결제 이용권 이름', passLabel(paid))
+  if (!isExpiringSoon(review)) ok('갓 받은 후기 이용권은 만료 임박이 아니다')
+  else bad('만료 임박 판정', '받자마자 연장하라고 뜬다')
+  if (isExpiringSoon(mk(REWARD_DAYS, 'promo:blog-review', 0, 1))) ok('후기 이용권도 하루 남으면 임박으로 본다')
+  else bad('만료 임박 판정', '정말 임박한데 안 뜬다')
+  if (!isExpiringSoon(paid) && isExpiringSoon(mk(30, 'toss-xxx', 5500, 5))) ok('30일권은 남은 5일에 임박으로 본다')
+  else bad('만료 임박 판정(결제)', '30일권 기준이 어긋난다')
+}
 
 // ── 선착순 한도 ───────────────────────────────────────────────────────────
 // 답례는 공짜가 아니다. 자동 지급과 관리자 승인이 **같은 자리**를 써야 한다 —
