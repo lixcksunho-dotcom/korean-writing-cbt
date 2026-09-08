@@ -389,9 +389,11 @@ export default async function DashboardPage() {
         ))}
       </div>
 
-      {/* AI 예상 점수 (유료 핵심) */}
-      {completedSessions.length > 0 && (
-        sub ? (
+      {/* AI 예상 점수 (유료 핵심) — 기록이 없어도 칸을 비우지 않는다.
+          예전엔 완료한 회차가 있어야만 떠서, 가입만 하고 아직 안 푼 회원(144명 중 81명)에게는
+          이 기능이 있다는 신호조차 없었다(2026-09-08 실측). */}
+      {sub ? (
+        completedSessions.length > 0 ? (
           <div className="bg-white rounded-2xl border border-[#e2e8f0] shadow-[0_4px_16px_rgba(15,31,61,0.06)] p-5 sm:p-6 mb-8">
             <div className="flex items-center gap-2 mb-1">
               <Gauge className="h-5 w-5 text-[#1e3a5f]" />
@@ -427,13 +429,29 @@ export default async function DashboardPage() {
             )}
           </div>
         ) : (
-          <Link href="/subscribe" className="group block relative overflow-hidden rounded-2xl border border-[#e2e8f0] shadow-[0_4px_16px_rgba(15,31,61,0.06)] p-5 sm:p-6 mb-8 bg-white">
+          <Link href="/cbt" className="group block rounded-2xl border border-[#e2e8f0] shadow-[0_4px_16px_rgba(15,31,61,0.06)] hover:border-[#1e3a5f]/30 transition-colors p-5 sm:p-6 mb-8 bg-white">
             <div className="flex items-center gap-2 mb-1">
               <Gauge className="h-5 w-5 text-[#1e3a5f]" />
               <h2 className="text-base font-bold text-[#0f172a]">AI 예상 점수</h2>
-              <span className="text-xs font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">구독 전용</span>
+              <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">이용권 사용 중</span>
             </div>
-            <p className="text-xs text-[#64748b] mb-4">서술형까지 AI가 채점해, 지금 실력이면 <b className="text-[#1e3a5f]">실제 시험에서 몇 점·몇 등급</b>일지 알려줘요.</p>
+            <p className="text-xs text-[#64748b] mb-4">
+              모의고사를 <b className="text-[#1e3a5f]">한 회만</b> 풀면 지금 실력이 실제 시험에서 몇 점·몇 등급일지 알려드려요.
+            </p>
+            <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#1e3a5f] text-white text-xs font-black">
+              모의고사 쳐보기 <ChevronRight className="h-3.5 w-3.5" />
+            </span>
+          </Link>
+        )
+      ) : (
+        <Link href="/subscribe" className="group block relative overflow-hidden rounded-2xl border border-[#e2e8f0] shadow-[0_4px_16px_rgba(15,31,61,0.06)] p-5 sm:p-6 mb-8 bg-white">
+          <div className="flex items-center gap-2 mb-1">
+            <Gauge className="h-5 w-5 text-[#1e3a5f]" />
+            <h2 className="text-base font-bold text-[#0f172a]">AI 예상 점수</h2>
+            <span className="text-xs font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">구독 전용</span>
+          </div>
+          <p className="text-xs text-[#64748b] mb-4">서술형까지 AI가 채점해, 지금 실력이면 <b className="text-[#1e3a5f]">실제 시험에서 몇 점·몇 등급</b>일지 알려줘요.</p>
+          {predicted != null ? (
             <div className="relative">
               <div className="blur-[5px] select-none pointer-events-none" aria-hidden>
                 <div className="text-4xl font-black text-[#0f172a] mb-3">{Math.floor(previewScore / 100)}●● <span className="text-lg text-[#64748b]">점 · 등급 ●●</span></div>
@@ -444,8 +462,13 @@ export default async function DashboardPage() {
                 <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-400 text-[#1e3a5f] text-xs font-black">구독하고 예상 점수 확인 <ChevronRight className="h-3.5 w-3.5" /></span>
               </div>
             </div>
-          </Link>
-        )
+          ) : (
+            /* 아직 푼 기록이 없으면 흐리게 가릴 숫자 자체가 없다 — 가짜 점수 대신 안내만. */
+            <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-400 text-[#1e3a5f] text-xs font-black">
+              <Lock className="h-3.5 w-3.5" /> 구독하고 내 점수 예측해보기 <ChevronRight className="h-3.5 w-3.5" />
+            </span>
+          )}
+        </Link>
       )}
 
       {/* 학습 리포트 진입 (기록 있을 때) */}
