@@ -31,6 +31,7 @@
     "check:report": "node scripts/report_check.mjs",
     "check:admin": "node scripts/admin_ui_check.mjs",
     "check:account": "node --experimental-strip-types --no-warnings scripts/account_delete_check.mjs",
+    "check:dropoff": "node --experimental-strip-types --no-warnings scripts/exam_dropoff_check.mjs",
     "check:score": "node --experimental-strip-types --no-warnings scripts/predicted_score_accuracy_check.mjs",
     "check:predicted": "node --experimental-strip-types --no-warnings scripts/predicted_score_check.mjs",
     "check:limit-dialog": "node --experimental-strip-types --no-warnings scripts/daily_limit_dialog_check.mjs",
