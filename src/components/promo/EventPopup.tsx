@@ -242,8 +242,8 @@ export default function EventPopup({
           <p className="mt-3 text-center text-xs leading-relaxed text-[#475569]">
             선착순 {MAX_REWARDS}명 · 계정당 1회 · 대가를 받고 쓰는 글이므로 광고 표시가 필요합니다.
             <br />
-            받은 뒤 {REWARD_DAYS}일 동안 글이 공개돼 있어야 하고, 내리면 남은 기간이 멈춰요
-            (다시 공개하면 되살아납니다).
+            받은 뒤 {REWARD_DAYS}일 동안 글이 공개돼 있어야 하고, 내리면 그때부터 못 씁니다
+            (다시 공개하면 되살아나지만, 만료일은 그대로예요).
           </p>
         </div>
 
