@@ -2,7 +2,7 @@
 
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getActiveSubscription } from '@/lib/subscription'
-import { REWARD_DAYS, BLOG_REVIEW_PATH } from '@/lib/blogPromoRules'
+import { REWARD_DAYS, BLOG_REVIEW_PATH, GRANT_KEY, GRANT_KEY_VIOLATED, GRANT_KEY_REVOKED, GRANT_KEY_RESTORED } from '@/lib/blogPromoRules'
 import { blogRewardQuota } from '@/lib/blogRewardQuota'
 import { revalidatePath } from 'next/cache'
 
@@ -38,7 +38,7 @@ export async function approveBlogReview(feedbackId: string): Promise<ApproveResu
 
   const { error } = await admin.from('subscriptions').insert({
     user_id: row.user_id,
-    payment_key: 'promo:blog-review',
+    payment_key: GRANT_KEY,
     // 신청 한 건당 한 번만 지급된다 — order_id의 unique 제약이 중복 승인을 막는다.
     order_id: `review-${row.id}`,
     amount: 0,
@@ -79,7 +79,7 @@ export async function revokeBlogReview(feedbackId: string): Promise<{ ok: boolea
   const admin = createAdminClient()
   const { data, error } = await admin
     .from('subscriptions')
-    .update({ status: 'cancelled', payment_key: 'promo:blog-review:revoked' })
+    .update({ status: 'cancelled', payment_key: GRANT_KEY_REVOKED })
     .eq('order_id', `review-${feedbackId}`)
     .eq('status', 'active')
     .select('id')
@@ -108,7 +108,7 @@ export async function revokeAutoGrant(userId: string): Promise<{ ok: boolean; me
   const admin = createAdminClient()
   const { data, error } = await admin
     .from('subscriptions')
-    .update({ status: 'cancelled', payment_key: 'promo:blog-review:revoked' })
+    .update({ status: 'cancelled', payment_key: GRANT_KEY_REVOKED })
     .eq('order_id', `review-auto-${userId}`)
     .eq('status', 'active')
     .select('id')
@@ -116,4 +116,32 @@ export async function revokeAutoGrant(userId: string): Promise<{ ok: boolean; me
   if (!data?.length) return { ok: false, message: '되돌릴 자동 지급이 없습니다.' }
   revalidatePath('/admin/promo-reviews')
   return { ok: true, message: '자동 지급분을 회수했습니다.' }
+}
+
+
+/**
+ * 회수했던 이용권을 사람이 되살린다.
+ *
+ * 왜 사람이 하는가: 기간 안에 글을 내리면 자동으로는 다시 살아나지 않는다(그래야 '내렸다
+ * 올리기'가 통하지 않는다). 그러면 실수로 잠깐 내린 사람은 길이 막히므로, 확인한 뒤
+ * 여기서 풀어 준다. 되살린 뒤에는 표시를 남겨 둔다 — 위반이 있었다는 사실까지 지우면
+ * 다음에 같은 일이 생겨도 아무도 모른다.
+ *
+ * 남은 기간이 이미 지난 것은 되살리지 않는다 — 되살려도 쓸 수 없는 이용권이다.
+ */
+export async function restoreBlogReview(feedbackId: string, userId: string | null): Promise<{ ok: boolean; message: string }> {
+  const admin = createAdminClient()
+  const orderIds = [`review-${feedbackId}`, ...(userId ? [`review-auto-${userId}`] : [])]
+  const { data, error } = await admin
+    .from('subscriptions')
+    .update({ status: 'active', payment_key: GRANT_KEY_RESTORED })
+    .in('order_id', orderIds)
+    .eq('status', 'cancelled')
+    .in('payment_key', [GRANT_KEY_VIOLATED, GRANT_KEY_REVOKED])
+    .gt('expires_at', new Date().toISOString())
+    .select('id')
+  if (error) return { ok: false, message: `되살리기 실패: ${error.message}` }
+  if (!data?.length) return { ok: false, message: '되살릴 것이 없습니다(남은 기간이 이미 지났거나 회수된 적이 없습니다).' }
+  revalidatePath('/admin/promo-reviews')
+  return { ok: true, message: `이용권을 되살렸습니다. 이 계정의 이벤트 차단도 풀렸습니다.` }
 }

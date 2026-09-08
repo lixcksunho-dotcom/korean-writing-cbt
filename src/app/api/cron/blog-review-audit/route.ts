@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { recordOperatorAlert } from '@/lib/operatorAlerts'
-import { BLOG_REVIEW_PATH, DISCLOSURE_RULE, checkBlogHtml } from '@/lib/blogPromoRules'
+import { BLOG_REVIEW_PATH, DISCLOSURE_RULE, GRANT_KEY_VIOLATED, checkBlogHtml } from '@/lib/blogPromoRules'
 import { fetchBlogPost, countPhotos, countBodyChars } from '@/lib/blogPromoFetch'
 
 export const dynamic = 'force-dynamic'
@@ -24,11 +24,15 @@ function unauthorized(req: Request): boolean {
   return (req.headers.get('authorization') ?? '') !== `Bearer ${secret}`
 }
 
-type AuditState = 'ok' | 'revoked' | 'restored' | 'unreadable' | 'changed'
+type AuditState = 'ok' | 'revoked' | 'unreadable' | 'changed'
 type AuditRow = { id: string; url: string; state: AuditState; detail: string }
 
 /**
  * 그 신청으로 나간 이용권의 효력을 끊는다.
+ *
+ * 기간 안에 내린 것은 한 번으로 끝이다 — 다시 공개해도 자동으로 살아나지 않고, 그 계정은
+ * 이 이벤트에 다시 신청할 수 없다(운영자 결정 2026-09-08). 받고 내리기를 되풀이하면
+ * 홍보는 안 남고 이용권만 계속 나가기 때문이다. 실수는 관리자 화면에서 사람이 푼다.
  *
  * 행을 지우지 않고 status만 바꾼다 — 지우면 '왜 없어졌는지'가 사라져 항의가 왔을 때
  * 아무것도 못 밝힌다. status는 DB CHECK가 'active'|'cancelled'만 허용하므로 값은
@@ -43,33 +47,9 @@ async function revokeGrants(
   const orderIds = [`review-${feedbackId}`, ...(userId ? [`review-auto-${userId}`] : [])]
   const { data } = await admin
     .from('subscriptions')
-    .update({ status: 'cancelled', payment_key: 'promo:blog-review:revoked' })
+    .update({ status: 'cancelled', payment_key: GRANT_KEY_VIOLATED })
     .in('order_id', orderIds)
     .eq('status', 'active')
-    .select('id')
-  return data?.length ?? 0
-}
-
-/**
- * 글을 다시 공개했으면 이용권을 되살린다.
- *
- * 회수만 하고 되살리지 않으면, 실수로 잠깐 비공개했던 사람은 영영 못 돌려받고
- * 우리에게 항의해야 한다. 남은 기간(expires_at)은 늘리지 않는다 — 글이 내려가 있던
- * 동안의 날짜는 이미 지나갔고, 그걸 채워 주면 내려도 손해가 없어진다.
- */
-async function restoreGrants(
-  admin: ReturnType<typeof createAdminClient>,
-  feedbackId: string,
-  userId: string | null,
-): Promise<number> {
-  const orderIds = [`review-${feedbackId}`, ...(userId ? [`review-auto-${userId}`] : [])]
-  const { data } = await admin
-    .from('subscriptions')
-    .update({ status: 'active', payment_key: 'promo:blog-review' })
-    .in('order_id', orderIds)
-    .eq('status', 'cancelled')
-    .eq('payment_key', 'promo:blog-review:revoked')
-    .gt('expires_at', new Date().toISOString())
     .select('id')
   return data?.length ?? 0
 }
@@ -171,36 +151,29 @@ export async function GET(req: Request) {
       continue
     }
 
-    // 조건을 그대로 지키고 있다 — 앞서 회수했던 것이면 되살린다.
-    const back = await restoreGrants(admin, r.id, r.user_id)
-    results.push({
-      id: r.id,
-      url,
-      state: back > 0 ? 'restored' : 'ok',
-      detail: back > 0 ? '다시 공개돼 이용권을 되살렸습니다' : '조건 유지',
-    })
+    // 조건을 지키고 있다. 앞서 회수된 것은 여기서 되살리지 않는다 — 기간 안에 내린 것은
+    // 한 번으로 끝이고(운영자 결정 2026-09-08), 실수는 관리자 화면에서 사람이 되살린다.
+    results.push({ id: r.id, url, state: 'ok', detail: '조건 유지' })
   }
 
-  const restored = results.filter(r => r.state === 'restored')
   const revoked = results.filter(r => r.state === 'revoked')
   const gone = results.filter(r => r.state === 'unreadable')
   const changed = results.filter(r => r.state === 'changed')
 
-  if (revoked.length || restored.length || gone.length || changed.length) {
+  if (revoked.length || gone.length || changed.length) {
     await recordOperatorAlert(
       'feedback',
-      `블로그 홍보 사후 확인 — 회수 ${revoked.length}건 · 되살림 ${restored.length}건 · ` +
+      `블로그 홍보 사후 확인 — 회수 ${revoked.length}건 · ` +
         `못 읽음 ${gone.length}건 · 조건 어긋남 ${changed.length}건\n` +
-        [...revoked, ...restored, ...gone, ...changed].slice(0, 10)
+        [...revoked, ...gone, ...changed].slice(0, 10)
           .map(r => `· ${r.url}\n  ${r.detail}`).join('\n'),
     ).catch(() => {})
   }
 
   return NextResponse.json({
     checked: results.length,
-    ok: results.length - revoked.length - restored.length - gone.length - changed.length,
+    ok: results.length - revoked.length - gone.length - changed.length,
     revoked: revoked.length,
-    restored: restored.length,
     unreadable: gone.length,
     changed: changed.length,
     items: results,

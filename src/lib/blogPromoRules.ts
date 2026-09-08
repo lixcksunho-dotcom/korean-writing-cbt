@@ -35,6 +35,26 @@ export const REWARD_DAYS = 7
  *  우리에게도 글쓴이에게도 남는 것이 거의 없다(운영자 지시 2026-09-08). */
 export const RECOMMENDED_KEEP_DAYS = 30
 
+// ── 지급한 이용권의 상태 표시 ─────────────────────────────────────────────
+// subscriptions.status 는 DB CHECK 로 'active'|'cancelled' 둘뿐이다(004_subscriptions).
+// '왜 꺼졌는가'는 payment_key 에 적는다 — 결제 취소와 구분되어야 한다.
+
+/** 정상 지급 */
+export const GRANT_KEY = 'promo:blog-review'
+/** 기간 안에 글을 내렸거나 광고 표시를 지워서 회수한 것.
+ *  되돌아오지 않는다 — 다시 공개해도 자동으로 살아나지 않고, 이 표시가 있는 계정은
+ *  이 이벤트에 다시 신청할 수 없다(운영자 결정 2026-09-08). 실수는 사람이 푼다. */
+export const GRANT_KEY_VIOLATED = 'promo:blog-review:violated'
+/** 관리자가 손으로 회수한 것 */
+export const GRANT_KEY_REVOKED = 'promo:blog-review:revoked'
+/** 관리자가 되살린 것. 위반했던 사실은 남기고 효력만 돌려준다 */
+export const GRANT_KEY_RESTORED = 'promo:blog-review:restored'
+
+/** 막힌 사람에게 보여 줄 말. 왜 막혔는지와 풀 길을 함께 알려 준다 —
+ *  이유 없이 '신청할 수 없습니다'만 뜨면 고장으로 읽힌다. */
+export const BLOG_EVENT_BAN_MESSAGE =
+  `이 이벤트에는 다시 신청하실 수 없어요. 앞서 받으신 이용권 기간(${REWARD_DAYS}일) 안에 글이 내려가 이용권이 회수됐습니다. 실수였다면 고객센터로 알려 주세요 — 확인 후 풀어 드립니다.`
+
 /**
  * 첫 화면 이벤트 팝업을 띄울지.
  *

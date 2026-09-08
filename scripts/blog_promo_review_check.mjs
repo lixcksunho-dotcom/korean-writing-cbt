@@ -432,6 +432,25 @@ try {
     else bad('회수 실효', `아직 활성 ${active.length}건`)
   }
 
+
+  // ── 회수된 사람은 다시 못 받는다 ──────────────────────────────────────────
+  // 회수만 하고 안 막으면 같은 사람이 다음 날 또 신청해서 또 받아 간다 — 받고 내리기를
+  // 되풀이하면 홍보는 안 남고 이용권만 계속 나간다(운영자 결정 2026-09-08).
+  {
+    await api(`/rest/v1/subscriptions?order_id=eq.${orderId}`, {
+      method: 'PATCH', body: JSON.stringify({ payment_key: 'promo:blog-review:violated' }),
+    })
+    await page.goto(`${BASE}${EVENT_PATH}`, { waitUntil: 'networkidle' })
+    await page.waitForTimeout(1000)
+    await openPromoBox(page)
+    await page.fill('#blog-url', `https://example.com/promo-check-${stamp}-again`)
+    await page.locator('form:has(#blog-url) button[type="submit"]').click()
+    await page.waitForTimeout(5000)
+    const banned = await page.evaluate(() => /다시 신청하실 수 없어요/.test(document.body.innerText))
+    const rows = await (await api(`/rest/v1/feedback?user_id=eq.${uid}&path=eq.${encodeURIComponent(REVIEW_PATH)}&select=id`)).json()
+    if (banned && rows.length === 1) ok('회수된 계정은 다시 신청하지 못한다', '접수도 안 남는다')
+    else bad('재신청 차단', `안내 ${banned} · 접수 ${rows.length}건`)
+  }
   await ctx.close()
 } catch (e) {
   bad('실행', String(e?.message ?? e).slice(0, 300))

@@ -5,6 +5,8 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { recordOperatorAlert } from '@/lib/operatorAlerts'
 import {
   BLOG_REVIEW_PATH,
+  BLOG_EVENT_BAN_MESSAGE,
+  GRANT_KEY,
   REWARD_DAYS,
   checkBlogHtml,
   isLikelyBlogPostUrl,
@@ -14,6 +16,7 @@ import {
 import { fetchBlogPost, countPhotos, countBodyChars } from '@/lib/blogPromoFetch'
 import { getActiveSubscription } from '@/lib/subscription'
 import { blogRewardQuota } from '@/lib/blogRewardQuota'
+import { isBannedFromBlogEvent } from '@/lib/blogEventBan'
 
 export type SubmitResult =
   | { ok: true; autoPassed: boolean; granted: boolean; checks: RuleCheck[]; note: string }
@@ -24,6 +27,10 @@ export async function submitBlogReview(url: string): Promise<SubmitResult> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { ok: false, message: '로그인한 뒤에 신청해 주세요.' }
+
+  // 기간 안에 글을 내려 회수된 적이 있으면 다시 받지 않는다. 주소를 확인하기 전에 막는다 —
+  // 글을 다 쓰고 넣은 뒤에 '안 됩니다'가 뜨면 그 사람은 헛수고를 한 것이 된다.
+  if (await isBannedFromBlogEvent(user.id)) return { ok: false, message: BLOG_EVENT_BAN_MESSAGE }
 
   const link = (url ?? '').trim()
   if (!isLikelyBlogPostUrl(link)) {
@@ -91,7 +98,7 @@ export async function submitBlogReview(url: string): Promise<SubmitResult> {
     const expiresAt = new Date(base.getTime() + REWARD_DAYS * 24 * 60 * 60 * 1000).toISOString()
     const { error: grantErr } = await admin.from('subscriptions').insert({
       user_id: user.id,
-      payment_key: 'promo:blog-review',
+      payment_key: GRANT_KEY,
       // 사람마다 한 번만 자동 지급된다 — 여러 글을 써도 자동 지급은 1회.
       order_id: `review-auto-${user.id}`,
       amount: 0,

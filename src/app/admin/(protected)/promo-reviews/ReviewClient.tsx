@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { approveBlogReview, rejectBlogReview, revokeBlogReview, revokeAutoGrant } from './actions'
+import { approveBlogReview, rejectBlogReview, revokeBlogReview, revokeAutoGrant, restoreBlogReview } from './actions'
 
 export type ReviewRow = {
   id: string
@@ -35,6 +35,20 @@ function Actions({ row }: { row: ReviewRow }) {
             className="rounded-md border border-red-300 px-2.5 py-1 text-xs font-bold text-red-700 hover:bg-red-50 disabled:opacity-50"
           >
             {pending ? '…' : '이용권 회수'}
+          </button>
+        )}
+        {row.granted && (
+          // 기간 안에 내린 것은 자동으로 살아나지 않는다(그래야 '내렸다 올리기'가 안 통한다).
+          // 실수로 잠깐 내린 사람을 푸는 자리 — 글을 직접 열어 확인하고 누른다.
+          <button
+            disabled={pending}
+            onClick={() => start(async () => {
+              const r = await restoreBlogReview(row.id, row.user_id)
+              setMsg(r.message)
+            })}
+            className="rounded-md border border-emerald-300 px-2.5 py-1 text-xs font-bold text-emerald-700 hover:bg-emerald-50 disabled:opacity-50"
+          >
+            {pending ? '…' : '되살리기'}
           </button>
         )}
         {msg && <span className="text-xs text-gray-600">{msg}</span>}

@@ -242,8 +242,8 @@ export default function EventPopup({
           <p className="mt-3 text-center text-xs leading-relaxed text-[#475569]">
             선착순 {MAX_REWARDS}명 · 계정당 1회 · 대가를 받고 쓰는 글이므로 광고 표시가 필요합니다.
             <br />
-            받은 뒤 {REWARD_DAYS}일 동안 글이 공개돼 있어야 하고, 내리면 그때부터 못 씁니다
-            (다시 공개하면 되살아나지만, 만료일은 그대로예요).
+            받은 뒤 {REWARD_DAYS}일 동안 글이 공개돼 있어야 해요. 그 안에 내리면 이용권을 회수하고
+            다시 신청하실 수 없어요(실수라면 고객센터로 알려 주세요).
             <br />
             되도록 {RECOMMENDED_KEEP_DAYS}일은 그대로 둬 주세요(부탁이고, 의무는 아니에요).
           </p>

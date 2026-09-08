@@ -1,8 +1,8 @@
-// 글을 내리면 이용권이 꺼지고, 다시 올리면 켜지는지 본다.
+// 기간 안에 글을 내리면 이용권이 회수되고, 그 계정이 다시 신청하지 못하는지 본다.
 //   npm run check:audit-revoke
 //
 // 왜 필요한가: 이용권을 받고 글을 비공개로 돌리면 홍보는 사라지고 이용권만 남는다.
-// 반대로 실수로 잠깐 내렸다가 되돌린 사람의 이용권을 영영 안 돌려주면 그것도 사고다.
+// 반대로 실수로 잠깐 내린 사람을 풀어 줄 길이 아예 없으면 그것도 사고다 — 사람이 되살리는 자리가 있어야 한다.
 // 둘 다 조용히 일어나므로 사람이 눈치채지 못한다.
 //
 // 검사가 만든 계정·신청·발급만 지운다.
@@ -49,10 +49,20 @@ if (route.includes('if (!fetched.blocked)')) ok('그냥 못 읽은 것은 회수
 else bad('일시 오류 처리', '못 읽으면 바로 회수한다')
 if ((route.match(/await fetchBlogPost\(url\)/g) ?? []).length >= 2) ok('회수 전에 한 번 더 확인한다')
 else bad('재확인', '한 번 보고 회수한다')
-if (route.includes('restoreGrants')) ok('다시 공개하면 되살린다')
-else bad('되살리기', '회수만 하고 안 되살린다')
-if (route.includes("gt('expires_at'")) ok('이미 끝난 이용권은 되살리지 않는다')
+// 기간 안에 내린 것은 한 번으로 끝이다 — 자동 복구가 있으면 '내렸다 올리기'가 그대로 통한다.
+if (!route.includes('restoreGrants')) ok('다시 공개해도 자동으로는 안 되살린다')
+else bad('자동 복구', '내렸다 다시 올리면 그냥 살아난다')
+if (route.includes('GRANT_KEY_VIOLATED')) ok('회수에 위반 표시를 남긴다', '이 표시로 재신청을 막는다')
+else bad('위반 표시', '그냥 회수만 하고 표시를 안 남긴다')
+const adminAct = fs.readFileSync('src/app/admin/(protected)/promo-reviews/actions.ts', 'utf8')
+if (adminAct.includes('restoreBlogReview')) ok('사람이 되살릴 길은 있다', '실수로 잠깐 내린 사람 구제')
+else bad('구제 창구', '자동도 없고 사람도 못 되살린다')
+if (/restoreBlogReview[\s\S]*gt\('expires_at'/.test(adminAct)) ok('이미 끝난 이용권은 되살리지 않는다')
 else bad('되살리기 범위', '지난 이용권도 되살린다')
+// 막힌 계정이 다시 신청하지 못하는가 — 회수만 하고 안 막으면 다음 날 또 받아 간다.
+const submitSrc = fs.readFileSync('src/app/(main)/subscribe/blog-review-actions.ts', 'utf8')
+if (submitSrc.includes('isBannedFromBlogEvent')) ok('회수된 계정은 다시 신청할 수 없다')
+else bad('재신청 차단', '회수해도 다음 날 또 받아 간다')
 
 // 어떤 주기로든 돌기는 하는가.
 // Vercel 무료 플랜은 하루 1회만 허용하므로, 여기 등록된 것은 '바닥선'이다
@@ -188,8 +198,9 @@ try {
 {
   const form = fs.readFileSync('src/components/subscribe/BlogReviewForm.tsx', 'utf8')
   const terms = [
-    ['글을 내리면 멈춘다는 말', /비공개로 돌리거나 지우면/],
-    ['다시 공개하면 되살아난다는 말', /다시 공개하면 되살아나요/],
+    ['글을 내리면 회수한다는 말', /비공개로 돌리거나 지우면/],
+    ['다시 신청할 수 없다는 말', /다시 신청하실 수 없어요/],
+    ['실수는 고객센터로 푼다는 말', /고객센터로 알려 주세요/],
     ['광고 표시를 지우면 멈춘다는 말', /광고 표시를 지우셔도/],
     ['기간이 지나면 자유라는 말', /지난 뒤에는 글을 어떻게 하셔도/],
     // 30일은 조건이 아니라 부탁이다. '부탁'이라고 안 적으면 읽는 사람은 30일 회수 조건으로 읽는다.
@@ -203,5 +214,5 @@ try {
   }
 }
 
-console.log(`\n${fail ? '사후 확인에 구멍이 있다.' : '내리면 꺼지고 올리면 켜진다.'}`)
+console.log(`\n${fail ? '사후 확인에 구멍이 있다.' : '내리면 회수되고, 실수는 사람이 푼다.'}`)
 process.exit(fail ? 1 : 0)
