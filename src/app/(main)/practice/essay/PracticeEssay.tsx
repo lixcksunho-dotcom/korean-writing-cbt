@@ -14,6 +14,8 @@ import { extractCircledLabels, insertAtTextareaCursor } from '@/lib/circledSymbo
 import type { EssayGrade } from '@/app/(main)/cbt/actions'
 import { readDraftRaw, parseDraft, saveDraft, clearDraft } from '@/lib/examDraft'
 import { gradingErrorText, isGradingError, SUBSCRIPTION_REQUIRED } from '@/lib/aiGradingMessage'
+import DailyLimitDialog from '@/components/grading/DailyLimitDialog'
+import { isDailyLimitMessage } from '@/lib/antiSharingLimits'
 
 // localStorage는 구독할 게 없다 — 마운트 시점 값만 필요하다.
 const noSubscribe = () => () => {}
@@ -169,8 +171,15 @@ export default function PracticeEssay({
     })
   }
 
+  // 문항별 오류 중 하루 한도가 하나라도 있으면 창 하나만 띄운다(문항마다 띄우면 겹친다).
+  const limitHit = Object.values(errors).some(isDailyLimitMessage)
+
   return (
     <div className="animate-fade-up">
+      <DailyLimitDialog
+        open={limitHit}
+        onClose={() => setErrors(e => Object.fromEntries(Object.entries(e).map(([k, v]) => [k, isDailyLimitMessage(v) ? '' : v])))}
+      />
       <div className="flex items-center justify-between mb-5 gap-2">
         <Link href={backHref} className="inline-flex items-center gap-1.5 py-3 text-sm text-[#64748b] hover:text-[#1e3a5f] min-w-0">
           <ArrowLeft className="h-4 w-4 shrink-0" /> <span className="truncate">{title}</span>

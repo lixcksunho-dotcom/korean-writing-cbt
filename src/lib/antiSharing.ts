@@ -1,6 +1,7 @@
 import { cookies } from 'next/headers'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { kstYmd } from '@/lib/examDday'
+import { DEVICE_LIMIT, DAILY_GRADE_LIMIT, dailyLimitMessage } from '@/lib/antiSharingLimits'
 
 // 계정 돌려쓰기(공유) 방지 — 유료 이용 시에만 적용.
 //  - 기기 수 제한: 한 계정이 사용할 수 있는 활성 기기는 최대 DEVICE_LIMIT 대
@@ -8,8 +9,8 @@ import { kstYmd } from '@/lib/examDday'
 // 위반 시 사람이 읽을 수 있는 한국어 사유를 '돌려준다'(던지지 않는다).
 // 던지면 Next.js 운영 빌드가 message를 지워서, 기기 한도에 걸린 사람이 이유를 모른 채
 // "오류가 발생했습니다"만 보고 무한히 다시 누르게 된다.
-export const DEVICE_LIMIT = 3
-export const DAILY_GRADE_LIMIT = 30
+// 값은 antiSharingLimits.ts(브라우저에서도 읽는 순수 파일)에 있고 여기서 다시 내보낸다.
+export { DEVICE_LIMIT, DAILY_GRADE_LIMIT }
 // 기기 한도 계산 시 '최근 활동'만 센다(일수). 쿠키를 지워 생긴 옛 기기ID는 이 기간이 지나면
 // 한도에서 빠져, 정상 이용자가 오래전 기기 때문에 잠기는 오탐을 막는다.
 // (계정 공유는 여러 기기가 '동시에' 최근 활동하므로 이 필터로도 여전히 걸린다.)
@@ -80,7 +81,7 @@ export async function paidUsageBlock(userId: string): Promise<string | null> {
     .maybeSingle()
   const used = (row?.grade_count as number | undefined) ?? 0
   if (used >= DAILY_GRADE_LIMIT) {
-    return `오늘 AI 첨삭 한도(${DAILY_GRADE_LIMIT}회)를 모두 사용했어요. 이용권 기간 중 매일 ${DAILY_GRADE_LIMIT}회까지 받을 수 있고, 한국 시간 자정에 다시 열려요.`
+    return dailyLimitMessage()
   }
 
   return null

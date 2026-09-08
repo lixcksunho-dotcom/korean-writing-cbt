@@ -7,6 +7,8 @@ import { gradeExamEssay, type EssayGrade } from '@/app/(main)/cbt/actions'
 import { useAiTrial } from '@/components/cbt/AiTrialContext'
 import { gradingErrorText, isGradingError } from '@/lib/aiGradingMessage'
 import AiEstimateNotice from '@/components/grading/AiEstimateNotice'
+import DailyLimitDialog from '@/components/grading/DailyLimitDialog'
+import { isDailyLimitMessage } from '@/lib/antiSharingLimits'
 
 export default function EssayGrader({
   sessionId,
@@ -138,6 +140,8 @@ export default function EssayGrader({
       {error && error !== 'SUBSCRIPTION_REQUIRED' && (
         <p className="text-xs text-red-600 text-center mt-2">{error}</p>
       )}
+      {/* 하루 한도는 한 줄로는 설명이 안 된다 — 이유·풀리는 시각·출구를 창으로 */}
+      <DailyLimitDialog open={isDailyLimitMessage(error)} onClose={() => setError('')} />
     </div>
   )
 }
