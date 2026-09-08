@@ -3,6 +3,8 @@ import { REVOKED } from '@/lib/subscriptionRevocationPolicy'
 import { summarizeRenewals } from '@/lib/subscriptionRenewal'
 
 export { EXPIRING_WINDOW_DAYS, EXPIRED_WINDOW_DAYS } from '@/lib/subscriptionRenewal'
+import { botVisitorIds, isTestAccountEmail, summarizeTodayPulse, LIVE_WINDOW_MIN, type TodayPulse } from '@/lib/todayPulse'
+export { LIVE_WINDOW_MIN }
 
 // 매일 아침 보내는 '신규 구독 유입' 보고의 계산부. 전송·그림과 분리해 둔다 —
 // 숫자가 맞는지는 화면 없이도 확인할 수 있어야 한다(npm run report:subs).
@@ -16,7 +18,7 @@ export function kstDay(iso: string | number | Date): string {
 }
 
 /** 검사 스크립트가 만든 계정 — 지표에서 뺀다. */
-const TEST_EMAIL = /^(uicheck|kbscheck|admincheck)\+/
+// 검사 계정 판정은 todayPulse 의 isTestAccountEmail 하나만 쓴다(둘로 두면 언젠가 갈린다).
 
 /**
  * 이 날부터 방문 기록이 깨끗하다. 트래커가 navigator.webdriver를 보고 검사 트래픽을
@@ -53,6 +55,8 @@ export type SubscriberReport = {
   subscribeView7: number
   paymentStart7: number
   signup7: number
+  /** 오늘(한국 날짜) 가입·방문자·지금 보고 있는 사람 */
+  today: TodayPulse
   /** 7일 안에 이용권이 끝나는 사람 수 — 아직 붙잡을 수 있는 사람 */
   expiringSoon: number
   /** 최근 30일 안에 끝났는데 다시 안 산 사람 수 */
@@ -92,8 +96,13 @@ export async function buildSubscriberReport(now = Date.now()): Promise<Subscribe
   // 테스트 계정을 빼려면 이메일이 필요한데 subscriptions에는 없다 → 계정 목록에서 걸러 낸다.
   const { data: userList } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 })
   const testIds = new Set(
-    (userList?.users ?? []).filter((u) => TEST_EMAIL.test(u.email ?? '')).map((u) => u.id),
+    (userList?.users ?? []).filter((u) => isTestAccountEmail(u.email)).map((u) => u.id),
   )
+
+  // 오늘 가입 수는 사건 기록(#event/signup)이 아니라 계정 자체에서 센다 — 기록이 빠져도 사람은 남는다.
+  const signupTimes = (userList?.users ?? [])
+    .filter((u) => !isTestAccountEmail(u.email))
+    .map((u) => u.created_at)
 
   const { data: subsRaw } = await admin
     .from('subscriptions')
@@ -122,23 +131,8 @@ export async function buildSubscriberReport(now = Date.now()): Promise<Subscribe
     if (batch.length < 1000) break
   }
 
-  // 검사 스크립트가 남긴 방문자는 뺀다 — 기준은 npm run funnel과 같다(90초에 화면 8개).
-  const byVisitor = new Map<string, { t: number; path: string }[]>()
-  for (const v of views) {
-    if (v.path.startsWith('#event/')) continue
-    const id = v.visitor_id ?? '?'
-    if (!byVisitor.has(id)) byVisitor.set(id, [])
-    byVisitor.get(id)!.push({ t: new Date(v.created_at).getTime(), path: v.path })
-  }
-  const bots = new Set<string>()
-  for (const [id, items] of byVisitor) {
-    items.sort((a, b) => a.t - b.t)
-    for (let i = 0; i < items.length; i++) {
-      const paths = new Set<string>()
-      for (let j = i; j < items.length && items[j].t - items[i].t <= 90_000; j++) paths.add(items[j].path)
-      if (paths.size >= 8) { bots.add(id); break }
-    }
-  }
+  // 검사 스크립트가 남긴 방문자는 뺀다 — 규칙은 todayPulse 에 한 벌만 둔다(npm run funnel 과 같은 기준).
+  const bots = botVisitorIds(views)
   const human = views.filter((v) => !bots.has(v.visitor_id ?? '?'))
   const pageViews = human.filter((v) => !v.path.startsWith('#event/'))
 
@@ -183,6 +177,7 @@ export async function buildSubscriberReport(now = Date.now()): Promise<Subscribe
     subscribeView7: evUv('subscribe_view', d7),
     paymentStart7: evUv('payment_started', d7),
     signup7: evUv('signup', d7),
+    today: summarizeTodayPulse(views, signupTimes, now),
     ...summarizeRenewals(subs, now),
   }
 

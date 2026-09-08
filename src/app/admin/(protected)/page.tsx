@@ -8,10 +8,12 @@ import { isActivePass } from '@/lib/subscription'
 import { REVOKED } from '@/lib/subscriptionRevocationPolicy'
 import { checkAiKey } from '@/lib/aiKeyStatus'
 import { recentOperatorAlerts, alertChannelEnv } from '@/lib/operatorAlerts'
+import { summarizeTodayPulse, isTestAccountEmail, LIVE_WINDOW_MIN, PULSE_WINDOW_MS, type ViewRow } from '@/lib/todayPulse'
+import { fetchAllRows, listAllUsers } from '@/lib/adminPaging'
 import { describeAlertChannel } from '@/lib/alertChannel'
 import AlertChannelCard from './AlertChannelCard'
 import SubscriberTrend from '@/components/admin/SubscriberTrend'
-import { BookOpen, Star, CreditCard, Wallet, FileCheck2, PenLine, ChevronRight, BadgeCheck, Users, Flag, AlertTriangle, CheckCircle2 } from 'lucide-react'
+import { BookOpen, Star, CreditCard, Wallet, FileCheck2, PenLine, ChevronRight, BadgeCheck, Users, Flag, AlertTriangle, CheckCircle2, UserPlus, Eye } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
 
@@ -55,11 +57,31 @@ async function loadAiCost(revenue30: number) {
   )
 }
 
+/**
+ * 오늘 얼마나 들어왔는가 — 가입·방문자·지금 보고 있는 사람.
+ *
+ * 화면에는 '최근 7일'과 '누적'만 있어서, 글이나 이벤트를 올린 날 반응을 그날 볼 수 없었다
+ * (운영자 지시 2026-09-08). 하루 반나절치만 읽는다 — 한국 자정을 넘겨 잡되 70일치를 끌고
+ * 오지는 않는다. 봇 판정에 필요한 앞뒤 기록도 이 안에 들어온다.
+ */
+async function loadTodayPulse() {
+  const admin = createAdminClient()
+  const since = new Date(Date.now() - PULSE_WINDOW_MS).toISOString()
+  const [views, users] = await Promise.all([
+    fetchAllRows<ViewRow>((from, to) =>
+      admin.from('page_views').select('path, visitor_id, created_at')
+        .gte('created_at', since).order('created_at', { ascending: true }).range(from, to)),
+    listAllUsers(admin),
+  ])
+  const signups = users.filter(u => !isTestAccountEmail(u.email)).map(u => u.created_at)
+  return summarizeTodayPulse(views, signups)
+}
+
 export default async function AdminHome() {
   // 관리자 권한은 admin/layout.tsx에서 이미 검증됨. 통계는 service_role로 집계.
   const admin = createAdminClient()
 
-  const [alerts, sales, aiKey, qCount, reviewRows, subRows, examDone, manuscriptCount, reportRows] = await Promise.all([
+  const [alerts, sales, aiKey, qCount, reviewRows, subRows, examDone, manuscriptCount, reportRows, pulse] = await Promise.all([
     recentOperatorAlerts(),
     loadSales(),
     checkAiKey(),
@@ -71,6 +93,7 @@ export default async function AdminHome() {
     admin.from('quiz_sessions').select('*', { count: 'exact', head: true }).not('completed_at', 'is', null),
     admin.from('manuscript_submissions').select('*', { count: 'exact', head: true }),
     admin.from('question_reports').select('resolved'),
+    loadTodayPulse(),
   ])
   // 매출을 알아야 '매출 대비 몇 %'를 낼 수 있어서 묶음이 끝난 뒤에 잰다.
   const aiCost = await loadAiCost(sales.last30.amount)
@@ -113,6 +136,30 @@ export default async function AdminHome() {
       </div>
 
       <AlertChannelCard status={describeAlertChannel(alertChannelEnv())} />
+
+      {/* 오늘치는 맨 위에 둔다 — 어제까지의 누적보다 '지금 사람이 오고 있는가'가 먼저다. */}
+      <section className="mt-3 grid grid-cols-3 gap-3">
+        <div className="rounded-2xl border border-[#e2e8f0] bg-white p-4">
+          <div className="mb-1 flex items-center gap-1.5 text-xs font-semibold text-gray-500">
+            <UserPlus className="h-3.5 w-3.5" /> 오늘 가입
+          </div>
+          <p className="text-2xl font-black tabular-nums text-gray-900">{pulse.signups}<span className="text-sm font-bold text-gray-500">명</span></p>
+        </div>
+        <div className="rounded-2xl border border-[#e2e8f0] bg-white p-4">
+          <div className="mb-1 flex items-center gap-1.5 text-xs font-semibold text-gray-500">
+            <Users className="h-3.5 w-3.5" /> 오늘 방문자
+          </div>
+          <p className="text-2xl font-black tabular-nums text-gray-900">{pulse.visitors}<span className="text-sm font-bold text-gray-500">명</span></p>
+          <p className="mt-0.5 text-xs text-gray-500">같은 사람은 한 번</p>
+        </div>
+        <div className="rounded-2xl border border-[#e2e8f0] bg-white p-4">
+          <div className="mb-1 flex items-center gap-1.5 text-xs font-semibold text-gray-500">
+            <Eye className="h-3.5 w-3.5" /> 지금 보는 중
+          </div>
+          <p className={`text-2xl font-black tabular-nums ${pulse.now > 0 ? 'text-emerald-700' : 'text-gray-900'}`}>{pulse.now}<span className="text-sm font-bold text-gray-500">명</span></p>
+          <p className="mt-0.5 text-xs text-gray-500">최근 {LIVE_WINDOW_MIN}분</p>
+        </div>
+      </section>
 
       {/* 매출은 가장 먼저 보고 싶은 숫자다. 결제 화면에만 두면 한 번 더 눌러야 보인다.
           여기서는 숫자와 흐름만, 날짜별·주별 표는 결제 화면에서 본다. */}

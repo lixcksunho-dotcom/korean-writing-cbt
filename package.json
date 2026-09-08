@@ -27,6 +27,7 @@
     "check:exam-flow": "node scripts/exam_flow_check.mjs",
     "check:manuscript": "node scripts/manuscript_check.mjs",
     "check:sub-gate": "node scripts/subscription_gate_check.mjs",
+    "check:pulse": "node --experimental-strip-types --no-warnings scripts/today_pulse_check.mjs",
     "check:report": "node scripts/report_check.mjs",
     "check:admin": "node scripts/admin_ui_check.mjs",
     "check:account": "node --experimental-strip-types --no-warnings scripts/account_delete_check.mjs",

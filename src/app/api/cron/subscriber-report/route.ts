@@ -41,6 +41,8 @@ export async function GET(req: Request) {
   const lines = [
     `📊 ${asOf} 신규 구독 유입`,
     '',
+    `오늘 가입 ${r.today.signups}명 · 방문자 ${r.today.visitors}명 (지금 ${r.today.now}명)`,
+    '',
     `어제 ${r.yesterdayCount}건 · 오늘 ${r.todayCount}건`,
     `최근 7일 ${r.last7}건 (직전 7일 ${r.prev7}건 · ${deltaLabel(r.last7, r.prev7)})`,
     `누적 ${r.total}건`,
