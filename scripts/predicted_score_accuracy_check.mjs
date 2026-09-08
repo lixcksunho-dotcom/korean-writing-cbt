@@ -73,7 +73,7 @@ const weight = getProgram('silyong').weight
 // ── 2) 실제 데이터로 옛 방식과 견준다 ────────────────────────────────────
 const qs = await all('/rest/v1/questions?select=id,points,type&program=eq.silyong&year=lt.9000')
 const qById = Object.fromEntries(qs.map(q => [q.id, q]))
-const ses = await all('/rest/v1/quiz_sessions?select=id,user_id,score,total,completed_at&program=eq.silyong&year=lt.9000&completed_at=not.is.null')
+const ses = await all('/rest/v1/quiz_sessions?select=id,user_id,year,round,score,total,completed_at&program=eq.silyong&year=lt.9000&completed_at=not.is.null')
 const sesById = Object.fromEntries(ses.map(s => [s.id, s]))
 const ans = await all('/rest/v1/quiz_answers?select=session_id,question_id,ai_score&ai_score=not.is.null')
 
@@ -123,6 +123,114 @@ if (graded.length < 20) {
   else bad('기준값 갱신 필요', `실측 ${(m * 100).toFixed(1)}% — ESSAY_BASELINE_RATE 를 ${m.toFixed(3)} 로`)
   if (Math.abs(sd - ESSAY_TOTAL_SD) <= 0.03) ok('서술형 편차 기준값이 아직 맞다', `실측 ${(sd * 100).toFixed(1)}%p`)
   else bad('편차 갱신 필요', `실측 ${(sd * 100).toFixed(1)}%p — ESSAY_TOTAL_SD 를 ${sd.toFixed(3)} 로`)
+}
+
+// ── 3) 실제 시험 점수와 대조 ─────────────────────────────────────────────
+// 지금까지는 전부 'AI 채점 기준'으로만 맞다. 진짜 답안지는 사람들이 시험을 보고 올려 주는
+// 성적(reviews.exam_score, 인증본 확인분)이다. 표본이 쌓이면 여기서 치우침이 드러난다.
+{
+  const revs = await all('/rest/v1/reviews?select=user_id,exam_score,verified&exam_score=not.is.null')
+  const verified = revs.filter(r => r.verified)
+  if (verified.length === 0) {
+    ok('실제 시험 점수 표본', '아직 0건 — 시험 뒤 인증 후기가 들어오면 여기서 대조한다')
+  } else {
+    const diffs = []
+    for (const r of verified) {
+      const mine = ses.filter(s => s.user_id === r.user_id && s.total)
+      if (!mine.length) continue
+      const ids = new Set(mine.map(s => s.id))
+      const essays = ans.filter(a => ids.has(a.session_id))
+        .map(a => ({ aiScore: Number(a.ai_score) || 0, points: qById[a.question_id]?.points ?? null }))
+      const p = predictScore({
+        objectiveCorrect: mine.reduce((s, x) => s + (x.score ?? 0), 0),
+        objectiveAnswered: mine.reduce((s, x) => s + (x.total ?? 0), 0),
+        essays, weight,
+      })
+      if (p) diffs.push(p.score - r.exam_score)
+    }
+    if (diffs.length < 5) {
+      ok('실제 시험 점수 표본', `${diffs.length}건 — 5건부터 치우침을 판단한다`)
+    } else {
+      const bias = mean(diffs)
+      const mae = mean(diffs.map(Math.abs))
+      if (Math.abs(bias) <= 60) ok('실제 점수와 견줘 치우침이 크지 않다', `평균 ${bias > 0 ? '+' : ''}${bias.toFixed(0)}점 · 평균오차 ${mae.toFixed(0)}점 (${diffs.length}건)`)
+      else bad('실제 점수 대비 치우침', `평균 ${bias > 0 ? '+' : ''}${bias.toFixed(0)}점 — 기준값을 다시 재야 한다 (${diffs.length}건)`)
+    }
+  }
+}
+
+// ── 4) 더 손대면 나아지나 ────────────────────────────────────────────────
+// 두 가지를 재 보고 안 넣었다(2026-09-08). 데이터가 쌓이면 답이 바뀔 수 있으므로 매번 다시 잰다.
+//   · 회차 난이도 보정 — 회차 평균이 흔들려(응시 4명짜리 회차도 있다) 되레 나빠졌다
+//   · 서술형 문항 난이도 보정 — 배점 구간별 득점률이 15%p 벌어지는데도 나아지지 않았다
+// 어느 쪽이든 '지금 방식보다 뚜렷하게 낫다'가 되면 그때 넣는다.
+{
+  // 회차 보정: 서로 다른 회차를 이어 푼 짝에서, 앞 회차로 뒤 회차를 맞혀 본다
+  const byRound = {}
+  for (const s of ses) {
+    if (!s.total) continue
+    const k = `${s.year}-${s.round}`
+    ;(byRound[k] = byRound[k] ?? []).push((s.score ?? 0) / s.total)
+  }
+  const roundMean = Object.fromEntries(Object.entries(byRound).map(([k, v]) => [k, mean(v)]))
+  const byUser = {}
+  for (const s of [...ses].sort((a, b) => String(a.completed_at).localeCompare(String(b.completed_at)))) {
+    if (s.total) (byUser[s.user_id] = byUser[s.user_id] ?? []).push(s)
+  }
+  const raw = []
+  const adj = []
+  for (const v of Object.values(byUser)) {
+    for (let i = 0; i < v.length - 1; i++) {
+      const a = v[i]
+      const b = v[i + 1]
+      const ka = `${a.year}-${a.round}`
+      const kb = `${b.year}-${b.round}`
+      if (ka === kb) continue
+      const ra = (a.score ?? 0) / a.total
+      const rb = (b.score ?? 0) / b.total
+      raw.push(Math.abs(ra - rb))
+      adj.push(Math.abs(Math.min(1, Math.max(0, ra - (roundMean[ka] - roundMean[kb]))) - rb))
+    }
+  }
+  if (raw.length < 10) ok('회차 보정 실험', `짝이 ${raw.length}건뿐 — 판단 보류`)
+  else if (mean(adj) >= mean(raw) - 0.02) {
+    ok('회차 난이도 보정은 아직 넣을 이유가 없다', `보정 없이 ${(mean(raw) * 300).toFixed(0)}점 · 보정 ${(mean(adj) * 300).toFixed(0)}점`)
+  } else {
+    bad('회차 보정이 이제 더 낫다', `보정 없이 ${(mean(raw) * 300).toFixed(0)}점 → 보정 ${(mean(adj) * 300).toFixed(0)}점 — 넣을 때가 됐다`)
+  }
+
+  // 서술형 문항 난이도 보정: 작은 문항만 채점됐다고 치고 그 회차 전체 득점률을 맞혀 본다
+  const classSum = {}
+  for (const a of ans) {
+    const q = qById[a.question_id]
+    if (!q?.points || q.type !== 'essay') continue
+    const c = (classSum[q.points] = classSum[q.points] ?? { got: 0, max: 0 })
+    c.got += Number(a.ai_score) || 0
+    c.max += q.points
+  }
+  const classRate = Object.fromEntries(Object.entries(classSum).map(([p, c]) => [p, c.got / c.max]))
+  const overall = Object.values(classSum).reduce((s, c) => s + c.got, 0) / (Object.values(classSum).reduce((s, c) => s + c.max, 0) || 1)
+  const rawE = []
+  const normE = []
+  for (const e of graded) {
+    const items = e.grades
+    const totalPts = items.reduce((s, x) => s + x.points, 0)
+    if (totalPts < 600) continue
+    const truth = items.reduce((s, x) => s + x.aiScore, 0) / totalPts
+    const small = items.filter(x => x.points <= 50)
+    const max = small.reduce((s, x) => s + x.points, 0)
+    if (max < 60) continue
+    const got = small.reduce((s, x) => s + x.aiScore, 0)
+    const expected = small.reduce((s, x) => s + x.points * (classRate[x.points] ?? overall), 0)
+    rawE.push(Math.abs(got / max - truth))
+    normE.push(Math.abs(Math.min(1, (got / (expected || 1)) * overall) - truth))
+  }
+  if (rawE.length < 10) ok('문항 난이도 보정 실험', `표본 ${rawE.length}건 — 판단 보류`)
+  else if (mean(normE) >= mean(rawE) - 0.02) {
+    ok('문항 난이도 보정도 아직 넣을 이유가 없다', `그냥 ${(mean(rawE) * 700).toFixed(0)}점 · 보정 ${(mean(normE) * 700).toFixed(0)}점`)
+  } else {
+    bad('문항 난이도 보정이 이제 더 낫다', `그냥 ${(mean(rawE) * 700).toFixed(0)}점 → 보정 ${(mean(normE) * 700).toFixed(0)}점 — 넣을 때가 됐다`)
+  }
 }
 
 console.log('\n예상 점수 정밀도\n')
