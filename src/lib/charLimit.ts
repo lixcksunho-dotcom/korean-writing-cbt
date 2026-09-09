@@ -86,9 +86,25 @@ export function parseCharLimit(text: string | null | undefined): number | null {
   return Math.max(...matches)
 }
 
-// 입력 글자수를 제한에 맞춰 잘라낸다 — '쓸 수 있는 최대 = 문제 제한'을 보장(하드 캡).
+/**
+ * 실제로 입력을 막는 지점 — 문제 제한보다 조금 넉넉하게 둔다.
+ *
+ * 왜 여유를 두는가: 예전에는 문제 제한이 곧 하드 캡이었다. 그래서 "100자 내외"인 문항에서
+ * 100자를 넘기는 순간 글자가 버려져, 마침표 하나를 못 찍고 문장이 잘렸다. 실제로 2025-1회
+ * 37번(160자)에서 12명의 답안이 정확히 160자에서 멈췄고, 그중에는 '설치 비'처럼 낱말
+ * 중간에서 끊긴 것도 있었다(2026-09-09 실측).
+ *
+ * 시험은 분량 초과를 감점으로 다루지 입력을 막지 않는다. 그래서 화면은 제한을 넘는 순간
+ * 빨갛게 '초과'를 보여 주되(ExamPlayer), 입력 자체는 이 여유까지 허용한다.
+ * 여유를 넘어서면 그때는 막는다 — 원고지 칸을 벗어나 끝없이 쓰는 것도 답이 아니다.
+ */
+export function hardCharCap(limit: number | null): number | null {
+  if (limit == null) return null
+  return Math.ceil(limit * 1.2) + 10
+}
+
+// 입력 글자수를 캡에 맞춰 잘라낸다.
 // 카운터(`Array.from(v).filter(c => c !== '\n').length`)와 동일 기준: 줄바꿈은 세지 않는다.
-// 제한 도달 후의 글자는 버려 더 못 쓰게 한다(줄바꿈은 단락 구분용으로 허용).
 export function clampToCharLimit(value: string, limit: number | null): string {
   if (limit == null) return value
   const chars = Array.from(value)

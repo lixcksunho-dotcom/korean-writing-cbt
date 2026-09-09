@@ -10,7 +10,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { parseCharLimit } from '../src/lib/charLimit.ts'
+import { parseCharLimit, hardCharCap } from '../src/lib/charLimit.ts'
 import { DEVICE_LIMIT } from '../src/lib/antiSharingLimits.ts'
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
@@ -104,6 +104,31 @@ const bad = (n, d = '') => results.push({ ok: false, n, d })
   }
   const would = Object.values(by90).filter(s => s.size >= DEVICE_LIMIT).length
   ok('참고: 옛 90일 규칙이었다면', `${would}명이 한도에 닿아 있었다`)
+}
+
+// ── 4) 제한에 걸려 잘린 답안이 실제로 있었는가 ───────────────────────────
+// 제한과 '정확히 같은' 길이로 끝난 답안은 하드 캡에 잘렸다는 뜻이다. 서로 다른 사람이
+// 같은 숫자에서 멈추는 것은 우연이 아니다 — 2025-1회 37번에서 12건이 모두 160자였고,
+// 그중에는 '설치 비'처럼 낱말 중간에서 끊긴 답안도 있었다(2026-09-09).
+{
+  const qs = await all('/rest/v1/questions?type=eq.essay&select=id,year,round,number,points,question')
+  const qById = Object.fromEntries(qs.map(q => [q.id, q]))
+  const ans = await all('/rest/v1/quiz_answers?select=question_id,user_answer')
+  const len = (s) => Array.from(s ?? '').filter(c => c !== String.fromCharCode(10)).length
+  const stuck = {}
+  for (const a of ans) {
+    const q = qById[a.question_id]
+    if (!q || !(a.user_answer ?? '').trim()) continue
+    const cap = hardCharCap(parseCharLimit(q.question))
+    if (cap == null) continue
+    if (len(a.user_answer) === cap) {
+      const k = `${q.year}-${q.round} ${q.number}번`
+      stuck[k] = (stuck[k] ?? 0) + 1
+    }
+  }
+  const many = Object.entries(stuck).filter(([, n]) => n >= 2)
+  if (many.length === 0) ok('입력 한계에서 멈춘 답안이 쌓이지 않는다', '여유 캡이 제 몫을 한다')
+  else bad('한계에서 멈춘 답안', many.map(([k, n]) => `${k} ${n}건`).join(' · '))
 }
 
 console.log('\n돈 낸 사람이 막히는 자리\n')

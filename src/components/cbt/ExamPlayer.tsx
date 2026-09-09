@@ -7,7 +7,7 @@ import { Clock, ChevronLeft, ChevronRight, ChevronDown, Send, AlertCircle, Check
 import { submitSession, saveExamProgress } from '@/app/(main)/cbt/actions'
 import { readableActionError } from '@/lib/actionErrorMessage'
 import EditableManuscript, { type EditableManuscriptHandle } from '@/components/manuscript/EditableManuscript'
-import { parseCharLimit, manuscriptRows, clampToCharLimit } from '@/lib/charLimit'
+import { parseCharLimit, manuscriptRows, clampToCharLimit, hardCharCap } from '@/lib/charLimit'
 import { extractCircledLabels, insertAtTextareaCursor } from '@/lib/circledSymbols'
 import SymbolPalette from '@/components/cbt/SymbolPalette'
 import PassageView from '@/components/cbt/PassageView'
@@ -247,7 +247,9 @@ export default function ExamPlayer({
   const qOverLimit = qCharLimit != null && qCharCount > qCharLimit
   const qRows = manuscriptRows(qCharLimit, ESSAY_COLS)
   // 서술형 답안 저장 — 문제 제한 글자수로 하드 캡(쓸 수 있는 최대 = 문제 제한, 무조건 일치)
-  const setEssayAnswer = (v: string) => handleAnswer(q.id, clampToCharLimit(v, qCharLimit))
+  // 제한을 넘으면 화면이 빨갛게 '초과'를 알린다(위 카운터). 입력은 여유까지 받아 준다 —
+  // 제한에서 곧장 잘라 버리면 마침표 하나를 못 찍고 문장이 끊긴다(2026-09-09 실측 12건).
+  const setEssayAnswer = (v: string) => handleAnswer(q.id, clampToCharLimit(v, hardCharCap(qCharLimit)))
   // 문제/지문에 등장한 원문자 라벨(㉠㉡㉢…) — 있으면 답안칸 위에 삽입 팔레트 표시
   const qLabels = q.type === 'essay' ? extractCircledLabels(q.question, q.passage) : []
   // 서술형 + 지문이 있으면 좌우 2단(지문 왼쪽·답안 오른쪽). 그 외엔 기존 세로 배치.

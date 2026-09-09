@@ -9,7 +9,7 @@ import PassageView from '@/components/cbt/PassageView'
 import CopyGuard from '@/components/cbt/CopyGuard'
 import SymbolPalette from '@/components/cbt/SymbolPalette'
 import { gradeEssayPractice, savePracticeProgress } from '../actions'
-import { parseCharLimit, manuscriptRows, clampToCharLimit } from '@/lib/charLimit'
+import { parseCharLimit, manuscriptRows, clampToCharLimit, hardCharCap } from '@/lib/charLimit'
 import { extractCircledLabels, insertAtTextareaCursor } from '@/lib/circledSymbols'
 import type { EssayGrade } from '@/app/(main)/cbt/actions'
 import { readDraftRaw, parseDraft, saveDraft, clearDraft } from '@/lib/examDraft'
@@ -133,7 +133,8 @@ export default function PracticeEssay({
   const overLimit = charLimit != null && charCount > charLimit
   const mRows = manuscriptRows(charLimit, COLS)
   // 서술형 답안 저장 — 문제 제한 글자수로 하드 캡(쓸 수 있는 최대 = 문제 제한, 무조건 일치)
-  const setEssayAnswer = (v: string) => setAnswers(a => ({ ...a, [q.id]: clampToCharLimit(v, charLimit) }))
+  // 시험 화면과 같은 규칙 — 제한은 알리되 입력은 여유까지 받는다.
+  const setEssayAnswer = (v: string) => setAnswers(a => ({ ...a, [q.id]: clampToCharLimit(v, hardCharCap(charLimit)) }))
   // 원문자 라벨(㉠㉡㉢…) 삽입 팔레트
   const qLabels = extractCircledLabels(q.question, q.passage)
   // 지문이 있으면 좌우 2단(지문 왼쪽·답안 오른쪽). 모의고사 ExamPlayer와 동일 방식.
