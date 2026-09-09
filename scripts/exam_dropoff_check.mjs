@@ -109,13 +109,25 @@ for (const u of onlyOpen.slice(0, 15)) {
 }
 if (onlyOpen.length > 15) console.log(`  … 외 ${onlyOpen.length - 15}명`)
 
-// 결론 — '시작'의 뜻이 두 가지라 완주율이 두 배로 달라진다.
-// /cbt/[회차] 화면을 열면 그 순간 세션 행이 생긴다(getOrCreateExamSession). 그래서
-// '시작 233건'에는 눌러 보고 바로 나간 것까지 들어 있다. 사람이 실제로 풀다 만 것은
-// 답이나 중간 저장이 남은 회차뿐이다.
+// 결론 — 한때 '시작'의 뜻이 두 가지였다.
+// 2026-09-09 전에는 /cbt/[회차] 화면을 여는 순간 세션 행이 생겼다. 그래서 눌러 보고 바로
+// 나간 것까지 '시작'에 섞였다(그때 118건 중 112건). 지금은 시작 안내를 거쳐 '시작하기'를
+// 누른 사람에게만 행이 생긴다 — 아래 마지막 줄이 그 문이 계속 닫혀 있는지 지킨다.
+// 시작 안내가 배포된 시각(UTC). 이 뒤로는 '시작하기'를 누른 사람에게만 세션이 생긴다.
+const GATE_FROM = '2026-09-09T04:35:00'
 const touched = reached.filter(r => r.count > 0).length
 console.log(`\n─────────────`)
-console.log(`화면만 열고 나간 회차 ${reached.filter(r => r.count === 0).length}건 — 세션은 화면을 여는 순간 생긴다(사람 이탈이 아니다)`)
+console.log(`화면만 열고 나간 회차 ${reached.filter(r => r.count === 0).length}건 (대부분 시작 안내가 생기기 전에 쌓인 것)`)
 console.log(`실제로 풀다 만 회차 ${touched}건`)
-console.log(`완주율: 열어 본 것까지 세면 ${(done.length / ses.length * 100).toFixed(0)}% · 한 문제라도 푼 것만 세면 ${(done.length / (done.length + touched) * 100).toFixed(0)}%`)
-console.log(`→ 병목은 '풀다가 그만두는 것'이 아니라 '들어와서 한 문제도 안 푸는 것'이다.`)
+console.log(done.length + touched === 0
+  ? '완주율: 아직 푼 회차가 없다'
+  : `완주율: 열어 본 것까지 세면 ${(done.length / ses.length * 100).toFixed(0)}% · 한 문제라도 푼 것만 세면 ${(done.length / (done.length + touched) * 100).toFixed(0)}%`)
+
+const newEmpty = reached.filter(r => r.count === 0 && String(r.session.started_at ?? '') >= GATE_FROM)
+if (newEmpty.length === 0) {
+  console.log(`\n○ ${GATE_FROM} 이후 새로 생긴 빈 세션 0건 — 시작 안내가 제 몫을 하고 있다`)
+} else {
+  console.log(`\n× ${GATE_FROM} 이후 새로 생긴 빈 세션 ${newEmpty.length}건 — 시작 전에 세션이 만들어지는 길이 다시 열렸는지 확인할 것`)
+  console.log(`  ${newEmpty.slice(0, 5).map(r => `${String(r.session.started_at).slice(0, 16)} ${short(r.session.user_id)}`).join(' · ')}`)
+  process.exit(1)
+}
