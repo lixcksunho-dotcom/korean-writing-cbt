@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { nextRoundToTake } from '@/lib/nextRoundToTake'
 import { formatExamId } from '@/lib/examId'
 import { redirectToLogin } from '@/lib/loginRedirect'
@@ -15,6 +16,7 @@ import { AiTrialProvider } from '@/components/cbt/AiTrialContext'
 import BookmarkButton from '@/components/study/BookmarkButton'
 import ReportButton from '@/components/study/ReportButton'
 import PaperShareButton from '@/components/result/PaperShareButton'
+import ReviewWriteModal from '@/components/review/ReviewWriteModal'
 import CopyGuard from '@/components/cbt/CopyGuard'
 import MarkedText from '@/components/cbt/MarkedText'
 import type { EssayGrade } from '@/app/(main)/cbt/actions'
@@ -48,11 +50,16 @@ export default async function ResultPage({
   const program = (session.program as ProgramId) ?? 'silyong'
   const cfg = getProgram(program)
 
-  const [{ data: answers }, { data: questions }, subscription, { data: bookmarkRows }, { data: allRounds }, trialUsed, { data: myDone }] = await Promise.all([
+  const [{ data: answers }, { data: questions }, subscription, { data: bookmarkRows }, { data: myReviews }, { data: allRounds }, trialUsed, { data: myDone }] = await Promise.all([
     supabase.from('quiz_answers').select('question_id, user_answer, is_correct, ai_score, ai_feedback').eq('session_id', sessionId),
     questionBank().from('questions').select('id, number, type, points, question, options, correct_answer, explanation').eq('program', program).eq('year', session.year).eq('round', session.round).order('number'),
     getActiveSubscription(user.id),
     supabase.from('bookmarks').select('question_id').eq('user_id', user.id),
+    // 후기를 이미 쓴 사람에게 또 권하지 않기 위해 — 한 행이면 충분하다.
+    // 로그인 계정 권한으로는 자기 후기도 못 찾는다: 034 마이그레이션이 개인정보를 줄이려고
+    // reviews.user_id 의 SELECT 권한을 회수했고, 그 열로 거르면 조용히 빈 결과가 온다.
+    // 그래서 여기만 service_role 로 읽고, 조건은 본인 id 하나로 못 박는다.
+    createAdminClient().from('reviews').select('id').eq('user_id', user.id).limit(1),
     // 업셀 문구의 '몇 회분이 열리는지'를 실제 보유 회차에서 뽑는다(하드코딩 수치가 낡는 것 방지)
     questionBank().from('questions').select('round').eq('program', program).lt('year', 9000),
     // user.id만 있으면 되는 조회 — 뒤에 따로 await하면 왕복이 하나 더 는다.
@@ -255,6 +262,30 @@ export default async function ResultPage({
           대시보드
         </Link>
       </div>
+
+      {/* 후기를 부탁하는 자리.
+          왜 여기인가: 후기는 구독 화면의 사회적 증거로 쓰이는데 지금 0건이다. 쓰는 자리가
+          대시보드 오른쪽 위 버튼 하나뿐이라 결과 화면을 지난 111명 중 9명만 그 근처에 갔다
+          (2026-09-09 page_views 실측). 점수를 막 확인한 자리가 할 말이 가장 많은 자리다. */}
+      {!myReviews?.length && (
+        <div className="mb-8 rounded-2xl border border-[#e2e8f0] bg-white p-5 shadow-[0_4px_16px_rgba(15,31,61,0.06)]">
+          <div className="flex items-start gap-3">
+            <span className="mt-0.5 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-100">
+              <Star className="h-4 w-4 text-amber-600" aria-hidden="true" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-bold text-[#0f172a]">풀어 보니 어떠셨어요?</p>
+              <p className="mt-1 text-xs leading-relaxed text-[#64748b]">
+                짧은 후기 한 줄이 다음 사람에게는 가장 큰 참고가 됩니다.
+                실제 시험을 보셨다면 <b className="text-[#334155]">점수를 인증하고 5,000원 환급</b>도 받으실 수 있어요.
+              </p>
+              <div className="mt-3">
+                <ReviewWriteModal defaultName={(user.user_metadata?.name || user.email?.split('@')[0] || '회원').slice(0, 20)} />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 약점 분석 — 영역별 정답률 (구독 전용) */}
       {bandStats.length > 0 && (
