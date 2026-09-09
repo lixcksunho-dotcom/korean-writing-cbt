@@ -123,11 +123,16 @@ console.log(done.length + touched === 0
   ? '완주율: 아직 푼 회차가 없다'
   : `완주율: 열어 본 것까지 세면 ${(done.length / ses.length * 100).toFixed(0)}% · 한 문제라도 푼 것만 세면 ${(done.length / (done.length + touched) * 100).toFixed(0)}%`)
 
-const newEmpty = reached.filter(r => r.count === 0 && String(r.session.started_at ?? '') >= GATE_FROM)
-if (newEmpty.length === 0) {
-  console.log(`\n○ ${GATE_FROM} 이후 새로 생긴 빈 세션 0건 — 시작 안내가 제 몫을 하고 있다`)
-} else {
-  console.log(`\n× ${GATE_FROM} 이후 새로 생긴 빈 세션 ${newEmpty.length}건 — 시작 전에 세션이 만들어지는 길이 다시 열렸는지 확인할 것`)
-  console.log(`  ${newEmpty.slice(0, 5).map(r => `${String(r.session.started_at).slice(0, 16)} ${short(r.session.user_id)}`).join(' · ')}`)
+// 시작 안내를 넣은 뒤의 빈 세션은 뜻이 다르다 — 이제는 '시작하기를 누르고도 한 문제도 안 푼
+// 사람'이다(게이트가 살아 있는지는 check:entry 가 매번 눌러서 확인한다). 그러니 실패로 다루지
+// 않고 비율만 지켜본다. 절반을 훌쩍 넘으면 시작 화면 다음에서 돌아선다는 뜻이라 알린다.
+const after = reached.filter(r => String(r.session.started_at ?? '') >= GATE_FROM)
+const doneAfter = done.filter(s => String(s.started_at ?? '') >= GATE_FROM).length
+const emptyAfter = after.filter(r => r.count === 0).length
+const startedAfter = doneAfter + after.length
+console.log(`\n시작 안내 배포 뒤 시작한 회차 ${startedAfter}건 — 끝냄 ${doneAfter} · 시작만 하고 안 푼 것 ${emptyAfter}`)
+if (startedAfter >= 10 && emptyAfter / startedAfter > 0.7) {
+  console.log(`× 시작하고도 안 푸는 비율이 ${(emptyAfter / startedAfter * 100).toFixed(0)}% — 시험 첫 화면에서 돌아서고 있다`)
   process.exit(1)
 }
+if (startedAfter < 10) console.log('  (표본 10건 전에는 비율로 판단하지 않는다)')

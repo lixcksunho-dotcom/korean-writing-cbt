@@ -7,6 +7,7 @@ import ExamResumeAction from '@/components/cbt/ExamResumeAction'
 import { isRoundLocked } from '@/lib/examAccess'
 import { getActiveProgram } from '@/lib/programContext'
 import { getProgram } from '@/lib/programs'
+import { examTopic } from '@/lib/examTopic'
 import { formatExamId } from '@/lib/examId'
 import { questionBank } from '@/lib/questionBank'
 
@@ -23,7 +24,8 @@ export default async function CbtPage() {
   const [{ data: exams }, { data: sessions }, { data: inProgress }, subscription] = await Promise.all([
     questionBank()
       .from('questions')
-      .select('year, round, type')
+      // question·points 는 회차별 '보고서 주제'를 뽑는 데 쓴다 — 목록에 무엇이 다른지 적으려고.
+      .select('year, round, type, points, question')
       .eq('program', program)
       .lt('year', 9000)
       .order('year', { ascending: true })
@@ -61,6 +63,15 @@ export default async function CbtPage() {
   for (const e of exams ?? []) {
     const k = `${e.year}-${e.round}`
     countMap.set(k, (countMap.get(k) ?? 0) + 1)
+  }
+
+  // 회차를 가르는 것은 마지막 보고서의 주제다. 목록에 '39문항'만 있으면 무엇이 다른지 몰라
+  // 하나씩 열어 보게 된다 — 실제로 16초 간격으로 두 회차를 열었다 나간 기록이 있다(2026-09-09).
+  const topicMap = new Map<string, string>()
+  for (const e of exams ?? []) {
+    if (e.type !== 'essay' || Number(e.points ?? 0) < cfg.manuscriptMinPoints) continue
+    const topic = examTopic(e.question as string | null)
+    if (topic) topicMap.set(`${e.year}-${e.round}`, topic)
   }
 
   const sessionMap = new Map((sessions ?? []).map(s => [`${s.year}-${s.round}`, s]))
@@ -162,6 +173,11 @@ export default async function CbtPage() {
                           </div>
                         </div>
                       </div>
+                      {topicMap.get(`${year}-${round}`) && (
+                        <p className="text-xs leading-relaxed text-[#475569]">
+                          보고서 주제 · <b className="text-[#334155]">{topicMap.get(`${year}-${round}`)}</b>
+                        </p>
+                      )}
                     </div>
 
                     {pct !== null && (
