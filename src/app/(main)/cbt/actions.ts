@@ -185,6 +185,36 @@ export async function createSession(
 }
 
 // 진행중(미완료) 세션을 찾아 이어풀기 상태를 돌려주고, 없으면 새로 만든다.
+/**
+ * 이어풀 세션이 있는지만 본다 — **만들지 않는다.**
+ *
+ * 시험 화면에 시작 안내를 두면서 필요해졌다. 예전에는 화면을 여는 순간
+ * getOrCreateExamSession 이 행을 만들어, 눌러 보기만 한 사람도 '시작'으로 남았다
+ * (실측 112건). 안내 화면에서는 읽기만 하고, 시작을 누른 사람에게만 행을 만든다.
+ */
+export async function findResumableExamSession(
+  year: number,
+  round: number,
+  program: ProgramId = 'silyong',
+): Promise<{ sessionId: string; savedAt: string } | null> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return null
+  const { data } = await supabase
+    .from('quiz_sessions')
+    .select('id, saved_at')
+    .eq('user_id', user.id)
+    .eq('program', program)
+    .eq('year', year)
+    .eq('round', round)
+    .is('completed_at', null)
+    .not('saved_at', 'is', null)
+    .order('saved_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+  return data ? { sessionId: data.id as string, savedAt: data.saved_at as string } : null
+}
+
 // (시험 페이지가 서버에서 호출 → ExamPlayer에 sessionId·저장답안·남은시간 전달)
 export async function getOrCreateExamSession(
   year: number,
