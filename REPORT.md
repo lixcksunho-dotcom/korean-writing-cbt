@@ -1,5 +1,75 @@
 # REPORT
 
+## 간편결제 잔여 경로 점검 (work/easypay-remaining-check, 2026-09-10)
+
+- 백로그: "`scripts/payment_method_diagnose.mjs` 재실행 후 표 갱신 — ①현재 열려 있는 payMethod ②easyPayProvider 지정 ③각 수단을 열려면 무엇이 더 필요한지(채널 추가 심사 여부 포함)를 REPORT 에 표로".
+- 범위: **읽기와 문서화만.** 결제 코드(`PaymentButton.tsx`) 무변경, 포트원은 `getPayments` 조회만, 실결제·취소 없음. 개인정보는 id 앞 8자만.
+- 바꾼 것: `scripts/payment_method_diagnose.mjs` 한 파일. 8/24에 만든 ③ 표가 그때 상태("CARD만 호출 / 지정 없음")를 **글자로 박아 둔 것**이라 카카오페이가 열린 지금 재실행해도 옛 표가 그대로 나왔다. 호출부에서 읽은 값(easyPayProvider·전용 채널키 env·화면 버튼)으로 수단별 행을 채우게 고쳤다. 코드 밖 조건(계약·심사)은 포트원 연동 문서 기준 문구로만 적는다.
+
+### ①② 현재 열려 있는 payMethod와 easyPayProvider (`node scripts/payment_method_diagnose.mjs` 실제 출력)
+
+| 파일 | payMethod | easyPayProvider | easyPay 객체 |
+|---|---|---|---|
+| src/components/subscribe/PaymentButton.tsx:148 | EASY_PAY, CARD | KAKAOPAY | 있음 |
+
+| key | 라벨 | 상태 |
+|---|---|---|
+| kakaopay | 카카오페이 | 결제창 엶 |
+| card | 카드 결제 | 결제창 엶 |
+
+호출부는 이 한 곳뿐. `portoneMethodParams()` 가 카카오페이면 `{ channelKey: 카카오 전용키, payMethod: 'EASY_PAY', easyPay: { easyPayProvider: 'KAKAOPAY' } }`, 아니면 `{ payMethod: 'CARD' }`(이니시스 채널). 네이버페이·토스페이는 호출부·환경변수·화면 버튼 어디에도 **자리가 없다** — 8/22 커밋 927b498 에서 '간편결제' 준비중 버튼을 내린 뒤 그대로다.
+
+### 원장 실물 — 지금 열려 있는 채널 (포트원 `getPayments`, 최근 30일 8/11~9/10 UTC, 55건)
+
+| 채널(pgProvider) | 건수 | PAID | READY | FAILED | CANCELLED |
+|---|---|---|---|---|---|
+| INICIS_V2 (카드) | 30 | 13 (전부 `PaymentMethodCard`) | 14 | 3 | 0 |
+| KAKAOPAY (전용 채널) | 25 | 18 (`PaymentMethodEasyPay KAKAOPAY`) | 4 | 2 | 1 |
+| 그 외(NAVERPAY·TOSSPAY 등) | **0** | | | | |
+
+채널이 둘뿐임을 원장으로 확인했다(채널키가 배포에 들어갔는지는 저장소로 알 수 없어 원장으로 본다).
+
+주 단위 흐름(`npm run report:method-impact` 기준일 8/27·9/3 두 번 실행, 사람 단위):
+
+| 구간 | 진입 | 시도 | 완결 | 카카오 PAID | 카드 PAID(=완결−카카오) | 비콘 payment_started 카드:카카오 |
+|---|---|---|---|---|---|---|
+| 8/20~8/26 (카카오 전) | 9건/8명 | 6/5 | 5/5 | — | 5 | 12 : (easypay 준비중 8) |
+| 8/27~9/2 | 15/12 | 12/10 | 10/10 | 6 | 4 | 4 : 9 |
+| 9/3~9/9 | 15/14 | 14/13 | 13/13 | 11 | 2 | 3 : 14 |
+
+카카오페이가 열린 지 2주 만에 완결의 85%(11/13)를 가져갔고, 카드 완결은 주 5→4→2건으로 줄었다. 진입 건수 자체는 15건으로 같다 — 수단 추가로 늘어난 건 **완결률**(5/9 → 13/15)이지 방문이 아니다.
+
+### ③ 각 수단을 열려면 (포트원 연동 문서 developers.portone.io, 2026-09-10 확인)
+
+| 수단 | 지금 | 채널·계약(코드 밖, 사람) | 심사 | 코드 쪽(NEED_HUMAN 대상, 적용 안 함) | 문서상 주의 |
+|---|---|---|---|---|---|
+| 카카오페이 | **열림** (8/27~, 전용 채널) | 완료 (CID 계약 8/27, 채널·`CHANNEL_KEY_KAKAOPAY`) | 완료 | 없음 | windowType 비움(PC IFRAME·모바일 REDIRECTION 자동), KRW·KO_KR만 |
+| 네이버페이(결제형) | 없음 | **별도 PG 채널** — 네이버페이 가맹 신청·계약 → 포트원 콘솔 채널 추가 → `NEXT_PUBLIC_PORTONE_CHANNEL_KEY_NAVERPAY` 환경변수 | **있음** — 검수 시작 전엔 "API 호출 권한이 없습니다" 에러, 검수 기간은 문서에 없음 | 카카오페이 패턴 복제: env 1개 + `portoneMethodParams` 분기(`payMethod: 'EASY_PAY'`, easyPayProvider 는 PG 자체가 간편결제사라 생략 가능) + METHODS 항목 | windowType PC **POPUP**·모바일 REDIRECTION만(카카오는 IFRAME — 비워 두면 각자 맞게 잡힘), KRW만, `easyPay.installment`·`availableCards` 미지원, 고위험 업종이면 customer.name·birth 필수(해당 여부는 사람 판단) |
+| 토스페이 | 없음 | **별도 PG 채널** — 토스페이 계약(문서는 "전자결제 신청"으로만 안내) → 채널 추가 → `..._TOSSPAY` 환경변수 | 문서에 심사 언급 없음 — 계약 단계에서 확인 | 카카오페이 패턴 복제, `payMethod: 'EASY_PAY'`(easyPayProvider 언급 없음) | 문서에 windowType 제약 없음 |
+| 이니시스 경유 간편결제 (네이버·토스·페이코·삼성페이 등을 `easyPayProvider` 로 지정) | 없음 | **채널 추가 없음** — 대신 KG이니시스 상점 계약에 그 간편결제사가 열려 있어야 함. 포트원 문서엔 지원 목록·계약 조건이 없어 **이니시스에 직접 확인** | 이니시스 쪽 부가서비스 신청 여부에 달림(문서 미기재) | 이니시스 채널키 그대로 + `easyPay: { easyPayProvider: 'NAVERPAY' }` 식 분기 + 버튼 | 미지정 호출은 400 ("간편 결제 수단은 필수 입력입니다") — 8/16·18 실패 7건의 원인. 이니시스 PC 결제는 phoneNumber 필수(지금 받고 있음) |
+
+읽는 법: 네이버페이·토스페이는 **계약 → 채널 → 환경변수** 세 단계가 코드 밖에 있고, 코드는 카카오페이와 같은 모양이라 작다(단, 결제창 호출부라 사람 판단). 이니시스 경유는 채널 추가가 없어 코드만으로 열리는 것처럼 보이지만, 계약에 열려 있지 않으면 8월처럼 조용히 실패한다 — 열기 전에 이니시스 확인이 먼저다.
+
+### 비용 대비 효과를 가를 때 볼 것 (판단은 하지 않음)
+
+- **수요 측정이 안 되고 있다.** `method_unavailable` 비콘은 8/22~8/26 에 easypay 2·kakaopay 1 이 전부이고, 네이버페이·토스 버튼은 자리조차 없어 "눌러 본 사람"을 셀 수 없다. 카드로 결제한 사람이 다른 수단이 있었으면 더 빨리 냈을지, 결제수단 때문에 포기한 사람이 있는지 어느 쪽도 지금 자료엔 없다.
+- **남은 카드 이용자는 주 2건.** 다음 수단이 뺏어 올 수 있는 최대치가 이 규모다. 카카오페이 때는 "카드 외 수단이 없어서 안 내던 사람"이 있었고(진입 대비 완결 5/9), 지금은 그 여지가 13/15 로 줄어 같은 크기의 효과를 기대하긴 어렵다.
+- **가장 싼 다음 걸음**은 수단을 여는 게 아니라 준비중 버튼(naverpay·tosspay)을 두고 `method_unavailable` 로 수요를 세는 것이다 — 단, 이것도 `PaymentButton.tsx` 변경이라 사람 판단 대상. 무엇을 열지는 그 숫자를 본 뒤가 순서다.
+
+### 지시문과 달랐던 점
+
+- "후 구간 결제 6건"은 8/27~9/2 카카오 PAID 6건과 일치. 그 다음 주(9/3~9/9)는 11건으로 더 늘었다.
+- 스크립트 ③ 표가 정적이라 "재실행 후 표 갱신"이 스크립트만 돌려서는 안 됐다 — 위처럼 고쳤다.
+- 8/24 리포트의 호출부 `:102` 는 지금 `:148` (그 사이 전화번호·동의 안내 코드가 앞에 들어감).
+
+### 실행 결과
+
+- `node scripts/payment_method_diagnose.mjs` — 위 ①② 표와 수단별 표 출력, exit 0. `--json` 도 정상(`channelKeyEnvs: ["KAKAOPAY"]`).
+- `npm run check:methods` — 6/6 통과.
+- `npx eslint scripts/payment_method_diagnose.mjs` — 통과.
+- `npm run report:method-impact`(기준일 8/27) — REPORT 9/5 절과 동일(진입 9/8→15/12, 완결 5→10). `-- --pivot 2026-09-03` — 위 표.
+- 원장 30일 채널 집계는 일회성 조회(임시 스크립트, 저장소에 남기지 않음).
+
 ## 시험 화면 첫 30초 관찰 (work/exam-entry-observe, 2026-09-10) — 검수 통과
 
 리뷰어가 `ENTRY_HOLD_SEC=3 npm run check:entry` 로 재실행해 REPORT 수치(타이머 흐름, ② 아이콘뿐, 세션 1건 유지 등)와 일치함을 확인. `entrycheck+` 계정 재조회 0건으로 정리도 확인. main 병합, BACKLOG 체크.
