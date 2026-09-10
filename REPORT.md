@@ -15,6 +15,13 @@
 - 숫자: 233건/112건/49%/95% → 실물 255/118/52%/97%(이틀치 추가). 구조는 같다.
 - 다음 백로그 항목의 산출물 `scripts/exam_entry_check.mjs`(`npm run check:entry`)도 같은 커밋에 이미 들어 있다 — 그 항목을 집을 때 "캡처를 REPORT 에 남기는 부분"만 남았는지 실물로 대조할 것.
 
+### 검수 통과 (리뷰어, 2026-09-10)
+- diff(`main..work/empty-session-plan`) 재확인: `REPORT.md`·`docs/empty_session_plan.md` 2건뿐 — 코드·마이그레이션·행 삭제 없음.
+- 지시문 대조 검증: 커밋 `b5c1934` 실존, `src/app/(main)/cbt/[examId]/page.tsx:44-60`·`actions.ts:219`의 `getOrCreateExamSession` 배치가 문서 서술과 일치.
+- `npm run check:dropoff` 재실행 → 완주율 52%/97% 정확히 재현. 절대 건수(빈 행 118→119, 배포 후 14→15)는 이틀 새 데이터 누적에 따른 자연 변동으로, 구조가 같다는 REPORT 서술과 부합.
+- `git status` clean — 검증용 임시 스크립트·계정 잔여 없음.
+- main에 병합(`--no-ff`), BACKLOG 체크, work/empty-session-plan 삭제.
+
 
 ## 관리자 '유료회원' 탭 — AI 사용량·평균 점수 (관리자 직접, 2026-09-08 운영자 지시)
 
