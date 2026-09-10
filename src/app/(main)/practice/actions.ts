@@ -12,6 +12,7 @@ import { SUBSCRIPTION_REQUIRED, type GradingError } from '@/lib/aiGradingMessage
 import type { EssayGrade } from '@/app/(main)/cbt/actions'
 import { getActiveProgram } from '@/lib/programContext'
 import { questionBank } from '@/lib/questionBank'
+import { parseCharLimit } from '@/lib/charLimit'
 
 // 서술형 '연습' 채점: 정식 시험 세션과 무관하게 단일 문항을 즉시 채점한다.
 // (시험 세션 기반 채점은 cbt/actions.ts 의 gradeExamEssay 사용)
@@ -36,6 +37,9 @@ const PRACTICE_ESSAY_PROMPT = `당신은 국가공인 한국실용글쓰기검�
 - 내용의 적합성, 논리성, 표현의 정확성(맞춤법·어법·문어체)을 함께 평가한다.
 - 모범답안과 표현이 달라도 조건을 충족하고 내용이 타당하면 정답으로 인정한다.
 - 논제와 무관한 장황한 서술, 조건 미준수는 감점한다.
+- **글자 수는 직접 세지 않는다.** [분량] 줄에 적힌 수를 그대로 쓴다. 언어 모형은 글자를 정확히
+  못 세므로, 직접 센 수로 분량을 지적하면 사실과 다른 감점이 된다(2026-09-10 문의로 확인).
+- [분량] 줄이 없으면 그 문제에는 분량 조건이 없다 — 길이를 이유로 감점하지 않는다.
 
 반드시 아래 JSON 형식으로만 응답하세요(다른 텍스트 금지):
 {
@@ -45,6 +49,17 @@ const PRACTICE_ESSAY_PROMPT = `당신은 국가공인 한국실용글쓰기검�
   "strengths": ["잘한 점", ...],
   "improvements": ["보완할 점", ...]
 }`
+
+/** 채점기에 넘길 [분량] 줄 — 화면 카운터와 같은 기준(띄어쓰기 포함, 줄바꿈 제외).
+ *  언어 모형이 직접 세면 틀린다(2026-09-10 문의: 100자로 쓴 답안을 '70자'라고 했다). */
+function lengthLine(question: string, answer: string | null | undefined): string {
+  const limit = parseCharLimit(question)
+  const count = Array.from(String(answer ?? '')).filter(c => c !== '\n').length
+  if (!count) return ''
+  return limit == null
+    ? `\n[분량] 수험자 답안 ${count}자(띄어쓰기 포함, 줄바꿈 제외). 이 문제에는 분량 조건이 없다.`
+    : `\n[분량] 제한 ${limit}자 · 수험자 답안 ${count}자(띄어쓰기 포함, 줄바꿈 제외)`
+}
 
 export async function gradeEssayPractice(
   questionId: string,
@@ -101,7 +116,7 @@ export async function gradeEssayPractice(
       ],
       messages: [{
         role: 'user',
-        content: `[배점] ${question.points}점\n\n[문제/조건]\n${question.question}\n\n[모범답안]\n${question.correct_answer}\n\n[수험자 답안]\n${userAnswer || '(미작성)'}`,
+        content: `[배점] ${question.points}점${lengthLine(question.question, userAnswer)}\n\n[문제/조건]\n${question.question}\n\n[모범답안]\n${question.correct_answer}\n\n[수험자 답안]\n${userAnswer || '(미작성)'}`,
       }],
     })
   } catch (err) {

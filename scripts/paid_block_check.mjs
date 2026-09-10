@@ -82,6 +82,27 @@ const bad = (n, d = '') => results.push({ ok: false, n, d })
   ok('원고지 문항 제한', limits.join(' · '))
 }
 
+// ── 2-2) 모범답안이 제 문제의 분량 조건을 지키는가 ───────────────────────
+// 모범답안이 제한을 넘으면 두 가지가 한꺼번에 무너진다: 학습자가 그대로 따라 쓰면 조건 위반이
+// 되고, AI 채점은 그 답안을 기준 삼아 채점한다. "모범답안이 130자를 넘어가서 다 작성이 안
+// 됩니다"라는 문의로 드러났다(2026-09-10).
+{
+  const qs = await all('/rest/v1/questions?type=eq.essay&year=lt.9000&select=program,year,round,number,points,question,correct_answer')
+  const len = (s) => Array.from(String(s ?? '')).filter(c => c !== String.fromCharCode(10)).length
+  const over = []
+  let limited = 0
+  for (const q of qs) {
+    const limit = parseCharLimit(q.question)
+    if (limit == null) continue
+    limited++
+    const l = len(q.correct_answer)
+    // 딱 맞출 필요는 없다 — '내외'라 조금 넘는 것은 둔다. 1.1배를 넘으면 조건 위반이다.
+    if (l > limit * 1.1) over.push(`${q.year}-${q.round} ${q.number}번(제한 ${limit} · 모범답안 ${l})`)
+  }
+  if (!over.length) ok('모범답안이 제 분량 조건을 지킨다', `제한 있는 ${limited}문항`)
+  else bad(`분량을 넘는 모범답안 ${over.length}개`, over.slice(0, 6).join(' · '))
+}
+
 // ── 3) 기기 한도에 지금 막히는 사람이 있는가 ─────────────────────────────
 {
   const rows = await all('/rest/v1/device_usage?select=user_id,device_id,last_seen')
