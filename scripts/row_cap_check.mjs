@@ -51,23 +51,27 @@ const walk = (dir, out = []) => {
   }
   return out
 }
-// 1) 아직 상한을 박아 둔 자리 — 실물(2026-09-08 grep) 그대로. 없어진 자리는 여기서도 지운다.
+// 1) 아직 상한을 박아 둔 자리 — 줄 번호가 아니라 '파일 + 그 줄에 들어 있는 글'로 적는다.
+//    예전에는 `파일:줄`로 적어 두어서, 위쪽에 코드가 몇 줄 늘기만 해도 목록이 실물과
+//    어긋난 것으로 잡혀 검사가 늘 빨간불이었다(5ffd258 이 24→26, 93→97 로 밀었다).
+//    그러면 진짜 신호 — 상한이 80%에 닿았다 — 가 소음에 묻힌다. 줄 번호는 소스에서 찾는다.
 const CAPPED = [
-  { where: 'src/app/admin/(protected)/page.tsx:24', what: 'subscriptions .limit(1000)', table: 'subscriptions' },
+  { file: 'src/app/admin/(protected)/page.tsx', match: '.limit(1000)', what: 'subscriptions .limit(1000)', table: 'subscriptions' },
   // 아래 넷은 9/7 목록에 빠져 있던 자리 — 이번 대조 규칙이 찾아냈다. 화면 밖(리포트·탈퇴)이라 별도 항목으로.
-  { where: 'src/lib/subscriberReport.ts:93', what: 'listUsers perPage 1000 (검증 계정 거르기)', table: '(auth users)' },
-  { where: 'src/lib/accountDeletion.ts:33', what: 'listUsers perPage 1000 × 10쪽 반복 — 10,000명까지는 안전', table: '(auth users)', cap: 10000 },
-  { where: 'scripts/free_to_paid.mjs:61', what: 'admin/users per_page=1000', table: '(auth users)' },
-  { where: 'scripts/inflow_to_payment.mjs:63', what: 'admin/users per_page=1000', table: '(auth users)' },
+  { file: 'src/lib/subscriberReport.ts', match: 'perPage: 1000', what: 'listUsers perPage 1000 (검증 계정 거르기)', table: '(auth users)' },
+  { file: 'src/lib/accountDeletion.ts', match: 'perPage: 1000', what: 'listUsers perPage 1000 × 10쪽 반복 — 10,000명까지는 안전', table: '(auth users)', cap: 10000 },
+  { file: 'scripts/free_to_paid.mjs', match: 'per_page=1000', what: 'admin/users per_page=1000', table: '(auth users)' },
+  { file: 'scripts/inflow_to_payment.mjs', match: 'per_page=1000', what: 'admin/users per_page=1000', table: '(auth users)' },
+  { file: 'scripts/today_pulse_check.mjs', match: 'per_page=1000', what: 'admin/users per_page=1000 × 10쪽 반복 — 10,000명까지는 안전', table: '(auth users)', cap: 10000 },
 ]
 // 위 목록이 실물과 어긋나면(자리가 사라졌거나 새로 생겼거나) 검사가 거짓말을 한다 — 소스에서 대조한다.
 const capRe = /\.limit\(1000\)|perPage:\s*1000|per_page=1000/
 const capSpots = []
 for (const file of ['src', 'scripts'].flatMap((d) => walk(d))) {
   if (file.endsWith('row_cap_check.mjs')) continue
-  const lines = fs.readFileSync(file, 'utf-8').split('\n')
-  lines.forEach((l, i) => {
-    if (capRe.test(l) && !/^\s*(\/\/|\*)/.test(l)) capSpots.push(`${path.relative('.', file).replace(/\\/g, '/')}:${i + 1}`)
+  const rel = path.relative('.', file).replace(/\\/g, '/')
+  fs.readFileSync(file, 'utf-8').split('\n').forEach((l, i) => {
+    if (capRe.test(l) && !/^\s*(\/\/|\*)/.test(l)) capSpots.push({ file: rel, line: i + 1, text: l.trim() })
   })
 }
 
@@ -78,21 +82,31 @@ counts['(auth users)'] = m.n
 
 let bad = 0
 console.log(`1000행 상한 대비 (경고선 ${WARN_AT * 100}%)\n`)
-const listed = [...new Set(CAPPED.map((c) => c.where))]
-const drift = capSpots.filter((sp) => !listed.includes(sp)).concat(listed.filter((w) => !capSpots.includes(w)))
-if (drift.length) {
-  console.log(`  ✖ 상한 자리 목록이 실물과 다르다 — 소스: ${capSpots.join(', ') || '없음'} / 목록: ${listed.join(', ')}\n`)
+// 목록 ↔ 소스 짝짓기: 같은 파일에서 적어 둔 글이 들어 있는 줄을 찾는다(한 자리에 하나씩).
+const unclaimed = [...capSpots]
+for (const c of CAPPED) {
+  const i = unclaimed.findIndex((s) => s.file === c.file && s.text.includes(c.match))
+  c.at = i >= 0 ? unclaimed.splice(i, 1)[0].line : null
+}
+const gone = CAPPED.filter((c) => c.at == null).map((c) => `${c.file}(${c.match})`)
+const added = unclaimed.map((s) => `${s.file}:${s.line}`)
+if (gone.length || added.length) {
+  const parts = []
+  if (added.length) parts.push(`목록에 없는 새 자리: ${added.join(', ')}`)
+  if (gone.length) parts.push(`소스에서 사라진 자리: ${gone.join(', ')}`)
+  console.log(`  ✖ 상한 자리 목록이 실물과 다르다 — ${parts.join(' / ')}\n`)
   bad++
 }
 for (const c of CAPPED) {
   const n = counts[c.table]
-  if (n == null) { console.log(`  ?  ${c.where}  ${c.what} — 행 수를 못 읽었다`); bad++; continue }
+  const where = `${c.file}:${c.at ?? '?'}`
+  if (n == null) { console.log(`  ?  ${where}  ${c.what} — 행 수를 못 읽었다`); bad++; continue }
   const cap = c.cap ?? CAP
   const ratio = n / cap
   const mark = ratio >= 1 ? '✖' : ratio >= WARN_AT ? '△' : '○'
   if (ratio >= WARN_AT) bad++
   const exact = c.table === '(auth users)' && !m.exact ? '+ (1000 이상, 정확한 총원 미상)' : ''
-  console.log(`  ${mark}  ${c.where}  ${c.what}  →  ${n}${exact} / ${cap} (${Math.round(ratio * 100)}%)`)
+  console.log(`  ${mark}  ${where}  ${c.what}  →  ${n}${exact} / ${cap} (${Math.round(ratio * 100)}%)`)
 }
 
 // 2) 덤: 전량을 읽는 select 중 큰 테이블을 가리키는 자리 — 나열만 한다(수정 금지).

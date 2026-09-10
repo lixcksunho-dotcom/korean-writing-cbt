@@ -423,7 +423,7 @@ export default async function DashboardPage() {
             {/* 한 숫자만 보여 주면 그 숫자를 확정으로 읽는다. 표본이 적을수록 폭이 넓어진다. */}
             {prediction && (
               <p className="mb-4 text-xs text-[#64748b]">
-                대체로 <b className="text-[#334155]">{prediction.low}~{prediction.high}점</b> 사이예요
+                대체로 <b className="text-[#334155]">{prediction.low}~{prediction.high}점</b> 사이에요
                 <span className="text-[#94a3b8]"> · 푼 문제가 늘수록 좁아져요</span>
               </p>
             )}
