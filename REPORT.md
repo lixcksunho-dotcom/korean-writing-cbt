@@ -70,6 +70,8 @@
 - `npm run report:method-impact`(기준일 8/27) — REPORT 9/5 절과 동일(진입 9/8→15/12, 완결 5→10). `-- --pivot 2026-09-03` — 위 표.
 - 원장 30일 채널 집계는 일회성 조회(임시 스크립트, 저장소에 남기지 않음).
 
+**검수 통과** — 리뷰어가 `node scripts/payment_method_diagnose.mjs` 재실행해 ①② 표(출력)가 위 기록과 일치함을 확인. `npm run check:methods` 6/6, eslint 통과 재확인. diff는 REPORT.md·scripts/payment_method_diagnose.mjs 두 파일뿐(결제 코드 무변경), 시크릿 노출 없음 확인. main 병합, BACKLOG 체크.
+
 ## 시험 화면 첫 30초 관찰 (work/exam-entry-observe, 2026-09-10) — 검수 통과
 
 리뷰어가 `ENTRY_HOLD_SEC=3 npm run check:entry` 로 재실행해 REPORT 수치(타이머 흐름, ② 아이콘뿐, 세션 1건 유지 등)와 일치함을 확인. `entrycheck+` 계정 재조회 0건으로 정리도 확인. main 병합, BACKLOG 체크.
