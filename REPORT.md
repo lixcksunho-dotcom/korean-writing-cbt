@@ -1,6 +1,8 @@
 # REPORT
 
-## 시험 화면 첫 30초 관찰 (work/exam-entry-observe, 2026-09-10)
+## 시험 화면 첫 30초 관찰 (work/exam-entry-observe, 2026-09-10) — 검수 통과
+
+리뷰어가 `ENTRY_HOLD_SEC=3 npm run check:entry` 로 재실행해 REPORT 수치(타이머 흐름, ② 아이콘뿐, 세션 1건 유지 등)와 일치함을 확인. `entrycheck+` 계정 재조회 0건으로 정리도 확인. main 병합, BACKLOG 체크.
 
 - 백로그: "`scripts/exam_entry_check.mjs` — 로그인한 검사 계정으로 무료 회차를 열어 ①첫 화면에 무엇이 보이는지 ②'저장하고 나가기'가 눈에 띄는 자리에 있는지 ③390px 에서 첫 문항이 접히지 않는지 를 캡처와 함께 REPORT 에". 범위대로 **읽기·캡처만** — 답안 제출 없음, 화면 코드 무변경, 만든 계정·세션은 검사 끝에 지운다.
 - 바꾼 것: `scripts/exam_entry_check.mjs`(9/9 커밋 b5c1934 의 것)에 ①②③ 측정과 30초 대기, 넓은 화면(1280px) 대조를 더했다. 캡처는 `docs/captures/exam-entry/` 에 남긴다(REPORT 가 가리키는 실물이라 저장소에 둔다, 5장 200KB). `ENTRY_HOLD_SEC` 로 대기 시간을 줄일 수 있다.
