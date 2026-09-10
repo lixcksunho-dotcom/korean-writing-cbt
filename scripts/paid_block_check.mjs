@@ -152,6 +152,25 @@ const bad = (n, d = '') => results.push({ ok: false, n, d })
   else bad('한계에서 멈춘 답안', many.map(([k, n]) => `${k} ${n}건`).join(' · '))
 }
 
+// ── 5) 우리 쪽 사정으로 실패했을 때 유료 사용량을 되돌리는가 ────────────
+// 사용량은 AI 호출 '앞'에서 센다(실패를 골라 공짜로 무한 호출하지 못하게). 그런데 무료 체험만
+// 되돌리고 유료는 안 되돌리고 있었다 — 통신 오류나 5xx 로 실패해도 하루 30회에서 한 번이
+// 깎였다. 돈 낸 사람이 우리 잘못으로 손해를 본다(2026-09-10 발견).
+{
+  const files = [
+    'src/app/(main)/cbt/actions.ts',
+    'src/app/(main)/practice/actions.ts',
+    'src/app/(main)/manuscript/actions.ts',
+  ]
+  const missing = files.filter(f => {
+    const src = fs.readFileSync(path.join(ROOT, f), 'utf8')
+    // 두 자리에서 되돌려야 한다: 응답을 못 받았을 때, 그리고 응답이 잘렸을 때.
+    return (src.match(/refundPaidGrade\(/g) ?? []).length < 2
+  })
+  if (!missing.length) ok('실패하면 유료 사용량도 되돌린다', `채점기 ${files.length}곳`)
+  else bad('유료 사용량이 안 돌아온다', missing.join(' · '))
+}
+
 console.log('\n돈 낸 사람이 막히는 자리\n')
 for (const r of results) console.log(`${r.ok ? '  o' : '  x'} ${r.n}${r.d ? ` — ${r.d}` : ''}`)
 const failed = results.filter(r => !r.ok).length

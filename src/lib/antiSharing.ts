@@ -96,6 +96,33 @@ export async function paidUsageBlock(userId: string): Promise<string | null> {
  * 읽고 나서 쓰는 방식이라 동시 요청이 겹치면 한 건이 덜 세어질 수 있다. 하루 30회
  * 한도에서는 실익이 없어 그대로 둔다.
  */
+/**
+ * 우리 쪽 사정으로 채점이 실패했을 때 오늘 사용 횟수를 되돌린다.
+ *
+ * 왜 필요한가: 사용량은 AI 호출 '앞'에서 센다(그래야 실패를 골라 공짜로 무한 호출하지
+ * 못한다). 그런데 무료 체험만 되돌리고 유료는 되돌리지 않고 있었다 — 통신 오류나 5xx로
+ * 채점이 실패해도 하루 30회에서 한 번이 깎였다. 돈을 낸 사람이 우리 잘못으로 손해를 본다.
+ *
+ * 되돌리는 것은 '우리 쪽 사정'일 때뿐이다(aiGradingFailure 의 refund 판정). 응답 파싱
+ * 실패는 되돌리지 않는다 — 그건 특정 입력을 골라 무한히 부르는 통로가 된다.
+ */
+export async function refundPaidGrade(userId: string): Promise<void> {
+  const admin = createAdminClient()
+  const day = todayKey()
+  const { data: row } = await admin
+    .from('usage_daily')
+    .select('grade_count')
+    .eq('user_id', userId)
+    .eq('day', day)
+    .maybeSingle()
+  const used = (row?.grade_count as number | undefined) ?? 0
+  if (used <= 0) return
+  await admin.from('usage_daily').upsert(
+    { user_id: userId, day, grade_count: used - 1 },
+    { onConflict: 'user_id,day' }
+  )
+}
+
 export async function recordPaidGrade(userId: string): Promise<void> {
   const admin = createAdminClient()
   const day = todayKey()

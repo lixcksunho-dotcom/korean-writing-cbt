@@ -4,7 +4,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@/lib/supabase/server'
 import { getActiveSubscription } from '@/lib/subscription'
 import { consumeAiTrial, refundAiTrial, FREE_AI_TRIAL, readTrialUsed } from '@/lib/aiTrial'
-import { paidUsageBlock, recordPaidGrade } from '@/lib/antiSharing'
+import { paidUsageBlock, recordPaidGrade, refundPaidGrade } from '@/lib/antiSharing'
 import { gradingLimitError, MAX_ANSWER_CHARS, MAX_TOPIC_CHARS } from '@/lib/aiGradingLimits'
 import { describeGradingFailure, truncatedFailure, alertGradingFailure } from '@/lib/aiGradingFailure'
 import { trackServerEvent } from '@/lib/analytics/trackServerEvent'
@@ -127,6 +127,7 @@ export async function gradeManuscript(text: string, topic: string): Promise<Grad
     console.error(f.operator, { userId: user.id })
     await alertGradingFailure('원고지', f)
     if (usingTrial && f.refund) await refundAiTrial(user.id, trialUsed + 1)
+    else if (f.refund) await refundPaidGrade(user.id)
     return { error: f.userMessage }
   }
 
@@ -137,6 +138,7 @@ export async function gradeManuscript(text: string, topic: string): Promise<Grad
     console.error(f.operator, { userId: user.id, chars: text.length })
     await alertGradingFailure('원고지', f)
     if (usingTrial) await refundAiTrial(user.id, trialUsed + 1)
+    else await refundPaidGrade(user.id)
     return { error: f.userMessage }
   }
 
