@@ -9,7 +9,12 @@ import { questionBank } from '@/lib/questionBank'
 export const dynamic = 'force-dynamic'
 
 // 오답 재시험 — 내가 '지금도 틀리는' 객관식만 모아 다시 푼다.
-export default async function WrongPracticePage() {
+export default async function WrongPracticePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ round?: string }>
+}) {
+  const { round: roundParam } = await searchParams
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirectToLogin('/practice/wrong')
@@ -89,5 +94,55 @@ export default async function WrongPracticePage() {
     )
   }
 
-  return <PracticeMultiple questions={questions} title={`오답 다시 풀기 (${questions.length}문항)`} />
+  // 회차별로 나눠 볼 수 있게 한다.
+  //
+  // 왜 필요한가: 오답노트는 1회차부터 지금까지 '지금도 틀리는' 문항을 한 줄로 모은다.
+  // 회차가 쌓이면 "5회 오답만 보고 싶은데 1회부터 넘겨야 한다"가 된다(2026-09-10 문의).
+  const byRound = new Map<number, number>()
+  for (const q of questions) byRound.set(Number(q.round), (byRound.get(Number(q.round)) ?? 0) + 1)
+  const rounds = [...byRound.keys()].sort((a, b) => a - b)
+  const picked = roundParam && rounds.includes(Number(roundParam)) ? Number(roundParam) : null
+  const shown = picked == null ? questions : questions.filter(q => Number(q.round) === picked)
+
+  return (
+    <div>
+      {rounds.length > 1 && (
+        <div className="mx-auto max-w-3xl px-4 pt-4">
+          <div className="flex flex-wrap gap-2">
+            <Link
+              href="/practice/wrong"
+              className={`rounded-full border px-3 py-1.5 text-xs font-bold transition-colors ${
+                picked == null
+                  ? 'border-[#1e3a5f] bg-[#1e3a5f] text-white'
+                  : 'border-[#e2e8f0] bg-white text-[#475569] hover:border-[#cbd5e1]'
+              }`}
+            >
+              전체 {questions.length}
+            </Link>
+            {rounds.map(r => (
+              <Link
+                key={r}
+                href={`/practice/wrong?round=${r}`}
+                className={`rounded-full border px-3 py-1.5 text-xs font-bold transition-colors ${
+                  picked === r
+                    ? 'border-[#1e3a5f] bg-[#1e3a5f] text-white'
+                    : 'border-[#e2e8f0] bg-white text-[#475569] hover:border-[#cbd5e1]'
+                }`}
+              >
+                {r}회 {byRound.get(r)}
+              </Link>
+            ))}
+          </div>
+          {/* '목록에서 빼는 법'은 따로 없다 — 다시 풀어 맞히면 저절로 빠진다. 그 사실을 적어 둔다. */}
+          <p className="mt-2 text-xs text-[#64748b]">
+            다시 풀어 맞히면 이 목록에서 자동으로 빠져요.
+          </p>
+        </div>
+      )}
+      <PracticeMultiple
+        questions={shown}
+        title={picked == null ? `오답 다시 풀기 (${shown.length}문항)` : `${picked}회 오답 (${shown.length}문항)`}
+      />
+    </div>
+  )
 }
