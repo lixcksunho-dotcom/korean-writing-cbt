@@ -12,6 +12,7 @@ import { SUBSCRIPTION_REQUIRED, type GradingError } from '@/lib/aiGradingMessage
 import type { EssayGrade } from '@/app/(main)/cbt/actions'
 import { getActiveProgram } from '@/lib/programContext'
 import { questionBank } from '@/lib/questionBank'
+import { sanitizeSavedAnswers } from '@/lib/savedAnswers'
 import { parseCharLimit } from '@/lib/charLimit'
 
 // 서술형 '연습' 채점: 정식 시험 세션과 무관하게 단일 문항을 즉시 채점한다.
@@ -184,7 +185,7 @@ export async function getPracticeProgress(
     .maybeSingle()
 
   return {
-    savedAnswers: (existing?.saved_answers as Record<string, string> | null) ?? {},
+    savedAnswers: sanitizeSavedAnswers(existing?.saved_answers),
     resumed: !!existing?.saved_at,
   }
 }
@@ -231,7 +232,7 @@ export async function savePracticeProgress(
 
   const { error } = await supabase
     .from('quiz_sessions')
-    .update({ saved_answers: answers, saved_at: new Date().toISOString() })
+    .update({ saved_answers: sanitizeSavedAnswers(answers), saved_at: new Date().toISOString() })
     .eq('id', sessionId)
     .eq('user_id', user.id)
 
