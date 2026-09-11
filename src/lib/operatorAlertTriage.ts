@@ -8,6 +8,11 @@
 // 안 읽게 되고, 그때 진짜 하나가 묻힌다. 결제 실패 1건을 16일간 몰랐던 적이 있다 —
 // 알림이 소용없어지는 방식이 바로 이것이다.
 //
+// 두 번째 사건(2026-09-11): 검사 자국을 걷어낸 뒤에도 11건이 남았는데 전부 기계가 이미
+// 끝낸 일이었다 — 행사 코드 발급, 자동 확인을 통과한 신청, 사후 확인이 스스로 회수한 것,
+// 회선이 끊겨 난 화면 오류, 그리고 처리를 끝냈는데 '처리됨'이 안 붙던 문의. 운영자 지시로
+// 그런 것은 '볼 것'에서 내린다.
+//
 // 지우지는 않는다. 검사가 실제로 돌았다는 기록은 그것대로 쓸모가 있다.
 // '볼 것'과 '안 봐도 되는 것'을 가르기만 한다.
 
@@ -40,17 +45,31 @@ export function isCheckArtifact(text: string): boolean {
   )
 }
 
+/**
+ * 브라우저가 서버에 닿지 못해 난 오류의 문구. 사파리 'Load failed', 크롬 'Failed to fetch',
+ * 파이어폭스 'NetworkError …'. 서버에서 고칠 것이 없다 — 회선이 끊긴 쪽에서 난 일이다.
+ * 같은 화면에서 계속 나면 한 시간마다 새 기록이 쌓이므로 그때는 눈에 띈다.
+ */
+const NETWORK_ERROR_TAIL =
+  / — (Load failed|Failed to fetch|NetworkError when attempting to fetch resource\.?|The network connection was lost\.?|The Internet connection appears to be offline\.?|Network request failed)\s*$/
+
 /** 그때는 할 일이 있었지만 지금은 없는 알림인가. */
 export function isSettled(summary: string): boolean {
   if (!summary) return false
-  // 사후 확인이 '아무것도 안 바뀜'으로 끝난 보고 — 볼 것이 없다.
-  if (/회수 0건/.test(summary) && /되살림 0건/.test(summary) && /조건 어긋남 0건/.test(summary)) {
-    // '못 읽음'만 있는 경우다. 못 읽은 것은 회수하지 않으므로 사람이 할 일이 없고,
-    // 진짜로 내려간 글이면 다음 회차에 '회수'로 다시 올라온다.
-    return true
+  // 사후 확인 보고. 회수·못 읽음은 기계가 이미 끝냈다 — 회수는 영구이고 되살림은 사람이
+  // 관리자 화면에서 한다(운영자 결정 2026-09-08). 사람이 볼 것은 '조건 어긋남'뿐이다:
+  // 그건 기계가 회수하지 않고 알리기만 하므로 글을 열어 볼 사람이 필요하다.
+  if (/^블로그 홍보 사후 확인/.test(summary)) {
+    const violated = /조건 어긋남 (\d+)건/.exec(summary)
+    return violated ? Number(violated[1]) === 0 : false
   }
+  // 자동 확인을 통과해 그 자리에서 지급된 신청 — 심사할 것이 없다.
+  if (/^블로그 홍보 신청 — 자동 확인 통과/.test(summary)) return true
+  // 행사 코드 발급 — 기록은 남기되(마감·이상 사용은 이 기록으로 센다) 사람이 할 일은 없다.
+  if (/^행사 코드 사용:/.test(summary)) return true
   // 배포 직후 조각 오류는 새로고침으로 스스로 복구된다 — 우리 코드가 그렇게 적어 둔다.
   if (/새로고침으로 복구/.test(summary)) return true
+  if (NETWORK_ERROR_TAIL.test(summary)) return true
   return false
 }
 
