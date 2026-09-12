@@ -37,13 +37,18 @@ export async function recordOperatorAlert(
 ): Promise<void> {
   // 기록이 먼저다 — 텔레그램이 막혀도 사고는 남아야 한다.
   try {
-    await createAdminClient().from('page_views').insert({
+    const { error } = await createAdminClient().from('page_views').insert({
       path: `#event/alert_${kind}`,
       visitor_id: ref ? ref.slice(0, 64) : null,
       referrer: summary.slice(0, 512),
     })
-  } catch {
-    // 알림 기록 실패가 결제·채점 흐름을 막으면 안 된다
+    if (error) {
+      console.error('[operatorAlerts] 알림 기록 실패 — 관리자 목록에 남지 않음', { code: error.code, message: error.message })
+    }
+  } catch (error) {
+    console.error('[operatorAlerts] 알림 기록 예외 — 관리자 목록에 남지 않음', {
+      code: 'exception', message: error instanceof Error ? error.message : String(error),
+    })
   }
 
   // 검사가 만든 자국은 폰을 울리지 않는다. 기록은 위에서 이미 남겼다 —

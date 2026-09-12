@@ -45,12 +45,14 @@ async function revokeGrants(
 ): Promise<number> {
   // 심사 승인분과 자동 지급분은 order_id 규칙이 다르다 — 둘 다 본다.
   const orderIds = [`review-${feedbackId}`, ...(userId ? [`review-auto-${userId}`] : [])]
-  const { data } = await admin
+  const { data, error } = await admin
     .from('subscriptions')
     .update({ status: 'cancelled', payment_key: GRANT_KEY_VIOLATED })
     .in('order_id', orderIds)
     .eq('status', 'active')
     .select('id')
+  // 회수 실패를 0건과 같게 보면 '회수 0건'으로 보고돼 사람이 모른다. 흐름은 그대로, 로그만 남긴다.
+  if (error) console.error('[blog-review-audit] 이용권 회수 update 실패', { feedbackId, code: error.code, message: error.message })
   return data?.length ?? 0
 }
 
