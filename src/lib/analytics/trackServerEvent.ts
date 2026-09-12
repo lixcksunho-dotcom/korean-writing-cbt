@@ -5,12 +5,17 @@ import { createAdminClient } from '@/lib/supabase/admin'
 export async function trackServerEvent(event: string, userId?: string, meta?: string): Promise<void> {
   try {
     const admin = createAdminClient()
-    await admin.from('page_views').insert({
+    const { error } = await admin.from('page_views').insert({
       path: `#event/${event}`.slice(0, 512),
       visitor_id: userId ? `u:${userId}`.slice(0, 64) : null,
       referrer: meta ? meta.slice(0, 512) : null,
     })
-  } catch {
-    // 무시(조용히 실패) — 트래킹이 학습/채점 흐름을 막지 않도록
+    if (error) {
+      console.error('[trackServerEvent] 이벤트 기록 실패 — 퍼널 통계에 반영되지 않음', { code: error.code, message: error.message })
+    }
+  } catch (error) {
+    console.error('[trackServerEvent] 이벤트 기록 예외 — 퍼널 통계에 반영되지 않음', {
+      code: 'exception', message: error instanceof Error ? error.message : String(error),
+    })
   }
 }

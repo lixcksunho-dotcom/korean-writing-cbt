@@ -16,12 +16,15 @@ export async function POST(req: Request) {
     // 퍼널 이벤트 모드
     if (typeof event === 'string' && EVENT_NAME.test(event)) {
       const admin = createAdminClient()
-      await admin.from('page_views').insert({
+      const { error } = await admin.from('page_views').insert({
         path: `#event/${event}`.slice(0, 512),
         visitor_id: typeof visitorId === 'string' ? visitorId.slice(0, 64) : null,
         session_id: typeof sessionId === 'string' ? sessionId.slice(0, 64) : null,
         referrer: typeof meta === 'string' && meta ? meta.slice(0, 512) : null,
       })
+      if (error) {
+        console.error('[track] 이벤트 기록 실패 — 퍼널 통계에 반영되지 않음', { code: error.code, message: error.message })
+      }
       return new Response(null, { status: 204 })
     }
 
@@ -33,14 +36,19 @@ export async function POST(req: Request) {
     if (path.startsWith('/admin') || path.startsWith('/api')) return new Response(null, { status: 204 })
 
     const admin = createAdminClient()
-    await admin.from('page_views').insert({
+    const { error } = await admin.from('page_views').insert({
       path: path.slice(0, 512),
       visitor_id: typeof visitorId === 'string' ? visitorId.slice(0, 64) : null,
       session_id: typeof sessionId === 'string' ? sessionId.slice(0, 64) : null,
       referrer: typeof referrer === 'string' && referrer ? referrer.slice(0, 512) : null,
     })
-  } catch {
-    // 무시(조용히 실패)
+    if (error) {
+      console.error('[track] 페이지뷰 기록 실패 — 방문 통계에 반영되지 않음', { code: error.code, message: error.message })
+    }
+  } catch (error) {
+    console.error('[track] 방문 기록 예외 — 통계에 반영되지 않음', {
+      code: 'exception', message: error instanceof Error ? error.message : String(error),
+    })
   }
   return new Response(null, { status: 204 })
 }

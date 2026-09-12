@@ -36,7 +36,15 @@ export async function deleteMyAccount(input: DeleteMyAccountInput): Promise<Dele
     path: DELETE_REASON_PATH,
     message: detail ? `${reason} — ${detail}` : reason,
     resolved: true,
-  }).then(() => {}, () => {})
+  }).then(({ error }) => {
+    if (error) {
+      console.error('[account] 탈퇴 사유 기록 실패 — 사유 없이 탈퇴 계속 진행', { code: error.code, message: error.message })
+    }
+  }, (error: unknown) => {
+    console.error('[account] 탈퇴 사유 기록 예외 — 사유 없이 탈퇴 계속 진행', {
+      code: 'exception', message: error instanceof Error ? error.message : String(error),
+    })
+  })
 
   // 서버 액션에서 던지면 사용자는 오류 화면(코드만 있는)을 본다 — 어떤 실패든 말로 돌려준다.
   const result = await deleteAccountKeepingPayments(user.id).catch((e: unknown) => ({

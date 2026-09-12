@@ -21,6 +21,7 @@ export default function CopyGuard({ notice = true }: { notice?: boolean }) {
     document.addEventListener('contextmenu', block)
     document.addEventListener('dragstart', block)
     return () => {
+      // write-result-ignored: DOM 클래스 해제는 DB 쓰기가 아니므로 수신할 오류 결과가 없다.
       document.body.classList.remove('cbt-noselect')
       document.removeEventListener('copy', block)
       document.removeEventListener('cut', block)

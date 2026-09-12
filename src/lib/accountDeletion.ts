@@ -22,13 +22,16 @@ let holderIdCache: string | null = null
 async function withdrawnHolderId(admin: Admin): Promise<string> {
   if (holderIdCache) return holderIdCache
   // 먼저 만들어 본다 — 이미 있으면 목록에서 찾는다(관리 API 에 이메일 단건 조회가 없다).
-  const created = await admin.auth.admin.createUser({
+  const { data: created, error } = await admin.auth.admin.createUser({
     email: WITHDRAWN_HOLDER_EMAIL,
     // bcrypt 는 72자까지만 본다 — 그보다 길면 GoTrue 가 500 을 낸다(UUID 둘을 이었다가 실제로 막혔다).
     password: `Hold-${crypto.randomUUID()}-aA1!`,
     email_confirm: true,
   })
-  if (created.data.user?.id) { holderIdCache = created.data.user.id; return holderIdCache }
+  if (error) {
+    console.error('[accountDeletion] 보관 계정 생성 실패 — 기존 계정 조회로 계속 진행', { code: error.code, message: error.message })
+  }
+  if (created.user?.id) { holderIdCache = created.user.id; return holderIdCache }
   for (let page = 1; page <= 10; page++) {
     const { data } = await admin.auth.admin.listUsers({ page, perPage: 1000 })
     const hit = data?.users?.find((u) => u.email === WITHDRAWN_HOLDER_EMAIL)

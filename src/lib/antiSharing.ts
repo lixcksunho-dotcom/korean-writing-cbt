@@ -105,7 +105,11 @@ export async function paidUsageBlock(userId: string): Promise<string | null> {
  * 되돌리는 것은 '우리 쪽 사정'일 때뿐이다(aiGradingFailure 의 refund 판정). 응답 파싱
  * 실패는 되돌리지 않는다 — 그건 특정 입력을 골라 무한히 부르는 통로가 된다.
  */
-export async function refundPaidGrade(userId: string): Promise<void> {
+export type PaidGradeWriteResult =
+  | { ok: true; error: null }
+  | { ok: false; error: { code: string; message: string } }
+
+export async function refundPaidGrade(userId: string): Promise<PaidGradeWriteResult> {
   const admin = createAdminClient()
   const day = todayKey()
   const { data: row } = await admin
@@ -115,14 +119,19 @@ export async function refundPaidGrade(userId: string): Promise<void> {
     .eq('day', day)
     .maybeSingle()
   const used = (row?.grade_count as number | undefined) ?? 0
-  if (used <= 0) return
-  await admin.from('usage_daily').upsert(
+  if (used <= 0) return { ok: true, error: null }
+  const { error } = await admin.from('usage_daily').upsert(
     { user_id: userId, day, grade_count: used - 1 },
     { onConflict: 'user_id,day' }
   )
+  if (error) {
+    console.error('[antiSharing] 유료 사용량 복원 실패 — 사용 횟수가 되돌려지지 않음', { code: error.code, message: error.message })
+    return { ok: false, error: { code: error.code, message: error.message } }
+  }
+  return { ok: true, error: null }
 }
 
-export async function recordPaidGrade(userId: string): Promise<void> {
+export async function recordPaidGrade(userId: string): Promise<PaidGradeWriteResult> {
   const admin = createAdminClient()
   const day = todayKey()
   const { data: row } = await admin
@@ -132,8 +141,13 @@ export async function recordPaidGrade(userId: string): Promise<void> {
     .eq('day', day)
     .maybeSingle()
   const used = (row?.grade_count as number | undefined) ?? 0
-  await admin.from('usage_daily').upsert(
+  const { error } = await admin.from('usage_daily').upsert(
     { user_id: userId, day, grade_count: used + 1 },
     { onConflict: 'user_id,day' }
   )
+  if (error) {
+    console.error('[antiSharing] 유료 사용량 기록 실패 — 일일 사용 횟수가 집계되지 않음', { code: error.code, message: error.message })
+    return { ok: false, error: { code: error.code, message: error.message } }
+  }
+  return { ok: true, error: null }
 }

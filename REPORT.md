@@ -1085,3 +1085,47 @@ chore(lint): 경고 23건을 0으로 — 동작 변경 없음
 - 사람이 결정할 것: 새 표 권장안, 다시 틀려도 명시적 복원 전까지 제외 유지 여부, 약점 통계는 유지하고 두 오답 화면의 표시만 제외하는 범위.
 - 사람이 결정할 것: 실제 번호 배정·0NN_ 이름으로 migrations 편입·SQL Editor 검토 및 실행. SQL의 실제 구문 실행·운영 RLS·GRANT 동작은 검증하지 않았다.
 - 하지 않은 것: 코드·화면·DB 변경, 마이그레이션 실행, 네트워크·외부 API·설치·배포·커밋. Fable 검수용 문서와 SQL 초안만 남겼다.
+
+## 보조 함수 쓰기 결과 수신 (work/fable-codex-write-error-audit, 2026-09-12, 워커 Codex)
+
+- 전수 범위: `src/lib/**`, 모든 서버 액션, 그 밖의 서버 코드의 쓰기·`auth.admin` 호출을 대조했다. 오류 미수신 9곳 / 수정 8곳 / 수정 금지 미수신 1곳. 변경 파일 10개(이 보고서 포함).
+- 지시문과 달랐던 점: `analytics.ts` 대신 `src/lib/analytics/trackServerEvent.ts`; 보관 계정은 `created.data`만 사용했고, 탈퇴 사유는 `.then` 양쪽에서 삼켰다. `/api/track` 2곳과 이용권 회수 cron 1곳도 발견했다.
+
+| 파일 | 함수 | 호출 | 처리 |
+|---|---|---|---|
+| `src/lib/antiSharing.ts` | `recordPaidGrade` | `usage_daily.upsert` | 미수신 → `{ error }`, 실패 로그 + `{ ok, error }` 반환 |
+| `src/lib/antiSharing.ts` | `refundPaidGrade` | `usage_daily.upsert` | 미수신 → `{ error }`, 실패 로그 + `{ ok, error }` 반환; 사용량 0 이하는 성공 반환 |
+| `src/lib/analytics/trackServerEvent.ts` | `trackServerEvent` | `page_views.insert` | 미수신 → 오류·예외 로그, 흐름 유지 |
+| `src/lib/operatorAlerts.ts` | `recordOperatorAlert` | `page_views.insert` | 미수신 → 오류·예외 로그, 텔레그램 단계 유지 |
+| `src/lib/accountDeletion.ts` | `withdrawnHolderId` | `auth.admin.createUser` | 오류 미확인 → 구조 분해·로그; 기존 계정 조회 폴백 유지 |
+| `src/app/(main)/account/actions.ts` | `deleteMyAccount` | `feedback.insert` | `.then` 성공 결과의 error·거부 예외 로그, 탈퇴 계속 |
+| `src/app/api/track/route.ts` | `POST` 이벤트 분기 | `page_views.insert` | 미수신 → 오류 로그, 204 유지 |
+| `src/app/api/track/route.ts` | `POST` 페이지뷰 분기 | `page_views.insert` | 미수신 → 오류·예외 로그, 204 유지 |
+| `src/app/api/cron/blog-review-audit/route.ts:50` | `revokeGrants` | `subscriptions.update(...).select('id')` | **수정 금지**: data만 받고 error 미수신; 검사 FAIL로 남김 |
+| `src/lib/payment.ts` | `grantSubscriptionForPayment` | `subscriptions.insert` | **수정 금지**: 기존 error 수신 확인, 미수신 아님 |
+| `src/lib/subscriptionRevocation.ts` | `revokeSubscriptionForPayment` | `subscriptions.update` | **수정 금지**: 기존 error 수신 확인, 미수신 아님 |
+| `src/app/api/portone/webhook/route.ts` | `POST` | 발급·회수 보조 함수 위임 | **수정 금지**: 직접 DB 쓰기 없음, 위임 결과 확인 |
+| `src/app/(main)/subscribe/{blog-review-actions,promo-actions}.ts` | `submitBlogReview`, `redeemPromoCode` | `subscriptions.insert` | **수정 금지**: 기존 error 수신 확인 |
+| `src/app/admin/(protected)/{members,promo-reviews}/actions.ts` | `setMemberPaid`, `approveBlogReview`, `revokeBlogReview`, `revokeAutoGrant`, `restoreBlogReview` | `subscriptions.insert/update` | **수정 금지**: 기존 error 수신 확인 |
+
+- `auth.admin.listUsers`는 조회라 쓰기 미수신 집계에서 제외했다(accountDeletion·subscriberReport는 data만 수신, adminPaging은 error도 수신). 나머지 auth 쓰기(createUser·deleteUser·updateUserById)와 기기 upsert는 기존 오류 수신을 확인했다.
+- 호출자 **9곳이 결과를 아직 안 본다**: `src/app/(main)/cbt/actions.ts:126,152,162`, `manuscript/actions.ts:97,130,141`, `practice/actions.ts:97,128,137`(뒤 두 경로도 `src/app/(main)/` 기준). 증가 3곳·복원 6곳, 호출부 변경 없음; 실패 시 채점 차단 정책은 사람이 결정한다.
+- 로그는 모듈·실패 작업·결과와 `{ code, message }` 형식이며, 새 throw·추가 DB 요청·사용자 차단을 넣지 않았다. 읽기 실패·동시 갱신 정책은 그대로다.
+- `scripts/supabase_write_result_check.mjs`와 `check:write-results` 추가: src 전체의 5종 쓰기와 auth.admin 쓰기를 정규식 토큰·괄호 대응으로 검사한다(파서 설치 없음). error 별칭·다중 행 체인·return·직접 `.then`을 인정한다.
+- 유일한 코드 옆 예외는 `CopyGuard.tsx`의 DOM `classList.remove`: `// write-result-ignored: 이유`. 경로별 예외 하드코딩 없음. `.then` 콜백이 실제 오류를 처리하는지까지 정적으로 보증하지는 않는다.
+- 아래 검증은 모두 로컬 실행. DB·외부 API·네트워크·설치·커밋 없음. 수정 금지 경로는 주석도 바꾸지 않았다.
+
+| 검증 명령 | exit | 마지막 줄 |
+|---|---:|---|
+| `npm.cmd run check:write-results` (복원 후 최종) | 1 | `supabase-write-results: PASS 59 / FAIL 1` — 위 수정 금지 cron 1건 |
+| `npx.cmd tsc --noEmit` | 0 | 출력 없음 |
+| `npx.cmd eslint 'src/app/(main)/account/actions.ts' src/app/api/track/route.ts src/lib/accountDeletion.ts src/lib/analytics/trackServerEvent.ts src/lib/antiSharing.ts src/lib/operatorAlerts.ts src/components/cbt/CopyGuard.tsx scripts/supabase_write_result_check.mjs` | 0 | 출력 없음 |
+| `npm.cmd run check:action-auth` | 0 | `server-action-auth: PASS 42 / FAIL 0` |
+| `npm.cmd run check:alert-triage` | 0 | `볼 것만 위로 온다. (통과 14 · 실패 0)` |
+| `node --input-type=module` (표준입력: checkSource 경계 사례 15개 + 실파일 변이·복원 assert) | 0 | `red-mutation-restored: PASS` (앞선 `scanner-fixtures: PASS 15 / FAIL 0`) |
+| 위 변이 중 `node scripts/supabase_write_result_check.mjs` | 1 | `supabase-write-results: PASS 58 / FAIL 2` — trackServerEvent의 수신 제거를 탐지, finally로 원문 복원 확인 |
+| `git diff --check` | 0 | diff 오류 없음(환경 CRLF 경고만) |
+
+커밋 메시지 제안:
+fix(lib): 보조 함수의 DB 쓰기도 실패를 안다 — { error } 수신 + 정적 검사
+- 리뷰어 Fable 보정: 수정 금지로 남긴 cron `revokeGrants`의 update 도 `{ error }`를 받아 로그만 남긴다(흐름·반환값 무변경 — 회수 실패가 "회수 0건"으로 보고되던 것). 검사 결과 60/0.
