@@ -102,7 +102,8 @@
     "check:action-auth": "node scripts/server_action_auth_check.mjs",
     "check:wrong-retake": "node --experimental-strip-types --no-warnings scripts/wrong_note_retake_check.mjs",
     "check:admin-paging": "node scripts/admin_paging_check.mjs",
-    "check:saved-answers": "node --experimental-strip-types --no-warnings scripts/saved_answers_check.mjs"
+    "check:saved-answers": "node --experimental-strip-types --no-warnings scripts/saved_answers_check.mjs",
+    "check:offline": "node scripts/offline_check_bundle.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.100.1",
@@ -127,5 +128,31 @@
     "eslint-config-next": "16.2.6",
     "tailwindcss": "^4",
     "typescript": "^5"
-  }
+  },
+  "offlineChecks": [
+    "check:schedule",
+    "check:device-window",
+    "check:limit-dialog",
+    "check:attempts",
+    "check:methods",
+    "check:renewal",
+    "check:feedback",
+    "check:alerts",
+    "check:chunk",
+    "check:keyshape",
+    "check:pace",
+    "check:next-round",
+    "check:audio-guard",
+    "check:exam-timer",
+    "check:exit-hygiene",
+    "check:alert-triage",
+    "check:landing-cache",
+    "check:dday",
+    "check:own-copy",
+    "check:limits-copy",
+    "check:write-results",
+    "check:action-auth",
+    "check:wrong-retake",
+    "check:saved-answers"
+  ]
 }

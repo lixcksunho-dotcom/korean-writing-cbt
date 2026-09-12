@@ -850,3 +850,44 @@ fix(lib): 보조 함수의 DB 쓰기도 실패를 안다 — { error } 수신 + 
 | git diff --check | 0 | 오류 없음(LF→CRLF 안내만 출력) |
 
 - 커밋 메시지 제안: `fix(copy): 한도 숫자를 상수에서 읽는다 + 문구-상수 대조 검사` — 커밋하지 않음.
+
+## 오프라인 검사 묶음 (work/fable-codex-offline-check-bundle, 2026-09-12, 워커 Codex)
+
+| 오프라인 | 네트워크 | 브라우저 |
+|---|---|---|
+| 26 (묶음 24 · 제외 2) | 20 | 37 |
+
+- 기존 83개 기준(새 실행기 제외). 이름·파일·판정·근거 전체: [분류표](docs/reports/offline_check_classification_2026-09-12.md). 목록은 package.json의 offlineChecks 한 곳에서 관리한다.
+- 오프라인 전체: `check:schedule`, `check:device-window`, `check:limit-dialog`, `check:attempts`, `check:methods`, `check:renewal`, `check:feedback`, `check:alerts`, `check:chunk`, `check:keyshape`, `check:pace`, `check:next-round`, `check:audio-guard`, `check:exam-timer`, `check:exit-hygiene`, `check:alert-triage`, `check:landing-cache`, `check:dday`, `check:own-copy`, `check:limits-copy`, `check:write-results`, `check:action-auth`, `check:wrong-retake`, `check:saved-answers`, `check:blog`, `check:revoke`.
+- 최초 실행: 24 통과·2 실패, 9.63초, exit 1. 재판정 후 제외: check:blog는 Python 미설치(spawn python ENOENT, 최초 표시 -4058), check:revoke는 isActivePass가 subscriptionDisplay.ts로 이동하여 기존 문자열 검사 11/12 실패(exit 1). 둘 다 오프라인이며 검사 자체는 수정하지 않았다.
+
+| 검사 | exit | 마지막 출력 줄 |
+|---|---|---|
+| check:schedule | 0 | 문제 없음 ✓ |
+| check:device-window | 0 | Passed: 6, Failed: 0 |
+| check:limit-dialog | 0 | 한도에 걸리면 설명 창이 뜬다. |
+| check:attempts | 0 | 16/16 통과 |
+| check:methods | 0 | 6/6 통과 |
+| check:renewal | 0 | 13/13 통과 |
+| check:feedback | 0 | 17/17 통과 |
+| check:alerts | 0 | 9/9 통과 |
+| check:chunk | 0 | 14/14 통과 |
+| check:keyshape | 0 | 12/12 통과 |
+| check:pace | 0 | 속도 안내는 맞는 말을 한다. |
+| check:next-round | 0 | 끝낸 사람에게 다음을 준다. (통과 8 · 실패 0) |
+| check:audio-guard | 0 | 재생기에서 권하는 길은 닫혀 있다. (통과 5 · 실패 0) |
+| check:exam-timer | 0 | 시간을 제때, 과하지 않게 알린다. (통과 12 · 실패 0) |
+| check:exit-hygiene | 0 | 검사가 결과를 찍고 제때 끝난다. (통과 44 · 실패 0) |
+| check:alert-triage | 0 | 볼 것만 위로 온다. (통과 14 · 실패 0) |
+| check:landing-cache | 0 | 첫 방문자는 만들어 둔 것을 받는다. (통과 6 · 실패 0) |
+| check:dday | 0 | 7/7 통과 — 서버가 어느 시간대여도 브라우저(한국)와 같은 답 |
+| check:own-copy | 0 | 우리 글은 깨끗하다. (통과 3 · 실패 0) |
+| check:limits-copy | 0 | 한도 문구 대조: 통과 1 / 실패 0 |
+| check:write-results | 0 | supabase-write-results: PASS 60 / FAIL 0 |
+| check:action-auth | 0 | server-action-auth: PASS 42 / FAIL 0 |
+| check:wrong-retake | 0 | PASS: grading, program/type/choice guards, latest retake, independent questions, incomplete sessions, stable ties |
+| check:saved-answers | 0 | 결과: 통과 16, 실패 0 |
+
+- `npm.cmd run check:offline` exit 0 — 오프라인 검사: 통과 24 · 실패 0 · 소요 7.70초.
+- 검증: `npx.cmd eslint scripts/offline_check_bundle.mjs` exit 0; `node -e "require('./package.json')"` exit 0. check:bundle을 목록 앞에 임시 추가하고 BUNDLE_CHECK_BASE=http://127.0.0.1:1로 실행: 24 통과·1 실패, 9.49초, exit 1; finally로 목록 원복. 별도 임시 fixture의 실제 180초 제한: 180.60초, exit 1, 하위 프로세스 종료·후속 검사 통과 확인(검증 exit 0); fixture 삭제.
+- 커밋 메시지 제안: `feat(check): 네트워크 없는 검사 묶음 check:offline` — 커밋하지 않음.

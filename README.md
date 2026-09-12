@@ -25,6 +25,7 @@ npx tsc --noEmit   # 타입 검사
 
 | 명령 | 무엇을 보는가 | 왜 필요한가 |
 | --- | --- | --- |
+| `npm run check:offline` | 네트워크·DB·브라우저 없이 실행하는 검사 전체 | package.json의 offlineChecks 순서로 실행하며, 실패·3분 초과는 exit 1 |
 | `npm test` | 공개 표면 (사이트맵·RSS·robots·구조화데이터·맛보기 문제) | 자격 증명 없이 어디서나 돌아간다 |
 | `npm run check:pages` | 로그인 화면 40개(실글·KBS 두 모드) + 페이월(두 모드 유료 7건 + 무료 2건 대조군) | `npm test`는 로그인 뒤 화면을 못 본다. 페이월이 뚫려도 화면은 멀쩡해 보이고 매출만 샌다 |
 | `npm run check:schema` | 코드가 쓰는 테이블·컬럼이 운영 DB에 있는가 | supabase-js는 throw 대신 `{error}`를 준다 — 없는 테이블/컬럼을 써도 화면은 "0건"으로 멀쩡하다 |
