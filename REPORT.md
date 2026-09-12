@@ -1061,3 +1061,20 @@ feat(check): 빌드에서만 깨지는 형태 정적 검사 — use server expor
 | `npx.cmd eslint scripts/build_break_guard_check.mjs scripts/build_break_guard_regression_check.mjs 'src/app/try/[topic]/page.tsx'` | 0 | 출력 없음 |
 
 - 절 첫 줄은 커밋 메시지 제안이며 실제 커밋하지 않음. 로컬 Next 빌드는 실행하지 않았으며, 위 세 형태에 대한 정적 검사 결과임.
+
+## 루프 규칙 적용 — 사람 결정용 (work/fable-codex-loop-rules-apply, 2026-09-12, 워커 Codex)
+chore(loop): 루프 규칙·bat 을 실행기 방식으로 — 사람 결정용
+
+- 변경 파일 3개: `CLAUDE.md`, `scripts_bat/worker.bat`, `scripts_bat/reviewer.bat`; 이 절은 REPORT.md에 추가.
+- CLAUDE.md: 제안 diff의 7개 규칙 문장을 그대로 적용. Git 쓰기·반려 문서 관리는 실행기, 워커는 저장·완료 신호, 리뷰어는 판정 담당. 다른 절 유지.
+- bat: 기존 Claude 호출·모델 제한 검사·sonnet 재시도를 역할별 실행기 한 줄과 LOOP_EXIT 저장·반환으로 교체. 표제·chcp·cd·로그·건너뛰기 유지.
+- 워커 가드: BACKLOG 미완료가 없고 REVIEW.md도 없을 때만 건너뛰므로 반려 문서만 있어도 실행기로 진입.
+- 제안과 달랐던 점: CLAUDE.md는 없음. bat은 이번 지시대로 로그 리다이렉션·종료 코드 전달·REVIEW.md 가드 추가.
+- 바이트 검사 전: 두 bat 모두 CRLF 18줄; 기존 호출문 비-ASCII는 worker 192바이트, reviewer 174바이트. HEAD와 체크아웃은 줄바꿈 정규화 후 동일.
+- 바이트 검사 후: Node Buffer로 확인, 두 bat 각각 CRLF 15줄·단독 CR/LF 0개·비-ASCII 0바이트·마지막 CRLF 있음, exit 0.
+- 정적 대조: check:loop-runner의 scripts/codex_loop_runner_check.mjs가 참조하는 ./codex_loop_runner.mjs 및 [runner, role]과 bat의 scripts/codex_loop_runner.mjs worker/reviewer 일치, exit 0.
+- 실행기 및 check:loop-runner는 실행하지 않음. 예약 작업 설정과 NEED_HUMAN.md도 변경하지 않음.
+- npm.cmd run check:own-copy: exit 0, 통과 3·실패 0; src 275개·README.md와 docs 문서 13개 검사. CLAUDE.md·bat·REPORT.md는 범위 밖.
+- git diff --check: exit 0. git diff --stat: 변경 본체 3파일, 14줄 추가·20줄 삭제; 이 보고 절 추가 후 최종 stat 별도 확인.
+- 병합 전 사람이 할 것: NEED_HUMAN.md 차단 사유를 확인하고 해제; 예약 작업이 병합된 새 bat을 읽는지 확인; 첫 실행 로그(worker/reviewer.log 및 codex 역할별 로그) 확인.
+- 실제 커밋·PR 생성은 하지 않음. 절 첫 줄은 커밋 메시지 제안이며 병합 여부는 사람이 결정.
