@@ -6,7 +6,9 @@
 // 화면만 훑는 검사로는 안 잡히고, 끝까지 풀어 봐야 잡힌다.
 //
 // AI 채점은 절대 누르지 않는다(유료 API). 결과 화면의 표시만 확인한다.
+import { passExamStartGate } from './exam_start_gate.mjs'
 import fs from 'node:fs'
+import { getProgram } from '../src/lib/programs.ts'
 import { chromium, devices } from 'playwright'
 import {
   browserAuditMobile, mobileProblemLines, dismissIntros,
@@ -91,7 +93,8 @@ try {
   await page.goto(`${BASE}/cbt`, { waitUntil: 'load' })
   await page.waitForTimeout(1200)
   await page.locator('a,button').filter({ hasText: /시작하기/ }).first().click().catch(() => {})
-  await page.waitForTimeout(4000)
+  await page.waitForURL(/\/cbt\/[^/?]+(?:\?.*)?$/, { timeout: 20000 })
+  const intro = await passExamStartGate(page)
   if (!/\/cbt\/[^/]+$/.test(new URL(page.url()).pathname)) {
     bad('시험 시작', `시작 버튼을 눌렀는데 ${page.url()}`)
     throw new Error('시험 진입 실패')
@@ -100,6 +103,15 @@ try {
 
   const total = await page.evaluate(() => Number(/\d+\s*\/\s*(\d+)\s*완료/.exec(document.body.innerText)?.[1] ?? 0))
   if (!total) { bad('문항 수 확인', '"n/m 완료" 표시를 찾지 못함'); throw new Error('문항 수 확인 실패') }
+
+  if (intro.gate) {
+    const minutes = getProgram().examMinutes
+    const matches = intro.minutes === minutes && intro.objectiveCount !== null && intro.essayCount !== null
+      && intro.objectiveCount + intro.essayCount === total
+    const detail = `안내 ${intro.minutes}분 · 객관식 ${intro.objectiveCount} + 서술형 ${intro.essayCount}문항 / 실제 ${minutes}분 · ${total}문항`
+    if (matches) ok('시작 안내 시간·문항 수', detail)
+    else bad('시작 안내 시간·문항 수', detail)
+  }
 
   // 시험 화면은 사람이 120분을 보내는 자리인데 세션이 있어야 열려서 다른 검사가 못 본다.
   // 여기서 열린 김에 휴대폰 사용성을 같이 잰다.

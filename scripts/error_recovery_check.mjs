@@ -5,6 +5,7 @@
 // 여기서 막히면 그 사람은 그냥 떠난다 — 특히 시험 제출은 푼 답이 통째로 날아간다.
 //
 // 결제는 건드리지 않는다. 결과·실패 화면이 주소만으로 어떻게 렌더되는지만 본다.
+import { passExamStartGate } from './exam_start_gate.mjs'
 import fs from 'node:fs'
 import { chromium, devices } from 'playwright'
 import { dismissIntros } from './ui_audit_rules.mjs'
@@ -61,12 +62,13 @@ try {
   const startBtn = page.locator('a,button').filter({ hasText: /시작하기|풀어보기/ }).first()
   if (await startBtn.count()) {
     await startBtn.click().catch(() => {})
-    await page.waitForTimeout(3500)
+    await page.waitForURL(/\/cbt\/[^/?]+(?:\?.*)?$/, { timeout: 20000 })
   }
   const inExam = /\/cbt\//.test(page.url())
   if (!inExam) {
     bad('시험 진입', `시작 버튼을 눌렀는데 ${page.url()}`)
   } else {
+    await passExamStartGate(page)
     // 한 문항 고르고 회선을 끊은 뒤 제출해 본다.
     // 실제로 골라졌는지는 '완료' 개수로 확인한다 — 못 골랐으면 이어지는 판정이 무의미하다.
     const done = async () => {

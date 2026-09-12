@@ -8,6 +8,7 @@
 //
 // 화면으로는 재현이 어렵다(둘이 동시에 들어와야 한다). 상황을 DB에 직접 만들어 두고,
 // 실제 시험 화면을 열어서 어느 쪽으로 이어지는지 확인한다.
+import { passExamStartGate } from './exam_start_gate.mjs'
 import fs from 'node:fs'
 import { chromium } from 'playwright'
 import { dismissIntros } from './ui_audit_rules.mjs'
@@ -112,6 +113,7 @@ try {
   if (!logged) throw new Error('로그인 실패')
 
   await page.goto(`${BASE}/cbt/${YEAR}-${ROUND}`, { waitUntil: 'domcontentloaded', timeout: 60000 })
+  await passExamStartGate(page)
   await page.locator('button').filter({ hasText: /^[①②③④⑤]/ }).first().waitFor({ timeout: 30000 })
   await page.waitForTimeout(1200)
 

@@ -10,6 +10,7 @@
 // 격자). 한 종류만 보면 나머지는 안 본 것이다. 휴대폰 폭의 '문제 목록'으로 옮겨 다닌다.
 //
 // 답은 고르지 않고 제출도 하지 않는다. 읽고 재기만 한다.
+import { passExamStartGate } from './exam_start_gate.mjs'
 import fs from 'node:fs'
 import { chromium, devices } from 'playwright'
 import {
@@ -125,6 +126,7 @@ try {
 
   const res = await mpage.goto(`${BASE}/cbt/${EXAM_PATH}`, { waitUntil: 'load', timeout: 60000 }).catch(() => null)
   if (!res || res.status() >= 400) throw new Error(`시험 화면을 열지 못함 (${res?.status() ?? '이동 실패'})`)
+  await passExamStartGate(mpage)
   await mpage.locator('button').filter({ hasText: /^[①②③④⑤]/ }).first().waitFor({ timeout: 30000 })
   await mpage.addStyleTag({ content: '*,*::before,*::after{animation:none!important;transition:none!important}' }).catch(() => {})
 
@@ -204,6 +206,7 @@ try {
 
   const dres = await page.goto(`${BASE}/cbt/${EXAM_PATH}`, { waitUntil: 'load', timeout: 60000 }).catch(() => null)
   if (!dres || dres.status() >= 400) throw new Error(`데스크톱 폭에서 시험 화면을 열지 못함 (${dres?.status() ?? '이동 실패'})`)
+  await passExamStartGate(page)
   await page.locator('button').filter({ hasText: /^[①②③④⑤]/ }).first().waitFor({ timeout: 30000 })
   await page.addStyleTag({ content: '*,*::before,*::after{animation:none!important;transition:none!important}' }).catch(() => {})
 

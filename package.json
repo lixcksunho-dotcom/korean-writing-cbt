@@ -24,6 +24,7 @@
     "check:keyboard": "node scripts/keyboard_desktop_check.mjs",
     "check:a11y": "node scripts/a11y_structure_check.mjs",
     "check:recovery": "node scripts/error_recovery_check.mjs",
+    "check:exam-gate": "node scripts/exam_start_gate_check.mjs",
     "check:exam-flow": "node scripts/exam_flow_check.mjs",
     "check:manuscript": "node scripts/manuscript_check.mjs",
     "check:sub-gate": "node scripts/subscription_gate_check.mjs",
@@ -134,6 +135,7 @@
     "typescript": "^5"
   },
   "offlineChecks": [
+    "check:exam-gate",
     "check:schedule",
     "check:device-window",
     "check:limit-dialog",

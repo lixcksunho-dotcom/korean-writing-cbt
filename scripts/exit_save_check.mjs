@@ -14,6 +14,7 @@
 // 4번이 이 기능의 전부다. 3번까지만 되면 예전과 다를 게 없다.
 // 검사가 만든 계정·세션만 지운다.
 
+import { passExamStartGate } from './exam_start_gate.mjs'
 import fs from 'node:fs'
 import { chromium } from 'playwright'
 
@@ -87,6 +88,7 @@ try {
   const dev1 = await freshDevice(browser)
   await dev1.page.goto(`${BASE}/cbt/2025-1`, { waitUntil: 'domcontentloaded', timeout: 60000 })
   await dismissIntro(dev1.page)
+  await passExamStartGate(dev1.page)
   const choice = dev1.page.locator('button').filter({ hasText: /^[①②③④⑤]/ })
   await choice.first().waitFor({ timeout: 30000 })
   await choice.nth(pickedAt).click()
@@ -138,6 +140,7 @@ try {
 
   await dev2.page.goto(`${BASE}/cbt/2025-1`, { waitUntil: 'domcontentloaded', timeout: 60000 })
   await dismissIntro(dev2.page)
+  await passExamStartGate(dev2.page)
   await dev2.page.locator('button').filter({ hasText: /^[①②③④⑤]/ }).first().waitFor({ timeout: 30000 })
   await dev2.page.waitForTimeout(1500)
 

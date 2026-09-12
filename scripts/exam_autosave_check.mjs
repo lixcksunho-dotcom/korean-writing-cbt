@@ -10,6 +10,7 @@
 // 조용히 멈춰도 아무도 모른다. DB를 직접 확인하는 수밖에 없다.
 //
 // 유료 전용이라는 문도 같이 본다. 무료 계정에서 저장이 되면 유료 기능이 새는 것이다.
+import { passExamStartGate } from './exam_start_gate.mjs'
 import fs from 'node:fs'
 import { chromium } from 'playwright'
 import { dismissIntros } from './ui_audit_rules.mjs'
@@ -80,6 +81,7 @@ async function login(page, user) {
 /** 무료로 열리는 회차를 열어 객관식 하나를 고른다. 고른 게 없으면 저장할 것도 없다. */
 async function startAndAnswer(page) {
   await page.goto(`${BASE}/cbt/2025-1`, { waitUntil: 'domcontentloaded', timeout: 60000 })
+  await passExamStartGate(page)
   const choice = page.locator('button').filter({ hasText: /^[①②③④⑤]/ }).first()
   await choice.waitFor({ timeout: 30000 })
   await choice.click()
