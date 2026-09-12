@@ -834,3 +834,56 @@ SDK 실물 대조: 설치된 `@portone/browser-sdk` v2에 `PaymentRequestUnionEa
 - `npm run report:funnel-daily`(어제=2026-08-23, 기본값) 재실행 → 진입 2건(2명)/시도 0/완결 0과 REPORT 기재 내용 일치.
 - `.env.local` 값이 stdout에 노출되지 않음을 위 실행 출력에서 확인.
 - main에 fast-forward 병합.
+
+## 서버 액션 본인 확인 감사 (work/fable-codex-action-auth-audit, 2026-09-12, 워커 Codex)
+
+실물: 19개 use-server 파일, export async 41개(전부 함수 선언); actions.ts 13개 포함. 주석 속 지시문은 제외, 인라인 액션 없음. 아래는 수정 후 상태이며 묶은 함수도 전부 나열했다.
+경로 M=`src/app/(main)/`, A=`src/app/admin/(protected)/`, L=`src/lib/`; ① U=getUser, G=관리자 헬퍼 내부 getUser, ×=없음; ② A=assertAdmin, R=requireAdmin, —=비관리자; ③ S=본인 ID, P=본인 부모행을 먼저 확인, A=관리자 권한+대상 지정, ×=권한 없는 대상 지정; ④ 직접 DB/Auth/Storage 쓰기 error 수신, —=직접 쓰기 없음. ★=service_role 쓰기(위임 포함).
+| 파일 | 함수 | ①②③④ | 처리 |
+|---|---|---|---|
+| M account/actions.ts ★ | deleteMyAccount | U/—/S/× | 사람 확인 필요: feedback insert 오류 미수신, 결제 보관·탈퇴 위임이라 미수정 |
+| M cbt/actions.ts ★ | gradeExamEssay | U/—/P/✓ | 본인 session → answerRow.id로 캐시 갱신; 유지 |
+| M cbt/actions.ts | createSession, getOrCreateExamSession | U/—/S/✓ | insert user_id=user.id; 유지 |
+| M cbt/actions.ts | findResumableExamSession | U/—/—/— | 본인 세션 읽기; 유지 |
+| M cbt/actions.ts | saveExamProgress | U/—/S/✓ | id+user_id 조건; 유지 |
+| M cbt/actions.ts | submitSession | U/—/P/✓ | 본인 세션 선조회 후 session_id 답안 upsert·세션 갱신; 유지 |
+| M manuscript/actions.ts | gradeManuscript | U/—/S/✓ | insert user_id=user.id; 유지 |
+| M practice/actions.ts ★ | gradeEssayPractice | U/—/S(위임)/— | 사용량에 user.id 전달; 직접 저장 없음 |
+| M practice/actions.ts | getPracticeProgress | U/—/—/— | 본인 세션 읽기; 유지 |
+| M practice/actions.ts | savePracticeProgress | U/—/S/✓ | 세션 insert error 수신·throw 추가 |
+| M resolved-notice-actions.ts ★ | acknowledgeResolvedNotices | U/—/P/✓ | 본인 feedback만 이벤트로 저장; insert error 수신·throw 추가 |
+| M review/actions.ts ★ | submitReview | U/—/S/✓ | 삭제 user_id 조건·삽입 user_id 고정; 유지 |
+| M subscribe/blog-review-actions.ts ★ | submitBlogReview | U/—/S/✓ | 사람 확인 필요: 구독 발급 영역, 직접 쓰기 누락 없음·미수정 |
+| M subscribe/promo-actions.ts ★ | redeemPromoCode | U/—/S/✓ | 사람 확인 필요: 구독 발급 영역, 직접 쓰기 누락 없음·미수정 |
+| A alertChannelActions.ts | sendTestAlert | G/A/—/— | 관리자 이메일 allowlist; 유지 |
+| A feedback/actions.ts ★ | setFeedbackResolved | G/A/A/✓ | 답글 delete error 수신·throw 추가 |
+| A members/actions.ts ★ | createMember | G/A/A/✓ | Auth createUser error 수신; 유지 |
+| A members/actions.ts ★ | deleteMember | G/A/A/—(위임) | 사람 확인 필요: 결제 보관·회원 삭제 위임, 미수정 |
+| A members/actions.ts ★ | setMemberPaid | G/A/A/✓ | 사람 확인 필요: 대상 userId로 구독 발급·취소, 미수정 |
+| A payments/actions.ts ★ | reconcilePayment | G/A/A/—(위임) | 사람 확인 필요: 결제 고객 ID로 발급, 위임 함수 insert error 수신; 미수정 |
+| A promo-reviews/actions.ts ★ | approveBlogReview | G/A/A/✓ | assertAdmin 추가; feedback update error 수신·지급 완료 후 처리 표시 실패 안내 반환 |
+| A promo-reviews/actions.ts ★ | rejectBlogReview | G/A/A/✓ | assertAdmin 추가, update error 수신·ok:false 반환 |
+| A promo-reviews/actions.ts ★ | revokeBlogReview | G/A/A/✓ | assertAdmin 추가; 회수 로직·반환값 유지 |
+| A promo-reviews/actions.ts ★ | revokeAutoGrant | G/A/A/✓ | assertAdmin 추가; 회수 로직·반환값 유지 |
+| A promo-reviews/actions.ts ★ | restoreBlogReview | G/A/A/✓ | assertAdmin 추가; 복구 로직·반환값 유지 |
+| A promo-reviews/test/actions.ts | runBlogRuleTest, blogRuleSummary, runBlogRuleTestOnHtml, judgeSelfTest | G/A/—/— | 관리자 실험실 호출만 확인됨; 4개 모두 assertAdmin 추가 |
+| A questions/actions.ts ★ | createQuestion, updateQuestion, deleteQuestion | G/R/A/✓ | requireAdmin이 로그인·관리자 이메일 확인; 정적 검사에서 관리자 가드로 인정(3건 통과) |
+| A reports/actions.ts ★ | setReportResolved, deleteReport | G/A/A/✓ | 관리자+신고 id 지정; 유지 |
+| A reviews/actions.ts ★ | setReviewVerified, setReviewVisible | G/A/A/✓ | 관리자+후기 id 지정; 유지 |
+| A reviews/actions.ts ★ | deleteReview | G/A/A/✓ | 후기에서 읽은 proof_path 삭제 error 수신·throw 추가 |
+| L serverNow.ts | serverNow | ×/—/—/— | Date.now()만 반환; 바로 위 public-action 이유 주석 추가, 공개 유지 |
+| L study-actions.ts | toggleBookmark, submitQuestionReport | U/—/S/✓ | 본인 user_id 쓰기·삭제 범위 및 error 수신; 유지 |
+집계(액션 단위, 직접 검사/쓰기 기준): 41개 중 최초 누락 14개, 수정 13개, 누락 잔여 1개(deleteMyAccount의 feedback insert 오류 미수신). 사람 확인 필요는 보호 영역 6개(실제 누락 1개 포함); 공개 serverNow와 requireAdmin 3개는 보안 누락 수에서 제외.
+소유 조건: 회원 쓰기는 user.id 고정 또는 검증된 부모행을 거친다. 관리자 쓰기에 관리자 자신의 user_id를 붙이면 타 회원 관리가 깨지므로 권한 검사+대상 지정으로 판정했다. RLS가 막지 못하던 무인증 구독 4개는 함수 첫머리 assertAdmin으로 보호했다.
+보조 함수까지 확인한 추가 한계: antiSharing의 recordPaidGrade/refundPaidGrade, analytics/trackServerEvent의 insert, operatorAlerts/recordOperatorAlert의 insert는 error 미수신. 채점·제출·홍보·신고 액션의 위임 경로이며 위 표의 직접 쓰기 ✓가 전체 호출 그래프의 오류 처리를 보장하지 않는다. accountDeletion의 보관 계정 createUser도 error 미수신. 환불·결제 공유 경로와 액션 밖 보조 함수는 미수정, 후속 검토 필요.
+정적 검사: scripts/server_action_auth_check.mjs와 check:action-auth 추가. 문자열·주석을 제외한 토큰과 괄호로 본문을 분리하며 지원하지 않는 export는 실패 처리; 바로 위 public-action 이유만 예외. 역할·소유권·실행 경로를 증명하는 검사는 아니다.
+최종 정적 검사 실패 0건. 이전 실패 7건은 구독 4개 assertAdmin 추가와 안전한 requireAdmin 3개 인정으로 해소했다. 공개 예외로 숨기지 않았다. 잔여 오류 처리 누락 1개는 인증 정적 검사 범위 밖이며 위 표에 유지했다.
+검증: `npm.cmd run check:action-auth` · exit 0 · 마지막 줄 `server-action-auth: PASS 41 / FAIL 0`.
+역검증: approveBlogReview의 assertAdmin 호출 하나를 임시 제거하고 `node scripts/server_action_auth_check.mjs` 실행 · exit 1 · 마지막 줄 `server-action-auth: PASS 40 / FAIL 1`; approveBlogReview만 FAIL 확인 후 원본 Buffer 복구·동일성 true, 최종 검사 재실행 PASS 41 / FAIL 0 · exit 0.
+검증: `npx.cmd tsc --noEmit` · exit 0 · 마지막 줄 없음(출력 없음).
+검증: `npx.cmd eslint scripts/server_action_auth_check.mjs 'src/app/(main)/practice/actions.ts' 'src/app/(main)/resolved-notice-actions.ts' 'src/app/admin/(protected)/feedback/actions.ts' 'src/app/admin/(protected)/promo-reviews/actions.ts' 'src/app/admin/(protected)/promo-reviews/test/actions.ts' 'src/app/admin/(protected)/reviews/actions.ts' src/lib/serverNow.ts` · exit 0 · 마지막 줄 없음(출력 없음).
+변경: 위 7개 TS + scripts/server_action_auth_check.mjs + package.json + REPORT.md. 네트워크·DB·외부 API·설치·커밋 실행 없음; src/app/api/portone/** 무변경. 구독 4개는 권한 검사와 승인 후 feedback update 오류 처리만 추가; 지급·회수·복구 비즈니스 로직 유지.
+커밋 메시지 제안: `fix(security): 서버 액션 본인 확인 감사 + 정적 검사`
+
+리뷰어 반려 반영: 무인증 구독 4개에 assertAdmin 추가(로직 무변경), requireAdmin 인정
+새 검사 결과: check:action-auth PASS 41 / FAIL 0 (exit 0), tsc --noEmit exit 0, 변경 코드 전체 eslint exit 0. 역검증 PASS 40 / FAIL 1 (예상 exit 1), 원복 후 PASS 41 / FAIL 0 (exit 0).

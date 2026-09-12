@@ -220,12 +220,16 @@ export async function savePracticeProgress(
     .limit(1)
     .maybeSingle()
 
-  const sessionId = existing?.id as string | undefined
-    ?? (await supabase
+  let sessionId = existing?.id as string | undefined
+  if (!sessionId) {
+    const { data: created, error: createError } = await supabase
       .from('quiz_sessions')
       .insert({ user_id: user.id, year, round, program })
       .select('id')
-      .single()).data?.id
+      .single()
+    if (createError) throw createError
+    sessionId = created?.id
+  }
 
   if (!sessionId) throw new Error('세션을 만들 수 없습니다.')
 
