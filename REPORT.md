@@ -940,3 +940,30 @@ fix(lib): 보조 함수의 DB 쓰기도 실패를 안다 — { error } 수신 + 
 | `git -c core.autocrlf=false diff --check` | 0 | 출력 없음 |
 
 - 커밋 메시지 제안: `fix(review): 스택 검토에서 잡은 6건`
+
+## 코덱스 루프 실행기 (work/fable-codex-loop-runner, 2026-09-12, 워커 Codex)
+
+feat(loop): 코덱스 샌드박스용 루프 실행기 — 커밋·병합은 실행기가
+
+- 이유: 전달받은 9/12 실측에서 workspace-write의 .git 쓰기 차단으로 기존 루프가 30분을 소진했다. Git 쓰기를 바깥 Node 실행기로 옮기고 Codex는 오프라인 파일 작업·판정만 맡긴다.
+- 변경 파일: `scripts/codex_loop_runner.mjs`, `scripts/codex_loop_runner_check.mjs`, `package.json`, `docs/loop_codex_sandbox.md`, `REPORT.md`.
+- 워커 1: REVIEW 우선, 아니면 첫 미완료 BACKLOG(⏸ 제외). 새 work 브랜치 생성, 반려 수정은 기존 브랜치 유지.
+- 워커 2: stdin을 닫아 Codex 실행. 완료 신호·제안 메시지로 커밋, 미완료는 wip 보관 후 이어서 1회, 끝나면 main 복귀.
+- 워커 3: 완료한 REVIEW 삭제도 커밋에 포함. 로그·항목 연결은 logs에 보관하고 커밋에서 제외.
+- 리뷰어 1: 최신 work 브랜치 diff·REPORT 끝 절·원래 항목으로 오프라인 PASS/FAIL 판정만 요청.
+- 리뷰어 2: PASS는 no-ff 병합·항목 앞 40자 일치 확인·BACKLOG 완료·REPORT 추가·후속 커밋·브랜치 삭제.
+- 리뷰어 3: FAIL 이력 3회면 NEED_HUMAN. 충돌은 abort 후 파일명 반려. NEED_HUMAN 존재 시 두 역할 즉시 종료.
+- 실행 제한: Codex 호출당 기본 15분(CODEX_LOOP_MINUTES), Windows taskkill /T /F. 워커 재시도에도 별도 제한 적용. approval_policy 인자 없음.
+- 가짜 실행기로 임시 Git 저장소에서 9개 시나리오 검증. 실제 codex.exe·네트워크 호출 없음. 현재 작업 저장소 커밋 없음.
+- 첫 검사에서 Windows Git의 ignored logs 제외 pathspec 때문에 6건 실패, 로컬 info/exclude + git add -A로 수정 후 9/9 통과.
+
+| 검증 명령 | exit | 마지막 줄 |
+|---|---:|---|
+| `npm.cmd run check:loop-runner` | 0 | `loop-runner: PASS 9 / FAIL 0` |
+| `npm.cmd run check:offline` | 0 | `오프라인 검사: 통과 26 · 실패 0 · 소요 83.43초` |
+| `npx.cmd eslint scripts/codex_loop_runner.mjs scripts/codex_loop_runner_check.mjs` | 0 | 출력 없음 |
+| `node -e "require('./package.json')"` | 0 | 출력 없음 |
+
+- 사람이 결정할 것: bat 호출 교체와 CLAUDE.md 규칙 갱신. 제안 diff는 `docs/loop_codex_sandbox.md`; bat 두 파일과 CLAUDE.md는 수정하지 않았다.
+- 운영 메모: logs의 항목 연결·반려 이력을 회차 사이 보존. 기존 미커밋 변경·중복 실행 잠금은 중단하며, 실행기 도입 전 브랜치는 항목 연결 확인이 필요하다.
+- 커밋 메시지 제안: `feat(loop): 코덱스 샌드박스용 루프 실행기 — 커밋·병합은 실행기가`

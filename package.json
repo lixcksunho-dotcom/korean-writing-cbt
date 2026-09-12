@@ -104,7 +104,8 @@
     "check:admin-paging": "node scripts/admin_paging_check.mjs",
     "check:saved-answers": "node --experimental-strip-types --no-warnings scripts/saved_answers_check.mjs",
     "check:stack-review": "node scripts/stack_review_regression_check.mjs",
-    "check:offline": "node scripts/offline_check_bundle.mjs"
+    "check:offline": "node scripts/offline_check_bundle.mjs",
+    "check:loop-runner": "node scripts/codex_loop_runner_check.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.100.1",
@@ -155,6 +156,7 @@
     "check:action-auth",
     "check:wrong-retake",
     "check:saved-answers",
-    "check:stack-review"
+    "check:stack-review",
+    "check:loop-runner"
   ]
 }
