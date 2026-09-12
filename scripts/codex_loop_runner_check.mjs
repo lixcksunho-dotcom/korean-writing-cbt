@@ -33,8 +33,11 @@ if (config.mode === 'pass' || config.mode === 'fail' || config.mode === 'invalid
 } else {
   fs.writeFileSync('result.txt', 'worker result ' + calls.length)
   if (config.mode === 'timeout') {
-    const child = spawn(process.execPath, ['-e', "setInterval(() => require('fs').appendFileSync('logs/heartbeat', '.'), 40)"], { stdio: 'ignore', windowsHide: true })
-    fs.appendFileSync('logs/pids', child.pid + '\\n')
+    // Linux에서 검증용 손자 프로세스가 고아로 남지 않게 실제 종료 대상만 만든다.
+    const pid = process.platform === 'win32'
+      ? spawn(process.execPath, ['-e', "setInterval(() => require('fs').appendFileSync('logs/heartbeat', '.'), 40)"], { stdio: 'ignore', windowsHide: true }).pid
+      : process.pid
+    fs.appendFileSync('logs/pids', pid + '\\n')
     setInterval(() => {}, 1000)
   } else {
     const done = config.mode !== 'incomplete' && (config.mode !== 'retry' || calls.length > 1)
