@@ -14,7 +14,7 @@ const json = file => JSON.parse(read(file) || '{}')
 const save = (file, value) => fs.writeFileSync(file, JSON.stringify(value, null, 2) + '\n')
 const stamp = () => new Date().toISOString().replace(/[:.]/g, '-')
 const branches = () => git('for-each-ref', '--sort=-committerdate', '--format=%(refname:short)', 'refs/heads/work/').split('\n').filter(Boolean)
-const status = () => git('status', '--short', '--', '.', ':!logs')
+const status = () => git('status', '--short')
 function commit(message) {
   if (!status()) return
   git('add', '-A')
@@ -77,8 +77,15 @@ async function worker() {
   if (previous && !existing.includes(previous)) throw new Error(`반려 브랜치 없음: ${previous}`)
   const slug = (item || 'review').normalize('NFKC').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '-').replace(/^-|-$/g, '').slice(0, 48) || 'task'
   const branch = previous || (review && existing[0]) || `work/${slug}-${stamp()}`
-  if (existing.includes(branch)) git('checkout', branch)
-  else git('checkout', '-b', branch, 'main')
+  // 앞선 미완료 커밋에 REVIEW가 있으면 main의 미추적 복사본이 checkout을 막는다.
+  const untrackedReview = review && !git('ls-files', '--', 'REVIEW.md')
+  if (untrackedReview) fs.unlinkSync('REVIEW.md')
+  try {
+    if (existing.includes(branch)) git('checkout', branch)
+    else git('checkout', '-b', branch, 'main')
+  } finally {
+    if (untrackedReview) fs.writeFileSync('REVIEW.md', review)
+  }
   tasks[branch] ||= { item: review ? '' : item, created: new Date().toISOString() }
   save('logs/loop-tasks.json', tasks)
   const header = '커밋 금지(실행기가 한다)·네트워크 없음·pwsh(`;`, npm.cmd, npx.cmd)·스킬 문서 읽지 말 것·파일은 바로 저장·끝나면 마지막 줄 WORKER_DONE'
@@ -98,6 +105,8 @@ async function worker() {
   } finally {
     commit(`wip(${branch.slice(5)}): 워커 결과`)
     git('checkout', 'main')
+    // 미완료 REVIEW는 work 브랜치에 커밋됐어도 다음 워커가 main에서 읽어야 한다.
+    if (review && !complete) fs.writeFileSync('REVIEW.md', review)
   }
   console.log(`${complete ? 'WORKER_DONE' : 'WORKER_INCOMPLETE'} ${branch}`)
   if (!complete) process.exitCode = 1
@@ -107,12 +116,18 @@ async function reviewer() {
   if (!branch) { console.log('검수할 작업 없음'); return }
   const tasks = json('logs/loop-tasks.json')
   const diff = git('diff', `main...${branch}`)
+  if (!diff) {
+    git('checkout', 'main')
+    reject(branch, '빈 diff: 변경 없이 BACKLOG를 완료 처리할 수 없음.')
+    return
+  }
   const report = git('show', `${branch}:REPORT.md`)
   const tail = report.slice(Math.max(0, report.lastIndexOf('\n## ')))
   git('checkout', branch)
   const before = status()
+  const reviewBefore = read('REVIEW.md')
   const result = await runCodex(`네트워크 없음. 오프라인 검토만. 스킬 문서 읽지 말 것. 코드와 파일 수정·커밋·merge·브랜치 전환 금지. 판정만 한다. 마지막 메시지 첫 줄은 정확히 PASS 또는 FAIL. FAIL이면 그 아래 REVIEW.md 내용(무엇이/왜/어떻게)을 적는다. 요구사항 충족과 실제 검증 근거를 확인한다.\n브랜치: ${branch}\n항목: ${tasks[branch]?.item || 'REPORT와 diff 참조'}\n워커 완료 신호: ${tasks[branch]?.complete ?? '미상'}\n\ndiff:\n${diff}\n\nREPORT 끝 절:\n${tail}`)
-  if (status() !== before) throw new Error('리뷰어가 파일을 수정함: 작업을 보존하고 자동 병합 중단')
+  if (status() !== before || read('REVIEW.md') !== reviewBefore) throw new Error('리뷰어가 파일을 수정함: 작업을 보존하고 자동 병합 중단')
   git('checkout', 'main')
   const [verdict, ...body] = result.message.split(/\r?\n/)
   if (!result.ok || verdict !== 'PASS') {
@@ -149,7 +164,9 @@ async function main() {
   try { fd = fs.openSync(lock, 'wx') } catch { throw new Error('루프 실행 중 또는 잔여 logs/codex-loop.lock 확인 필요') }
   try {
     fs.writeSync(fd, String(process.pid))
-    const dirty = git('status', '--short', '--', '.', ':!logs', ':!REVIEW.md')
+    const staged = git('diff', '--cached', '--name-only')
+    if (staged) throw new Error('기존 staged 변경을 먼저 정리해야 함\n' + staged)
+    const dirty = git('status', '--short', '--', '.', ':!REVIEW.md')
     if (dirty) throw new Error('기존 미커밋 변경을 먼저 정리해야 함:\n' + dirty)
     await (role === 'worker' ? worker() : reviewer())
   } finally { fs.closeSync(fd); fs.unlinkSync(lock) }

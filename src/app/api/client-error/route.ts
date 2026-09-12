@@ -1,4 +1,5 @@
 import { createAdminClient } from '@/lib/supabase/admin'
+import { boundedRequestText } from '@/lib/boundedRequestText'
 import { recordOperatorAlert } from '@/lib/operatorAlerts'
 
 // 화면이 터졌다는 사실을 운영자에게 알린다.
@@ -20,8 +21,8 @@ const DEDUPE_MS = 60 * 60_000
 export async function POST(req: Request) {
   try {
     if (Number(req.headers.get('content-length')) > 16_384) return new Response(null, { status: 204 })
-    const text = await req.text()
-    if (text.length > 16_384) return new Response(null, { status: 204 })
+    const text = await boundedRequestText(req, 16_384)
+    if (text === null) return new Response(null, { status: 204 })
     const parsed = JSON.parse(text)
     if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return new Response(null, { status: 204 })
     const { digest, message, path, stale } = parsed

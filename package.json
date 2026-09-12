@@ -108,6 +108,7 @@
     "check:offline": "node scripts/offline_check_bundle.mjs",
     "check:loop-runner": "node scripts/codex_loop_runner_check.mjs",
     "check:api-guards": "node scripts/api_route_guard_check.mjs",
+    "check:api-guard-regression": "node scripts/api_route_guard_regression_check.mjs",
     "check:build-guards": "node scripts/build_break_guard_check.mjs --self-test"
   },
   "dependencies": {
@@ -163,6 +164,7 @@
     "check:stack-review",
     "check:loop-runner",
     "check:api-guards",
+    "check:api-guard-regression",
     "check:build-guards"
   ]
 }

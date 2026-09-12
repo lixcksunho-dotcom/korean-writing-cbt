@@ -1,4 +1,5 @@
 import { createAdminClient } from '@/lib/supabase/admin'
+import { boundedRequestText } from '@/lib/boundedRequestText'
 import { createClient } from '@/lib/supabase/server'
 import { recordOperatorAlert } from '@/lib/operatorAlerts'
 import { judgeFeedback, normalizeContact } from '@/lib/feedbackMessage'
@@ -14,8 +15,8 @@ export async function POST(req: Request) {
   let body: { message?: unknown; contact?: unknown; path?: unknown }
   try {
     if (Number(req.headers.get('content-length')) > 16_384) return Response.json({ ok: false, reason: 'bad_request' }, { status: 400 })
-    const text = await req.text()
-    if (text.length > 16_384) return Response.json({ ok: false, reason: 'bad_request' }, { status: 400 })
+    const text = await boundedRequestText(req, 16_384)
+    if (text === null) return Response.json({ ok: false, reason: 'bad_request' }, { status: 400 })
     const parsed = JSON.parse(text)
     if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return Response.json({ ok: false, reason: 'bad_request' }, { status: 400 })
     body = parsed

@@ -9,6 +9,7 @@
 - 리뷰어: 최신 work 브랜치 diff·REPORT 마지막 절·원래 항목을 받고 PASS/FAIL만 출력한다. 파일 변경이 감지되면 결과를 보존하고 자동 병합을 중단한다.
 - PASS: main으로 no-ff 병합, 항목 앞 40자 일치로 BACKLOG 완료 표시, REPORT 추가와 후속 커밋, 브랜치 삭제. 항목 연결이 없거나 중복이면 반려한다.
 - FAIL: REVIEW 기록, 브랜치별 이력 누적, 3회 반려 시 NEED_HUMAN. 충돌은 merge --abort 후 파일명을 REVIEW에 기록한다.
+- 보호: 시작 전 모든 staged 변경과 REVIEW 외 미커밋 변경을 거부한다. 빈 diff는 반려하며, 기존 REVIEW의 내용 변경도 리뷰어 수정으로 감지한다. 미완료 반려 수정은 main 복귀 후 REVIEW를 복원해 다음 워커가 같은 브랜치에서 이어간다.
 - 공통: NEED_HUMAN이면 즉시 종료. Codex 호출 한 번당 기본 15분(`CODEX_LOOP_MINUTES`, 소수 허용), Windows에서는 taskkill /T /F로 트리를 종료한다. 워커의 최대 두 호출에는 각각 제한이 적용된다.
 
 로그는 `logs/codex-<역할>-<시각>-<pid>.events`, `.err`, `.last.txt`에 기록한다. `logs/loop-tasks.json`은 브랜치와 원래 BACKLOG 항목을 연결하고, `logs/review-count.json`은 브랜치별 반려 이력 배열을 저장한다. 실행기가 `.git/info/exclude`에 `/logs/`를 추가해 로그를 커밋에서 제외한다. 이 로컬 상태는 반려 수정과 재검수 사이에 보존해야 한다. 실행기 이전에 만든 브랜치는 항목 연결을 사람이 확인해야 한다.
