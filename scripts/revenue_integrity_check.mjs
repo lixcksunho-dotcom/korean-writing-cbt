@@ -66,7 +66,6 @@ const ledgerById = new Map(ledger.map((p) => [p.id, p]))
 
 const free = subs.filter((s) => (s.amount ?? 0) === 0)
 const paid = subs.filter((s) => (s.amount ?? 0) > 0)
-const paidByOrderId = new Map(paid.map((s) => [s.order_id, s]))
 const subOrderIds = new Set(subs.map((s) => s.order_id))
 
 const id8 = (v) => String(v ?? '-').slice(0, 8)

@@ -125,5 +125,5 @@ else bad('한국 시간 경계', kstDate('2026-09-02T15:00:00Z'))
   }
 }
 
-console.log(`\n${fail ? '매출 집계에 구멍이 있다.' : '매출이 맞게 집계된다.'}`)
+console.log(`\n${fail ? '매출 집계에 구멍이 있다.' : '매출이 맞게 집계된다.'} (통과 ${pass} · 실패 ${fail})`)
 process.exit(fail ? 1 : 0)

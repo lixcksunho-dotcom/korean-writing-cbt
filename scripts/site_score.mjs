@@ -105,7 +105,7 @@ const run = (cmd) => {
   let html = ''
   try {
     html = await (await fetch(LOCAL, { signal: AbortSignal.timeout(20000) })).text()
-  } catch (e) {
+  } catch {
     console.error(`채점 대상(${LOCAL})에 닿지 못했습니다 — 서버부터 띄우세요.`)
     process.exit(1)
   }

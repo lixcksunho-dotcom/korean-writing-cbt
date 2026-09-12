@@ -30,7 +30,6 @@ const all = async (p) => {
   return out
 }
 const short = id => String(id ?? '').slice(0, 8)
-const mean = a => (a.length ? a.reduce((s, x) => s + x, 0) / a.length : 0)
 
 const cfg = getProgram('silyong')
 const qs = await all('/rest/v1/questions?select=id,year,round,number,type,points&program=eq.silyong&year=lt.9000')
