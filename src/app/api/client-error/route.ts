@@ -16,9 +16,15 @@ import { recordOperatorAlert } from '@/lib/operatorAlerts'
 const MAX = 200
 const DEDUPE_MS = 60 * 60_000
 
+// public-route: 로그인 전에 발생한 화면 오류도 접수해야 한다.
 export async function POST(req: Request) {
   try {
-    const { digest, message, path, stale } = await req.json()
+    if (Number(req.headers.get('content-length')) > 16_384) return new Response(null, { status: 204 })
+    const text = await req.text()
+    if (text.length > 16_384) return new Response(null, { status: 204 })
+    const parsed = JSON.parse(text)
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return new Response(null, { status: 204 })
+    const { digest, message, path, stale } = parsed
     const ref = typeof digest === 'string' && digest ? digest.slice(0, 64) : 'no-digest'
     const where = typeof path === 'string' ? path.slice(0, 120) : '(경로 불명)'
     const what = typeof message === 'string' && message ? message.slice(0, MAX) : '(메시지 없음)'

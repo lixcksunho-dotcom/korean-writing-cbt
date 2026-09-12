@@ -9,10 +9,16 @@ import { judgeFeedback, normalizeContact } from '@/lib/feedbackMessage'
 // feedback 테이블은 정책을 열지 않아 service_role로만 읽고 쓴다(라우트를 거치게 하는 이유).
 // 로그인하지 않은 사람도 접수할 수 있어야 한다 — 결제 전에 막힌 사람이 가장 할 말이 많다.
 
+// public-route: 로그인이나 결제 전에 막힌 사람도 문의할 수 있어야 한다.
 export async function POST(req: Request) {
   let body: { message?: unknown; contact?: unknown; path?: unknown }
   try {
-    body = await req.json()
+    if (Number(req.headers.get('content-length')) > 16_384) return Response.json({ ok: false, reason: 'bad_request' }, { status: 400 })
+    const text = await req.text()
+    if (text.length > 16_384) return Response.json({ ok: false, reason: 'bad_request' }, { status: 400 })
+    const parsed = JSON.parse(text)
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return Response.json({ ok: false, reason: 'bad_request' }, { status: 400 })
+    body = parsed
   } catch {
     return Response.json({ ok: false, reason: 'bad_request' }, { status: 400 })
   }

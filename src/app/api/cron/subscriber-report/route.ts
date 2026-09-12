@@ -1,3 +1,4 @@
+import { timingSafeEqual } from 'node:crypto'
 import { buildSubscriberReport, deltaLabel, kstDay, EXPIRING_WINDOW_DAYS, EXPIRED_WINDOW_DAYS, TRACKING_CLEAN_FROM } from '@/lib/subscriberReport'
 import { renderSubscriberReport } from '@/lib/subscriberReportChart'
 
@@ -10,14 +11,16 @@ import { renderSubscriberReport } from '@/lib/subscriberReportChart'
 export const dynamic = 'force-dynamic'
 export const maxDuration = 60
 
-function authorized(req: Request): boolean {
+function unauthorized(req: Request): boolean {
   const secret = process.env.CRON_SECRET
-  if (!secret) return false // 미설정이면 아예 안 연다 — 열어 두는 것보다 안 도는 게 낫다
-  return req.headers.get('authorization') === `Bearer ${secret}`
+  if (!secret) return true
+  const actual = Buffer.from(req.headers.get('authorization') ?? '')
+  const expected = Buffer.from(`Bearer ${secret}`)
+  return actual.length !== expected.length || !timingSafeEqual(actual, expected)
 }
 
 export async function GET(req: Request) {
-  if (!authorized(req)) {
+  if (unauthorized(req)) {
     return Response.json({ error: 'unauthorized' }, { status: 401 })
   }
 

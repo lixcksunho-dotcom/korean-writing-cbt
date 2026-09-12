@@ -967,3 +967,40 @@ feat(loop): 코덱스 샌드박스용 루프 실행기 — 커밋·병합은 실
 - 사람이 결정할 것: bat 호출 교체와 CLAUDE.md 규칙 갱신. 제안 diff는 `docs/loop_codex_sandbox.md`; bat 두 파일과 CLAUDE.md는 수정하지 않았다.
 - 운영 메모: logs의 항목 연결·반려 이력을 회차 사이 보존. 기존 미커밋 변경·중복 실행 잠금은 중단하며, 실행기 도입 전 브랜치는 항목 연결 확인이 필요하다.
 - 커밋 메시지 제안: `feat(loop): 코덱스 샌드박스용 루프 실행기 — 커밋·병합은 실행기가`
+
+## API 라우트 감사 (work/fable-codex-api-route-audit, 2026-09-12, 워커 Codex)
+
+실물은 route.ts 9개·export 핸들러 9개(GET 5, POST 4). 수정 6개, 그대로 2개, 결제 읽기 전용 1개. 아래 경로는 `/api` 기준이다.
+공개 POST 공통 상한 B: content-length > 16,384 바이트면 읽기 전 거부, text() 결과 > 16,384 UTF-16 코드 단위면 JSON.parse 전 거부, null·배열·비객체 거부. 기존 필드 제한과 정상 응답 유지.
+
+| 경로 | 메서드 | 인증 방식 | 입력 검증 | DB 쓰기·error 수신 | 응답·남용 피해 | 판정 |
+|---|---|---|---|---|---|---|
+| /client-error | POST | 없음 | B; 문자열 digest 64/message 200/path 120; stale===true; enum 없음 | alert helper→page_views insert, error 수신 | 빈 204; digest 변경으로 시간당 중복 억제 우회·DB/텔레그램 도배 | 고침 |
+| /feedback | POST | 없음(세션 선택) | B; message 문자열 최소2/최대2000, contact120/path200/UA300; enum 없음 | feedback insert 및 alert helper, 모두 error 수신 | ok/truncated 또는 고정 오류; 연락처 반환 없음; 접수·알림 도배 | 고침 |
+| /track | POST | 없음 | B; event 정규식 a-z0-9_ 1~40(명시 enum 없음); /경로≤512·admin/api 제외; ID64/meta·referrer512 | page_views insert 2곳, 모두 error 수신 | 빈 204; 무한 적재·통계 및 alert_* 이벤트 위조 | 고침 |
+| /cron/blog-review-audit | GET | cron 비밀 | 본문 없음; 입력 쿼리 없음; 비밀 미설정 차단·바이트 길이 확인 후 timingSafeEqual | subscriptions update 및 alert helper, error 수신 | 후보200/처리50, id·블로그 URL·상태·detail; 총 바이트 상한 없음; 비밀 유출 시 이용권 회수·외부 조회·알림 반복 | 고침 |
+| /cron/refund-audit | GET | cron 비밀 | 본문 없음; dry는 정확히 1만 참; 비밀 미설정 차단·상수시간 비교 | revoke helper→subscriptions update 및 alert, error 수신 | 최대500건 주문ID·집계·오류; 총 바이트 상한 없음; 비밀 유출 시 원장 조회·회수 반복 | 고침 |
+| /cron/subscriber-report | GET | cron 비밀 | 본문 없음; preview 임의 비어있지 않은 값(JSON)/image; now 유한 양수(날짜 범위 상한 없음); 상수시간 비교 | 없음(조회만) | 집계·고정 규격 이미지; 이메일은 내부 필터에만 사용; 텔레그램 오류 body 총량 상한 없음; 비밀 유출 시 보고 스팸·집계 부하 | 고침 |
+| /portone/webhook | POST | 세션 없음·Webhook.verify 서명 | 비밀 미설정503; raw text 상한 없음; SDK 검증; Paid/Cancelled/PartialCancelled만 처리 | grant/revoke/alert helper, insert/update error 수신 확인 | 짧은 상태·실패 이유만; 서명 전 대형 본문 메모리, 유효 이벤트 재전송 부하 | 사람 확인(수정 금지) |
+| /promo/quota | GET | 없음 | 본문·입력 없음 | 없음(count 조회) | used/total/left/closed 4필드만; 반복 count 부하 | 그대로 |
+| /version | GET | 없음 | 본문·입력 없음 | 없음 | site/host/commit/builtAt만; 빌드 식별 정보 공개 | 그대로 |
+
+- 변경: 공개 POST 3곳에 B·바로 위 public-route 이유 한 줄; cron 3곳에 timingSafeEqual. 이메일·전화 원문을 반환하는 비관리자 응답은 발견하지 못함.
+- 실물 차이: subscriber-report는 unauthorized가 아닌 authorized였으므로 부정 조건까지 함께 변경. 다른 promo 라우트는 없고 quota만 존재. cron 비교는 ===뿐 아니라 !==도 있었음.
+- 검사: scripts/api_route_guard_check.mjs는 TypeScript AST로 함수/화살표/지역 별칭 export를 검사(PATCH 포함), 재export는 실패 처리, 중첩 함수·문자열 속 인증은 제외. 공개 본문 파싱 전후 8줄의 상한 표현을 확인하며 제어 흐름·실효 인증을 증명하는 검사는 아님.
+- 결제 예외: 수정 금지와 지정 인증 이름 목록이 충돌하므로 정확히 portone/webhook POST만 Webhook.verify 호출로 별도 통과·예외 출력. 결제 폴더 diff 없음. package.json에 check:api-guards와 offlineChecks 항목 추가.
+- 사람 확인 4건: ①공개 POST 호출 빈도 제한/WAF(상한은 빈도·헤더 없는 스트림 수신 메모리까지 막지 못함) ②운영 CRON_SECRET 설정 및 호출자 헤더 확인(환경 변경 안 함) ③결제 웹훅 본문 상한/검사 예외 별도 승인 ④기존 loop-runner 시간 초과를 감독 환경에서 재검증.
+- cron의 preview 허용 목록·now 날짜 범위와 보호된 응답 총 바이트 상한은 기존 그대로이며 표에 기록. 네트워크·실제 DB 쓰기·텔레그램 전송·결제 호출·현재 저장소 커밋은 실행하지 않음.
+
+| 검증 명령 | exit | 마지막 줄 |
+|---|---:|---|
+| `node scripts/api_route_guard_regression_check.mjs` | 0 | `api-route-regression: PASS 76 / FAIL 0` |
+| blog-review-audit GET 인증 호출 삭제 후 `node scripts/api_route_guard_check.mjs` | 1(의도) | `api-route-guards: PASS 8 / FAIL 1` (finally로 원복) |
+| `npm.cmd run check:api-guards` (원복 후) | 0 | `api-route-guards: PASS 9 / FAIL 0` |
+| `npm.cmd run check:offline` | 1 | `오프라인 검사: 통과 26 · 실패 1 · 소요 222.35초` |
+| `npx.cmd tsc --noEmit` | 0 | 출력 없음 |
+| `npx.cmd eslint scripts/api_route_guard_check.mjs scripts/api_route_guard_regression_check.mjs src/app/api/{client-error,feedback,track}/route.ts src/app/api/cron/{blog-review-audit,refund-audit,subscriber-report}/route.ts` (실행 시 경로 각각 나열) | 0 | 출력 없음 |
+
+- offline 유일 실패: check:loop-runner, `TIMEOUT 180초 — PASS NEED_HUMAN이면 두 역할 즉시 종료`; API 검사 및 write-results/action-auth 포함 나머지 26개 통과. 기존 검사 제한은 바꾸지 않음.
+- 커밋 메시지 제안: `fix(api): 라우트 감사 — 공개 라우트 입력 상한·cron 비밀 상수시간 비교 + 정적 검사`
+- 리뷰어 Fable 반려 반영: blog-review-audit·refund-audit 의 "비밀 미설정이면 닫힘"은 되돌렸다 — 운영 `ops/blog_audit.bat` 이 인증 헤더 없이 3시간마다 호출해 실제 응답을 받고 있어(CRON_SECRET 미설정) 그대로 두면 감사·환불 안전망이 멈춘다. 상수시간 비교는 유지. **사람 확인**: CRON_SECRET 을 Vercel env 에 넣고 bat 에 `-H "Authorization: Bearer …"` 를 같이 넣은 뒤에 닫힘으로 바꿀 것.
