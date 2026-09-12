@@ -68,5 +68,5 @@ for (const post of ownPosts.slice(0, 2)) {
   else bad('제안 사라짐', `${name} — 서술형 제안이 없어졌다`)
 }
 
-console.log(`\n${fail ? '글과 제안이 어긋난다.' : '글마다 맞는 것을 판다.'}`)
+console.log(`\n${fail ? '글과 제안이 어긋난다.' : '글마다 맞는 것을 판다.'} (통과 ${pass} · 실패 ${fail})`)
 process.exit(fail ? 1 : 0)

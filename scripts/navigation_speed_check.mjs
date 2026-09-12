@@ -66,5 +66,5 @@ try {
   await browser.close()  // 닫지 않으면 프로세스가 안 끝나고 검사가 시간 초과로 죽는다
 }
 
-console.log(`\n${fail ? '옮겨갈 때 기다리는 자리가 있다.' : '옮겨가도 기다리지 않는다.'}`)
+console.log(`\n${fail ? '옮겨갈 때 기다리는 자리가 있다.' : '옮겨가도 기다리지 않는다.'} (통과 ${pass} · 실패 ${fail})`)
 process.exitCode = fail ? 1 : 0

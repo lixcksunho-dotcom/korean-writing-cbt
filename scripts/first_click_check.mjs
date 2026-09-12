@@ -53,5 +53,5 @@ try {
   await browser.close()  // 닫지 않으면 프로세스가 안 끝난다
 }
 
-console.log(`\n${fail ? '들어오자마자 막히는 자리가 있다.' : '들어오자마자 바로 누를 수 있다.'}`)
+console.log(`\n${fail ? '들어오자마자 막히는 자리가 있다.' : '들어오자마자 바로 누를 수 있다.'} (통과 ${pass} · 실패 ${fail})`)
 process.exitCode = fail ? 1 : 0

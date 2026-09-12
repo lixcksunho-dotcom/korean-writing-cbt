@@ -834,3 +834,40 @@ SDK 실물 대조: 설치된 `@portone/browser-sdk` v2에 `PaymentRequestUnionEa
 - `npm run report:funnel-daily`(어제=2026-08-23, 기본값) 재실행 → 진입 2건(2명)/시도 0/완결 0과 REPORT 기재 내용 일치.
 - `.env.local` 값이 stdout에 노출되지 않음을 위 실행 출력에서 확인.
 - main에 fast-forward 병합.
+
+## ESLint 경고 0 (work/fable-codex-lint-zero, 2026-09-12, 워커 Codex)
+
+- 지시문과 달랐던 점: 실측 오류 0·경고 25건(23건보다 2건 많음). 수정 25건·남긴 경고 0건, 변경 26파일(REPORT 포함).
+- 최초 `npx.cmd eslint scripts src -f unix` · exit 1 · 마지막 줄: `The unix formatter is no longer part of core ESLint. Install it manually with npm install -D eslint-formatter-unix`(설치하지 않음).
+- 대체 `npx.cmd eslint scripts src -f json -o lint-before.json` · exit 0 · 출력 없음; 아래 수정 전 파일:줄:규칙 목록은 JSON에서 추출. U = `@typescript-eslint/no-unused-vars`, scripts 경로는 `scripts/` 기준.
+- `ai_cost_check.mjs:22:U` pass; `alert_triage_check.mjs:14:U` pass.
+- `audio_download_guard_check.mjs:13:U` pass; `blog_audit_revoke_check.mjs:25:U` pass.
+- `blog_cta_check.mjs:18:U` pass; `check_exit_hygiene_check.mjs:14:U` pass.
+- `content_page_quiz_check.mjs:34:U` pass; `daily_sales_check.mjs:11:U` pass.
+- `deploy_freshness_check.mjs:22:U` pass; `event_popup_check.mjs:28:U` pass.
+- `exam_dropoff_check.mjs:33:U` mean; `exam_timer_check.mjs:15:U` pass.
+- `first_click_check.mjs:16:U` pass; `landing_cache_check.mjs:18:U` pass.
+- `navigation_speed_check.mjs:24:U` pass; `next_round_check.mjs:13:U` pass.
+- `own_copy_spelling_check.mjs:59:U` pass; `payment_block_guidance_check.mjs:31:U` pass.
+- `public_page_bundle_check.mjs:19:U` pass; `revenue_integrity_check.mjs:69:U` paidByOrderId.
+- `server_region_check.mjs:17:U` pass; `site_score.mjs:108:U` catch 인자 e.
+- `spelling_consistency_check.mjs:43:U` ARROW; `trial_check.mjs:13:U` pass; `src/app/page.tsx:6:U` Gift.
+- 처리: pass 20개는 마지막 출력에 `(통과 N · 실패 M)` 추가. 미호출 함수 mean·정규식 ARROW·catch 인자 e·Gift import 제거. paidByOrderId 대입만 제거하고 `new Map(paid.map(...))` 호출·평가는 보존.
+- 남긴 경고: 없음(훅 경고도 없음). 검사 판정·종료 코드·제품 동작 유지. 주석 추가 및 ESLint 설정/max-lines 변경 없음. 커밋하지 않음.
+- 검증 `npx.cmd eslint scripts src` · exit 0 · 마지막 줄 없음(출력 없음), 오류 0·경고 0.
+- 검증 `npx.cmd tsc --noEmit` · exit 0 · 마지막 줄 없음(출력 없음).
+- 검증 `npm.cmd run check:alert-triage` · exit 0 · `볼 것만 위로 온다. (통과 14 · 실패 0)`.
+- 검증 `npm.cmd run check:audio-guard` · exit 0 · `재생기에서 권하는 길은 닫혀 있다. (통과 5 · 실패 0)`.
+- 검증 `npm.cmd run check:exit-hygiene` · exit 0 · `검사가 결과를 찍고 제때 끝난다. (통과 44 · 실패 0)`.
+- 검증 `npm.cmd run check:exam-timer` · exit 0 · `시간을 제때, 과하지 않게 알린다. (통과 12 · 실패 0)`.
+- 검증 `npm.cmd run check:landing-cache` · exit 0 · `첫 방문자는 만들어 둔 것을 받는다. (통과 6 · 실패 0)`.
+- 검증 `npm.cmd run check:next-round` · exit 0 · `끝낸 사람에게 다음을 준다. (통과 8 · 실패 0)`.
+- 검증 `npm.cmd run check:own-copy` · exit 0 · `우리 글은 깨끗하다. (통과 2 · 실패 0)`.
+- 검증 `git diff --check` · exit 0 · 마지막 줄 없음(출력 없음). 검사 스크립트는 순차 실행, 한글 출력 교정 뒤 7개 모두 재검증.
+- 미실행(네트워크 필요), 아래는 모두 `npm.cmd run <이름>`이며 exit/마지막 줄 해당 없음; 머리 주석·fetch·브라우저 이동·DB 호출로 판별:
+- `check:ai-cost`, `check:audit-revoke`, `check:blog-cta`, `check:page-quiz`, `check:sales`, `check:deployed`.
+- `check:popup`, `check:dropoff`, `check:first-click`, `check:nav`, `check:pay-guide`, `check:bundle`.
+- `check:revenue`, `check:region`, `check:spelling-consistency`, `check:trial`, `score`(site_score.mjs, 대응 check:* 없음).
+- 커밋 메시지 제안(요청한 첫 줄 그대로; 실제 수정 수는 위 25건):
+chore(lint): 경고 23건을 0으로 — 동작 변경 없음
+- 리뷰어 Fable 보정: `revenue_integrity_check.mjs`의 `new Map(...)` 단독 문장은 부수 효과가 없어 줄 자체를 지웠다(대입만 지우면 뜻 없는 계산이 남는다).

@@ -59,5 +59,5 @@ else bad('과잉 정리', '사람이 봐야 할 회수를 치운다')
   else bad('목록 분류', '가짜와 진짜가 섞여 나온다')
 }
 
-console.log(`\n${fail ? '알림 분류에 구멍이 있다.' : '볼 것만 위로 온다.'}`)
+console.log(`\n${fail ? '알림 분류에 구멍이 있다.' : '볼 것만 위로 온다.'} (통과 ${pass} · 실패 ${fail})`)
 process.exit(fail ? 1 : 0)

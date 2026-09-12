@@ -199,5 +199,5 @@ try {
   if (uid) await api(`/auth/v1/admin/users/${uid}`, { method: 'DELETE' })
 }
 
-console.log(`\n${fail ? '팝업에 구멍이 있다.' : '뜰 사람에게만 뜬다.'}`)
+console.log(`\n${fail ? '팝업에 구멍이 있다.' : '뜰 사람에게만 뜬다.'} (통과 ${pass} · 실패 ${fail})`)
 process.exitCode = fail ? 1 : 0
