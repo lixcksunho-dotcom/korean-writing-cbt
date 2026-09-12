@@ -1168,3 +1168,14 @@ ci: PR마다 tsc·eslint·check:offline 을 GitHub Actions 로
 - ESLint 대상: scripts/{codex_loop_runner,codex_loop_runner_check,api_route_guard_check,api_route_guard_regression_check,build_break_guard_check,build_break_guard_regression_check}.mjs, src/lib/boundedRequestText.ts, src/app/api/{track,client-error,feedback}/route.ts (실행 시 각각 전체 경로 나열).
 - 커밋 메시지 제안: `fix(review): 스택 후반부 검토에서 잡은 8건`
 - 검토자 회차가 20분 제한에 걸려 검증 표를 못 채웠고, 위 세 줄은 리뷰어 Fable 이 같은 트리에서 실행해 채웠다.
+
+## 행사 코드 입력칸 명암비·누름대상 (work/fable-codex-promo-box-a11y, 2026-09-12, 워커 Codex)
+
+- 배경: slate-50 `#f8fafc`; 전: slate-400 `#94a3b8` → 2.450636:1 (2.45).
+- 후: slate-600 `#475569` → 7.242511:1 (7.24), `placeholder:text-[#475569]` 적용; 비교 slate-500 `#64748b` → 4.548364:1 (4.55).
+- 계산: sRGB 채널을 255로 나눈 c에 c≤0.04045이면 c/12.92, 아니면 ((c+0.055)/1.055)^2.4; L=0.2126R+0.7152G+0.0722B, 명암비=(L밝음+0.05)/(L어두움+0.05).
+- 높이: 리뷰어 실측 입력칸·적용 버튼 각각 42px → 두 요소에 `min-h-11`(최소 44px); 글자 크기·가로 폭·레이아웃 관련 값 유지.
+- 기존 동일 placeholder 색 사용처(미수정): `src/app/(auth)/reset-password/page.tsx:24` (`#94a3b8`); src 전체 `placeholder:` 검색 결과 다른 동일 색 없음.
+- 검증: `npx.cmd tsc --noEmit` exit 0; `npx.cmd eslint src/components/subscribe/PromoCodeBox.tsx` exit 0; `npm.cmd run check:own-copy` exit 0 (통과 3·실패 0).
+- 브라우저 미실행, 리뷰어 검증 요청.
+- 커밋 메시지 제안: `fix(a11y): 행사 코드 입력칸 안내글 2.45→7.24, 누름대상 44px`
