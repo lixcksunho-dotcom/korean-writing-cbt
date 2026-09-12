@@ -41,5 +41,5 @@ for (const p of players) {
   else bad(`${name} 오른쪽 클릭`, '눌러서 저장할 수 있다')
 }
 
-console.log(`\n${fail ? '음성이 새어 나갈 수 있다.' : '재생기에서 권하는 길은 닫혀 있다.'}`)
+console.log(`\n${fail ? '음성이 새어 나갈 수 있다.' : '재생기에서 권하는 길은 닫혀 있다.'} (통과 ${pass} · 실패 ${fail})`)
 process.exit(fail ? 1 : 0)

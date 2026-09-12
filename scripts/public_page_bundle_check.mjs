@@ -61,6 +61,6 @@ for (const route of PUBLIC) {
   else bad(`${route} JS ${kb.toFixed(1)}KB`, `한도 ${LIMIT_KB}KB를 넘었다`)
 }
 
-console.log(`\n${fail ? '공개 페이지가 필요 없는 것을 싣는다.' : '공개 페이지가 받을 것만 받는다.'}`)
+console.log(`\n${fail ? '공개 페이지가 필요 없는 것을 싣는다.' : '공개 페이지가 받을 것만 받는다.'} (통과 ${pass} · 실패 ${fail})`)
 // process.exit()를 쓰면 fetch 핸들이 남아 윈도우에서 libuv가 죽는다 — 자연히 끝나게 둔다.
 process.exitCode = fail ? 1 : 0

@@ -81,5 +81,5 @@ if (head && live) {
   }
 }
 
-console.log(`\n${fail ? '고친 것이 사이트에 없습니다.' : '고친 것이 사이트에 있습니다.'}`)
+console.log(`\n${fail ? '고친 것이 사이트에 없습니다.' : '고친 것이 사이트에 있습니다.'} (통과 ${pass} · 실패 ${fail})`)
 process.exitCode = fail ? 1 : 0

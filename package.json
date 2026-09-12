@@ -33,6 +33,7 @@
     "check:account": "node --experimental-strip-types --no-warnings scripts/account_delete_check.mjs",
     "check:review-invite": "node scripts/review_invite_check.mjs",
     "check:blocks": "node --experimental-strip-types --no-warnings scripts/paid_block_check.mjs",
+    "check:device-window": "node --experimental-strip-types --no-warnings scripts/device_window_check.mjs",
     "check:entry": "node scripts/exam_entry_check.mjs",
     "check:dropoff": "node --experimental-strip-types --no-warnings scripts/exam_dropoff_check.mjs",
     "check:score": "node --experimental-strip-types --no-warnings scripts/predicted_score_accuracy_check.mjs",
@@ -96,7 +97,10 @@
     "check:ai-cost": "node --experimental-strip-types --no-warnings scripts/ai_cost_check.mjs",
     "check:own-copy": "node scripts/own_copy_spelling_check.mjs",
     "check:row-cap": "node scripts/row_cap_check.mjs",
-    "check:admin-paging": "node scripts/admin_paging_check.mjs"
+    "check:action-auth": "node scripts/server_action_auth_check.mjs",
+    "check:wrong-retake": "node --experimental-strip-types --no-warnings scripts/wrong_note_retake_check.mjs",
+    "check:admin-paging": "node scripts/admin_paging_check.mjs",
+    "check:saved-answers": "node --experimental-strip-types --no-warnings scripts/saved_answers_check.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.100.1",

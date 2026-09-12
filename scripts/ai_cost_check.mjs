@@ -106,5 +106,5 @@ const over = cost.heavy.filter(h => h.overBreakEven)
 if (!over.length) ok('받은 돈보다 더 쓴 사람은 없다')
 else bad(`손익분기를 넘긴 사람 ${over.length}명`, over.map(h => `${h.count}건`).join(', '))
 
-console.log(`\n${fail ? '원가를 들여다봐야 한다.' : '원가는 아직 여유가 있다.'}`)
+console.log(`\n${fail ? '원가를 들여다봐야 한다.' : '원가는 아직 여유가 있다.'} (통과 ${pass} · 실패 ${fail})`)
 process.exitCode = fail ? 1 : 0

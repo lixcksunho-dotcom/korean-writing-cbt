@@ -214,5 +214,5 @@ try {
   }
 }
 
-console.log(`\n${fail ? '사후 확인에 구멍이 있다.' : '내리면 회수되고, 실수는 사람이 푼다.'}`)
+console.log(`\n${fail ? '사후 확인에 구멍이 있다.' : '내리면 회수되고, 실수는 사람이 푼다.'} (통과 ${pass} · 실패 ${fail})`)
 process.exit(fail ? 1 : 0)

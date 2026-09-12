@@ -58,5 +58,5 @@ for (const path of DYNAMIC) {
   else bad(`${path} 응답 ${best}ms`, `한도 ${LIMIT}ms를 넘었다`)
 }
 
-console.log(`\n${fail ? '서버가 멀리서 돈다.' : '서버가 가까이서 돈다.'}`)
+console.log(`\n${fail ? '서버가 멀리서 돈다.' : '서버가 가까이서 돈다.'} (통과 ${pass} · 실패 ${fail})`)
 process.exitCode = fail ? 1 : 0

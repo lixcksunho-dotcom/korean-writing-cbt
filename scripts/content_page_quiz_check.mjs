@@ -87,5 +87,5 @@ try {
   await browser.close()   // 닫지 않으면 프로세스가 안 끝나고 검사가 시간 초과로 죽는다
 }
 
-console.log(`\n${fail ? '읽고 그냥 나가는 자리가 있다.' : '읽은 자리에서 바로 풀어볼 수 있다.'}`)
+console.log(`\n${fail ? '읽고 그냥 나가는 자리가 있다.' : '읽은 자리에서 바로 풀어볼 수 있다.'} (통과 ${pass} · 실패 ${fail})`)
 process.exitCode = fail ? 1 : 0

@@ -2,6 +2,7 @@ import { cookies } from 'next/headers'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { kstYmd } from '@/lib/examDday'
 import { DEVICE_LIMIT, DAILY_GRADE_LIMIT, dailyLimitMessage } from '@/lib/antiSharingLimits'
+import { DEVICE_WINDOW_HOURS, deviceWindowStart, isDeviceBlocked } from '@/lib/deviceWindow'
 
 // 계정 돌려쓰기(공유) 방지 — 유료 이용 시에만 적용.
 //  - 기기 수 제한: 한 계정이 사용할 수 있는 활성 기기는 최대 DEVICE_LIMIT 대
@@ -11,11 +12,6 @@ import { DEVICE_LIMIT, DAILY_GRADE_LIMIT, dailyLimitMessage } from '@/lib/antiSh
 // "오류가 발생했습니다"만 보고 무한히 다시 누르게 된다.
 // 값은 antiSharingLimits.ts(브라우저에서도 읽는 순수 파일)에 있고 여기서 다시 내보낸다.
 export { DEVICE_LIMIT, DAILY_GRADE_LIMIT }
-// 기기 수를 세는 창(시간). 예전에는 90일이었다 — 회사 가상 데스크톱처럼 로그인할 때마다
-// 새 기기로 잡히는 환경에서는 며칠 만에 한도가 차서, 돈을 낸 사람이 채점을 못 받았다
-// (2026-09-09 문의). 계정 공유는 '여러 사람이 같은 때에' 쓰는 것이므로 하루 창으로 본다.
-// 하루 안에 서로 다른 기기가 DEVICE_LIMIT 대를 넘게 쓰면 그때 막는다.
-const DEVICE_WINDOW_HOURS = 24
 
 const DEVICE_COOKIE = 'kpt_did'
 
@@ -51,14 +47,17 @@ export async function paidUsageBlock(userId: string): Promise<string | null> {
 
   // 1) 기기 수 제한 — '하루 안에 함께 쓰인' 기기만 센다.
   //    옛 기기 ID(쿠키를 지웠거나 가상 데스크톱이 새로 만든 것)는 하루가 지나면 자연히 빠진다.
-  const windowStart = new Date(Date.now() - DEVICE_WINDOW_HOURS * 3600_000).toISOString()
+  const windowStart = deviceWindowStart(new Date(), DEVICE_WINDOW_HOURS)
   const { data: devices } = await admin
     .from('device_usage')
     .select('device_id')
     .eq('user_id', userId)
     .gte('last_seen', windowStart)
-  const ids = new Set((devices ?? []).map(d => d.device_id as string))
-  if (!ids.has(deviceId) && ids.size >= DEVICE_LIMIT) {
+  if (isDeviceBlocked({
+    seenDeviceIds: (devices ?? []).map(d => d.device_id as string),
+    currentDeviceId: deviceId,
+    limit: DEVICE_LIMIT,
+  })) {
     return `같은 시간대에 기기 ${DEVICE_LIMIT}대를 넘게 쓰고 있어 잠시 제한했습니다. 하루가 지나면 자동으로 풀리고, 본인 계정이 맞는데 계속 막히면 고객센터로 알려 주세요.`
   }
   // 이 등록이 조용히 실패하면 기기 수가 영영 늘지 않아 제한 자체가 무력해진다.

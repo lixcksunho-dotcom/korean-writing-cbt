@@ -362,6 +362,7 @@ https://kptest.cloud · 훑은 화면 25개 (실글/KBS 두 모드)
 - 지시문과 실물이 다르다는 점(무료 발급 행이 1건뿐)을 숨기지 않고 앞세워, 대리 지표 ②③을 별도로 낸 점이 백로그의 "왜"에 더 부합함을 확인.
 - main에 fast-forward 병합.
 
+
 ## 유입 경로별 결제 전환 (work/inflow-to-payment)
 
 ### 검수 통과 (리뷰어)
@@ -834,3 +835,253 @@ SDK 실물 대조: 설치된 `@portone/browser-sdk` v2에 `PaymentRequestUnionEa
 - `npm run report:funnel-daily`(어제=2026-08-23, 기본값) 재실행 → 진입 2건(2명)/시도 0/완결 0과 REPORT 기재 내용 일치.
 - `.env.local` 값이 stdout에 노출되지 않음을 위 실행 출력에서 확인.
 - main에 fast-forward 병합.
+
+## 서버 액션 본인 확인 감사 (work/fable-codex-action-auth-audit, 2026-09-12, 워커 Codex)
+
+실물: 19개 use-server 파일, export async 41개(전부 함수 선언); actions.ts 13개 포함. 주석 속 지시문은 제외, 인라인 액션 없음. 아래는 수정 후 상태이며 묶은 함수도 전부 나열했다.
+경로 M=`src/app/(main)/`, A=`src/app/admin/(protected)/`, L=`src/lib/`; ① U=getUser, G=관리자 헬퍼 내부 getUser, ×=없음; ② A=assertAdmin, R=requireAdmin, —=비관리자; ③ S=본인 ID, P=본인 부모행을 먼저 확인, A=관리자 권한+대상 지정, ×=권한 없는 대상 지정; ④ 직접 DB/Auth/Storage 쓰기 error 수신, —=직접 쓰기 없음. ★=service_role 쓰기(위임 포함).
+| 파일 | 함수 | ①②③④ | 처리 |
+|---|---|---|---|
+| M account/actions.ts ★ | deleteMyAccount | U/—/S/× | 사람 확인 필요: feedback insert 오류 미수신, 결제 보관·탈퇴 위임이라 미수정 |
+| M cbt/actions.ts ★ | gradeExamEssay | U/—/P/✓ | 본인 session → answerRow.id로 캐시 갱신; 유지 |
+| M cbt/actions.ts | createSession, getOrCreateExamSession | U/—/S/✓ | insert user_id=user.id; 유지 |
+| M cbt/actions.ts | findResumableExamSession | U/—/—/— | 본인 세션 읽기; 유지 |
+| M cbt/actions.ts | saveExamProgress | U/—/S/✓ | id+user_id 조건; 유지 |
+| M cbt/actions.ts | submitSession | U/—/P/✓ | 본인 세션 선조회 후 session_id 답안 upsert·세션 갱신; 유지 |
+| M manuscript/actions.ts | gradeManuscript | U/—/S/✓ | insert user_id=user.id; 유지 |
+| M practice/actions.ts ★ | gradeEssayPractice | U/—/S(위임)/— | 사용량에 user.id 전달; 직접 저장 없음 |
+| M practice/actions.ts | getPracticeProgress | U/—/—/— | 본인 세션 읽기; 유지 |
+| M practice/actions.ts | savePracticeProgress | U/—/S/✓ | 세션 insert error 수신·throw 추가 |
+| M resolved-notice-actions.ts ★ | acknowledgeResolvedNotices | U/—/P/✓ | 본인 feedback만 이벤트로 저장; insert error 수신·throw 추가 |
+| M review/actions.ts ★ | submitReview | U/—/S/✓ | 삭제 user_id 조건·삽입 user_id 고정; 유지 |
+| M subscribe/blog-review-actions.ts ★ | submitBlogReview | U/—/S/✓ | 사람 확인 필요: 구독 발급 영역, 직접 쓰기 누락 없음·미수정 |
+| M subscribe/promo-actions.ts ★ | redeemPromoCode | U/—/S/✓ | 사람 확인 필요: 구독 발급 영역, 직접 쓰기 누락 없음·미수정 |
+| A alertChannelActions.ts | sendTestAlert | G/A/—/— | 관리자 이메일 allowlist; 유지 |
+| A feedback/actions.ts ★ | setFeedbackResolved | G/A/A/✓ | 답글 delete error 수신·throw 추가 |
+| A members/actions.ts ★ | createMember | G/A/A/✓ | Auth createUser error 수신; 유지 |
+| A members/actions.ts ★ | deleteMember | G/A/A/—(위임) | 사람 확인 필요: 결제 보관·회원 삭제 위임, 미수정 |
+| A members/actions.ts ★ | setMemberPaid | G/A/A/✓ | 사람 확인 필요: 대상 userId로 구독 발급·취소, 미수정 |
+| A payments/actions.ts ★ | reconcilePayment | G/A/A/—(위임) | 사람 확인 필요: 결제 고객 ID로 발급, 위임 함수 insert error 수신; 미수정 |
+| A promo-reviews/actions.ts ★ | approveBlogReview | G/A/A/✓ | assertAdmin 추가; feedback update error 수신·지급 완료 후 처리 표시 실패 안내 반환 |
+| A promo-reviews/actions.ts ★ | rejectBlogReview | G/A/A/✓ | assertAdmin 추가, update error 수신·ok:false 반환 |
+| A promo-reviews/actions.ts ★ | revokeBlogReview | G/A/A/✓ | assertAdmin 추가; 회수 로직·반환값 유지 |
+| A promo-reviews/actions.ts ★ | revokeAutoGrant | G/A/A/✓ | assertAdmin 추가; 회수 로직·반환값 유지 |
+| A promo-reviews/actions.ts ★ | restoreBlogReview | G/A/A/✓ | assertAdmin 추가; 복구 로직·반환값 유지 |
+| A promo-reviews/test/actions.ts | runBlogRuleTest, blogRuleSummary, runBlogRuleTestOnHtml, judgeSelfTest | G/A/—/— | 관리자 실험실 호출만 확인됨; 4개 모두 assertAdmin 추가 |
+| A questions/actions.ts ★ | createQuestion, updateQuestion, deleteQuestion | G/R/A/✓ | requireAdmin이 로그인·관리자 이메일 확인; 정적 검사에서 관리자 가드로 인정(3건 통과) |
+| A reports/actions.ts ★ | setReportResolved, deleteReport | G/A/A/✓ | 관리자+신고 id 지정; 유지 |
+| A reviews/actions.ts ★ | setReviewVerified, setReviewVisible | G/A/A/✓ | 관리자+후기 id 지정; 유지 |
+| A reviews/actions.ts ★ | deleteReview | G/A/A/✓ | 후기에서 읽은 proof_path 삭제 error 수신·throw 추가 |
+| L serverNow.ts | serverNow | ×/—/—/— | Date.now()만 반환; 바로 위 public-action 이유 주석 추가, 공개 유지 |
+| L study-actions.ts | toggleBookmark, submitQuestionReport | U/—/S/✓ | 본인 user_id 쓰기·삭제 범위 및 error 수신; 유지 |
+집계(액션 단위, 직접 검사/쓰기 기준): 41개 중 최초 누락 14개, 수정 13개, 누락 잔여 1개(deleteMyAccount의 feedback insert 오류 미수신). 사람 확인 필요는 보호 영역 6개(실제 누락 1개 포함); 공개 serverNow와 requireAdmin 3개는 보안 누락 수에서 제외.
+소유 조건: 회원 쓰기는 user.id 고정 또는 검증된 부모행을 거친다. 관리자 쓰기에 관리자 자신의 user_id를 붙이면 타 회원 관리가 깨지므로 권한 검사+대상 지정으로 판정했다. RLS가 막지 못하던 무인증 구독 4개는 함수 첫머리 assertAdmin으로 보호했다.
+보조 함수까지 확인한 추가 한계: antiSharing의 recordPaidGrade/refundPaidGrade, analytics/trackServerEvent의 insert, operatorAlerts/recordOperatorAlert의 insert는 error 미수신. 채점·제출·홍보·신고 액션의 위임 경로이며 위 표의 직접 쓰기 ✓가 전체 호출 그래프의 오류 처리를 보장하지 않는다. accountDeletion의 보관 계정 createUser도 error 미수신. 환불·결제 공유 경로와 액션 밖 보조 함수는 미수정, 후속 검토 필요.
+정적 검사: scripts/server_action_auth_check.mjs와 check:action-auth 추가. 문자열·주석을 제외한 토큰과 괄호로 본문을 분리하며 지원하지 않는 export는 실패 처리; 바로 위 public-action 이유만 예외. 역할·소유권·실행 경로를 증명하는 검사는 아니다.
+최종 정적 검사 실패 0건. 이전 실패 7건은 구독 4개 assertAdmin 추가와 안전한 requireAdmin 3개 인정으로 해소했다. 공개 예외로 숨기지 않았다. 잔여 오류 처리 누락 1개는 인증 정적 검사 범위 밖이며 위 표에 유지했다.
+검증: `npm.cmd run check:action-auth` · exit 0 · 마지막 줄 `server-action-auth: PASS 41 / FAIL 0`.
+역검증: approveBlogReview의 assertAdmin 호출 하나를 임시 제거하고 `node scripts/server_action_auth_check.mjs` 실행 · exit 1 · 마지막 줄 `server-action-auth: PASS 40 / FAIL 1`; approveBlogReview만 FAIL 확인 후 원본 Buffer 복구·동일성 true, 최종 검사 재실행 PASS 41 / FAIL 0 · exit 0.
+검증: `npx.cmd tsc --noEmit` · exit 0 · 마지막 줄 없음(출력 없음).
+검증: `npx.cmd eslint scripts/server_action_auth_check.mjs 'src/app/(main)/practice/actions.ts' 'src/app/(main)/resolved-notice-actions.ts' 'src/app/admin/(protected)/feedback/actions.ts' 'src/app/admin/(protected)/promo-reviews/actions.ts' 'src/app/admin/(protected)/promo-reviews/test/actions.ts' 'src/app/admin/(protected)/reviews/actions.ts' src/lib/serverNow.ts` · exit 0 · 마지막 줄 없음(출력 없음).
+변경: 위 7개 TS + scripts/server_action_auth_check.mjs + package.json + REPORT.md. 네트워크·DB·외부 API·설치·커밋 실행 없음; src/app/api/portone/** 무변경. 구독 4개는 권한 검사와 승인 후 feedback update 오류 처리만 추가; 지급·회수·복구 비즈니스 로직 유지.
+커밋 메시지 제안: `fix(security): 서버 액션 본인 확인 감사 + 정적 검사`
+
+리뷰어 반려 반영: 무인증 구독 4개에 assertAdmin 추가(로직 무변경), requireAdmin 인정
+새 검사 결과: check:action-auth PASS 41 / FAIL 0 (exit 0), tsc --noEmit exit 0, 변경 코드 전체 eslint exit 0. 역검증 PASS 40 / FAIL 1 (예상 exit 1), 원복 후 PASS 41 / FAIL 0 (exit 0).
+
+## 중간 저장 답안 서버 쪽 손상 검증 (work/fable-codex-saved-answers, 2026-09-12, 워커 Codex)
+
+### 무엇을 왜 바꿨는지
+서버 액션은 TypeScript 타입만 있고 런타임 검증이 없어, 클라이언트가 보낸 배열·비문자 값이 `quiz_sessions.saved_answers`에 저장되고 그대로 시험 화면에 복구될 수 있었다(야간에 고친 localStorage 초안 검증의 서버 쪽 짝). 순수 함수 `sanitizeSavedAnswers(raw: unknown)`(`src/lib/savedAnswers.ts`)가 객체가 아니거나 배열이면 `{}`, 객체면 문자열 값인 자체 열거 항목만 남긴다. 던지지 않는다(복구 실패가 시험 진입을 막으면 안 된다). 시험 `saveExamProgress`·`getOrCreateExamSession`, 연습 `savePracticeProgress`·`getPracticeProgress` 4곳에 연결했다.
+
+### 지시문과 달랐던 점
+- 이 브랜치(main 기준)에는 야간 `examDraft.ts` 수정이 없다. `examDraft.ts`는 건드리지 않았다 — 초안은 '하나라도 비문자면 전체 거부', 서버는 '부분 복구'로 정책이 달라 함수를 공유하면 판정이 바뀐다.
+- 워커가 야간 검사 파일과 `check:draft`를 이 브랜치에 복사해 넣었으나 그 검사는 여기서 첫 사례부터 실패한다(전제가 되는 수정이 없다). 리뷰어 Fable이 반려해 둘 다 이 브랜치에서 뺐다. 야간 수정은 원본 폴더 WIP로 따로 들어간다.
+
+### 변경 파일
+`src/lib/savedAnswers.ts`(신규) · `scripts/saved_answers_check.mjs`(신규) · `src/app/(main)/cbt/actions.ts` · `src/app/(main)/practice/actions.ts` · `package.json`(`check:saved-answers`) · `REPORT.md`
+
+### 검증 (워커 실행 → 리뷰어 재실행)
+- 빈 객체를 돌려주는 임시 구현으로 먼저 돌림: 통과 9 · 실패 7 · exit 1 → 검사가 실제로 잡는 것 확인
+- `Array.isArray` 조건을 일부러 빼고 돌림: 통과 15 · 실패 1 · exit 1 → 빨간불 확인 후 복원
+- `npm run check:saved-answers`: 통과 16 · 실패 0 · exit 0 (리뷰어 재실행 동일)
+- `npx tsc --noEmit`: exit 0 (리뷰어 재실행 동일)
+- 변경 TS/MJS 4파일 `npx eslint`: 오류 0 (리뷰어 재실행 동일)
+- 설치된 Next 문서(`node_modules/next/dist/docs/…/use-server.md`, `mutating-data.md`)의 서버 함수 입력 검증 지침과 대조함
+
+### 하지 않은 것
+운영 DB의 기존 `saved_answers` 행 점검(네트워크 없는 샌드박스), `next build`, 브라우저 확인. 워커 Codex는 두 번 모두 30분 타임아웃으로 커밋 전에 끊겨(2회차는 첫 명령도 못 돌림), 반려 반영·축약·커밋은 리뷰어 Fable이 대신 했다.
+## 기기 수 제한 판정 순수화 + 회귀 검사 (work/fable-codex-device-window, 2026-09-12, 워커 Codex)
+
+- 무엇을 왜: 2026-09-09 가상 데스크톱 기기 누적으로 유료 채점이 막힌 사고의 재발을 오프라인에서 감지하도록 창 계산과 기기 제한 판정을 순수 함수로 분리했다.
+- `deviceWindowStart(now, hours)`는 밀리초 단위 창 시작 ISO를 반환하고, `isDeviceBlocked`는 중복 ID를 제거해 현재 기기가 없는 경우에만 한도를 적용한다.
+- `DEVICE_WINDOW_HOURS = 24`와 사고 이유 한 줄 주석을 새 모듈로 옮겼다. 반환 문구·DB 조회 조건·upsert·일일 한도는 유지하고 `antiSharingLimits.ts`는 수정하지 않았다.
+- 변경 파일: `src/lib/deviceWindow.ts`(신규), `src/lib/antiSharing.ts`, `scripts/device_window_check.mjs`(신규), `package.json`, `REPORT.md`.
+- 회귀 사례: 기존 기기/새 기기의 한도 도달·미달, 중복 ID, 밀리초 창 계산, 25시간 전 제외와 ISO gte 경계 포함. 한도 초과의 기존 기기·빈 목록·일회성 iterable·경계 ±1ms도 확인했다.
+- 의도적 실패 확인: 현재 기기 예외 조건을 잠시 제거하고 `npm.cmd run check:device-window` 실행 → exit 1, 마지막 줄 `Passed: 5, Failed: 1`; finally에서 원복한 뒤 재검사했다.
+- 검증: `npm.cmd run check:device-window` → exit 0, 마지막 줄 `Passed: 6, Failed: 0`.
+- 검증: `npx.cmd tsc --noEmit` → exit 0, 출력 없음(마지막 줄 없음).
+- 검증: `npx.cmd eslint src/lib/antiSharing.ts src/lib/deviceWindow.ts scripts/device_window_check.mjs` → exit 0, 출력 없음(마지막 줄 없음).
+- 지시문과 달랐던 점: 실제 `scripts/paid_block_check.mjs`의 package.json 명령은 `check:paid-block`이 아니라 `check:blocks`다. 나머지 대상 함수·상수는 일치했다.
+- 하지 않은 것: 실제 DB·화면 검사(`check:paid-block`으로 지칭된 실제 `check:blocks`)는 네트워크가 없어 미실행. 외부 API·npm install·next build·dev 서버·git commit도 실행하지 않았다.
+- 커밋 메시지 제안: `refactor(paid): 기기 수 제한 판정을 순수 함수로 + 회귀 검사`
+## 오답 재시험 결과 저장 (work/fable-codex-wrong-retake-persist, 2026-09-12, 워커 Codex)
+
+- 조사: 001_cbt.sql의 세션은 UUID PK, user_id(FK)·year·round NOT NULL; started_at 기본 now(), completed_at·score·total nullable. 연도 범위 CHECK·사용자별 세션 UNIQUE 없음.
+- 답안은 UUID PK, session_id·question_id FK/NOT NULL, user_answer·is_correct nullable. 008은 nullable ai_score·ai_feedback, 017은 세션 saved_answers·time_left·saved_at 추가.
+- 026은 program NOT NULL/default silyong 및 silyong/kbs CHECK. 032는 UNIQUE(session_id, question_id) 추가. 답안 UPDATE RLS 정책은 마이그레이션에서 발견되지 않음(SELECT·INSERT만 있음).
+- 유형별 연습은 9001 및 유형 round로 savePracticeProgress에서 사용자/program/year/round의 미완료 세션을 찾아 saved_answers에 저장. 일반 essay/page.tsx는 실제 시험 답안 덮어쓰기를 막으려고 saveKey를 생략함.
+- 오답 목록은 완료 시각 기준 문항별 마지막 답을 사용하며 센티넬도 포함. insights/page.tsx 및 exam_dropoff_check.mjs는 이미 year<9000으로 제외하므로 변경 없음.
+- 관리자 첫 화면의 완료 수·최근 완료 세션 조회에는 연도 필터가 없었음. 9001 취급을 유지하려고 year<9000 대신 year!=9002만 추가.
+- 택한 안: 스키마 변경 없이 답변 시도마다 year=9002/round=1 세션 생성 → 서버 판정 답안 INSERT → 세션 완료. 모든 쓰기 error 확인 및 예외의 실패 값 반환.
+- 지시문의 공용 get-or-create/upsert 안과 다름: 공용 completed_at을 갱신하면 다른 문항의 옛 정답까지 새 시험 오답보다 최신으로 바뀜. 갱신하지 않으면 새 재시험이 이전 시험보다 오래된 기록이 됨.
+- 시도별 세션은 답안 UPDATE RLS·기존 행 삭제 없이 문항별 시각을 보존함. 여러 센티넬 중 해당 문항의 최신 완료 시도를 선택하며, 동시 완료 시각 동률은 세션 ID로 결정해 응답 순서에 흔들리지 않게 함.
+- 오답 목록의 세션·답안을 페이지 조회해 기록 누적 시 조회 한도로 최신 답이 누락되는 문제를 방지. 저장 완료 후 목록을 새로 열 때 제외된다는 문구로 조정.
+- 오답 진입만 persistWrongRetakes를 전달. 저장 중 안내·저장 실패 안내 표시, 저장 중 중복 선택·문항 이동·초기화 방지. 유형별 객관식 연습은 기존 로컬 판정 유지.
+- 변경: src/app/(main)/practice/wrong/actions.ts, wrong/page.tsx, practice/multiple/PracticeMultiple.tsx, src/app/admin/(protected)/page.tsx.
+- 변경: src/lib/wrongNoteRetake.ts, scripts/wrong_note_retake_check.mjs, package.json, REPORT.md.
+- 검증: 정답 비교를 ===에서 !==로 일부러 변경하고 npm.cmd run check:wrong-retake → exit 1, 마지막 줄 RED_EXIT=1(AssertionError). finally에서 원복.
+- 검증: npm.cmd run check:wrong-retake → exit 0, 마지막 줄 PASS: grading, program/type/choice guards, latest retake, independent questions, incomplete sessions, stable ties.
+- 검증: npx.cmd tsc --noEmit → exit 0, 진단 출력 없음(확인 출력 TSC_EXIT=0).
+- 검증: npx.cmd eslint [변경 TS/TSX 5개와 검사 mjs] → exit 0, 진단 출력 없음(확인 출력 ESLINT_EXIT=0).
+- 검증: git diff --check → exit 0, 공백 오류 없음(LF/CRLF 경고만).
+- 미실행: 실제 DB·RLS·브라우저 저장/재진입 확인, 로그인 검사, DB/API 호출, 설치, 마이그레이션, 커밋. 네트워크 미사용.
+- 한계: 시도마다 세션이 증가하며 답안/완료 저장 실패 시 미완료 세션이 남을 수 있음(목록·요청된 집계에는 미포함). 별도 요청 간 트랜잭션은 없음.
+- 사람 확인: 운영 quiz_answers UNIQUE(session_id, question_id) 존재 및 RLS 실물 확인(마이그레이션과 다를 수 있음). 두 문항 재시험 사이 새 모의고사 제출, 두 탭 경합, 저장 실패 및 목록 재진입을 운영과 분리된 DB에서 검증.
+- 커밋 메시지 제안: fix(practice): 오답 재시험에서 맞히면 정말로 목록에서 빠진다
+
+- 리뷰어 반려 반영: 계정 화면 완료 수·결과 화면 다음 회차 조회 제외, 관리자 화면 상수화
+
+### 리뷰 반영 후 quiz_sessions 전체 검색 점검 (2026-09-12)
+
+`rg`가 설치되어 있지 않아 `git grep -n 'quiz_sessions'`로 저장소 전체를 검색하고, `Get-ChildItem src,scripts -Recurse -File | Select-String 'quiz_sessions'`로 미추적 파일도 보완했다. 조회 뒤 필터와 사용처까지 확인한 정적 점검이며 DB/API는 호출하지 않았다.
+
+- `src/app/(main)/account/page.tsx`: 세션 수에 `neq('year', WRONG_NOTE_RETAKE_YEAR)` 추가; 9001 포함 동작 유지.
+- `src/app/(main)/cbt/[examId]/result/page.tsx`: 완료 회차 목록에서 상수로 9002 제외; 별도 결과 조회는 본인 session ID 단건이며 집계 조회가 아님.
+- `src/app/(main)/cbt/actions.ts`: 단건 소유권 확인 또는 user/program/year/round 일치 조회; 다른 연도 기록이 자동으로 섞이지 않음. insert/update도 확인.
+- `src/app/(main)/cbt/page.tsx`: 조회에는 9002가 포함되지만 실제 문항 회차에 year-round 키로 연결하므로 9002가 시험 카드·이어풀기에 표시되지 않음.
+- `src/app/(main)/dashboard/page.tsx`: 기존 `lt('year', 9000)`으로 제외.
+- `src/app/(main)/insights/page.tsx`: 기존 `lt('year', 9000)`으로 제외.
+- `src/app/(main)/practice/actions.ts`: user/program/year/round 일치 조회로 9001 연습과 9002가 분리됨.
+- `src/app/(main)/practice/essay/page.tsx`: 검색 결과는 저장 키 설명 주석이며 직접 조회 없음.
+- `src/app/(main)/practice/wrong/page.tsx`: 문항별 최신 정오답 반영에 9002 포함이 필요하므로 유지.
+- `src/app/(main)/practice/wrong/actions.ts`: 재시험 세션 insert 반환 및 해당 ID 완료 update 반환; 다른 세션 집계 없음.
+- `src/app/admin/(protected)/page.tsx`: 완료 활동·전체 완료 수 두 조회의 9002 리터럴을 공통 상수로 교체.
+- `src/app/admin/(protected)/paid-members/page.tsx`: 기존 `lt('year', 9000)`으로 제외.
+- `scripts/free_to_paid.mjs`: 추가 누수 발견·수정. year 조건 없이 round=1 재시험을 무료 회차 체험/모의고사 수로 집계할 수 있어 공통 상수를 import하고 REST 조회에 `year=neq.${WRONG_NOTE_RETAKE_YEAR}` 추가; 9001 기존 동작 유지.
+- `scripts/ai_cost_check.mjs`: 세션은 AI 답안의 소유자·기간 연결용; ai_score 있는 답안만 세므로 객관식 재시험은 원가에 포함되지 않음.
+- `scripts/data_integrity_check.mjs`: 전체 세션의 참조·빈 답안·점수 정합성 검사이므로 9002 포함이 맞음.
+- `scripts/exam_dropoff_check.mjs`: 기존 REST `year=lt.9000`으로 제외.
+- `scripts/predicted_score_accuracy_check.mjs`: 기존 REST `year=lt.9000`으로 제외.
+- `scripts/funnel_report.py`: 조회 후 Python의 year<9000 필터로 제외.
+- `scripts/fix_practice_year_sentinel.py`: 특정 BAD_YEAR 일치 조회·이관이며 9002 전체 집계가 아님.
+- `scripts/account_delete_check.mjs`: 생성한 테스트 세션 ID의 삭제 여부 확인; 필터 불필요.
+- `scripts/authed_page_sweep.mjs`: 테스트 계정 세션 조회 후 정리; 9002도 정리 대상이어야 함.
+- `scripts/cleanup_test_accounts.mjs`: 테스트 계정의 전체 세션 정리 목적; 9002 포함 유지.
+- `scripts/exam_autosave_check.mjs`: 전용 테스트 계정 최신 세션의 저장 검사; 운영 집계가 아님.
+- `scripts/exam_entry_check.mjs`: 전용 테스트 계정의 진입 전후 세션 수·정리 검사; 운영 집계가 아님.
+- `scripts/exam_flow_check.mjs`: 전용 테스트 계정의 제출 세션·점수 검사와 정리; 운영 집계가 아님.
+- `scripts/exit_save_check.mjs`: 전용 테스트 계정의 저장 답안 확인과 정리; 운영 집계가 아님.
+- `scripts/session_resume_check.mjs`: 테스트 계정 및 특정 year/round의 이어풀기 검사와 정리; 운영 집계가 아님.
+- `scripts/a11y_structure_check.mjs`: 테스트 계정 정리용 DELETE만 해당.
+- `scripts/admin_ui_check.mjs`: 테스트 계정 정리용 DELETE만 해당.
+- `scripts/authed_ui_check.mjs`: 테스트 계정 정리용 DELETE만 해당.
+- `scripts/error_recovery_check.mjs`: 테스트 계정 정리용 DELETE만 해당.
+- `scripts/exam_screen_ui_check.mjs`: 테스트 계정 정리용 DELETE만 해당.
+- `scripts/free_to_paid_resume_check.mjs`: 테스트 계정 정리용 DELETE만 해당.
+- `scripts/manuscript_check.mjs`: 테스트 계정 정리용 DELETE만 해당.
+- `scripts/subscription_gate_check.mjs`: 테스트 계정 정리용 DELETE만 해당.
+- `scripts/paid_essay_resume_check.mjs`: 테스트 세션 생성·정리만 해당.
+- `scripts/past_result_link_check.mjs`: 테스트 세션 생성·정리만 해당.
+- `scripts/predicted_score_check.mjs`: 테스트 세션 생성·정리만 해당.
+- `scripts/review_invite_check.mjs`: 테스트 세션 생성·정리만 해당.
+- `supabase/migrations/001_cbt.sql`: 테이블·RLS와 답안 소유권의 세션 subquery; 9002도 같은 소유권 검사가 필요함.
+- `supabase/migrations/017_session_save.sql`: 저장 필드·인덱스 DDL이며 운영 집계 없음.
+- `supabase/migrations/026_multi_program.sql`: program 필드·제약·인덱스 DDL이며 운영 집계 없음.
+- `supabase/migrations/999_apply_all_pending.sql`: 저장 필드·인덱스 DDL이며 운영 집계 없음.
+- `docs/empty_session_plan.md`: 과거 정리·인덱스 계획과 예시 SQL이며 현재 실행 코드가 아님.
+- `README.md`: 연습 저장 키 설명이며 실행 조회 없음.
+- `REPORT.md`: 과거 점검 결과 및 이번 기록이며 실행 조회 없음.
+
+추가 누수는 `scripts/free_to_paid.mjs` 1곳을 수정했다. 위 정적 점검 범위에서 그 외 실제 집계 누수는 발견하지 못했다. 전환 보고서 실행은 네트워크·결제 원장 접근이 필요하므로 실행하지 않았다.
+
+### 리뷰 반영 후 검증
+
+- `npx.cmd tsc --noEmit`: exit 0, 진단 없음 (`TSC_EXIT=0`).
+- `npx.cmd eslint 'src/app/(main)/account/page.tsx' 'src/app/(main)/cbt/[examId]/result/page.tsx' 'src/app/admin/(protected)/page.tsx' 'src/app/(main)/practice/multiple/PracticeMultiple.tsx' 'src/app/(main)/practice/wrong/page.tsx' 'src/app/(main)/practice/wrong/actions.ts' 'src/lib/wrongNoteRetake.ts' 'scripts/wrong_note_retake_check.mjs' 'scripts/free_to_paid.mjs'`: exit 0, 진단 없음 (`ESLINT_EXIT=0`).
+- `npm.cmd run check:wrong-retake`: exit 0 (`WRONG_RETAKE_EXIT=0`); `PASS: grading, program/type/choice guards, latest retake, independent questions, incomplete sessions, stable ties`.
+- `git diff --check`: exit 0 (`DIFF_CHECK_EXIT=0`); 공백 오류 없음, LF/CRLF 경고만 출력.
+- 검증은 순차 실행. 네트워크·DB/API 호출·결제 관련 실행·git commit 없음. 기존 미커밋 변경 보존.
+## ESLint 경고 0 (work/fable-codex-lint-zero, 2026-09-12, 워커 Codex)
+
+- 지시문과 달랐던 점: 실측 오류 0·경고 25건(23건보다 2건 많음). 수정 25건·남긴 경고 0건, 변경 26파일(REPORT 포함).
+- 최초 `npx.cmd eslint scripts src -f unix` · exit 1 · 마지막 줄: `The unix formatter is no longer part of core ESLint. Install it manually with npm install -D eslint-formatter-unix`(설치하지 않음).
+- 대체 `npx.cmd eslint scripts src -f json -o lint-before.json` · exit 0 · 출력 없음; 아래 수정 전 파일:줄:규칙 목록은 JSON에서 추출. U = `@typescript-eslint/no-unused-vars`, scripts 경로는 `scripts/` 기준.
+- `ai_cost_check.mjs:22:U` pass; `alert_triage_check.mjs:14:U` pass.
+- `audio_download_guard_check.mjs:13:U` pass; `blog_audit_revoke_check.mjs:25:U` pass.
+- `blog_cta_check.mjs:18:U` pass; `check_exit_hygiene_check.mjs:14:U` pass.
+- `content_page_quiz_check.mjs:34:U` pass; `daily_sales_check.mjs:11:U` pass.
+- `deploy_freshness_check.mjs:22:U` pass; `event_popup_check.mjs:28:U` pass.
+- `exam_dropoff_check.mjs:33:U` mean; `exam_timer_check.mjs:15:U` pass.
+- `first_click_check.mjs:16:U` pass; `landing_cache_check.mjs:18:U` pass.
+- `navigation_speed_check.mjs:24:U` pass; `next_round_check.mjs:13:U` pass.
+- `own_copy_spelling_check.mjs:59:U` pass; `payment_block_guidance_check.mjs:31:U` pass.
+- `public_page_bundle_check.mjs:19:U` pass; `revenue_integrity_check.mjs:69:U` paidByOrderId.
+- `server_region_check.mjs:17:U` pass; `site_score.mjs:108:U` catch 인자 e.
+- `spelling_consistency_check.mjs:43:U` ARROW; `trial_check.mjs:13:U` pass; `src/app/page.tsx:6:U` Gift.
+- 처리: pass 20개는 마지막 출력에 `(통과 N · 실패 M)` 추가. 미호출 함수 mean·정규식 ARROW·catch 인자 e·Gift import 제거. paidByOrderId 대입만 제거하고 `new Map(paid.map(...))` 호출·평가는 보존.
+- 남긴 경고: 없음(훅 경고도 없음). 검사 판정·종료 코드·제품 동작 유지. 주석 추가 및 ESLint 설정/max-lines 변경 없음. 커밋하지 않음.
+- 검증 `npx.cmd eslint scripts src` · exit 0 · 마지막 줄 없음(출력 없음), 오류 0·경고 0.
+- 검증 `npx.cmd tsc --noEmit` · exit 0 · 마지막 줄 없음(출력 없음).
+- 검증 `npm.cmd run check:alert-triage` · exit 0 · `볼 것만 위로 온다. (통과 14 · 실패 0)`.
+- 검증 `npm.cmd run check:audio-guard` · exit 0 · `재생기에서 권하는 길은 닫혀 있다. (통과 5 · 실패 0)`.
+- 검증 `npm.cmd run check:exit-hygiene` · exit 0 · `검사가 결과를 찍고 제때 끝난다. (통과 44 · 실패 0)`.
+- 검증 `npm.cmd run check:exam-timer` · exit 0 · `시간을 제때, 과하지 않게 알린다. (통과 12 · 실패 0)`.
+- 검증 `npm.cmd run check:landing-cache` · exit 0 · `첫 방문자는 만들어 둔 것을 받는다. (통과 6 · 실패 0)`.
+- 검증 `npm.cmd run check:next-round` · exit 0 · `끝낸 사람에게 다음을 준다. (통과 8 · 실패 0)`.
+- 검증 `npm.cmd run check:own-copy` · exit 0 · `우리 글은 깨끗하다. (통과 2 · 실패 0)`.
+- 검증 `git diff --check` · exit 0 · 마지막 줄 없음(출력 없음). 검사 스크립트는 순차 실행, 한글 출력 교정 뒤 7개 모두 재검증.
+- 미실행(네트워크 필요), 아래는 모두 `npm.cmd run <이름>`이며 exit/마지막 줄 해당 없음; 머리 주석·fetch·브라우저 이동·DB 호출로 판별:
+- `check:ai-cost`, `check:audit-revoke`, `check:blog-cta`, `check:page-quiz`, `check:sales`, `check:deployed`.
+- `check:popup`, `check:dropoff`, `check:first-click`, `check:nav`, `check:pay-guide`, `check:bundle`.
+- `check:revenue`, `check:region`, `check:spelling-consistency`, `check:trial`, `score`(site_score.mjs, 대응 check:* 없음).
+- 커밋 메시지 제안(요청한 첫 줄 그대로; 실제 수정 수는 위 25건):
+chore(lint): 경고 23건을 0으로 — 동작 변경 없음
+- 리뷰어 Fable 보정: `revenue_integrity_check.mjs`의 `new Map(...)` 단독 문장은 부수 효과가 없어 줄 자체를 지웠다(대입만 지우면 뜻 없는 계산이 남는다).
+## 맞춤법 검사 문서 확장 (work/fable-codex-own-copy-docs, 2026-09-12, 워커 Codex)
+
+- 화면으로 복사되는 문서의 오표기도 막도록 기존 src ts·tsx에 README.md와 docs/**/*.md만 추가했다.
+- 변경 파일: scripts/own_copy_spelling_check.mjs, REPORT.md.
+- src 271개·문서 8개(README 1개, docs 재귀 7개)·ALWAYS_WRONG 34개 규칙을 확인했다.
+- Markdown의 백틱/물결표 코드 블록과 백틱 인라인 코드를 공백으로 가려 원문 줄 번호를 유지한다.
+- 기존 ts·tsx 제외 경로·교육용 자료 및 표기 설명 예외·검출 출력 형식은 유지했다. 파일 수만 src/문서로 나눴다.
+- 문서에서 걸린 것: 0건 / 고친 것: 0건 / 남긴 것: 0건. 인용이라 남김·판단 보류 항목 없음.
+- README 검사 표에 check:own-copy 행이 없어 요청대로 추가하지 않았다.
+- 실물 대조: walk·ALWAYS_WRONG·스크립트 경로는 지시문과 일치한다. 기존 자기 검증은 문자열 검출 1건이며 오탐 예외는 검사 루프에 있다.
+- 문서 자기 검증은 실제 findHits 경로로 코드 블록·인라인 코드의 오표기를 제외하고 같은 표기의 본문 5행만 잡는지 확인한다.
+- 실패 확인 1: README 끝에 틀린 본문을 임시 추가하고 npm.cmd run check:own-copy 실행 → exit 1, README.md:369 검출, 마지막 줄 `우리 글에 틀린 표기가 있다.`
+- 실패 확인 2: 인라인 코드 마스킹을 임시 해제하고 같은 명령 실행 → exit 1, 문서 자기 검증 실패, 마지막 줄 `우리 글에 틀린 표기가 있다.`
+- 두 실패 확인 후 임시 변경은 원본 바이트로 복구했다.
+- 최종 검증: npm.cmd run check:own-copy · exit 0 · 마지막 줄 `우리 글은 깨끗하다.`
+- 최종 검증: npx.cmd eslint scripts/own_copy_spelling_check.mjs · exit 0 · 마지막 비어 있지 않은 줄 `✖ 1 problem (0 errors, 1 warning)`; 기존 pass 미사용 경고 1건.
+- 최종 검증: npx.cmd tsc --noEmit · exit 0 · 출력 없음(마지막 줄 없음). TS import는 없지만 추가 실행했다.
+- git diff --check · exit 0 · 공백 오류 없음. 규칙 비활성화·네트워크·DB·외부 API·설치·커밋 없음.
+- 커밋 메시지 제안: feat(check): 맞춤법 검사가 README·docs 도 훑는다
+- 리뷰어 Fable 보정: 스크립트 머리의 "왜 필요한가" 주석(보기 제외·언제나 틀린 것만 넣는 이유)이 한 줄로 갈렸던 것을 되살리고 문서 범위 설명 두 줄만 더했다.
+## 오답노트 문항 제외 설계 (work/fable-codex-wrong-note-dismiss, 2026-09-12, 워커 Codex)
+
+- 커밋 메시지 제안: `docs(practice): 오답노트 문항 제외 설계 + SQL 초안`
+- 무엇을 왜: 2026-09-10 문의 1건을 근거로 문항별 제외·복원 설계를 작성했다. 답안과 성적을 보존하며 복습 목록만 정리하기 위한 안이다.
+- 변경 파일: `docs/wrong_note_dismiss_plan.md`, `docs/wrong_note_dismissals.draft.sql`, `REPORT.md`.
+- 권장안: 새 `wrong_note_dismissals` 표에 사용자·문항 UNIQUE, 본인 행 RLS, authenticated SELECT·INSERT·DELETE GRANT를 명시한다.
+- `003_reviews.sql`의 삭제 정책과 `submitReview`의 실제 permission denied 기록을 대조해 RLS와 GRANT를 구분했다.
+- `migration_tables`가 모든 `*.sql`을 세므로 DRAFT 이름도 검사 대상이다. 실행되지 않은 초안을 `docs/`에 두었다.
+- 지시문과 달랐던 점: 지시된 파일은 모두 존재하나 `PracticeMultiple:choose`는 로컬 상태만 바꾸므로 재시험 정답이 DB에 저장된다고 볼 수 없다. `InsightsPage`는 추가로 year < 9000을 적용한다.
+- 지시문과 달랐던 점: `check:own-copy`는 src의 ts·tsx만 검사해 Markdown은 대상이 아니다. 문서·SQL에 기존 34개 금지 표기 규칙을 별도로 대조했다.
+- 검증: `npm.cmd run check:own-copy` · exit 0 · 마지막 줄 `우리 글은 깨끗하다.` (271개 파일·34개 규칙).
+- 검증: PowerShell here-string으로 `node --input-type=module -`에 기존 ALWAYS_WRONG 추출·문서 대조 코드를 전달 · exit 0 · 마지막 줄 `document-copy: 2 files, 34 rules, 0 hits`.
+- 검증: `Select-String`·`Get-ChildItem`으로 인용 대조 · exit 0 · 마지막 결과 `6개 — 001_cbt.sql, 003_reviews.sql, 021_bookmarks_reports.sql, 026_multi_program.sql, 033_questions_server_only.sql, 034_reviews_hide_private_columns.sql`. 명령별 결과는 설계 문서에 기록했다.
+- 검증: `git diff --check` · exit 0 · 출력 없음(마지막 줄 없음).
+- 사람이 결정할 것: 새 표 권장안, 다시 틀려도 명시적 복원 전까지 제외 유지 여부, 약점 통계는 유지하고 두 오답 화면의 표시만 제외하는 범위.
+- 사람이 결정할 것: 실제 번호 배정·0NN_ 이름으로 migrations 편입·SQL Editor 검토 및 실행. SQL의 실제 구문 실행·운영 RLS·GRANT 동작은 검증하지 않았다.
+- 하지 않은 것: 코드·화면·DB 변경, 마이그레이션 실행, 네트워크·외부 API·설치·배포·커밋. Fable 검수용 문서와 SQL 초안만 남겼다.
