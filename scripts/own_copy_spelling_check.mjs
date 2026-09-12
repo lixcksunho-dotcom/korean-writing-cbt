@@ -150,5 +150,5 @@ else {
   } else bad('문서 규칙 동작', '코드 제외 또는 본문 검출 실패')
 }
 
-console.log(`\n${fail ? '우리 글에 틀린 표기가 있다.' : '우리 글은 깨끗하다.'}`)
+console.log(`\n${fail ? '우리 글에 틀린 표기가 있다.' : '우리 글은 깨끗하다.'} (통과 ${pass} · 실패 ${fail})`)
 process.exitCode = fail ? 1 : 0
