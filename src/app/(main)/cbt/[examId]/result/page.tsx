@@ -43,6 +43,7 @@ export default async function ResultPage({
     .select('id, program, year, round, score, total, started_at, completed_at')
     .eq('id', sessionId)
     .eq('user_id', user.id)
+    .neq('year', WRONG_NOTE_RETAKE_YEAR)
     .single()
 
   if (!session?.completed_at) redirect('/cbt')

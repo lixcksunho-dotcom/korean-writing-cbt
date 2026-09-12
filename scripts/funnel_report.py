@@ -98,7 +98,7 @@ def main():
     users = admin_users()
     ids = {u["id"] for u in users}
 
-    sessions = [s for s in get("quiz_sessions?select=id,user_id,completed_at,year,round,program&limit=1000")
+    sessions = [s for s in get("quiz_sessions?select=id,user_id,completed_at,year,round,program&year=lt.9000&limit=1000")
                 if s["user_id"] in ids and (s.get("year") or 0) < 9000]
     subs = [s for s in get("subscriptions?select=user_id,status,amount") if s["user_id"] in ids]
 
