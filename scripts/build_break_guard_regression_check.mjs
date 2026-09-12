@@ -18,6 +18,10 @@ export async function runRegression(checkProject) {
   try {
     write('tsconfig.json', JSON.stringify({ compilerOptions: { target: 'ESNext', module: 'ESNext', moduleResolution: 'Bundler', jsx: 'preserve', paths: { '@/*': ['./src/*'], '~/*': ['./src/*'] } }, include: ['src/**/*'] }))
     fixture('src/actions-good.ts', `'use server'; export interface I { x: string }; export type T = string; export async function f() {}; export const g = async () => {}; const h = async function() {}; export { h }; export default async () => {};`, 'a', true)
+    fixture('src/action-prologue.ts', `'use strict'; 'use server'; export const value = 1`, 'a', false)
+    fixture('src/client-prologue.tsx', `'use strict'; 'use client'; import 'next/headers'`, 'b', false)
+    fixture('src/action-default-function.ts', `'use server'; export default async function () {}; const a = (async () => {}) satisfies Function; export { a as b }`, 'a', true)
+    fixture('src/client-next-dynamic.tsx', `'use client'; import dynamic from 'next/dynamic'; const C = dynamic(() => import('./lib/server'))`, 'b', false)
     for (const [name, text] of Object.entries({ constant: 'export const x = 1', sync: 'export function f() {}', promise: 'export const f = () => Promise.resolve(1)', alias: 'const x = 1; export { x }', default: 'export default 3', mixed: 'export const f = async () => {}, x = 1', star: 'export * from "./values"', named: 'export { value as renamed } from "./values"', enum: 'export enum E { A }' })) fixture(`src/action-${name}.ts`, `'use server'; ${text}`, 'a', false)
     write('src/values.ts', 'export const value = 1; export interface I {}')
     fixture('src/action-types.ts', `'use server'; export type { value } from './values'; export { type I } from './values';`, 'a', true)

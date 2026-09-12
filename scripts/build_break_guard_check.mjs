@@ -7,7 +7,13 @@ import { fileURLToPath } from 'node:url'
 import ts from 'typescript'
 
 const has = (node, kind) => node.modifiers?.some(m => m.kind === kind)
-const directive = tree => tree?.statements[0] && ts.isExpressionStatement(tree.statements[0]) && ts.isStringLiteral(tree.statements[0].expression) ? tree.statements[0].expression.text : ''
+const directive = tree => {
+  for (const statement of tree?.statements ?? []) {
+    if (!ts.isExpressionStatement(statement) || !ts.isStringLiteral(statement.expression)) break
+    if (['use client', 'use server'].includes(statement.expression.text)) return statement.expression.text
+  }
+  return ''
+}
 const slash = file => file.split(path.sep).join('/')
 
 function sourceFiles(dir) {

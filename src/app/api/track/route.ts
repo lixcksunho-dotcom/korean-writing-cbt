@@ -1,4 +1,5 @@
 import { createAdminClient } from '@/lib/supabase/admin'
+import { boundedRequestText } from '@/lib/boundedRequestText'
 
 // 방문 페이지뷰 + 퍼널 이벤트 기록(비콘). 익명 visitor_id만 저장하며, 실패해도 사용자 경험에 영향 없음.
 // event가 오면 path를 "#event/<name>"으로 저장 → page_views 재사용(별도 테이블/DDL 불필요).
@@ -13,8 +14,8 @@ const MAX_PATH = 512
 export async function POST(req: Request) {
   try {
     if (Number(req.headers.get('content-length')) > 16_384) return new Response(null, { status: 204 })
-    const text = await req.text()
-    if (text.length > 16_384) return new Response(null, { status: 204 })
+    const text = await boundedRequestText(req, 16_384)
+    if (text === null) return new Response(null, { status: 204 })
     const parsed = JSON.parse(text)
     if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return new Response(null, { status: 204 })
     const { path, event, meta, visitorId, sessionId, referrer } = parsed

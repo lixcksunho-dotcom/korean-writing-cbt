@@ -51,7 +51,9 @@ export function checkSource(source, file = 'src/app/api/example/route.ts') {
   const results = []
   const line = node => tree.getLineAndCharacterOfPosition(node.getStart(tree)).line + 1
   function inspect(name, declaration) {
-    const { fn, statement } = declaration ?? {}
+    const { statement } = declaration ?? {}
+    let fn = declaration?.fn
+    while (fn && (ts.isParenthesizedExpression(fn) || ts.isAsExpression(fn) || ts.isSatisfiesExpression(fn))) fn = fn.expression
     if (!fn || !(ts.isFunctionDeclaration(fn) || ts.isArrowFunction(fn) || ts.isFunctionExpression(fn)) || !fn.body) {
       throw new Error(`Unsupported handler export ${name}; expose the handler directly`)
     }

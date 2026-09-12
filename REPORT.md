@@ -1131,3 +1131,40 @@ ci: PR마다 tsc·eslint·check:offline 을 GitHub Actions 로
 - `npx.cmd eslint scripts src --max-warnings 0` · exit 0 · 마지막 줄: 출력 없음.
 - `git diff --check` · exit 0 · 오류 없음(줄바꿈 변환 경고만 있음).
 - **사람 확인**: 첫 PR에서 Actions 실제 실행 결과와 총 소요 시간을 확인하고, 실패하면 실패 step 및 check:offline 표의 검사 이름·exit·마지막 줄을 기록한다.
+
+## 스택 후반부 적대적 검토 (work/fable-codex-stack-review-2, 2026-09-12, 검토자 Codex)
+
+- 범위: `git diff a818598...HEAD`, `git log --oneline a818598..HEAD`의 7341278~2bc1e40 7개 커밋. 기존 작업 트리 깨끗함 확인 후 검토; 실제 Codex·네트워크·결제 호출·현재 저장소 커밋 없음.
+- 발견 8건: 막아야 함 3 / 고쳐야 함 5 / 참고 0. 아래는 수정 전 실패를 재현한 건만 기록하며, 줄 번호는 수정 후 기준이다.
+
+| 파일 · 줄 | 무엇이 · 재현 조건 | 심각도 | 수정 |
+|---|---|---|---|
+| `scripts/codex_loop_runner.mjs:165` | `git add -f logs/private.txt` 후 워커 실행: dirty 검사에서 logs를 빼므로 남의 staged 파일이 워커 커밋에 섞임(차단 기대 exit 1, 실제 0). | 막아야 함 | 모든 staged 변경 및 tracked logs 변경을 시작 전에 차단 |
+| `scripts/codex_loop_runner.mjs:119` | main과 동일한 work 브랜치에 항목 연결 후 리뷰어 PASS: 빈 diff인데 BACKLOG 체크·브랜치 삭제 수행. | 막아야 함 | 빈 diff는 호출 전 반려, 항목·브랜치 보존 |
+| `scripts/codex_loop_runner.mjs:108` | REVIEW와 미완료 BACKLOG 공존 → 반려 워커가 2회 미완료: REVIEW를 work에 커밋하고 main 복귀 시 잃어 다음 워커가 새 작업을 선택. | 고쳐야 함 | main에 REVIEW 복원; 재진입 시 미추적 복사본의 checkout 충돌도 처리 |
+| `scripts/codex_loop_runner.mjs:129` | 기존 미추적 REVIEW 내용을 가짜 리뷰어가 덮어쓰고 PASS: 전후 status가 같은 `?? REVIEW.md`라 수정 감지를 우회하고 병합. | 막아야 함 | REVIEW 내용도 비교하고 변경·work 브랜치를 보존한 채 exit 1 |
+| `src/app/api/track/route.ts:17`, `client-error/route.ts:24`, `feedback/route.ts:18` (같은 api 폴더) | 헤더 없음/거짓 1 + 한글 포함 16,385바이트 JSON이 저장됨; `req.text()`는 초과 스트림도 끝까지 읽음. BOM 3바이트는 디코딩 후 사라짐. | 고쳐야 함 | `src/lib/boundedRequestText.ts:2`에서 실제 수신 바이트 제한·초과 reader 취소, 기존 204/400 유지 |
+| `scripts/api_route_guard_regression_check.mjs:34`, `package.json:110` | cron 비밀 미설정 정책 변경 뒤에도 3곳 전부 차단을 기대하여 원본 검사 exit 1; offlineChecks 미등록이라 CI는 이 실패를 검사하지 않음. | 고쳐야 함 | 기존 cron 정책에 기대값 일치(운영 코드 불변), 오프라인 묶음에 회귀 검사 등록 |
+| `scripts/api_route_guard_check.mjs:55` | 인증하는 정상 `export const PUT = (async () => { await auth.getUser() }) satisfies Handler`가 Unsupported handler 예외로 실패. | 고쳐야 함 | 괄호·as·satisfies를 벗긴 함수 AST 검사 |
+| `scripts/build_break_guard_check.mjs:10` | `'use strict'; 'use server'; export const value = 1` 및 같은 형태 client→next/headers가 검사 대상에서 누락(회귀 대상 45개 중 43개만 수집). | 고쳐야 함 | 선두 문자열 지시문 전체 탐색; 로컬 Next get-page-static-info의 지시문 처리와 대조 |
+
+- 수정: 위 8건과 연결된 회귀 검사만 추가. 실행기 16개 시나리오, 빌드 검사 45개 픽스처; API는 16,383/16,384/16,385바이트·거짓/누락 헤더·BOM·스트림 취소·비JSON·정상 비콘 검사.
+- Git 안전성 대조: 잔존 lock은 보존·호출 거부; main이 다른 worktree에서 사용 중이면 checkout 실패·현재 work/결과 보존·main 불변·lock 해제. 기존 merge 충돌 검사는 abort 후 HEAD/파일 보존 확인.
+- 앞 40자만 같은 두 BACKLOG 항목은 문서대로 반려하고 어느 것도 체크하지 않음(재현 검사 통과); 실제 오완료로 분류하지 않음. REVIEW와 미완료 BACKLOG 공존 시 REVIEW 우선 및 같은 브랜치 재사용 확인.
+- 정상 클라이언트 대조: `src/lib/analytics/trackEvent.ts:15`의 event/meta/null/visitorId/sessionId, `TrafficTracker.tsx:42`의 path/referrer 형태 및 호출부의 이벤트 이름을 확인. 36자 UUID·512자 meta/path·null meta를 mock insert로 통과 확인; 기존 필드 제한 유지.
+- 정적 검사 대조: default async function·지역 alias·재export·satisfies·타입 전용 import/export·동적 import 및 next/dynamic·순환 의존을 픽스처로 확인. API 재export는 명시적 실패 정책; 인증/상한 AST 검사는 제어 흐름의 안전성을 증명하지 않는다.
+- 관문: 7개 호출자는 모두 `/cbt/...`; 기존/이어풀기는 `ExamPlayer.tsx:316`의 n/m 완료와 일치. `/practice/essay`에는 호출 없음. 관문 파서 5/5 통과; 실제 서비스 브라우저 실행은 네트워크 없어 미실행.
+- CI: package.json/lock 루트 dependencies·devDependencies 동일(assert 통과), 새 의존성 없음. 묶음은 process.execPath/정규 경로, 임시 Git은 `-c user.name/email` 사용. Linux 실행·npm ci는 미실행; Linux 손자 종료 미보장은 기존 REPORT에 이미 명시되어 있음.
+- REPORT 사실 대조: 이전 API 절의 PASS 76은 현재 원본 회귀 검사와 불일치했으며 위 6번으로 고침. 과거 검증 기록은 그대로 두고 현재 결과를 아래에 기록한다.
+
+| 검증 명령 | exit | 마지막 줄 |
+|---|---:|---|
+| 수정 전 `LOOP_CHECK_FILTER=review-2 node scripts/codex_loop_runner_check.mjs` (pwsh 환경변수로 지정) | 1 | `loop-runner: PASS 0 / FAIL 3` |
+| 수정 전 `node scripts/api_route_guard_regression_check.mjs` | 1 | `Node.js v24.16.0` (32행: false !== true) |
+| 수정 후 `npm run check:offline` (리뷰어 실행) | 0 | `오프라인 검사: 통과 30 · 실패 0 · 소요 127.81초` |
+| `npx tsc --noEmit` (리뷰어 실행) | 0 | 출력 없음 |
+| 변경 코드 10개 `npx eslint --max-warnings 0` (리뷰어 실행) | 0 | 출력 없음 · `node scripts/api_route_guard_regression_check.mjs` → `api-route-regression: PASS 137 / FAIL 0` |
+
+- ESLint 대상: scripts/{codex_loop_runner,codex_loop_runner_check,api_route_guard_check,api_route_guard_regression_check,build_break_guard_check,build_break_guard_regression_check}.mjs, src/lib/boundedRequestText.ts, src/app/api/{track,client-error,feedback}/route.ts (실행 시 각각 전체 경로 나열).
+- 커밋 메시지 제안: `fix(review): 스택 후반부 검토에서 잡은 8건`
+- 검토자 회차가 20분 제한에 걸려 검증 표를 못 채웠고, 위 세 줄은 리뷰어 Fable 이 같은 트리에서 실행해 채웠다.
