@@ -1078,3 +1078,32 @@ chore(loop): 루프 규칙·bat 을 실행기 방식으로 — 사람 결정용
 - git diff --check: exit 0. git diff --stat: 변경 본체 3파일, 14줄 추가·20줄 삭제; 이 보고 절 추가 후 최종 stat 별도 확인.
 - 병합 전 사람이 할 것: NEED_HUMAN.md 차단 사유를 확인하고 해제; 예약 작업이 병합된 새 bat을 읽는지 확인; 첫 실행 로그(worker/reviewer.log 및 codex 역할별 로그) 확인.
 - 실제 커밋·PR 생성은 하지 않음. 절 첫 줄은 커밋 메시지 제안이며 병합 여부는 사람이 결정.
+
+## exam-flow 시작 관문 (work/fable-codex-exam-flow-gate, 2026-09-12, 워커 Codex)
+fix(check): 브라우저 검사가 시험 '시작 안내' 관문을 통과한다 — exam-flow 3일째 빨간불
+- 위 첫 줄은 커밋 메시지 제안이며 커밋은 하지 않았다.
+- 원인: b5c1934 이후 회차 진입은 ExamIntro이고, 기존 검사는 4초 뒤 곧바로 문항 수를 읽었다.
+- 실제 조작은 이름이 “시작하기”인 link → ?start=1. getOrCreateExamSession이 세션을 생성/재사용한 뒤 ExamPlayer가 뜬다. 신규 started_at은 DB DEFAULT now()(001_cbt.sql)로 기록된다.
+- 공용 passExamStartGate는 안내 또는 완료 표시를 기다리고, 안내가 있을 때만 시작한다. 클릭 뒤 n/m 완료를 waitForFunction으로 최대 20초 기다린다. 링크·버튼 역할을 지원한다.
+- exam-flow는 안내의 시간과 getProgram().examMinutes, 객관식+서술형 수와 실제 플레이어 총문항 수를 비교하여 ok/bad로 남긴다.
+
+| 검사(scripts/*.mjs) | 기존 관문 처리 | 변경/판단 |
+| --- | --- | --- |
+| exam_flow_check | 없음 | 공용 처리 + 안내 설정 대조 |
+| error_recovery_check | 없음 | 회선 차단 전에 공용 처리 |
+| exam_autosave_check | 없음 | 시작·답안 선택 전에 공용 처리 |
+| exam_screen_ui_check | 없음 | 모바일·데스크톱 모두 공용 처리 |
+| exit_save_check | 없음 | 두 기기 진입에 공용 처리 |
+| free_to_paid_resume_check | 없음 | 최초·재진입에 공용 처리 |
+| session_resume_check | 없음(저장 세션은 안내 생략) | 공용 처리, 기존 답안/세션 판정 유지 |
+| exam_entry_check | 있음(시작 링크 클릭, 재진입 ?start=1) | 유지: 안내·빈 세션 자체를 검증 |
+| authed_ui_check / exam_timer_check | 대상 아님 | 목록까지만 방문 / 오프라인 소스·함수 검사 |
+| authed_page_sweep / subscription_gate_check | 없음 | 유지: 접근·리다이렉트 검사, 문항 조작 없음 |
+| paid_essay_resume / review_invite / past_result_link_check | 대상 아님 | 결과·목록 검사이므로 유지 |
+- shoot-exam/shoot-question/shoot-result는 검사 아닌 촬영 도구라 변경하지 않았다. 검색은 rg가 없어 PowerShell Select-String으로 대체했다.
+- 새 파일: scripts/exam_start_gate.mjs, scripts/exam_start_gate_check.mjs. package.json에 check:exam-gate와 offlineChecks 항목 추가.
+- 검증: 변경·신규 스크립트 9개 각각 node --check · exit 0 · 마지막 줄 “node --check: 9/9 PASS”.
+- 검증: npx.cmd --no-install eslint <위 변경 검사 7개 + 신규 스크립트 2개> · exit 0 · 출력 없음(셸 기록: eslint exit=0).
+- 검증: npm.cmd run check:exam-gate · exit 0 · 마지막 줄 “시험 시작 관문 5/5 통과”.
+- 검증: git diff --check · exit 0 · 오류 없음(줄바꿈 변환 경고만 있음).
+- 브라우저 실행은 미실행(네트워크 없음), 리뷰어 검증 요청. 실제 브라우저 동작의 통과는 주장하지 않는다.

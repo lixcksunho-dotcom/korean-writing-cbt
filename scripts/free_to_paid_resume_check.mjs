@@ -15,6 +15,7 @@
 //
 // 검사가 만든 계정·세션만 지운다. amount는 0으로 둬 매출 집계에 섞이지 않게 한다.
 
+import { passExamStartGate } from './exam_start_gate.mjs'
 import fs from 'node:fs'
 import { chromium } from 'playwright'
 
@@ -82,6 +83,7 @@ try {
 
   await page.goto(`${BASE}/cbt/2025-1`, { waitUntil: 'domcontentloaded', timeout: 60000 })
   await dismissModals(page)
+  await passExamStartGate(page)
   const choice = page.locator('button').filter({ hasText: /^[①②③④⑤]/ })
   await choice.first().waitFor({ timeout: 30000 })
   await choice.nth(2).click()          // 1번 문항의 3번 보기
@@ -122,6 +124,7 @@ try {
 
   await page.goto(`${BASE}/cbt/2025-1`, { waitUntil: 'domcontentloaded', timeout: 60000 })
   await dismissModals(page)
+  await passExamStartGate(page)
   await choice.first().waitFor({ timeout: 30000 })
   await page.waitForTimeout(2500)
 
