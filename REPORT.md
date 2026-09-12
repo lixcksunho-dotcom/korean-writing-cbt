@@ -834,3 +834,21 @@ SDK 실물 대조: 설치된 `@portone/browser-sdk` v2에 `PaymentRequestUnionEa
 - `npm run report:funnel-daily`(어제=2026-08-23, 기본값) 재실행 → 진입 2건(2명)/시도 0/완결 0과 REPORT 기재 내용 일치.
 - `.env.local` 값이 stdout에 노출되지 않음을 위 실행 출력에서 확인.
 - main에 fast-forward 병합.
+
+## 오답노트 문항 제외 설계 (work/fable-codex-wrong-note-dismiss, 2026-09-12, 워커 Codex)
+
+- 커밋 메시지 제안: `docs(practice): 오답노트 문항 제외 설계 + SQL 초안`
+- 무엇을 왜: 2026-09-10 문의 1건을 근거로 문항별 제외·복원 설계를 작성했다. 답안과 성적을 보존하며 복습 목록만 정리하기 위한 안이다.
+- 변경 파일: `docs/wrong_note_dismiss_plan.md`, `docs/wrong_note_dismissals.draft.sql`, `REPORT.md`.
+- 권장안: 새 `wrong_note_dismissals` 표에 사용자·문항 UNIQUE, 본인 행 RLS, authenticated SELECT·INSERT·DELETE GRANT를 명시한다.
+- `003_reviews.sql`의 삭제 정책과 `submitReview`의 실제 permission denied 기록을 대조해 RLS와 GRANT를 구분했다.
+- `migration_tables`가 모든 `*.sql`을 세므로 DRAFT 이름도 검사 대상이다. 실행되지 않은 초안을 `docs/`에 두었다.
+- 지시문과 달랐던 점: 지시된 파일은 모두 존재하나 `PracticeMultiple:choose`는 로컬 상태만 바꾸므로 재시험 정답이 DB에 저장된다고 볼 수 없다. `InsightsPage`는 추가로 year < 9000을 적용한다.
+- 지시문과 달랐던 점: `check:own-copy`는 src의 ts·tsx만 검사해 Markdown은 대상이 아니다. 문서·SQL에 기존 34개 금지 표기 규칙을 별도로 대조했다.
+- 검증: `npm.cmd run check:own-copy` · exit 0 · 마지막 줄 `우리 글은 깨끗하다.` (271개 파일·34개 규칙).
+- 검증: PowerShell here-string으로 `node --input-type=module -`에 기존 ALWAYS_WRONG 추출·문서 대조 코드를 전달 · exit 0 · 마지막 줄 `document-copy: 2 files, 34 rules, 0 hits`.
+- 검증: `Select-String`·`Get-ChildItem`으로 인용 대조 · exit 0 · 마지막 결과 `6개 — 001_cbt.sql, 003_reviews.sql, 021_bookmarks_reports.sql, 026_multi_program.sql, 033_questions_server_only.sql, 034_reviews_hide_private_columns.sql`. 명령별 결과는 설계 문서에 기록했다.
+- 검증: `git diff --check` · exit 0 · 출력 없음(마지막 줄 없음).
+- 사람이 결정할 것: 새 표 권장안, 다시 틀려도 명시적 복원 전까지 제외 유지 여부, 약점 통계는 유지하고 두 오답 화면의 표시만 제외하는 범위.
+- 사람이 결정할 것: 실제 번호 배정·0NN_ 이름으로 migrations 편입·SQL Editor 검토 및 실행. SQL의 실제 구문 실행·운영 RLS·GRANT 동작은 검증하지 않았다.
+- 하지 않은 것: 코드·화면·DB 변경, 마이그레이션 실행, 네트워크·외부 API·설치·배포·커밋. Fable 검수용 문서와 SQL 초안만 남겼다.
