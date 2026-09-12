@@ -39,6 +39,7 @@ export default async function CbtPage() {
       .select('id, year, round, score, total, completed_at')
       .eq('user_id', user.id)
       .eq('program', program)
+      .lt('year', 9000)
       .not('completed_at', 'is', null)
       .order('completed_at', { ascending: false }),
     supabase
@@ -46,6 +47,7 @@ export default async function CbtPage() {
       .select('id, year, round, saved_at, started_at')
       .eq('user_id', user.id)
       .eq('program', program)
+      .lt('year', 9000)
       .is('completed_at', null)
       // startSession이 고르는 순서와 같아야 한다. 여기서 고른 세션 id로 브라우저
       // 임시본을 찾아 '이어풀기'를 띄우는데, 실제로 이어지는 세션과 다르면

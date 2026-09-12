@@ -891,3 +891,52 @@ fix(lib): 보조 함수의 DB 쓰기도 실패를 안다 — { error } 수신 + 
 - `npm.cmd run check:offline` exit 0 — 오프라인 검사: 통과 24 · 실패 0 · 소요 7.70초.
 - 검증: `npx.cmd eslint scripts/offline_check_bundle.mjs` exit 0; `node -e "require('./package.json')"` exit 0. check:bundle을 목록 앞에 임시 추가하고 BUNDLE_CHECK_BASE=http://127.0.0.1:1로 실행: 24 통과·1 실패, 9.49초, exit 1; finally로 목록 원복. 별도 임시 fixture의 실제 180초 제한: 180.60초, exit 1, 하위 프로세스 종료·후속 검사 통과 확인(검증 exit 0); fixture 삭제.
 - 커밋 메시지 제안: `feat(check): 네트워크 없는 검사 묶음 check:offline` — 커밋하지 않음.
+
+## 스택 적대적 검토 (work/fable-codex-stack-review, 2026-09-12, 검토자 Codex)
+
+- 범위: `origin/main...HEAD` 78파일, +1,948/-448줄(변경 2,396줄). 세션 참조 41파일 전부 대조; src TS/JS 278파일의 import·액션·쓰기 구문도 검사했다. 아래 원인 줄은 수정 전 HEAD 기준이다.
+- 결과: 막아야 함 0건 / 고쳐야 함 6건(모두 수정) / 참고 1건. 실제 DB·브라우저·Next 빌드 실행 없이 소스와 메모리 DB 대역으로 재현했다.
+
+| 파일 · 줄 | 무엇이 | 왜 문제 / 재현 조건 | 심각도 |
+|---|---|---|---|
+| `src/app/(main)/cbt/page.tsx:39,46` | 완료·미완료 조회에 year 제한 없음 | 최신 9002 시도가 1,000행을 채우면 정상 시험이 응답 상한 밖으로 밀려 성적·이어풀기 표시가 사라짐 | 고쳐야 함 · 수정 |
+| `src/app/(main)/cbt/[examId]/result/page.tsx:42` | 결과용 단건 조회가 9002도 허용 | 본인 재시험 ID로 결과 URL을 열면 문항 없는 시험 성적·추천 화면을 생성 | 고쳐야 함 · 수정 |
+| `scripts/funnel_report.py:101` | 1,000행 제한 뒤 메모리에서 year 제외 | 응답에 재시험이 섞이면 정상 시험이 잘린 뒤 제거되어 시작·완료 인원 과소 집계 | 고쳐야 함 · 수정 |
+| `scripts/server_action_auth_check.mjs:38,84,95` | 두 번째 변수 export 누락·내부 함수 인증을 인정 | `export const safe=async()=>{await assertAdmin()}, unsafe=async()=>1` 및 호출하지 않는 내부 인증 함수가 exit 0 | 고쳐야 함 · 수정 |
+| `scripts/supabase_write_result_check.mjs:16,59` | 보간·나눗셈 사이 쓰기 누락, 병렬 결과 수신 오탐 | 템플릿 보간의 insert와 `/ 2; await …insert(); … / 3`은 검출 0건; `const [{error}]=await Promise.all([…insert()])`도 실패 판정 | 고쳐야 함 · 수정 |
+| `scripts/limits_copy_check.mjs:64,65` | 템플릿 조각·강조 태그가 문맥을 끊음 | 보간 앞 `AI 첨삭`, 뒤 `하루 99회` 또는 강조 태그 안 숫자가 한도 검사에서 누락 | 고쳐야 함 · 수정 |
+| `docs/wrong_note_dismiss_plan.md:8,32,55,57` | 병렬 작업 전 설명이 스택 실물과 다름 | 현재 재시험은 서버 저장하며 동률을 session_id로 정렬하고 맞춤법 검사도 docs를 읽음; 후속 설계 시 옛 전제를 오인할 수 있음 | 참고 · 초안 원문 유지 |
+
+- 수정: CBT 조회 3곳·퍼널 URL 1곳에 DB 단계 year 제외. 인증·쓰기 검사는 기존 TypeScript 파서로 구문을 읽고 각 export·Promise.all 결과 자리를 대조; 문구는 보간·강조 문맥을 연결했다. 새 패키지 없음.
+- 회귀: `scripts/stack_review_regression_check.mjs` 46사례(가짜 인증·문자열·주석·정상/누락 병렬 수신·잘못된 문구·1,000개 재시험·결과 ID). 수정 파일 총 8개(REPORT·새 회귀 검사 포함).
+
+| 세션·답안 조회 위치 | 9002 판정 |
+|---|---|
+| `src/app/(main)/dashboard/page.tsx:55,150`, `insights/page.tsx:22,56` | 제외됨: year < 9000 세션과 그 세션의 답안만 집계 |
+| `src/app/admin/(protected)/paid-members/page.tsx:57,67` | 제외됨: year < 9000 및 해당 session_id 답안 |
+| `src/app/(main)/account/page.tsx:26`, `src/app/admin/(protected)/page.tsx:38,39,94` | 제외됨: year != 9002, AI 답안은 제외한 세션과 연결 |
+| `src/app/(main)/cbt/[examId]/result/page.tsx:69` | 제외됨: 다음 회차 추천 year != 9002; 단건 결과 조회도 이번 수정으로 제외 |
+| `scripts/free_to_paid.mjs:92` | 제외됨: year != 9002 |
+| `scripts/exam_dropoff_check.mjs:37,38`, `scripts/predicted_score_accuracy_check.mjs:76,78` | 제외됨: year < 9000 세션 기준으로 답안 연결 |
+| `scripts/funnel_report.py:101`, `src/app/(main)/cbt/page.tsx:34,45` | 메모리 제외·회차 키 매칭만 하던 곳; 이번에 조회 단계에서 제외 |
+| `src/app/(main)/cbt/actions.ts:91,106,228,258,330`, `practice/actions.ts:174,212` | 본인 session_id·question_id 또는 명시한 year/round 단건 처리; 전체 성적 집계 아님 |
+| `src/app/(main)/practice/wrong/page.tsx:28,41`, `wrong/actions.ts:23,27,31` | 의도적 포함: 최신 오답 판정·재시험 쓰기; 완료한 시도만 판정 |
+| `scripts/ai_cost_check.mjs:64,66`, `scripts/paid_block_check.mjs:137` | year 필터 없음; 현재 재시험은 ai_score=null·객관식이므로 각각 AI 점수·서술형 문항 조건에서 집계되지 않음 |
+| `scripts/data_integrity_check.mjs:45,46`, `scripts/fix_practice_year_sentinel.py:32` | 전체 행 참조 무결성 검사 / 명시된 이전 year 대상 조회; 성적 집계 아님 |
+| 나머지 세션 참조 검사·정리 스크립트 20개 및 소스 주석 | 테스트 계정·직접 만든 session_id의 저장/삭제 검증, 정리 또는 주석; 운영 성적·추천 집계 없음 |
+
+- 동작 무변경 주장 대조: lint 삭제분은 미사용 함수·정규식·일반 데이터 Map·Gift import였고 필요한 부수 효과 없음. device-window 판정식·24시간 경계 동일, limits-copy 현재 숫자 동일, write-error-audit의 204·탈퇴·알림 후속 흐름 유지.
+- 경계: 클라이언트 68개에서 로컬 import 346회 추적, 합법적 `'use server'` 액션 경계 23회에서 중단. next/headers·service_role·antiSharing 유입 0건; type-only import 제외. 빌드 성공을 뜻하지는 않는다.
+- 문서: dd6460b 전후 원본 29절 모두 동일(이동 6절); 기존 검사 개수 83 + 실행기 1, offlineChecks 24와 분류표 일치. 과거 검사 실행 기록은 이번 실행의 증거로 쓰지 않았다.
+- 검사 한계: 인증 호출 존재와 쓰기 결과 수신을 확인하며 모든 제어 흐름·권한 정책·then 콜백 처리를 증명하지는 않는다. 결제·환불·구독 발급 로직 수정 및 커밋 없음.
+
+| 검증 명령 | exit | 마지막 줄 |
+|---|---:|---|
+| `node scripts/stack_review_regression_check.mjs` | 0 | `stack-review-regressions: PASS 46 / FAIL 0` |
+| `npm.cmd run check:offline` | 0 | `오프라인 검사: 통과 24 · 실패 0 · 소요 6.30초` |
+| `npx.cmd tsc --noEmit` | 0 | 출력 없음 |
+| `npx.cmd eslint scripts/server_action_auth_check.mjs scripts/supabase_write_result_check.mjs scripts/limits_copy_check.mjs scripts/stack_review_regression_check.mjs 'src/app/(main)/cbt/page.tsx' 'src/app/(main)/cbt/[examId]/result/page.tsx'` | 0 | 출력 없음 |
+| `node --input-type=module -` (세 검사 CLI 변이; src/app 임시 파일 finally 삭제) | 0 | `red-mutations: PASS 3 / FAIL 0; fixture removed` — 각 하위 검사 exit 1, 원본 문구 검사는 같은 잘못된 입력에 exit 0 확인 |
+| `git -c core.autocrlf=false diff --check` | 0 | 출력 없음 |
+
+- 커밋 메시지 제안: `fix(review): 스택 검토에서 잡은 6건`

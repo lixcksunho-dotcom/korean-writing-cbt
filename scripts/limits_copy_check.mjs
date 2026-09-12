@@ -1,6 +1,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import ts from 'typescript'
+import { fileURLToPath } from 'node:url'
 
 const root = process.cwd()
 const read = file => fs.readFileSync(path.join(root, file), 'utf8')
@@ -52,18 +53,29 @@ function ruleFor(text, unit, file) {
   return null
 }
 
-let passed = 0, failed = 0
-for (const file of [...files('src/app'), ...files('src/components')]) {
+function jsxContext(node, tree) {
+  let container = node.parent
+  while (ts.isJsxElement(container)
+    && /^(b|strong|span|em|i|small)$/.test(container.openingElement.tagName.getText(tree))
+    && (ts.isJsxElement(container.parent) || ts.isJsxFragment(container.parent))) container = container.parent
+  return container.getText(tree).replace(/<[^>]*>/g, ' ').replace(/\{[^}]*\}/g, ' ')
+}
+
+export function checkSource(source, file = 'src/app/fixture.tsx') {
+  const results = []
   // 이전한 KBS 서비스의 공개 시험 정보는 실용글쓰기 설정과 비교하지 않는다.
-  if (file === 'src/app/kbs-korean/page.tsx') continue
-  const source = read(file)
+  if (file === 'src/app/kbs-korean/page.tsx') return results
   const tree = ts.createSourceFile(file, source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX)
+  if (tree.parseDiagnostics.length) throw new Error(`문구 구문을 읽을 수 없음: ${file}`)
   function visit(node) {
     const literal = ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node) || ts.isTemplateHead(node) || ts.isTemplateMiddle(node) || ts.isTemplateTail(node)
     if (literal || ts.isJsxText(node)) {
       const text = node.text
-      const context = ts.isJsxText(node)
-        ? node.parent.getText(tree).replace(/<[^>]*>/g, ' ').replace(/\{[^}]*\}/g, ' ')
+      const template = ts.isTemplateSpan(node.parent) ? node.parent.parent : node.parent
+      const context = ts.isTemplateExpression(template)
+        ? [template.head.text, ...template.templateSpans.map(span => span.literal.text)].join(' ')
+        : ts.isJsxText(node)
+        ? jsxContext(node, tree)
         : text
       if (ts.isPropertyAssignment(node.parent) && node.parent.name.getText(tree) === 'kbs') return
       for (const match of text.matchAll(/(?<![\d,])([0-9][0-9,]*)\s*(회차|회분|회|대|일|자|장|분)(?!기)/g)) {
@@ -73,14 +85,24 @@ for (const file of [...files('src/app'), ...files('src/components')]) {
         if (!name) continue
         const actual = Number(match[1].replaceAll(',', ''))
         const ok = actual === values[name]
-        if (ok) passed++; else failed++
         const line = tree.getLineAndCharacterOfPosition(node.getStart(tree)).line + 1
-        console.log(`${ok ? 'PASS' : 'FAIL'} ${file}:${line} ${match[0]} ↔ ${name}=${values[name]} | ${text.trim().replace(/\s+/g, ' ')}`)
+        results.push({ ok, line, text, match: match[0], name, value: values[name] })
       }
     }
     ts.forEachChild(node, visit)
   }
   visit(tree)
+  return results
 }
-console.log(`한도 문구 대조: 통과 ${passed} / 실패 ${failed}`)
-process.exitCode = failed ? 1 : 0
+
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  let passed = 0, failed = 0
+  for (const file of [...files('src/app'), ...files('src/components')]) {
+    for (const result of checkSource(read(file), file)) {
+      if (result.ok) passed++; else failed++
+      console.log(`${result.ok ? 'PASS' : 'FAIL'} ${file}:${result.line} ${result.match} ↔ ${result.name}=${result.value} | ${result.text.trim().replace(/\s+/g, ' ')}`)
+    }
+  }
+  console.log(`한도 문구 대조: 통과 ${passed} / 실패 ${failed}`)
+  process.exitCode = failed ? 1 : 0
+}
