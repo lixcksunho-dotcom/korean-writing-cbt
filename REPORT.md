@@ -1004,3 +1004,31 @@ feat(loop): 코덱스 샌드박스용 루프 실행기 — 커밋·병합은 실
 - offline 유일 실패: check:loop-runner, `TIMEOUT 180초 — PASS NEED_HUMAN이면 두 역할 즉시 종료`; API 검사 및 write-results/action-auth 포함 나머지 26개 통과. 기존 검사 제한은 바꾸지 않음.
 - 커밋 메시지 제안: `fix(api): 라우트 감사 — 공개 라우트 입력 상한·cron 비밀 상수시간 비교 + 정적 검사`
 - 리뷰어 Fable 반려 반영: blog-review-audit·refund-audit 의 "비밀 미설정이면 닫힘"은 되돌렸다 — 운영 `ops/blog_audit.bat` 이 인증 헤더 없이 3시간마다 호출해 실제 응답을 받고 있어(CRON_SECRET 미설정) 그대로 두면 감사·환불 안전망이 멈춘다. 상수시간 비교는 유지. **사람 확인**: CRON_SECRET 을 Vercel env 에 넣고 bat 에 `-H "Authorization: Bearer …"` 를 같이 넣은 뒤에 닫힘으로 바꿀 것.
+
+## loop-runner 검사 속도 (work/fable-codex-loop-runner-check-speed, 2026-09-12, 워커 Codex)
+perf(check): loop-runner 검사 123.85초 → 98.60초 — 임시 저장소 재사용·짧은 타임아웃
+
+| 시나리오 | 전(초) | 후(초) |
+|---|---:|---:|
+| 워커 브랜치·커밋·완료·로그·보류 | 8.28 | 7.69 |
+| 이어서 1회·wip | 7.41 | 7.94 |
+| 미완료 무한 재실행 방지 | 7.18 | 6.88 |
+| PASS 병합·BACKLOG·REPORT·삭제 | 16.38 | 15.10 |
+| FAIL 3회·반려 이력·NEED_HUMAN | 15.41 | 18.40 |
+| 반려 워커 수정·REVIEW 삭제·재검수 | 32.01 | 19.46 |
+| NEED_HUMAN 즉시 종료 | 3.82 | 1.31 |
+| 타임아웃·프로세스 트리 종료·wip | 15.17 | 9.41 |
+| 병합 충돌 abort·반려 | 17.40 | 11.77 |
+| 전체(정리 포함) | 123.85 | 98.60 |
+
+- 전/후는 같은 샌드박스의 `LOOP_CHECK_TIMING=1` 실측(리뷰어 종전 측정 152초와 구별). 측정 출력은 환경변수로만 켠다.
+- 초기 커밋 직후의 저장소를 한 번 복제·보관하고 나머지 8개에 디렉터리 복사: init/add/commit 24회 제거. 변동 없는 단언 사이 브랜치 조회 5회 제거; 9개 시나리오와 단언 유지.
+- 타임아웃은 회당 1.5초→1.2초(0.02분), 가짜 실행기·하위 프로세스 종료 단언 유지. 모든 가짜 실행기는 기존 자식 프로세스 방식 유지.
+- `offlineCheckTimeoutSec`를 package.json에서 읽고 미지정 시 180초 유지; 양수·유한 숫자·Node 타이머 범위 검증 및 실제 설정값을 TIMEOUT에 출력. package.json 수정 불필요.
+- 목표 30초 미달: 25.25초(20.4%) 단축. 남은 주요 비용은 여러 역할을 순차 실행하는 시나리오의 실제 Git checkout/commit/merge 및 Node 프로세스 시작이며, 세부 비용은 별도 분리 측정하지 않음. 부하 편차도 있어 일부 시나리오는 증가.
+- 실행기 로직 변경 없음: `git diff --stat scripts/codex_loop_runner.mjs` · exit 0 · 출력 없음; 단독 및 묶음 모두 9개 통과.
+- `node scripts/codex_loop_runner_check.mjs` (LOOP_CHECK_TIMING=1) · 전/후 exit 0 · 마지막 줄 `loop-runner: PASS 9 / FAIL 0` · 123.85초/98.60초.
+- `npm.cmd run check:offline` · exit 0 · 마지막 줄 `오프라인 검사: 통과 27 · 실패 0 · 소요 106.53초` · 명령 전체 110.73초.
+- `npx.cmd eslint scripts/codex_loop_runner_check.mjs scripts/codex_loop_runner.mjs scripts/offline_check_bundle.mjs` · exit 0 · 출력 없음 · 10.92초.
+- 격리 복사본 상한 설정 smoke(Node stdin) · exit 0 · 마지막 줄 `timeout-config: PASS 7 / FAIL 0; 2.59s` · 기본값 성공, 0.1초 실제 종료, 잘못된 값 5종 거부.
+- 위 절 첫 줄은 커밋 메시지 제안이며 실제 저장소 커밋은 하지 않음.

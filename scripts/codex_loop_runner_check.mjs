@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url'
 
 const runner = fileURLToPath(new URL('./codex_loop_runner.mjs', import.meta.url))
 const root = fs.mkdtempSync(path.join(os.tmpdir(), 'codex-loop-check-'))
+const started = performance.now()
 let passed = 0
 let failed = 0
 const env = { ...process.env, GIT_CONFIG_NOSYSTEM: '1', GIT_CONFIG_GLOBAL: path.join(root, 'gitconfig'), GIT_TERMINAL_PROMPT: '0' }
@@ -46,8 +47,13 @@ function git(cwd, ...args) {
   assert.equal(result.status, 0, result.stderr)
   return result.stdout.trim()
 }
+const template = path.join(root, 'template')
 function fixture(name) {
   const cwd = path.join(root, name)
+  if (fs.existsSync(template)) {
+    fs.cpSync(template, cwd, { recursive: true })
+    return cwd
+  }
   fs.mkdirSync(cwd)
   git(cwd, 'init', '-b', 'main')
   fs.writeFileSync(path.join(cwd, '.gitignore'), 'logs/\n')
@@ -56,6 +62,7 @@ function fixture(name) {
   git(cwd, 'add', '-A')
   git(cwd, 'commit', '-m', 'fixture')
   fs.mkdirSync(path.join(cwd, 'logs'))
+  fs.cpSync(cwd, template, { recursive: true })
   return cwd
 }
 function run(cwd, role, mode, extra = {}) {
@@ -68,8 +75,10 @@ const read = (cwd, file) => fs.readFileSync(path.join(cwd, file), 'utf8')
 const calls = cwd => JSON.parse(read(cwd, 'logs/calls.json'))
 const branch = cwd => git(cwd, 'for-each-ref', '--format=%(refname:short)', 'refs/heads/work/')
 function check(name, fn) {
+  const start = performance.now()
   try { fn(); passed++; console.log(`PASS ${name}`) }
   catch (error) { failed++; console.error(`FAIL ${name}: ${error.message}`) }
+  finally { if (process.env.LOOP_CHECK_TIMING === '1') console.log(`TIMING ${name}: ${((performance.now() - start) / 1000).toFixed(2)}s`) }
 }
 try {
   check('워커 브랜치·커밋·WORKER_DONE·로그·보류 건너뜀', () => {
@@ -78,12 +87,13 @@ try {
     assert.equal(r.status, 0, r.stderr)
     assert.match(r.stdout, /WORKER_DONE/)
     assert.equal(git(cwd, 'branch', '--show-current'), 'main')
-    assert.equal(git(cwd, 'show', `${branch(cwd)}:result.txt`), 'worker result 1')
-    assert.equal(git(cwd, 'log', '-1', '--format=%s', branch(cwd)), 'feat(fake): 워커 결과')
-    assert.equal(git(cwd, 'log', '-1', '--format=%an <%ae>', branch(cwd)), '선호 <sunho980101@gmail.com>')
+    const work = branch(cwd)
+    assert.equal(git(cwd, 'show', `${work}:result.txt`), 'worker result 1')
+    assert.equal(git(cwd, 'log', '-1', '--format=%s', work), 'feat(fake): 워커 결과')
+    assert.equal(git(cwd, 'log', '-1', '--format=%an <%ae>', work), '선호 <sunho980101@gmail.com>')
     assert.equal(calls(cwd).length, 1)
     assert.match(calls(cwd)[0], /BACKLOG.md 항목:\n실행기 검증 항목/)
-    assert(!git(cwd, 'ls-tree', '-r', '--name-only', branch(cwd)).includes('logs/'))
+    assert(!git(cwd, 'ls-tree', '-r', '--name-only', work).includes('logs/'))
     assert(fs.readdirSync(path.join(cwd, 'logs')).some(file => file.endsWith('.events')))
     assert(fs.readdirSync(path.join(cwd, 'logs')).some(file => file.endsWith('.err')))
   })
@@ -93,8 +103,9 @@ try {
     assert.equal(r.status, 0, r.stderr)
     assert.equal(calls(cwd).length, 2)
     assert.match(calls(cwd)[1], /이어서: 이전 변경은 wip 커밋/)
-    assert.match(git(cwd, 'log', '--format=%s', `main..${branch(cwd)}`), /wip\(/)
-    assert.equal(git(cwd, 'rev-list', '--count', `main..${branch(cwd)}`), '2')
+    const work = branch(cwd)
+    assert.match(git(cwd, 'log', '--format=%s', `main..${work}`), /wip\(/)
+    assert.equal(git(cwd, 'rev-list', '--count', `main..${work}`), '2')
   })
   check('미완료 무한 재실행 방지', () => {
     const cwd = fixture('incomplete')
@@ -150,12 +161,13 @@ try {
   })
   check('타임아웃 프로세스 트리 종료·wip 보관', () => {
     const cwd = fixture('timeout')
-    const r = run(cwd, 'worker', 'timeout', { CODEX_LOOP_MINUTES: '0.025' })
+    const r = run(cwd, 'worker', 'timeout', { CODEX_LOOP_MINUTES: '0.02' })
     assert.equal(r.status, 1, r.stderr)
     assert.match(r.stderr, /TIMEOUT/)
     assert.equal(calls(cwd).length, 2)
-    assert.match(git(cwd, 'log', '-1', '--format=%s', branch(cwd)), /^wip\(/)
-    assert.equal(git(cwd, 'show', `${branch(cwd)}:result.txt`), 'worker result 2')
+    const work = branch(cwd)
+    assert.match(git(cwd, 'log', '-1', '--format=%s', work), /^wip\(/)
+    assert.equal(git(cwd, 'show', `${work}:result.txt`), 'worker result 2')
     for (const pid of read(cwd, 'logs/pids').trim().split('\n').map(Number)) {
       assert.throws(() => process.kill(pid, 0), /ESRCH/)
     }
@@ -179,5 +191,6 @@ try {
   if (path.dirname(root) !== path.resolve(os.tmpdir()) || !path.basename(root).startsWith('codex-loop-check-')) throw new Error('임시 경로 검증 실패')
   fs.rmSync(root, { recursive: true, force: true })
 }
+if (process.env.LOOP_CHECK_TIMING === '1') console.log(`TIMING total: ${((performance.now() - started) / 1000).toFixed(2)}s`)
 console.log(`loop-runner: PASS ${passed} / FAIL ${failed}`)
 process.exitCode = failed ? 1 : 0

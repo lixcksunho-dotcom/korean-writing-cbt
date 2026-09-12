@@ -5,7 +5,6 @@ import { stripVTControlCharacters } from 'node:util'
 import { fileURLToPath } from 'node:url'
 
 const root = fileURLToPath(new URL('../', import.meta.url))
-const timeoutMs = 180_000
 const cell = value => stripVTControlCharacters(String(value)).replaceAll('|', '\\|').replace(/[\r\n]+/g, ' ')
 
 function commandArgs(command) {
@@ -21,7 +20,7 @@ function commandArgs(command) {
   return [runtime === 'node' ? process.execPath : runtime, args]
 }
 
-async function run(command) {
+async function run(command, timeoutSec) {
   const [executable, args] = commandArgs(command)
   return new Promise(resolve => {
     let tail = ''
@@ -49,20 +48,23 @@ async function run(command) {
       } else {
         try { process.kill(-child.pid, 'SIGKILL') } catch { child.kill('SIGKILL') }
       }
-    }, timeoutMs)
+    }, timeoutSec * 1000)
     child.on('close', (code, signal) => {
       clearTimeout(timer)
       const last = stripVTControlCharacters(tail).trim().split(/\r?\n/).at(-1) || '(출력 없음)'
       resolve({
         code: timedOut || error ? 1 : code ?? 1,
-        last: timedOut ? `TIMEOUT 180초 — ${last}` : error || (signal ? `${signal} — ${last}` : last),
+        last: timedOut ? `TIMEOUT ${timeoutSec}초 — ${last}` : error || (signal ? `${signal} — ${last}` : last),
       })
     })
   })
 }
 
 async function main() {
-  const { scripts, offlineChecks } = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'))
+  const { scripts, offlineChecks, offlineCheckTimeoutSec = 180 } = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'))
+  if (typeof offlineCheckTimeoutSec !== 'number' || !Number.isFinite(offlineCheckTimeoutSec) || offlineCheckTimeoutSec <= 0 || offlineCheckTimeoutSec * 1000 > 2_147_483_647) {
+    throw new Error('offlineCheckTimeoutSec must be a positive number within the timer range')
+  }
   if (!Array.isArray(offlineChecks) || !offlineChecks.length || new Set(offlineChecks).size !== offlineChecks.length) {
     throw new Error('offlineChecks는 중복 없는 검사 이름 배열이어야 함')
   }
@@ -76,7 +78,7 @@ async function main() {
       if (typeof name !== 'string' || !name.startsWith('check:') || name === 'check:offline' || !Object.hasOwn(scripts, name)) {
         throw new Error('package.json에 등록된 개별 check:* 이름이 필요함')
       }
-      result = await run(scripts[name])
+      result = await run(scripts[name], offlineCheckTimeoutSec)
     } catch (error) {
       result = { code: 1, last: error.message }
     }
