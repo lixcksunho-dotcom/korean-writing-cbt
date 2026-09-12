@@ -55,12 +55,12 @@ export default function PromoCodeBox() {
           placeholder="예: BLOG7"
           autoComplete="off"
           spellCheck={false}
-          className="min-w-0 flex-1 rounded-xl border border-[#e2e8f0] bg-[#f8fafc] px-3 py-2.5 text-sm text-[#0f172a] placeholder:text-[#94a3b8] uppercase tracking-wider focus:outline-none focus:border-[#1e3a5f] focus:bg-white transition-colors"
+          className="min-h-11 min-w-0 flex-1 rounded-xl border border-[#e2e8f0] bg-[#f8fafc] px-3 py-2.5 text-sm text-[#0f172a] placeholder:text-[#475569] uppercase tracking-wider focus:outline-none focus:border-[#1e3a5f] focus:bg-white transition-colors"
         />
         <button
           type="submit"
           disabled={pending || !code.trim()}
-          className="btn-gold shrink-0 px-5 py-2.5 text-sm disabled:opacity-50"
+          className="btn-gold min-h-11 shrink-0 px-5 py-2.5 text-sm disabled:opacity-50"
         >
           {pending ? '확인 중…' : '적용'}
         </button>
