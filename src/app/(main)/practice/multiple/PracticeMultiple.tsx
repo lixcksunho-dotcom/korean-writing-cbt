@@ -1,11 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import Link from 'next/link'
 import { ArrowLeft, CheckCircle2, XCircle, ChevronRight, FileText, ChevronDown, RotateCcw } from 'lucide-react'
 import CopyGuard from '@/components/cbt/CopyGuard'
 import PassageView from '@/components/cbt/PassageView'
 import MarkedText from '@/components/cbt/MarkedText'
+import { recordWrongNoteRetake } from '../wrong/actions'
 
 export type PracticeQuestion = {
   id: string
@@ -26,14 +27,19 @@ export default function PracticeMultiple({
   questions,
   title,
   backHref = '/practice/multiple',
+  persistWrongRetakes = false,
 }: {
   questions: PracticeQuestion[]
   title: string
   backHref?: string
+  persistWrongRetakes?: boolean
 }) {
   const [idx, setIdx] = useState(0)
   const [picked, setPicked] = useState<Record<string, string>>({})
   const [passageOpen, setPassageOpen] = useState(true)
+  const [saveError, setSaveError] = useState<string | null>(null)
+  const [saving, setSaving] = useState(false)
+  const savingRef = useRef(false)
 
   const q = questions[idx]
   const chosen = picked[q.id]
@@ -42,17 +48,33 @@ export default function PracticeMultiple({
   const solved = Object.keys(picked).length
   const right = questions.filter(x => picked[x.id] === x.correct_answer).length
 
-  function choose(val: string) {
+  async function choose(val: string) {
+    if (savingRef.current) return
     if (picked[q.id] != null) return // 이미 답한 문제는 고정
     setPicked(prev => ({ ...prev, [q.id]: val }))
+    if (!persistWrongRetakes) return
+    savingRef.current = true
+    setSaving(true)
+    setSaveError(null)
+    try {
+      const result = await recordWrongNoteRetake(q.id, val)
+      setSaveError(result.error)
+    } catch {
+      setSaveError('기록이 저장되지 않았어요. 다시 풀기로 재시도해 주세요.')
+    } finally {
+      savingRef.current = false
+      setSaving(false)
+    }
   }
 
   function go(n: number) {
+    if (savingRef.current) return
     setIdx(n)
     setPassageOpen(true)
   }
 
   function reset() {
+    if (savingRef.current) return
     setPicked({})
     go(0)
   }
@@ -130,7 +152,7 @@ export default function PracticeMultiple({
               <button
                 key={i}
                 onClick={() => choose(val)}
-                disabled={revealed}
+                disabled={revealed || saving}
                 className={`w-full text-left px-5 py-3.5 rounded-xl border-2 transition-all text-sm font-medium flex items-center gap-2.5 ${cls} ${revealed ? 'cursor-default' : ''}`}
               >
                 <span className="font-bold">{CIRCLE[i]}</span>
@@ -150,6 +172,12 @@ export default function PracticeMultiple({
             </p>
             {q.explanation && <p className="text-xs text-[#475569] leading-relaxed mt-2 whitespace-pre-wrap">💡 {q.explanation}</p>}
           </div>
+        )}
+
+        {persistWrongRetakes && (saving || saveError) && (
+          <p role="status" className="mt-3 text-xs text-[#475569]">
+            {saving ? '기록을 저장하고 있어요.' : saveError}
+          </p>
         )}
 
         {/* 이동 */}
