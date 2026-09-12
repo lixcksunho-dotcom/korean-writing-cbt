@@ -1,3 +1,5 @@
+import { FREE_AI_TRIAL } from '@/lib/aiTrial'
+import { getProgram } from '@/lib/programs'
 import Link from "next/link";
 import { createClient as createPublicClient } from "@supabase/supabase-js";
 import EventPopupMount from "@/components/promo/EventPopupMount";
@@ -32,8 +34,8 @@ const features = [
   {
     icon: PenLine,
     title: "AI 원고지 채점·첨삭",
-    desc: "AI가 원고지 사용법, 맞춤법, 문법, 논리 구성을 분석하고 100점 만점으로 채점·첨삭해드립니다. 가입만 하면 결제 없이 3회 체험할 수 있어요.",
-    badge: "3회 무료 체험",
+    desc: `AI가 원고지 사용법, 맞춤법, 문법, 논리 구성을 분석하고 100점 만점으로 채점·첨삭해드립니다. 가입만 하면 결제 없이 ${FREE_AI_TRIAL}회 체험할 수 있어요.`,
+    badge: `${FREE_AI_TRIAL}회 무료 체험`,
     badgeStyle: "bg-amber-100 text-amber-700",
     gradient: "from-amber-500 to-orange-600",
   },
@@ -43,7 +45,7 @@ const features = [
 const steps = [
   { n: "1", title: "무료 가입", desc: "이메일로 30초면 가입 완료. 카드 등록도, 자동결제도 없어요." },
   { n: "2", title: "CBT 무료 풀이", desc: "기출 기반 실전 모의고사를 바로 풀고, 즉시 채점·해설을 확인하세요." },
-  { n: "3", title: "AI 첨삭 체험", desc: "서술형·원고지 답안을 AI가 항목별로 채점·첨삭. 3회 무료로 먼저 써보세요." },
+  { n: "3", title: "AI 첨삭 체험", desc: `서술형·원고지 답안을 AI가 항목별로 채점·첨삭. ${FREE_AI_TRIAL}회 무료로 먼저 써보세요.` },
 ];
 
 const benefits = [
@@ -164,7 +166,7 @@ export default async function HomePage() {
           </h1>
 
           <p className="text-white/60 text-lg mb-6 leading-relaxed max-w-xl mx-auto">
-            실글패스는 국가공인 한국실용글쓰기검정을 실전 화면·120분 제한 CBT로 풀고,
+            실글패스는 국가공인 한국실용글쓰기검정을 실전 화면·{getProgram().examMinutes}분 제한 CBT로 풀고,
             서술형·원고지 답안을 AI가 즉시 채점·첨삭해 주는 온라인 모의고사 서비스입니다.
           </p>
 
@@ -312,11 +314,11 @@ export default async function HomePage() {
                 {[
                   // '전 회차'라고 적혀 있었는데 무료는 실글 2회차·KBS 1회차뿐이다(programs.ts의 freeRounds).
                   // 결제 여부를 여기서 판단하는 표라, 여기가 틀리면 산 사람이 기대한 것과 다른 걸 받는다.
-                  'CBT 실전 모의고사 무료 2회차',
+                  `CBT 실전 모의고사 무료 ${getProgram().freeRounds}회차`,
                   '객관식 정답·해설 전체 공개',
                   '서술형 모범답안 열람',
                   '맞춤법·외래어·문장호응 유형별 연습',
-                  '서술형·원고지 AI 첨삭 3회 무료 체험',
+                  `서술형·원고지 AI 첨삭 ${FREE_AI_TRIAL}회 무료 체험`,
                 ].map(t => (
                   <li key={t} className="flex items-start gap-2.5 text-sm text-[#334155]">
                     <CheckCircle className="h-4 w-4 text-emerald-500 shrink-0 mt-0.5" />{t}

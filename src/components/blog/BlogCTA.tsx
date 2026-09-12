@@ -1,3 +1,4 @@
+import { getProgram } from '@/lib/programs'
 import Link from 'next/link'
 
 // 블로그 글 하단 CTA.
@@ -39,7 +40,7 @@ export default function BlogCTA({
           <>
             선택형은 답을 맞춰 보면 되지만, <strong className="text-white">700점짜리 서술형은 채점해 줄 사람이 없어요.</strong>
             <br />
-            실글패스에서 실제 시험과 같은 1,000점 구성 모의고사를 <strong className="text-white">2회분 무료</strong>로 풀어보세요.
+            실글패스에서 실제 시험과 같은 1,000점 구성 모의고사를 <strong className="text-white">{getProgram().freeRounds}회분 무료</strong>로 풀어보세요.
             제출하면 즉시 채점·해설, 서술형은 AI가 첨삭해 줍니다.
           </>
         )}

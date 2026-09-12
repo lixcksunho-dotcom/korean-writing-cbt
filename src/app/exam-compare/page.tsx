@@ -1,3 +1,4 @@
+import { getProgram } from '@/lib/programs'
 import type { Metadata } from "next";
 import Link from "next/link";
 import LogoGlyph from "@/components/layout/LogoGlyph";
@@ -30,7 +31,7 @@ export const metadata: Metadata = {
 type Row = { label: string; sil: string; kbs: string };
 const TABLE: Row[] = [
   { label: "만점", sil: "1,000점", kbs: "990점" },
-  { label: "시험 시간", sil: "120분", kbs: "120분(듣기 포함)" },
+  { label: "시험 시간", sil: `${getProgram().examMinutes}분`, kbs: "120분(듣기 포함)" },
   { label: "출제 형식", sil: "객관식 + 서술형(작문)", kbs: "객관식 100문항 중심" },
   { label: "배점 비중", sil: "서술형 700 · 객관식 300", kbs: "객관식 900 · 쓰기 90" },
   { label: "핵심 평가", sil: "실무 글쓰기·원고지 작문·고쳐쓰기", kbs: "듣기·읽기·어휘·어법·창안 등 종합 국어 능력" },

@@ -1,3 +1,4 @@
+import { DEVICE_LIMIT } from '@/lib/antiSharingLimits'
 import type { Metadata } from 'next'
 import { BUSINESS, biz } from '@/lib/businessInfo'
 
@@ -37,7 +38,7 @@ export default function TermsPage() {
         이용자는 이메일 또는 소셜 로그인(구글 등)을 통해 회원가입을 할 수 있습니다. 이용자는 본인의
         계정 정보를 관리할 책임이 있으며, 계정의 부정 사용에 대한 책임은 이용자에게 있습니다.
         계정은 결제한 본인 1인만 사용할 수 있고 타인과 공유·양도할 수 없으며, 회사는 부정 이용 방지를
-        위해 한 계정의 동시 이용 기기 수(최대 3대) 및 일일 이용량을 제한할 수 있습니다.
+        위해 한 계정의 동시 이용 기기 수(최대 {DEVICE_LIMIT}대) 및 일일 이용량을 제한할 수 있습니다.
       </Section>
 
       <Section title="제5조 (서비스의 제공)">

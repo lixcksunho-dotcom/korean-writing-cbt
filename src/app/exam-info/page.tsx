@@ -1,3 +1,4 @@
+import { getProgram } from '@/lib/programs'
 import type { Metadata } from "next";
 import Link from "next/link";
 import LogoGlyph from "@/components/layout/LogoGlyph";
@@ -56,7 +57,7 @@ const FAQ = [
   },
   {
     q: "독학으로 준비해도 합격할 수 있나요?",
-    a: "네. 유형별로 약점을 잡고, 서술형은 채점·첨삭 피드백을 받고, 실전처럼 CBT 모의고사로 시간 감각을 익히면 학원 없이도 충분히 합격할 수 있어요. 실글패스에서 무료로 모의고사 2회분을 풀어볼 수 있습니다.",
+    a: `네. 유형별로 약점을 잡고, 서술형은 채점·첨삭 피드백을 받고, 실전처럼 CBT 모의고사로 시간 감각을 익히면 학원 없이도 충분히 합격할 수 있어요. 실글패스에서 무료로 모의고사 ${getProgram().freeRounds}회분을 풀어볼 수 있습니다.`,
   },
 ];
 
@@ -186,7 +187,7 @@ export default function ExamInfoPage() {
                   ))}
                   <tr className="border-t border-[#e2e8f0] bg-[#f8fafc]">
                     <td className="px-3 py-2.5 font-black text-[#0f172a]">합계</td>
-                    <td className="px-3 py-2.5 text-[#475569]">CBT 방식 · 약 120분</td>
+                    <td className="px-3 py-2.5 text-[#475569]">CBT 방식 · 약 {getProgram().examMinutes}분</td>
                     <td className="px-3 py-2.5 text-right font-black text-[#0f172a]">1000점</td>
                   </tr>
                 </tbody>
@@ -208,7 +209,7 @@ export default function ExamInfoPage() {
             </p>
             <div className="rounded-2xl border border-[#e2e8f0] bg-gradient-to-br from-[#0f1f3d] to-[#1e3a5f] p-6 text-center text-white">
               <p className="text-lg font-black mb-1">지금 실력, 몇 점일까?</p>
-              <p className="text-white/70 text-sm mb-5">모의고사 2회분은 무료 · 서술형 AI 첨삭도 무료로 체험할 수 있어요.</p>
+              <p className="text-white/70 text-sm mb-5">모의고사 {getProgram().freeRounds}회분은 무료 · 서술형 AI 첨삭도 무료로 체험할 수 있어요.</p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <Link href="/try" className="btn-gold inline-flex items-center justify-center gap-1.5 font-bold py-3 px-6 rounded-xl text-sm">
                   가입 없이 문제 풀어보기

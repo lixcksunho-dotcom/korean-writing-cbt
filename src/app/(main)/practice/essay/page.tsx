@@ -1,3 +1,4 @@
+import { getProgram } from '@/lib/programs'
 import { createClient } from '@/lib/supabase/server'
 import { redirectToLogin } from '@/lib/loginRedirect'
 import { redirect } from 'next/navigation'
@@ -45,7 +46,7 @@ export default async function EssayPracticePage({
           <ArrowLeft className="h-4 w-4" /> 연습 메뉴
         </Link>
         <h1 className="text-2xl font-black text-[#0f172a] tracking-tight mb-1">서술형 연습</h1>
-        <p className="text-[#64748b] text-sm mb-6">회차를 고르면 원고지에 답을 쓰고 문항별로 AI 채점을 받을 수 있어요. (모의고사 1·2회 무료)</p>
+        <p className="text-[#64748b] text-sm mb-6">회차를 고르면 원고지에 답을 쓰고 문항별로 AI 채점을 받을 수 있어요. (모의고사 {Array.from({ length: getProgram(program).freeRounds }, (_, i) => i + 1).join("·")}회 무료)</p>
 
         <div className="space-y-3">
           {sets.map(({ year, round }) => {

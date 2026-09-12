@@ -1,3 +1,4 @@
+import { DAILY_GRADE_LIMIT } from '@/lib/antiSharingLimits'
 import { createClient } from "@/lib/supabase/server";
 import { redirectToLogin } from '@/lib/loginRedirect'
 import Link from "next/link";
@@ -279,7 +280,7 @@ export default async function DashboardPage() {
               <p className="text-sm text-indigo-800/80">
                 {manuscriptCount > 0
                   ? <>지금까지 <b>{manuscriptCount}회</b> 채점받으셨어요. 서술형 답안을 더 채점받아 약점을 잡으세요.</>
-                  : <>아직 AI 채점을 안 받으셨어요. 서술형 답안을 AI가 <b>점수·첨삭</b>으로 분석해 드려요 — 기간 중 하루 30회까지, 지금 받아보세요.</>}
+                  : <>아직 AI 채점을 안 받으셨어요. 서술형 답안을 AI가 <b>점수·첨삭</b>으로 분석해 드려요 — 기간 중 하루 {DAILY_GRADE_LIMIT}회까지, 지금 받아보세요.</>}
               </p>
             </div>
             <ChevronRight className="h-5 w-5 text-indigo-600 shrink-0 group-hover:translate-x-1 transition-transform" />

@@ -1,3 +1,4 @@
+import { DEVICE_LIMIT } from '@/lib/antiSharingLimits'
 import type { Metadata } from 'next'
 import { BUSINESS, biz } from '@/lib/businessInfo'
 
@@ -44,7 +45,7 @@ export default function RefundPage() {
         <span className="font-semibold text-[#0f172a]">이 경우 잔여 기간에 대한 환불은 제공되지 않습니다.</span>
         <ul className="list-disc pl-5 space-y-1 mt-2">
           <li>계정(아이디·비밀번호)을 타인과 공유하거나 다수가 돌려 쓰는 행위</li>
-          <li>허용된 기기 수(최대 3대)를 초과해 여러 기기에서 동시·반복 이용하는 행위</li>
+          <li>허용된 기기 수(최대 {DEVICE_LIMIT}대)를 초과해 여러 기기에서 동시·반복 이용하는 행위</li>
           <li>비정상적으로 과도한 사용 등 통상적인 1인 학습 범위를 벗어난 이용</li>
         </ul>
       </Section>

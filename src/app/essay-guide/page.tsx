@@ -1,3 +1,4 @@
+import { getProgram } from '@/lib/programs'
 import type { Metadata } from "next";
 import Link from "next/link";
 import LogoGlyph from "@/components/layout/LogoGlyph";
@@ -56,7 +57,7 @@ const FAQ = [
   },
   {
     q: "서술형을 혼자 채점하기 어려운데 어떻게 하나요?",
-    a: "독학의 가장 큰 벽이 바로 서술형 자가 채점이에요. 실글패스(kptest.cloud) 같은 실전 CBT에서 서술형 답안을 AI로 채점·첨삭받으면 ‘어디서 감점되는지’를 문장 단위로 확인할 수 있어요. 모의고사 2회분은 무료라 수준 점검용으로 먼저 써봐도 됩니다.",
+    a: `독학의 가장 큰 벽이 바로 서술형 자가 채점이에요. 실글패스(kptest.cloud) 같은 실전 CBT에서 서술형 답안을 AI로 채점·첨삭받으면 ‘어디서 감점되는지’를 문장 단위로 확인할 수 있어요. 모의고사 ${getProgram().freeRounds}회분은 무료라 수준 점검용으로 먼저 써봐도 됩니다.`,
   },
   {
     q: "서술형 시간이 늘 부족한데 어떻게 배분하나요?",
@@ -144,7 +145,7 @@ export default function EssayGuidePage() {
           <section className="mb-10">
             <div className="rounded-2xl border border-[#e2e8f0] bg-gradient-to-br from-[#0f1f3d] to-[#1e3a5f] p-6 text-center text-white">
               <p className="text-lg font-black mb-1">서술형은 ‘써보고 채점받아야’ 늘어요</p>
-              <p className="text-white/70 text-sm mb-5">실전 CBT로 유형별 서술형을 풀고, AI 채점·첨삭으로 감점 포인트를 문장 단위로 확인하세요. 모의고사 2회분은 무료예요.</p>
+              <p className="text-white/70 text-sm mb-5">실전 CBT로 유형별 서술형을 풀고, AI 채점·첨삭으로 감점 포인트를 문장 단위로 확인하세요. 모의고사 {getProgram().freeRounds}회분은 무료예요.</p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <Link href="/try" className="btn-gold inline-flex items-center justify-center gap-1.5 font-bold py-3 px-6 rounded-xl text-sm">
                   가입 없이 문제 풀어보기
