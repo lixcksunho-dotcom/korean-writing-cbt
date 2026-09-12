@@ -1107,3 +1107,27 @@ fix(check): 브라우저 검사가 시험 '시작 안내' 관문을 통과한다
 - 검증: npm.cmd run check:exam-gate · exit 0 · 마지막 줄 “시험 시작 관문 5/5 통과”.
 - 검증: git diff --check · exit 0 · 오류 없음(줄바꿈 변환 경고만 있음).
 - 브라우저 실행은 미실행(네트워크 없음), 리뷰어 검증 요청. 실제 브라우저 동작의 통과는 주장하지 않는다.
+
+## PR 오프라인 검사 CI (work/fable-codex-ci-offline-checks, 2026-09-12, 워커 Codex)
+ci: PR마다 tsc·eslint·check:offline 을 GitHub Actions 로
+- 위 첫 줄은 커밋 메시지 제안이다. 저장소 커밋은 하지 않았다.
+- `.github/workflows/offline-checks.yml`: 모든 대상 브랜치의 pull_request 및 main push에서 실행.
+- ubuntu-latest · checkout@v4 · setup-node@v4(Node 24, cache: npm) · npm ci 뒤 tsc / eslint / check:offline을 각각 별도 step으로 실행.
+- contents: read만 허용, 브랜치별 concurrency와 cancel-in-progress, job timeout 20분, secrets·DB·브라우저 검사 없음.
+- 실제 package.json의 offlineChecks는 29개(요청 배경의 30개와 차이). 기존 목록은 추가·제외 없이 유지했다.
+- `.env.local` 의존 오프라인 검사 0개: 검사 및 로컬 import 47개 파일 추적에서 참조 없음. 없는 경우 `{}`로 바꿀 대상도 없었다.
+- `.env.local`이 실제로 없는 Windows 클론에서 전체 묶음 통과. 기존 온라인 검사들의 환경 파일 처리는 변경하지 않았다.
+- codex_loop_runner.mjs: 기존 플랫폼 분기를 유지하고 비Windows는 요청대로 detached 없이 child.kill('SIGKILL'); Windows는 taskkill.exe /T /F와 실패 시 SIGKILL 유지.
+- codex_loop_runner_check.mjs: Windows는 heartbeat 손자 PID, Linux는 fake Codex 자신의 PID를 기록하고 process.kill(pid, 0)이 ESRCH를 내는지 확인한다.
+- Linux 경로는 두 번의 타임아웃, exit 1, TIMEOUT 출력, wip 보존, main 복귀와 직접 자식 종료를 검증한다. Linux 손자 트리 종료는 보장하지 않는다.
+- Linux 실제 실행은 못 했다. Windows의 기존 타임아웃·프로세스 트리 종료를 포함한 loop-runner는 PASS 9 / FAIL 0.
+- offline_check_bundle.mjs 점검: npm.cmd 호출 없음, process.execPath 및 path/fileURLToPath 사용, Windows taskkill/Linux detached 프로세스 그룹 종료 분기 이미 있어 수정 불필요.
+- README 검사 표 바로 아래에 PR마다 GitHub Actions가 오프라인 검사를 실행한다는 안내를 추가했다.
+- YAML 검증: 설치된 js-yaml로 파싱하고 이벤트·권한·취소·러너·시간제한·Node/cache·실행 단계 및 npm 스크립트 존재를 assert로 대조, exit 0.
+- YAML 검증 마지막 결과 줄: `YAML (js-yaml), workflow steps, npm scripts: PASS; offlineChecks=29`.
+- 검증 환경: Windows, Node v24.16.0. 로컬 npm ci는 네트워크 제한으로 실행하지 않았으며 Actions 설치 단계는 첫 PR 확인 대상이다.
+- `npm.cmd run check:offline` · exit 0 · 마지막 줄: `오프라인 검사: 통과 29 · 실패 0 · 소요 189.75초`.
+- `npx.cmd tsc --noEmit` · exit 0 · 마지막 줄: 출력 없음.
+- `npx.cmd eslint scripts src --max-warnings 0` · exit 0 · 마지막 줄: 출력 없음.
+- `git diff --check` · exit 0 · 오류 없음(줄바꿈 변환 경고만 있음).
+- **사람 확인**: 첫 PR에서 Actions 실제 실행 결과와 총 소요 시간을 확인하고, 실패하면 실패 step 및 check:offline 표의 검사 이름·exit·마지막 줄을 기록한다.

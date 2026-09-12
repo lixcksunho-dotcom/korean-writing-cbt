@@ -33,7 +33,7 @@ async function runCodex(prompt) {
   return new Promise(resolve => {
     let timedOut = false
     let failure = ''
-    const child = spawn(executable, fake ? [path.resolve(fake), ...args] : args, { stdio: ['pipe', out, err], windowsHide: true, shell: false, detached: process.platform !== 'win32' })
+    const child = spawn(executable, fake ? [path.resolve(fake), ...args] : args, { stdio: ['pipe', out, err], windowsHide: true, shell: false })
     fs.closeSync(out)
     fs.closeSync(err)
     child.on('error', error => { failure = error.message })
@@ -46,12 +46,12 @@ async function runCodex(prompt) {
         const killed = spawnSync('taskkill.exe', ['/PID', String(child.pid), '/T', '/F'], { windowsHide: true, timeout: 10_000 })
         if (killed.status !== 0) child.kill('SIGKILL')
       } else {
-        try { process.kill(-child.pid, 'SIGKILL') } catch { child.kill('SIGKILL') }
+        child.kill('SIGKILL')
       }
     }, minutes * 60_000)
     child.on('close', code => {
       clearTimeout(timer)
-      if (timedOut) console.error('TIMEOUT — 프로세스 트리 종료')
+      if (timedOut) console.error(process.platform === 'win32' ? 'TIMEOUT — 프로세스 트리 종료' : 'TIMEOUT — 자식 프로세스 종료')
       if (failure) console.error(failure)
       resolve({ message: read(last).trim(), ok: code === 0 && !timedOut && !failure })
     })

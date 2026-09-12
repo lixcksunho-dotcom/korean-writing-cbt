@@ -65,7 +65,9 @@ npx tsc --noEmit   # 타입 검사
 | `npm run funnel` | 전환 퍼널 (DB 상태 + 이벤트) | 이벤트만 보면 실제보다 적게 잡힌다 |
 | `npm run cleanup:test` | 남은 검증용 계정 정리 | 실행이 끊기면 뒷정리를 못 해 관리자 지표에 섞인다 (`-- --yes`로 실제 삭제) |
 
-`npm test`를 뺀 나머지는 `.env.local`의 `SUPABASE_SERVICE_ROLE_KEY`를 쓴다.
+PR마다 GitHub Actions가 오프라인 검사를 돌린다: `tsc` · `eslint` · `npm run check:offline` (`.env.local` 없이 실행).
+
+DB에 연결하는 검사는 `.env.local`의 `SUPABASE_SERVICE_ROLE_KEY`를 쓴다.
 
 검사는 **한 번에 하나씩** 돌린다. 여러 개를 동시에 돌리면 같은 기기·같은 서버를 두고
 다투다가 없는 문제를 만든다 — 실제로 네 개를 겹쳐 돌렸을 때 시험 제출이 한 번 실패했고
