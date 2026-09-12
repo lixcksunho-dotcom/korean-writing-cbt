@@ -123,5 +123,5 @@ try {
   await admin(`/auth/v1/admin/users/${uid}`, { method: 'DELETE' })  // 만든 것만 지운다
 }
 
-console.log(`\n${fail ? '막히기만 하고 어디를 고칠지는 안 알려 준다.' : '막히면 고칠 자리로 데려간다.'}`)
+console.log(`\n${fail ? '막히기만 하고 어디를 고칠지는 안 알려 준다.' : '막히면 고칠 자리로 데려간다.'} (통과 ${pass} · 실패 ${fail})`)
 process.exitCode = fail ? 1 : 0

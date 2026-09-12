@@ -50,5 +50,5 @@ if (warn.length) {
   console.log('  통과할 때는 닫으므로 점수를 막지는 않는다. 손볼 때 finally 로 옮길 것.')
 }
 
-console.log(`\n${fail ? '끝나지 않는 검사가 있다.' : '검사가 결과를 찍고 제때 끝난다.'}`)
+console.log(`\n${fail ? '끝나지 않는 검사가 있다.' : '검사가 결과를 찍고 제때 끝난다.'} (통과 ${pass} · 실패 ${fail})`)
 process.exit(fail ? 1 : 0)

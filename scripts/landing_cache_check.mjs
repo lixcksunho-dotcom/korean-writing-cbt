@@ -66,5 +66,5 @@ for (const { file, needs, what } of MUTATIONS) {
   else console.log('  · 예열 스크립트를 못 찾았다 — 이 컴퓨터가 아닐 수 있어 실패로 세지 않는다')
 }
 
-console.log(`\n${fail ? '첫 방문자가 재생성을 기다린다.' : '첫 방문자는 만들어 둔 것을 받는다.'}`)
+console.log(`\n${fail ? '첫 방문자가 재생성을 기다린다.' : '첫 방문자는 만들어 둔 것을 받는다.'} (통과 ${pass} · 실패 ${fail})`)
 process.exitCode = fail ? 1 : 0

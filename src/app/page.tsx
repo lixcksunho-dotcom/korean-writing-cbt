@@ -3,7 +3,7 @@ import { createClient as createPublicClient } from "@supabase/supabase-js";
 import EventPopupMount from "@/components/promo/EventPopupMount";
 import { BLOG_EVENT_POPUP_ENABLED } from "@/lib/blogPromoRules";
 import { SB_URL, SB_ANON } from "@/lib/supabase/sanitize";
-import { FileText, BookOpen, PenLine, CheckCircle, ArrowRight, Sparkles, Star, Gift, RotateCcw, Wallet } from "lucide-react";
+import { FileText, BookOpen, PenLine, CheckCircle, ArrowRight, Sparkles, Star, RotateCcw, Wallet } from "lucide-react";
 import LogoGlyph from "@/components/layout/LogoGlyph";
 import ReviewMarquee from "@/components/landing/ReviewMarquee";
 import StickyMobileCTA from "@/components/landing/StickyMobileCTA";

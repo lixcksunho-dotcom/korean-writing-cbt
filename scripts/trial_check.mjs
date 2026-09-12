@@ -170,5 +170,5 @@ try {
   await browser.close()
 }
 
-console.log(`\n${fail ? '맛보기에 구멍이 있다.' : '가입 없이 끝까지 돈다.'}`)
+console.log(`\n${fail ? '맛보기에 구멍이 있다.' : '가입 없이 끝까지 돈다.'} (통과 ${pass} · 실패 ${fail})`)
 process.exit(fail ? 1 : 0)

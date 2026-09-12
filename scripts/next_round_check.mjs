@@ -55,5 +55,5 @@ const rounds = [1, 2, 3, 4, 5].map(round => ({ year: 2025, round }))
   else bad('완료 조회', '끝낸 회차를 안 보고 정한다')
 }
 
-console.log(`\n${fail ? '다음 회차 안내에 구멍이 있다.' : '끝낸 사람에게 다음을 준다.'}`)
+console.log(`\n${fail ? '다음 회차 안내에 구멍이 있다.' : '끝낸 사람에게 다음을 준다.'} (통과 ${pass} · 실패 ${fail})`)
 process.exit(fail ? 1 : 0)

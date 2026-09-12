@@ -118,5 +118,5 @@ else {
   else bad('규칙 동작', '틀린 예시도 못 잡는다')
 }
 
-console.log(`\n${fail ? '우리 글에 틀린 표기가 있다.' : '우리 글은 깨끗하다.'}`)
+console.log(`\n${fail ? '우리 글에 틀린 표기가 있다.' : '우리 글은 깨끗하다.'} (통과 ${pass} · 실패 ${fail})`)
 process.exitCode = fail ? 1 : 0
