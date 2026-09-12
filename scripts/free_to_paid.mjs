@@ -17,6 +17,7 @@
 import fs from 'node:fs'
 import { PortOneClient } from '@portone/server-sdk'
 import { getProgram } from '../src/lib/programs.ts'
+import { WRONG_NOTE_RETAKE_YEAR } from '../src/lib/wrongNoteRetake.ts'
 
 const ENV = Object.fromEntries(
   fs.readFileSync('.env.local', 'utf-8').split('\n')
@@ -88,7 +89,7 @@ const payers = new Set([...firstPaidAt.keys()].filter((uid) => userById.has(uid)
 
 // ── DB 조회(전부 GET)
 const subs = await all(`subscriptions?select=id,user_id,order_id,amount,status,started_at&started_at=gte.${fromIso}&order=started_at`)
-const sessions = await all(`quiz_sessions?select=user_id,program,round,started_at,completed_at&started_at=gte.${fromIso}&order=started_at`)
+const sessions = await all(`quiz_sessions?select=user_id,program,round,started_at,completed_at&year=neq.${WRONG_NOTE_RETAKE_YEAR}&started_at=gte.${fromIso}&order=started_at`)
 const aiTrials = await all(`page_views?select=visitor_id,created_at&path=eq.${encodeURIComponent('#event/ai_trial_used')}&created_at=gte.${fromIso}&order=created_at`)
 
 console.log(`\n무료 → 유료 전환 (${FROM} ~ 오늘, KST) — 결제 사실은 포트원 원장 기준`)

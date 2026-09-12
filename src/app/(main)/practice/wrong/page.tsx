@@ -5,6 +5,7 @@ import { ArrowLeft, CheckCircle2, BookOpen, ChevronRight } from 'lucide-react'
 import PracticeMultiple, { type PracticeQuestion } from '../multiple/PracticeMultiple'
 import { getActiveProgram } from '@/lib/programContext'
 import { questionBank } from '@/lib/questionBank'
+import { latestWrongNoteAnswers } from '@/lib/wrongNoteRetake'
 
 export const dynamic = 'force-dynamic'
 
@@ -22,26 +23,31 @@ export default async function WrongPracticePage({
   // 현재 보고 있는 시험의 오답만 — 두 시험 문항이 한 묶음에 섞이지 않게.
   const program = await getActiveProgram()
 
-  const { data: sessions } = await supabase
-    .from('quiz_sessions')
-    .select('id, completed_at')
-    .eq('user_id', user.id)
-    .eq('program', program)
-    .not('completed_at', 'is', null)
-
-  const sessionDate = new Map((sessions ?? []).map(s => [s.id as string, new Date(s.completed_at as string).getTime()]))
+  const sessions: { id: string; completed_at: string }[] = []
+  for (let offset = 0; ; offset += 500) {
+    const { data, error } = await supabase.from('quiz_sessions').select('id, completed_at')
+      .eq('user_id', user.id).eq('program', program).not('completed_at', 'is', null)
+      .order('id').range(offset, offset + 499)
+    if (error) throw new Error('오답 기록을 불러오지 못했어요.')
+    sessions.push(...(data ?? []))
+    if ((data ?? []).length < 500) break
+  }
 
   let wrongIds: string[] = []
   if ((sessions ?? []).length > 0) {
-    const { data: ans } = await supabase
-      .from('quiz_answers')
-      .select('session_id, question_id, is_correct')
-      .in('session_id', (sessions ?? []).map(s => s.id))
-      .not('is_correct', 'is', null)
-    const sorted = (ans ?? []).slice().sort((a, b) =>
-      (sessionDate.get(a.session_id as string) ?? 0) - (sessionDate.get(b.session_id as string) ?? 0))
-    const latest = new Map<string, boolean>()
-    for (const a of sorted) latest.set(a.question_id as string, !!a.is_correct)
+    const ans: { session_id: string; question_id: string; is_correct: boolean | null }[] = []
+    for (let batch = 0; batch < sessions.length; batch += 100) {
+      for (let offset = 0; ; offset += 500) {
+        const { data, error } = await supabase.from('quiz_answers')
+          .select('session_id, question_id, is_correct')
+          .in('session_id', sessions.slice(batch, batch + 100).map(s => s.id))
+          .not('is_correct', 'is', null).order('id').range(offset, offset + 499)
+        if (error) throw new Error('오답 기록을 불러오지 못했어요.')
+        ans.push(...(data ?? []))
+        if ((data ?? []).length < 500) break
+      }
+    }
+    const latest = latestWrongNoteAnswers(sessions ?? [], ans ?? [])
     wrongIds = [...latest.entries()].filter(([, ok]) => !ok).map(([id]) => id)
   }
 
@@ -133,14 +139,14 @@ export default async function WrongPracticePage({
               </Link>
             ))}
           </div>
-          {/* '목록에서 빼는 법'은 따로 없다 — 다시 풀어 맞히면 저절로 빠진다. 그 사실을 적어 둔다. */}
           <p className="mt-2 text-xs text-[#64748b]">
-            다시 풀어 맞히면 이 목록에서 자동으로 빠져요.
+            다시 풀어 맞힌 기록이 저장되면, 목록을 새로 열 때 빠져요.
           </p>
         </div>
       )}
       <PracticeMultiple
         questions={shown}
+        persistWrongRetakes
         title={picked == null ? `오답 다시 풀기 (${shown.length}문항)` : `${picked}회 오답 (${shown.length}문항)`}
       />
     </div>

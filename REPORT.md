@@ -362,6 +362,7 @@ https://kptest.cloud · 훑은 화면 25개 (실글/KBS 두 모드)
 - 지시문과 실물이 다르다는 점(무료 발급 행이 1건뿐)을 숨기지 않고 앞세워, 대리 지표 ②③을 별도로 낸 점이 백로그의 "왜"에 더 부합함을 확인.
 - main에 fast-forward 병합.
 
+
 ## 유입 경로별 결제 전환 (work/inflow-to-payment)
 
 ### 검수 통과 (리뷰어)
@@ -924,3 +925,90 @@ SDK 실물 대조: 설치된 `@portone/browser-sdk` v2에 `PaymentRequestUnionEa
 - 지시문과 달랐던 점: 실제 `scripts/paid_block_check.mjs`의 package.json 명령은 `check:paid-block`이 아니라 `check:blocks`다. 나머지 대상 함수·상수는 일치했다.
 - 하지 않은 것: 실제 DB·화면 검사(`check:paid-block`으로 지칭된 실제 `check:blocks`)는 네트워크가 없어 미실행. 외부 API·npm install·next build·dev 서버·git commit도 실행하지 않았다.
 - 커밋 메시지 제안: `refactor(paid): 기기 수 제한 판정을 순수 함수로 + 회귀 검사`
+## 오답 재시험 결과 저장 (work/fable-codex-wrong-retake-persist, 2026-09-12, 워커 Codex)
+
+- 조사: 001_cbt.sql의 세션은 UUID PK, user_id(FK)·year·round NOT NULL; started_at 기본 now(), completed_at·score·total nullable. 연도 범위 CHECK·사용자별 세션 UNIQUE 없음.
+- 답안은 UUID PK, session_id·question_id FK/NOT NULL, user_answer·is_correct nullable. 008은 nullable ai_score·ai_feedback, 017은 세션 saved_answers·time_left·saved_at 추가.
+- 026은 program NOT NULL/default silyong 및 silyong/kbs CHECK. 032는 UNIQUE(session_id, question_id) 추가. 답안 UPDATE RLS 정책은 마이그레이션에서 발견되지 않음(SELECT·INSERT만 있음).
+- 유형별 연습은 9001 및 유형 round로 savePracticeProgress에서 사용자/program/year/round의 미완료 세션을 찾아 saved_answers에 저장. 일반 essay/page.tsx는 실제 시험 답안 덮어쓰기를 막으려고 saveKey를 생략함.
+- 오답 목록은 완료 시각 기준 문항별 마지막 답을 사용하며 센티넬도 포함. insights/page.tsx 및 exam_dropoff_check.mjs는 이미 year<9000으로 제외하므로 변경 없음.
+- 관리자 첫 화면의 완료 수·최근 완료 세션 조회에는 연도 필터가 없었음. 9001 취급을 유지하려고 year<9000 대신 year!=9002만 추가.
+- 택한 안: 스키마 변경 없이 답변 시도마다 year=9002/round=1 세션 생성 → 서버 판정 답안 INSERT → 세션 완료. 모든 쓰기 error 확인 및 예외의 실패 값 반환.
+- 지시문의 공용 get-or-create/upsert 안과 다름: 공용 completed_at을 갱신하면 다른 문항의 옛 정답까지 새 시험 오답보다 최신으로 바뀜. 갱신하지 않으면 새 재시험이 이전 시험보다 오래된 기록이 됨.
+- 시도별 세션은 답안 UPDATE RLS·기존 행 삭제 없이 문항별 시각을 보존함. 여러 센티넬 중 해당 문항의 최신 완료 시도를 선택하며, 동시 완료 시각 동률은 세션 ID로 결정해 응답 순서에 흔들리지 않게 함.
+- 오답 목록의 세션·답안을 페이지 조회해 기록 누적 시 조회 한도로 최신 답이 누락되는 문제를 방지. 저장 완료 후 목록을 새로 열 때 제외된다는 문구로 조정.
+- 오답 진입만 persistWrongRetakes를 전달. 저장 중 안내·저장 실패 안내 표시, 저장 중 중복 선택·문항 이동·초기화 방지. 유형별 객관식 연습은 기존 로컬 판정 유지.
+- 변경: src/app/(main)/practice/wrong/actions.ts, wrong/page.tsx, practice/multiple/PracticeMultiple.tsx, src/app/admin/(protected)/page.tsx.
+- 변경: src/lib/wrongNoteRetake.ts, scripts/wrong_note_retake_check.mjs, package.json, REPORT.md.
+- 검증: 정답 비교를 ===에서 !==로 일부러 변경하고 npm.cmd run check:wrong-retake → exit 1, 마지막 줄 RED_EXIT=1(AssertionError). finally에서 원복.
+- 검증: npm.cmd run check:wrong-retake → exit 0, 마지막 줄 PASS: grading, program/type/choice guards, latest retake, independent questions, incomplete sessions, stable ties.
+- 검증: npx.cmd tsc --noEmit → exit 0, 진단 출력 없음(확인 출력 TSC_EXIT=0).
+- 검증: npx.cmd eslint [변경 TS/TSX 5개와 검사 mjs] → exit 0, 진단 출력 없음(확인 출력 ESLINT_EXIT=0).
+- 검증: git diff --check → exit 0, 공백 오류 없음(LF/CRLF 경고만).
+- 미실행: 실제 DB·RLS·브라우저 저장/재진입 확인, 로그인 검사, DB/API 호출, 설치, 마이그레이션, 커밋. 네트워크 미사용.
+- 한계: 시도마다 세션이 증가하며 답안/완료 저장 실패 시 미완료 세션이 남을 수 있음(목록·요청된 집계에는 미포함). 별도 요청 간 트랜잭션은 없음.
+- 사람 확인: 운영 quiz_answers UNIQUE(session_id, question_id) 존재 및 RLS 실물 확인(마이그레이션과 다를 수 있음). 두 문항 재시험 사이 새 모의고사 제출, 두 탭 경합, 저장 실패 및 목록 재진입을 운영과 분리된 DB에서 검증.
+- 커밋 메시지 제안: fix(practice): 오답 재시험에서 맞히면 정말로 목록에서 빠진다
+
+- 리뷰어 반려 반영: 계정 화면 완료 수·결과 화면 다음 회차 조회 제외, 관리자 화면 상수화
+
+### 리뷰 반영 후 quiz_sessions 전체 검색 점검 (2026-09-12)
+
+`rg`가 설치되어 있지 않아 `git grep -n 'quiz_sessions'`로 저장소 전체를 검색하고, `Get-ChildItem src,scripts -Recurse -File | Select-String 'quiz_sessions'`로 미추적 파일도 보완했다. 조회 뒤 필터와 사용처까지 확인한 정적 점검이며 DB/API는 호출하지 않았다.
+
+- `src/app/(main)/account/page.tsx`: 세션 수에 `neq('year', WRONG_NOTE_RETAKE_YEAR)` 추가; 9001 포함 동작 유지.
+- `src/app/(main)/cbt/[examId]/result/page.tsx`: 완료 회차 목록에서 상수로 9002 제외; 별도 결과 조회는 본인 session ID 단건이며 집계 조회가 아님.
+- `src/app/(main)/cbt/actions.ts`: 단건 소유권 확인 또는 user/program/year/round 일치 조회; 다른 연도 기록이 자동으로 섞이지 않음. insert/update도 확인.
+- `src/app/(main)/cbt/page.tsx`: 조회에는 9002가 포함되지만 실제 문항 회차에 year-round 키로 연결하므로 9002가 시험 카드·이어풀기에 표시되지 않음.
+- `src/app/(main)/dashboard/page.tsx`: 기존 `lt('year', 9000)`으로 제외.
+- `src/app/(main)/insights/page.tsx`: 기존 `lt('year', 9000)`으로 제외.
+- `src/app/(main)/practice/actions.ts`: user/program/year/round 일치 조회로 9001 연습과 9002가 분리됨.
+- `src/app/(main)/practice/essay/page.tsx`: 검색 결과는 저장 키 설명 주석이며 직접 조회 없음.
+- `src/app/(main)/practice/wrong/page.tsx`: 문항별 최신 정오답 반영에 9002 포함이 필요하므로 유지.
+- `src/app/(main)/practice/wrong/actions.ts`: 재시험 세션 insert 반환 및 해당 ID 완료 update 반환; 다른 세션 집계 없음.
+- `src/app/admin/(protected)/page.tsx`: 완료 활동·전체 완료 수 두 조회의 9002 리터럴을 공통 상수로 교체.
+- `src/app/admin/(protected)/paid-members/page.tsx`: 기존 `lt('year', 9000)`으로 제외.
+- `scripts/free_to_paid.mjs`: 추가 누수 발견·수정. year 조건 없이 round=1 재시험을 무료 회차 체험/모의고사 수로 집계할 수 있어 공통 상수를 import하고 REST 조회에 `year=neq.${WRONG_NOTE_RETAKE_YEAR}` 추가; 9001 기존 동작 유지.
+- `scripts/ai_cost_check.mjs`: 세션은 AI 답안의 소유자·기간 연결용; ai_score 있는 답안만 세므로 객관식 재시험은 원가에 포함되지 않음.
+- `scripts/data_integrity_check.mjs`: 전체 세션의 참조·빈 답안·점수 정합성 검사이므로 9002 포함이 맞음.
+- `scripts/exam_dropoff_check.mjs`: 기존 REST `year=lt.9000`으로 제외.
+- `scripts/predicted_score_accuracy_check.mjs`: 기존 REST `year=lt.9000`으로 제외.
+- `scripts/funnel_report.py`: 조회 후 Python의 year<9000 필터로 제외.
+- `scripts/fix_practice_year_sentinel.py`: 특정 BAD_YEAR 일치 조회·이관이며 9002 전체 집계가 아님.
+- `scripts/account_delete_check.mjs`: 생성한 테스트 세션 ID의 삭제 여부 확인; 필터 불필요.
+- `scripts/authed_page_sweep.mjs`: 테스트 계정 세션 조회 후 정리; 9002도 정리 대상이어야 함.
+- `scripts/cleanup_test_accounts.mjs`: 테스트 계정의 전체 세션 정리 목적; 9002 포함 유지.
+- `scripts/exam_autosave_check.mjs`: 전용 테스트 계정 최신 세션의 저장 검사; 운영 집계가 아님.
+- `scripts/exam_entry_check.mjs`: 전용 테스트 계정의 진입 전후 세션 수·정리 검사; 운영 집계가 아님.
+- `scripts/exam_flow_check.mjs`: 전용 테스트 계정의 제출 세션·점수 검사와 정리; 운영 집계가 아님.
+- `scripts/exit_save_check.mjs`: 전용 테스트 계정의 저장 답안 확인과 정리; 운영 집계가 아님.
+- `scripts/session_resume_check.mjs`: 테스트 계정 및 특정 year/round의 이어풀기 검사와 정리; 운영 집계가 아님.
+- `scripts/a11y_structure_check.mjs`: 테스트 계정 정리용 DELETE만 해당.
+- `scripts/admin_ui_check.mjs`: 테스트 계정 정리용 DELETE만 해당.
+- `scripts/authed_ui_check.mjs`: 테스트 계정 정리용 DELETE만 해당.
+- `scripts/error_recovery_check.mjs`: 테스트 계정 정리용 DELETE만 해당.
+- `scripts/exam_screen_ui_check.mjs`: 테스트 계정 정리용 DELETE만 해당.
+- `scripts/free_to_paid_resume_check.mjs`: 테스트 계정 정리용 DELETE만 해당.
+- `scripts/manuscript_check.mjs`: 테스트 계정 정리용 DELETE만 해당.
+- `scripts/subscription_gate_check.mjs`: 테스트 계정 정리용 DELETE만 해당.
+- `scripts/paid_essay_resume_check.mjs`: 테스트 세션 생성·정리만 해당.
+- `scripts/past_result_link_check.mjs`: 테스트 세션 생성·정리만 해당.
+- `scripts/predicted_score_check.mjs`: 테스트 세션 생성·정리만 해당.
+- `scripts/review_invite_check.mjs`: 테스트 세션 생성·정리만 해당.
+- `supabase/migrations/001_cbt.sql`: 테이블·RLS와 답안 소유권의 세션 subquery; 9002도 같은 소유권 검사가 필요함.
+- `supabase/migrations/017_session_save.sql`: 저장 필드·인덱스 DDL이며 운영 집계 없음.
+- `supabase/migrations/026_multi_program.sql`: program 필드·제약·인덱스 DDL이며 운영 집계 없음.
+- `supabase/migrations/999_apply_all_pending.sql`: 저장 필드·인덱스 DDL이며 운영 집계 없음.
+- `docs/empty_session_plan.md`: 과거 정리·인덱스 계획과 예시 SQL이며 현재 실행 코드가 아님.
+- `README.md`: 연습 저장 키 설명이며 실행 조회 없음.
+- `REPORT.md`: 과거 점검 결과 및 이번 기록이며 실행 조회 없음.
+
+추가 누수는 `scripts/free_to_paid.mjs` 1곳을 수정했다. 위 정적 점검 범위에서 그 외 실제 집계 누수는 발견하지 못했다. 전환 보고서 실행은 네트워크·결제 원장 접근이 필요하므로 실행하지 않았다.
+
+### 리뷰 반영 후 검증
+
+- `npx.cmd tsc --noEmit`: exit 0, 진단 없음 (`TSC_EXIT=0`).
+- `npx.cmd eslint 'src/app/(main)/account/page.tsx' 'src/app/(main)/cbt/[examId]/result/page.tsx' 'src/app/admin/(protected)/page.tsx' 'src/app/(main)/practice/multiple/PracticeMultiple.tsx' 'src/app/(main)/practice/wrong/page.tsx' 'src/app/(main)/practice/wrong/actions.ts' 'src/lib/wrongNoteRetake.ts' 'scripts/wrong_note_retake_check.mjs' 'scripts/free_to_paid.mjs'`: exit 0, 진단 없음 (`ESLINT_EXIT=0`).
+- `npm.cmd run check:wrong-retake`: exit 0 (`WRONG_RETAKE_EXIT=0`); `PASS: grading, program/type/choice guards, latest retake, independent questions, incomplete sessions, stable ties`.
+- `git diff --check`: exit 0 (`DIFF_CHECK_EXIT=0`); 공백 오류 없음, LF/CRLF 경고만 출력.
+- 검증은 순차 실행. 네트워크·DB/API 호출·결제 관련 실행·git commit 없음. 기존 미커밋 변경 보존.
