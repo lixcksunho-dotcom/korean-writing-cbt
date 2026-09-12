@@ -33,6 +33,7 @@
     "check:account": "node --experimental-strip-types --no-warnings scripts/account_delete_check.mjs",
     "check:review-invite": "node scripts/review_invite_check.mjs",
     "check:blocks": "node --experimental-strip-types --no-warnings scripts/paid_block_check.mjs",
+    "check:device-window": "node --experimental-strip-types --no-warnings scripts/device_window_check.mjs",
     "check:entry": "node scripts/exam_entry_check.mjs",
     "check:dropoff": "node --experimental-strip-types --no-warnings scripts/exam_dropoff_check.mjs",
     "check:score": "node --experimental-strip-types --no-warnings scripts/predicted_score_accuracy_check.mjs",
