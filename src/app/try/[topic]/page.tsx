@@ -9,6 +9,8 @@ import { TRIAL_TOPICS, findTrialTopic } from '@/lib/trialTopics'
 
 // 6시간. 문항은 저절로 변하지 않고, 고치면 revalidatePath('/try','layout')로 즉시 반영된다.
 export const revalidate = 21600
+// 미리 생성하지 않은 유형 주소가 운영에서 500 대신 404를 반환해야 한다.
+export const dynamicParams = false
 
 // 유형별 주소를 사이트맵에 넣었으므로 제목·설명도 유형마다 달라야 한다.
 // 여섯 주소가 같은 제목을 달고 있으면 검색엔진에는 같은 문서 여섯 개이고,

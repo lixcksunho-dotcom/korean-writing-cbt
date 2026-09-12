@@ -1032,3 +1032,32 @@ perf(check): loop-runner 검사 123.85초 → 98.60초 — 임시 저장소 재�
 - `npx.cmd eslint scripts/codex_loop_runner_check.mjs scripts/codex_loop_runner.mjs scripts/offline_check_bundle.mjs` · exit 0 · 출력 없음 · 10.92초.
 - 격리 복사본 상한 설정 smoke(Node stdin) · exit 0 · 마지막 줄 `timeout-config: PASS 7 / FAIL 0; 2.59s` · 기본값 성공, 0.1초 실제 종료, 잘못된 값 5종 거부.
 - 위 절 첫 줄은 커밋 메시지 제안이며 실제 저장소 커밋은 하지 않음.
+
+## 빌드에서만 깨지는 형태 정적 검사 (work/fable-codex-build-break-guards, 2026-09-12, 워커 Codex)
+feat(check): 빌드에서만 깨지는 형태 정적 검사 — use server export·클라이언트 서버모듈·dynamicParams
+
+- (a) 첫 문장 use server: 값 export는 async 함수만 허용; 상수·동기 함수가 tsc 뒤 Next 빌드를 깨뜨린 사고 방지. 타입 export는 제외.
+- (b) use client부터 tsconfig paths·상대 의존성/재수출/동적 import/require 추적: next/headers·Supabase admin·server-only·antiSharing·서비스 키 차단. 빌드 실패·비밀 번들 노출 방지; 타입 의존 제외·use server 경계에서 중단.
+- (c) generateStaticParams를 export하는 동적 page.tsx에 export const dynamicParams=false 요구. 없는 한글 글의 운영 500 방지; 실제 한 줄 주석 dynamic-params-ok: 이유는 예외.
+
+| 파일 | 규칙 | 최초 검사 내용 |
+|---|---|---|
+| `src/app/try/[topic]/page.tsx` | (c) | generateStaticParams는 있으나 dynamicParams=false 없음; 수정 전 기록 |
+| 서버 액션 20개 | (a) | 모두 통과 |
+| 클라이언트 진입점 68개 | (b) | 모두 통과; 구조 수정 없음 |
+| 나머지 정적 동적 라우트 2개 | (c) | 모두 통과 |
+
+- 수정 전 위반을 위 표에 저장한 뒤 `/try/[topic]`에 dynamicParams=false 추가: 소스 수정 1건, 남긴 위반 0건; (b) 구조 수정 없음.
+- TypeScript AST 사용(정규식 없음); package.json의 check:build-guards에 --self-test를 포함하고 offlineChecks에 등록. 별도 regression npm 명령 없음.
+- os.tmpdir() 픽스처 41개: 상수/동기/재수출/타입 별표 export, 경로 별칭/순환/서버 액션 경계, 동적 경로/거짓 예외 주석 등 확인 후 삭제.
+- (b) 검사 분기를 실제로 끈 mutation: `node --input-type=module`(stdin) · exit 1 · 마지막 줄 `mutation b disabled: exit 1`; 24 !== 41로 실패 확인 후 finally에서 원복.
+- 원복 회귀 검사: PASS 41 / FAIL 0. 현재 저장소: (a) 20/0, (b) 68/0, (c) 3/0 (통과/실패).
+
+| 검증 명령 | exit | 마지막 줄 |
+|---|---:|---|
+| `npm.cmd run check:build-guards` | 0 | `build-guards: a PASS 20 / FAIL 0 · b PASS 68 / FAIL 0 · c PASS 3 / FAIL 0 · self-test PASS` |
+| `npm.cmd run check:offline` | 0 | `오프라인 검사: 통과 28 · 실패 0 · 소요 145.99초` |
+| `npx.cmd tsc --noEmit` | 0 | 출력 없음 |
+| `npx.cmd eslint scripts/build_break_guard_check.mjs scripts/build_break_guard_regression_check.mjs 'src/app/try/[topic]/page.tsx'` | 0 | 출력 없음 |
+
+- 절 첫 줄은 커밋 메시지 제안이며 실제 커밋하지 않음. 로컬 Next 빌드는 실행하지 않았으며, 위 세 형태에 대한 정적 검사 결과임.
