@@ -9,9 +9,15 @@ import { createAdminClient } from '@/lib/supabase/admin'
 const EVENT_NAME = /^[a-z0-9_]{1,40}$/
 const MAX_PATH = 512
 
+// public-route: 로그인 전 방문과 퍼널도 기록해야 한다.
 export async function POST(req: Request) {
   try {
-    const { path, event, meta, visitorId, sessionId, referrer } = await req.json()
+    if (Number(req.headers.get('content-length')) > 16_384) return new Response(null, { status: 204 })
+    const text = await req.text()
+    if (text.length > 16_384) return new Response(null, { status: 204 })
+    const parsed = JSON.parse(text)
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return new Response(null, { status: 204 })
+    const { path, event, meta, visitorId, sessionId, referrer } = parsed
 
     // 퍼널 이벤트 모드
     if (typeof event === 'string' && EVENT_NAME.test(event)) {

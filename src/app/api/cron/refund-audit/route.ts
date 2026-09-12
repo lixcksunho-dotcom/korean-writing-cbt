@@ -1,3 +1,4 @@
+import { timingSafeEqual } from 'node:crypto'
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { revokeSubscriptionForPayment } from '@/lib/subscriptionRevocation'
@@ -19,8 +20,11 @@ export const maxDuration = 60
 
 function unauthorized(req: Request): boolean {
   const secret = process.env.CRON_SECRET
-  if (!secret) return false // 설정 전에는 막지 않는다(blog-review-audit 과 같은 규칙)
-  return (req.headers.get('authorization') ?? '') !== `Bearer ${secret}`
+  // 비밀이 아직 없으면 막지 않는다 — ops/blog_audit.bat 이 헤더 없이 3시간마다 부른다(설정하려면 Vercel env + bat 헤더를 함께).
+  if (!secret) return false
+  const actual = Buffer.from(req.headers.get('authorization') ?? '')
+  const expected = Buffer.from(`Bearer ${secret}`)
+  return actual.length !== expected.length || !timingSafeEqual(actual, expected)
 }
 
 export async function GET(req: Request) {
