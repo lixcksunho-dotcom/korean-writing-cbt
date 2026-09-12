@@ -1,3 +1,4 @@
+import { getProgram } from '@/lib/programs'
 import { questionBank } from '@/lib/questionBank'
 
 // 서술형이 어느 문항에 몇 점씩 걸려 있는지, 우리 문제은행에서 세어 보여 준다.
@@ -84,7 +85,7 @@ export default async function EssayPointMap() {
 
       <p className="mt-3 text-xs leading-relaxed text-[#475569]">
         {/* 시간 배분은 배점을 따라가야 한다. 앞에서 다 쓰면 마지막 한 장을 못 채운다. */}
-        선택형까지 합쳐 120분입니다. 앞 문항({rows[0].number}~{rows[Math.min(4, rows.length - 1)].number}번)은
+        선택형까지 합쳐 {getProgram().examMinutes}분입니다. 앞 문항({rows[0].number}~{rows[Math.min(4, rows.length - 1)].number}번)은
         한 문항에 3~4분이면 되지만, <b>{biggest.number}번은 30분 넘게 잡아야</b> 800자를 채웁니다.
         앞에서 시간을 다 쓰면 가장 큰 점수를 통째로 놓칩니다.
       </p>

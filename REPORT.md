@@ -811,3 +811,42 @@ fix(lib): 보조 함수의 DB 쓰기도 실패를 안다 — { error } 수신 + 
 - git diff --stat은 추적 파일만 표시한다. 신규 보관 파일·색인 2개는 미추적 상태로 저장했으며, 커밋은 하지 않았다.
 - 커밋 메시지 제안:
 `docs(report): 8월 절을 docs/reports/ 로 보관 — 기록 무손실`
+
+## 한도 문구 상수 대조 (work/fable-codex-limits-copy, 2026-09-12, 워커 Codex)
+
+- 실물: DEVICE_LIMIT=3, DAILY_GRADE_LIMIT=30, FREE_AI_TRIAL=3, REWARD_DAYS=7, MIN_IMAGES=5, MIN_CHARS=1500, RECOMMENDED_KEEP_DAYS=30. programs.ts의 SILYONG 객체는 freeRounds=2·examMinutes=120이며 숫자 export const 형태가 아니다. 지시문과 값 차이 없음.
+- src/app/**·src/components/**의 TSX 전체 숫자 검색 후 문맥 대조: 대상 숫자 문구 26곳(한 문장 안의 서로 다른 숫자 별도 집계), 불일치 0곳, 상수 연결 25곳. 아래 경로는 src/ 기준이며 반복 횟수를 괄호로 표시한다.
+
+| 파일 | 기존 문구 | 상수 | 현재 일치·처리 |
+|---|---|---|---|
+| app/page.tsx | 가입만 하면 결제 없이 3회 체험 / 3회 무료 체험 / 3회 무료로 먼저 써보세요 / AI 첨삭 3회 무료 체험 | FREE_AI_TRIAL | 같음·4곳 연결 |
+| app/page.tsx | CBT 실전 모의고사 무료 2회차 / 실전 화면·120분 제한 CBT | freeRounds / examMinutes | 같음·2곳 연결 |
+| app/(auth)/signup/page.tsx | 서술형 AI 첨삭 3회 무료 체험 | FREE_AI_TRIAL | 같음·유지: 순수 파일(antiSharingLimits.ts)로 옮겨야 함 |
+| app/(legal)/support/page.tsx | 하루 30회에서 / 하루 30회까지만 / 최대 3대 기기 | DAILY_GRADE_LIMIT(2) / DEVICE_LIMIT | 같음·3곳 연결 |
+| app/(legal)/support/page.tsx | 서술형 9문항 기준 모의고사 3회 분량 | floor(DAILY_GRADE_LIMIT / 9) | 같음·1곳 연결 |
+| app/(legal)/refund/page.tsx / app/(legal)/terms/page.tsx | 기기 수(최대 3대) | DEVICE_LIMIT | 같음·각 1곳 연결 |
+| app/(main)/subscribe/page.tsx | 기기 3대까지 / 하루 30회까지 | DEVICE_LIMIT / DAILY_GRADE_LIMIT | 같음·2곳 연결 |
+| app/(main)/dashboard/page.tsx | AI 채점…기간 중 하루 30회까지 | DAILY_GRADE_LIMIT | 같음·1곳 연결 |
+| app/(main)/practice/essay/page.tsx | 모의고사 1·2회 무료 | getProgram(program).freeRounds | 같음·1곳, 회차 목록 생성으로 연결 |
+| app/essay-guide/page.tsx | 모의고사 2회분은 무료(2곳) | freeRounds | 같음·2곳 연결 |
+| app/exam-info/page.tsx | 무료로 모의고사 2회분 / 모의고사 2회분은 무료 / CBT 방식 · 약 120분 | freeRounds(2) / examMinutes | 같음·3곳 연결 |
+| app/exam-compare/page.tsx | 시험 시간: 실용글쓰기 120분 | examMinutes | 같음·1곳 연결 |
+| components/blog/BlogCTA.tsx | 모의고사를…2회분 무료 | freeRounds | 같음·1곳 연결 |
+| components/study/EssayPointMap.tsx | 선택형까지 합쳐 120분입니다 | examMinutes | 같음·1곳 연결 |
+| components/grading/DailyLimitDialog.tsx | 서술형 9문항 기준으로 모의고사 3회 분량 | floor(DAILY_GRADE_LIMIT / 9) | 같음·1곳 연결 |
+| app/(main)/event/blog-review/page.tsx, app/admin/(protected)/promo-reviews/page.tsx, components/blog/BlogReviewEventCard.tsx, components/promo/EventPopup.tsx, components/subscribe/BlogReviewForm.tsx | 이용권 7일·사진 5장·본문 1,500자·유지 권장 30일 | REWARD_DAYS / MIN_IMAGES / MIN_CHARS / RECOMMENDED_KEEP_DAYS | 이미 상수 사용·변경 없음(26곳 집계 제외) |
+
+- 못 고친 1곳: 가입 화면은 'use client'이고 aiTrial.ts → supabase/server.ts → next/headers 의존성이 있다. 같은 값이므로 지시대로 보류했으며 상수 정의는 이동하지 않았다. 변경한 클라이언트 DailyLimitDialog는 기존 순수 antiSharingLimits import만 사용한다. 나머지 변경 TSX 12개는 'use client'가 없고 서버 전용 import를 클라이언트에 추가하지 않았다. tsc 통과는 확인했으나 Next 빌드는 실행하지 않았다.
+- 제외: 결제 1회·유료 이용권 30일·환불 7일·금액 5,500원, KBS 전용 안내의 120분·무료 1회분, 날짜·통계·문항 분량·주석은 해당 상수의 한도가 아니다. 문장 말투와 현재 표시 값, 결제·금액 정의는 유지했다.
+- 검사: 상수 선언 정규식·프로그램 객체에서 값을 읽고 TypeScript 구문 트리의 문자열/JSX 문구를 문맥 낱말과 단위로 연결한다. 주석·문맥 없는 숫자·결제 횟수·KBS 안내는 제외한다. 동적 표현의 계산 결과까지 검증하는 검사는 아니다.
+
+| 검증 명령 | exit | 마지막 줄 |
+|---|---|---|
+| npm.cmd run check:limits-copy | 0 | 한도 문구 대조: 통과 1 / 실패 0 |
+| node scripts/limits_copy_check.mjs (가입 문구 3→4 변조 후 finally 원복) | 1(의도한 실패) | 한도 문구 대조: 통과 0 / 실패 1 |
+| npm.cmd run check:own-copy | 0 | 우리 글은 깨끗하다. (통과 3 · 실패 0) |
+| npx.cmd tsc --noEmit | 0 | 출력 없음 |
+| npx.cmd eslint (변경 TSX 13개 및 scripts/limits_copy_check.mjs) | 0 | 출력 없음 |
+| git diff --check | 0 | 오류 없음(LF→CRLF 안내만 출력) |
+
+- 커밋 메시지 제안: `fix(copy): 한도 숫자를 상수에서 읽는다 + 문구-상수 대조 검사` — 커밋하지 않음.

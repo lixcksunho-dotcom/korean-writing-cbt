@@ -54,7 +54,7 @@ export default function DailyLimitDialog({ open, onClose }: { open: boolean; onC
         <div className="px-6 py-5 text-sm text-[#334155] leading-relaxed space-y-3">
           <p>
             이용권 기간 중 첨삭 <b className="text-[#0f172a]">횟수 제한은 없어요.</b> 다만 계정 공유와 자동화·대량 이용을 막기 위해
-            <b className="text-[#0f172a]"> 하루 {DAILY_GRADE_LIMIT}회</b>까지만 받을 수 있게 되어 있어요. 서술형 9문항 기준으로 모의고사 3회 분량이에요.
+            <b className="text-[#0f172a]"> 하루 {DAILY_GRADE_LIMIT}회</b>까지만 받을 수 있게 되어 있어요. 서술형 9문항 기준으로 모의고사 {Math.floor(DAILY_GRADE_LIMIT / 9)}회 분량이에요.
           </p>
           <ul className="list-disc pl-5 space-y-1 text-[#475569]">
             <li>오늘 받은 첨삭 결과는 그대로 남아 있어요 — 결과 화면에서 다시 볼 수 있어요.</li>

@@ -1,3 +1,4 @@
+import { DEVICE_LIMIT, DAILY_GRADE_LIMIT } from '@/lib/antiSharingLimits'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { getActiveSubscription, daysUntilExpiry } from '@/lib/subscription'
@@ -195,10 +196,10 @@ export default async function SubscribePage(
           {/* 계정 공유 금지 고지 — 실제 코드에 걸려 있는 한도(DEVICE_LIMIT·DAILY_GRADE_LIMIT)를
               그대로 적는다. '무제한'이라고 하면서 숨은 한도를 두면 걸린 사람 입장에선 속은 것이다. */}
           <p className="mt-3 text-xs text-[#64748b] text-center leading-relaxed">
-            이용권은 결제한 본인 1인 전용이며, 기기 3대까지 사용할 수 있어요. 계정 공유 등 부정 이용이
+            이용권은 결제한 본인 1인 전용이며, 기기 {DEVICE_LIMIT}대까지 사용할 수 있어요. 계정 공유 등 부정 이용이
             확인되면 이용이 제한될 수 있고, 이 경우 환불은 제공되지 않습니다.
             <br />
-            AI 첨삭은 기간 내 횟수 제한이 없지만, 자동화·대량 이용을 막기 위해 하루 30회까지 받을 수 있어요.
+            AI 첨삭은 기간 내 횟수 제한이 없지만, 자동화·대량 이용을 막기 위해 하루 {DAILY_GRADE_LIMIT}회까지 받을 수 있어요.
           </p>
         </div>
       </div>
