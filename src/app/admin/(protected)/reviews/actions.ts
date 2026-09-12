@@ -42,7 +42,8 @@ export async function deleteReview(id: string) {
   const admin = createAdminClient()
   const { data } = await admin.from('reviews').select('proof_path').eq('id', id).single()
   if (data?.proof_path) {
-    await admin.storage.from('review-proofs').remove([data.proof_path as string])
+    const { error: storageError } = await admin.storage.from('review-proofs').remove([data.proof_path as string])
+    if (storageError) throw new Error(storageError.message)
   }
   const { error } = await admin.from('reviews').delete().eq('id', id)
   if (error) throw new Error(error.message)

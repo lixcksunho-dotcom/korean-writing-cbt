@@ -31,7 +31,8 @@ export async function setFeedbackResolved(id: string, resolved: boolean, reply?:
 
   const text = (reply ?? '').trim().slice(0, 500)
   // 답글은 한 문의에 하나 — 새로 쓰면 이전 것을 지운다(되돌리기 때도 지운다).
-  await admin.from('page_views').delete().eq('path', FEEDBACK_REPLY_PATH).eq('visitor_id', id)
+  const { error: deleteError } = await admin.from('page_views').delete().eq('path', FEEDBACK_REPLY_PATH).eq('visitor_id', id)
+  if (deleteError) throw new Error(deleteError.message)
   if (resolved && text) {
     const { error: replyError } = await admin.from('page_views').insert({ path: FEEDBACK_REPLY_PATH, visitor_id: id, referrer: text })
     if (replyError) throw new Error(replyError.message)
