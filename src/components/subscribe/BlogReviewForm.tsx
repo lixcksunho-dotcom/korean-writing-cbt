@@ -87,7 +87,7 @@ export default function BlogReviewForm({
         <li className="flex gap-2">
           <span className="font-bold text-[#d97706]">2</span>
           <span>
-            본문에 다음 낱말이 <b>모두</b> 들어가야 해요:{' '}
+            제목이나 본문 어디든 다음 낱말이 <b>모두</b> 한 번 이상 들어가야 해요:{' '}
             {BODY_KEYWORDS.map(k => (
               <span key={k} className="mr-1 inline-block rounded bg-white border border-[#e2e8f0] px-1.5 py-0.5 font-semibold">{k}</span>
             ))}

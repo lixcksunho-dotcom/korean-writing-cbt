@@ -18,8 +18,9 @@ export const BLOG_REVIEW_PATH = '#promo/blog-review'
  *  제목이 자동 통과됐다(2026-09-13 실제 신청). 검색에서 실글패스를 찾게 하는 글이어야 한다. */
 export const TITLE_KEYWORDS = ['실글패스'] as const
 
-/** 본문에 이것들이 모두 들어가야 한다 */
-export const BODY_KEYWORDS = ['실글패스', '실용글쓰기시험', '실용글쓰기CBT', '공기업자격증'] as const
+/** 제목이나 본문 어디든 이것들이 모두 들어가야 한다(운영자 지시 2026-09-13).
+ *  '실용글쓰기'는 '실용글쓰기시험'·'실용글쓰기 CBT' 도 품는다 — 띄어쓰기·대소문자는 무시하고 견준다. */
+export const BODY_KEYWORDS = ['실글패스', '실용글쓰기', '공기업자격증'] as const
 
 /** 실제로 써 본 이야기가 있어야 한다 — 이 낱말이 본문에 모두 있어야 한다.
  *  낱말 네 개와 글자 수만 채운 글은 무엇을 써 봤는지가 없어 홍보가 되지 않는다(2026-09-13). */
@@ -200,7 +201,9 @@ export function checkBlogHtml(html: string, photos?: number, bodyChars?: number)
   const readable = post.found || body.length >= 400
 
   const titleHit = TITLE_KEYWORDS.filter(k => squash(title).includes(squash(k)))
-  const bodyMissing = BODY_KEYWORDS.filter(k => !body.includes(squash(k)))
+  // 낱말은 제목이나 본문 어디에 있어도 된다 — 제목만 읽고 본문을 못 읽은 껍데기는 readable 이 거른다
+  const titleAndBody = squash(title) + body
+  const bodyMissing = BODY_KEYWORDS.filter(k => !titleAndBody.includes(squash(k)))
   const topicMissing = TOPIC_KEYWORDS.filter(k => !body.includes(squash(k)))
   const images = photos ?? (html.match(/<img/gi) ?? []).length
   // 글자 수는 본문만 세어 밖에서 넘긴다(네이버는 UI 글자가 1,000자 넘게 섞인다)
@@ -215,7 +218,7 @@ export function checkBlogHtml(html: string, photos?: number, bodyChars?: number)
       items: TITLE_KEYWORDS.map(k => ({ label: k, ok: titleHit.includes(k) })),
     },
     {
-      rule: `본문에 ${BODY_KEYWORDS.length}개 낱말 모두`,
+      rule: `제목이나 본문에 ${BODY_KEYWORDS.length}개 낱말 모두`,
       ok: readable && bodyMissing.length === 0,
       detail: !readable ? '본문을 못 읽음'
         : bodyMissing.length ? `${BODY_KEYWORDS.length - bodyMissing.length}/${BODY_KEYWORDS.length}개 있음`

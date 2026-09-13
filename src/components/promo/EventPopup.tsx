@@ -135,7 +135,7 @@ export default function EventPopup({
   }
 
   const conditions = [
-    `제목에 실글패스 · 본문에 정해진 낱말 ${BODY_KEYWORDS.length}개와 써 본 이야기`,
+    `제목에 실글패스 · 제목이나 본문에 낱말 ${BODY_KEYWORDS.length}개(${BODY_KEYWORDS.join('·')})와 써 본 이야기`,
     `사진 ${MIN_IMAGES}장 이상 · 본문 ${MIN_CHARS.toLocaleString('ko-KR')}자 이상`,
     `스스로 묻고 답한 곳 ${MIN_QA}번 이상`,
     '광고 표시 문구 (법정 의무 · 복사해 드립니다)',
