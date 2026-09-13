@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import LogoGlyph from '@/components/layout/LogoGlyph'
+import BrandLogo from '@/components/layout/BrandLogo'
 
 // 블로그 페이지 공통 헤더(자료 페이지 헤더와 동일한 형태).
 export default function BlogHeader() {
@@ -7,14 +7,15 @@ export default function BlogHeader() {
     <header className="border-b border-[#e2e8f0] bg-white">
       <div className="max-w-3xl mx-auto px-4 h-14 flex items-center justify-between">
         <Link href="/blog" className="flex items-center gap-2 py-2">
-          <LogoGlyph className="h-7 w-7" />
-          <span className="font-black text-[#1e3a5f]">실글패스 블로그</span>
+          <BrandLogo />
+          <span className="hidden sm:inline text-sm text-[#64748b]">블로그</span>
         </Link>
         <Link
           href="/try"
           className="py-3 text-sm font-semibold text-[#64748b] hover:text-[#1e3a5f] transition-colors"
         >
-          가입 없이 문제 풀어보기 →
+          <span className="hidden sm:inline">가입 없이 문제 풀어보기 →</span>
+          <span className="sm:hidden">문제 풀기 →</span>
         </Link>
       </div>
     </header>

@@ -4,7 +4,7 @@ import EventPopupMount from "@/components/promo/EventPopupMount";
 import { BLOG_EVENT_POPUP_ENABLED } from "@/lib/blogPromoRules";
 import { SB_URL, SB_ANON } from "@/lib/supabase/sanitize";
 import { FileText, BookOpen, PenLine, CheckCircle, ArrowRight, Sparkles, Star, Gift, RotateCcw, Wallet } from "lucide-react";
-import LogoGlyph from "@/components/layout/LogoGlyph";
+import BrandLogo from "@/components/layout/BrandLogo";
 import ReviewMarquee from "@/components/landing/ReviewMarquee";
 import StickyMobileCTA from "@/components/landing/StickyMobileCTA";
 import SiteFooter from "@/components/layout/SiteFooter";
@@ -123,12 +123,9 @@ export default async function HomePage() {
       {/* 헤더 */}
       <header className="fixed top-0 inset-x-0 z-50 bg-[#0f1f3d]/90 backdrop-blur-md border-b border-white/10">
         <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#f59e0b] to-[#d97706] flex items-center justify-center">
-              <LogoGlyph className="h-5 w-5 text-white" />
-            </div>
-            <span className="font-bold text-white text-lg tracking-tight">실글패스</span>
-          </div>
+          <Link href="/" aria-label="실글패스 첫 화면" className="py-2">
+            <BrandLogo light />
+          </Link>
           <div className="flex items-center gap-2">
             <Link href="/login" className="text-sm text-white/70 hover:text-white transition-colors px-4 py-3 rounded-lg hover:bg-white/10">
               로그인

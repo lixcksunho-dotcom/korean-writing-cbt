@@ -6,7 +6,7 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import { BookOpen, LayoutDashboard, Menu, X, LogOut, PenLine, Sparkles, ListChecks, UserRound } from "lucide-react";
-import LogoGlyph from "@/components/layout/LogoGlyph";
+import BrandLogo from "@/components/layout/BrandLogo";
 
 const navItems = [
   { href: "/dashboard", label: "대시보드", icon: LayoutDashboard },
@@ -18,7 +18,6 @@ const navItems = [
 export default function Navbar({
   userEmail = "",
   brandName = "실글패스",
-  brandGradient = "from-[#f59e0b] to-[#d97706]",
   showManuscript = true,
 }: { userEmail?: string; brandName?: string; brandGradient?: string; showManuscript?: boolean }) {
   const pathname = usePathname();
@@ -40,12 +39,9 @@ export default function Navbar({
         <div className="flex items-center justify-between h-16">
           {/* 로고 + 모드 스위처 (현재 모드가 한눈에) */}
           <div className="flex items-center gap-3 shrink-0">
-            <Link href="/dashboard" className="flex items-center gap-2.5 shrink-0 px-1.5 py-1.5">
-              <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${brandGradient} flex items-center justify-center shadow-lg shadow-black/20`}>
-                <LogoGlyph className="h-5 w-5 text-white" />
-              </div>
+            <Link href="/dashboard" aria-label={brandName} className="flex items-center gap-2.5 shrink-0 px-1.5 py-1.5">
               {/* 메뉴가 펴지는 1024px에서는 이 글자까지 넣으면 한 뼘이 모자라 가로 스크롤이 생긴다 */}
-              <span className="font-bold text-white tracking-tight hidden xl:block whitespace-nowrap">{brandName}</span>
+              <BrandLogo name={brandName} light wordmarkClassName="hidden xl:block" />
             </Link>
           </div>
 
