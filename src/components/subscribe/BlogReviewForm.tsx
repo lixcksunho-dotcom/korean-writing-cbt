@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useState, useTransition } from 'react'
 import { PenLine, CheckCircle2, AlertCircle, Check, X, LogIn } from 'lucide-react'
 import { submitBlogReview } from '@/app/(main)/subscribe/blog-review-actions'
-import { TITLE_KEYWORDS, BODY_KEYWORDS, MIN_IMAGES, MIN_CHARS, MIN_QA, REWARD_DAYS, RECOMMENDED_KEEP_DAYS, DISCLOSURE_SAMPLE, type RuleCheck } from '@/lib/blogPromoRules'
+import { TITLE_KEYWORDS, BODY_KEYWORDS, TOPIC_KEYWORDS, MIN_IMAGES, MIN_CHARS, MIN_QA, REWARD_DAYS, RECOMMENDED_KEEP_DAYS, DISCLOSURE_SAMPLE, type RuleCheck } from '@/lib/blogPromoRules'
 import DisclosureCopyBox from '@/components/subscribe/DisclosureCopyBox'
 
 // 블로그에 홍보 글을 쓰면 이용권을 드리는 신청 화면.
@@ -77,11 +77,11 @@ export default function BlogReviewForm({
             제목에{' '}
             {TITLE_KEYWORDS.map((k, i) => (
               <span key={k}>
-                {i > 0 && ' 또는 '}
+                {i > 0 && '·'}
                 <b>{k}</b>
               </span>
             ))}
-            {' '}중 하나를 넣어 주세요.
+            {' '}를 꼭 넣어 주세요. 예: <i>실글패스로 실용글쓰기시험 CBT 준비한 후기</i> — ‘실용글쓰기시험 후기’처럼 서비스 이름이 빠지면 안 돼요.
           </span>
         </li>
         <li className="flex gap-2">
@@ -96,19 +96,26 @@ export default function BlogReviewForm({
         <li className="flex gap-2">
           <span className="font-bold text-[#d97706]">3</span>
           <span>
-            화면 사진을 <b>{MIN_IMAGES}장 이상</b> 넣고, 본문을{' '}
-            <b>{MIN_CHARS.toLocaleString('ko-KR')}자 이상</b> 써 주세요(공백 제외).
+            <b>실제로 써 본 이야기</b>가 있어야 해요 — 어느 <b>모의고사</b> 회차를 풀었고 서술형 <b>첨삭</b>에서
+            무엇을 받았는지. 낱말({TOPIC_KEYWORDS.join('·')})만 넣는 게 아니라 그 경험을 쓰는 거예요.
           </span>
         </li>
         <li className="flex gap-2">
           <span className="font-bold text-[#d97706]">4</span>
+          <span>
+            화면 사진을 <b>{MIN_IMAGES}장 이상</b> 넣고(그중 로그인 뒤 실제 화면 캡처 3장 이상), 본문을{' '}
+            <b>{MIN_CHARS.toLocaleString('ko-KR')}자 이상</b> 써 주세요(공백 제외).
+          </span>
+        </li>
+        <li className="flex gap-2">
+          <span className="font-bold text-[#d97706]">5</span>
           <span>
             <b>스스로 묻고 답하는 부분</b>을 {MIN_QA}번 이상 넣어 주세요 — 검색해서 들어온
             사람이 궁금해할 것을 물어보고, 바로 아래에 답을 써 주시면 됩니다.
           </span>
         </li>
         <li className="flex gap-2">
-          <span className="font-bold text-[#d97706]">5</span>
+          <span className="font-bold text-[#d97706]">6</span>
           <span>
             아래 <b>광고 표시 그림과 한 줄</b>을 글 맨 위에 넣어 주세요 — 법정 의무입니다.
           </span>
@@ -117,6 +124,23 @@ export default function BlogReviewForm({
 
       <div className="mb-4">
         <DisclosureCopyBox sample={DISCLOSURE_SAMPLE} fileName="실글패스-광고표시.png" />
+      </div>
+
+      {/* 조건만 채운 글은 홍보가 되지 않는다 — 낱말·글자 수·사진을 다 맞추고도 무엇을 써 봤는지가
+          없는 글이 실제로 들어왔다(2026-09-13). 쓰기 전에 '글의 뼈대'를 보여 준다. */}
+      <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-3.5 text-xs leading-relaxed text-[#78350f]">
+        <p className="mb-1.5 font-bold">이런 순서로 쓰시면 조건이 저절로 채워져요</p>
+        <ol className="list-decimal space-y-1 pl-4">
+          <li>왜 실용글쓰기시험을 준비하는지(목표 등급·시험일).</li>
+          <li>실글패스에서 <b>실제로 한 것</b> — 어느 모의고사 회차를 몇 분 걸려 풀었는지, 시험 화면 캡처.</li>
+          <li>서술형·원고지 <b>AI 첨삭 결과</b> — 받은 점수와 첨삭 문장 하나를 그대로 인용하고, 그걸 보고 무엇을 고쳤는지.</li>
+          <li>오답노트·약점 분석 화면과 거기서 알게 된 것.</li>
+          <li>아쉬운 점과 누구에게 맞는지 — 좋게만 쓰실 필요 없어요.</li>
+        </ol>
+        <p className="mt-2">
+          한두 줄 감상에 사진만 붙인 글, 다른 후기를 옮겨 적은 글은 조건을 채워도 <b>사람 확인에서 돌려보낼 수 있어요</b>.
+          읽는 사람이 “나도 이렇게 준비하면 되겠다”를 얻어 가는 글이면 됩니다.
+        </p>
       </div>
 
       {/* 받은 뒤에 무슨 일이 생기는지 **쓰기 전에** 밝힌다.

@@ -1,5 +1,6 @@
 import {
   BODY_KEYWORDS,
+  TOPIC_KEYWORDS,
   MIN_CHARS,
   MIN_IMAGES,
   MIN_QA,
@@ -33,7 +34,7 @@ export function passingPostHtml(): string {
   ).join('')
 
   // 본문 낱말을 모두 넣고, 글자 수를 넉넉히 채운다.
-  const filler = `${BODY_KEYWORDS.join(' ')} 시험을 준비하면서 느낀 점을 적어 둡니다. `
+  const filler = `${BODY_KEYWORDS.join(' ')} ${TOPIC_KEYWORDS.join('와 ')}를 써 보며 느낀 점을 적어 둡니다. `
   const body = filler.repeat(Math.ceil((MIN_CHARS * 1.3) / filler.length))
 
   // 사진은 서로 다른 주소여야 한 장씩 센다(같은 사진을 여러 번 붙여 장수를 채우는 것을 막는다).
