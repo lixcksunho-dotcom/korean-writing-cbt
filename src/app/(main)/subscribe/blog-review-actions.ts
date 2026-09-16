@@ -34,7 +34,7 @@ export async function submitBlogReview(url: string): Promise<SubmitResult> {
 
   const link = (url ?? '').trim()
   if (!isLikelyBlogPostUrl(link)) {
-    return { ok: false, message: '글 주소를 정확히 넣어 주세요(블로그 첫 화면이 아니라 글 주소여야 해요).' }
+    return { ok: false, message: '블로그 대문이 아니라 후기 글 주소를 넣어 주세요. 글을 연 뒤 주소창에 뜨는 주소여야 해요(예: blog.naver.com/아이디/2244…처럼 뒤에 글 번호가 붙습니다).' }
   }
 
   const admin = createAdminClient()

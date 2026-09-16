@@ -279,8 +279,21 @@ export function isLikelyBlogPostUrl(raw: string): boolean {
   try {
     const u = new URL(raw.trim())
     if (u.protocol !== 'https:' && u.protocol !== 'http:') return false
-    // 도메인만 적어 낸 경우(글이 아니라 블로그 첫 화면)
-    return u.pathname.replace(/\/+$/, '').length > 1
+    const host = u.hostname.replace(/^www\./, '')
+    const segs = u.pathname.replace(/^\/+|\/+$/g, '').split('/').filter(Boolean)
+    // 네이버 블로그: 글은 반드시 글번호(logNo)가 있어야 한다.
+    //   O  blog.naver.com/{아이디}/{글번호}   ·  m.blog.naver.com/{아이디}/{글번호}
+    //   O  blog.naver.com/PostView.naver?blogId=..&logNo=123
+    //   X  blog.naver.com/{아이디}            ← 블로그 대문(글번호 없음)
+    if (host === 'blog.naver.com' || host === 'm.blog.naver.com') {
+      const logNo = u.searchParams.get('logNo')
+      if (/^\d{6,}$/.test(logNo ?? '')) return true
+      // 마지막 칸이 글번호(숫자)여야 글이다. 아이디 한 칸만 있으면 대문.
+      return segs.length >= 2 && /^\d{6,}$/.test(segs[segs.length - 1])
+    }
+    // 그 밖(티스토리 등): 도메인만이거나 한 칸짜리 프로필은 막고, 글로 보이는 것만 받는다.
+    //   O  x.tistory.com/123  ·  x.tistory.com/entry/제목  ·  .../글제목
+    return segs.length >= 2 || (segs.length === 1 && (/^\d+$/.test(segs[0]) || segs[0].length >= 4))
   } catch {
     return false
   }
