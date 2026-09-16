@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { pickAuditRows } from '@/lib/blogAuditSelection'
 import { recordOperatorAlert } from '@/lib/operatorAlerts'
 import { BLOG_REVIEW_PATH, DISCLOSURE_RULE, GRANT_KEY_VIOLATED, checkBlogHtml } from '@/lib/blogPromoRules'
 import { fetchBlogPost, countPhotos, countBodyChars } from '@/lib/blogPromoFetch'
@@ -88,9 +89,8 @@ export async function GET(req: Request) {
     for (const s of subs ?? []) granted.add(String(s.order_id))
   }
 
-  const rows = (candidates ?? [])
-    .filter(r => granted.has(`review-${r.id}`) || (r.user_id && granted.has(`review-auto-${r.user_id}`)))
-    .slice(0, 50)
+  // 자동 지급은 계정당 한 번이라 그 사람의 가장 최근 신청만 본다(blogAuditSelection 참고).
+  const rows = pickAuditRows(candidates ?? [], granted).slice(0, 50)
 
   const results: AuditRow[] = []
 
