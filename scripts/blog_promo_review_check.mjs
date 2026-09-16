@@ -211,10 +211,15 @@ const charCheck = rShort.checks.find(c => c.rule.includes('자 이상'))
 if (charCheck && !charCheck.ok) ok(`본문이 ${MIN_CHARS}자 미만이면 걸린다`, charCheck.detail)
 else bad('글자수 기준', charCheck ? charCheck.detail : '기준 자체가 없다')
 
-// 글 주소가 아닌 것
-if (!isLikelyBlogPostUrl('https://blog.naver.com') && isLikelyBlogPostUrl('https://blog.naver.com/me/123')) {
-  ok('블로그 첫 화면은 글 주소로 안 본다')
-} else bad('주소 판정', '첫 화면과 글 주소를 구분 못 한다')
+// 글 주소가 아닌 것 — 대문(아이디만)은 막고 글번호가 있어야 통과한다
+{
+  const reject = ['https://blog.naver.com', 'https://blog.naver.com/hwa_annn', 'https://blog.naver.com/hwa_annn/', 'https://m.blog.naver.com/ida0717']
+  const accept = ['https://blog.naver.com/me/224412606372', 'https://m.blog.naver.com/ida0717/224409589259', 'https://blog.naver.com/PostView.naver?blogId=jin2jjin2&logNo=224412618624', 'https://someone.tistory.com/123', 'https://someone.tistory.com/entry/후기']
+  const badR = reject.filter(u => isLikelyBlogPostUrl(u))
+  const badA = accept.filter(u => !isLikelyBlogPostUrl(u))
+  if (badR.length === 0 && badA.length === 0) ok('대문은 막고 글번호 있는 글만 통과', `거부 ${reject.length} · 통과 ${accept.length}`)
+  else bad('주소 판정', `대문인데 통과: ${badR.join(',')} / 글인데 거부: ${badA.join(',')}`)
+}
 
 // ── 받은 뒤 화면이 사실을 말하는가 ─────────────────────────────────────────
 // 2026-09-08 진짜 글로 한 바퀴 돌려 보니(운영자 지시 "직접 돌려봐") 지급은 정확한데 화면이 둘 다 틀렸다.
