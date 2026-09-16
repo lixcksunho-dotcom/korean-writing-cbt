@@ -6,7 +6,8 @@ import { blogRewardQuota } from '@/lib/blogRewardQuota'
 import BlogReviewForm from '@/components/subscribe/BlogReviewForm'
 import EventTracker from '@/components/analytics/EventTracker'
 import { REWARD_DAYS, MAX_REWARDS } from '@/lib/blogPromoRules'
-import { Gift, ArrowRight } from 'lucide-react'
+import { silyongExamUrgency } from '@/lib/examUrgency'
+import { Gift, ArrowRight, Clock } from 'lucide-react'
 
 // 행사에 제 페이지를 준다.
 //
@@ -32,10 +33,21 @@ export default async function BlogReviewEventPage() {
   const { data: { user } } = await supabase.auth.getUser()
   const quota = await blogRewardQuota()
   const current = user ? await getActiveSubscription(user.id) : null
+  const urgency = silyongExamUrgency()
 
   return (
     <div className="mx-auto max-w-2xl">
       <EventTracker event="blog_event_view" />
+
+      {/* 시험이 코앞일 때만 뜬다(examUrgency 임계). 지금 마지막 정리 → 후기 → 이용권 흐름으로 민다. */}
+      {urgency.show && urgency.round && (
+        <div className="mb-3 flex items-center justify-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-center text-sm font-bold leading-snug text-red-700">
+          <Clock className="h-4 w-4 shrink-0" aria-hidden="true" />
+          <span>
+            {urgency.round.round} 시험이 {urgency.dday === 0 ? '오늘이에요' : <>D-{urgency.dday}, 며칠 안 남았어요</>} — 지금 서술형 마지막 점검하고 후기 남기면 이용권 {REWARD_DAYS}일
+          </span>
+        </div>
+      )}
 
       <div className="mb-6 rounded-2xl bg-gradient-to-br from-[#0f1f3d] to-[#1e3a5f] p-6 text-center text-white">
         <span className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-full bg-white/10">

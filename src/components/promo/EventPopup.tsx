@@ -3,12 +3,13 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import Link from 'next/link'
-import { X, Gift, Check, CalendarDays, ExternalLink } from 'lucide-react'
+import { X, Gift, Check, CalendarDays, ExternalLink, Clock } from 'lucide-react'
 import { useDialogFocus } from '@/components/ui/dialogFocus'
 import { createClient } from '@/lib/supabase/client'
 import { getSchedule, type Round } from '@/lib/examSchedule'
 import { BODY_KEYWORDS, MAX_REWARDS, MIN_CHARS, MIN_IMAGES, MIN_QA, REWARD_DAYS, RECOMMENDED_KEEP_DAYS } from '@/lib/blogPromoRules'
 import { daysUntil as kstDaysUntil } from '@/lib/examDday'
+import { URGENT_WITHIN_DAYS } from '@/lib/examUrgency'
 
 // 첫 화면에 이벤트를 알린다.
 //
@@ -63,6 +64,9 @@ export default function EventPopup({
   const { rounds, applyUrl } = getSchedule('silyong')
   const round = nextRound(rounds)
   const applyOpen = round ? daysUntil(round.applyEnd) >= 0 : false
+  // 접수가 끝나도 시험까지 ~2주 — 그 며칠이 지금 가장 급한 날짜다. 임계 안일 때만 강조한다.
+  const examDday = round ? daysUntil(round.examDate) : -1
+  const examUrgent = examDday >= 0 && examDday <= URGENT_WITHIN_DAYS
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -203,6 +207,14 @@ export default function EventPopup({
                 <dd className="font-semibold text-[#334155]">{fmt(round.examDate)}</dd>
               </div>
             </dl>
+            {examUrgent && (
+              <p className="mt-2.5 flex items-center gap-1.5 rounded-lg bg-red-50 px-2.5 py-1.5 text-xs font-bold leading-snug text-red-700">
+                <Clock className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                <span>
+                  {examDday === 0 ? '시험 당일' : `시험 D-${examDday} · 며칠 안 남았어요`} — 지금 마지막 점검하고 후기 남기면 이용권 {REWARD_DAYS}일
+                </span>
+              </p>
+            )}
             {applyOpen && (
               <a
                 href={applyUrl}
