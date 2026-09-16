@@ -28,9 +28,23 @@ is('로컬에서 돌린 검사',
 is('배포 직후 조각(스스로 복구)',
   triageAlert('[배포 직후 조각 · 새로고침으로 복구] /cbt/2025-1 — Failed to load chunk'), 'settled')
 
+// ── 운영에서 실제로 찍히는 문구(되살림 항목 없음) ─────────────────────────
+// 감사 route 가 만드는 진짜 문구다. 예전 테스트는 있지도 않은 '되살림 0건'을 넣어
+// 통과했고, 그래서 실제 404 보고가 전부 '봐야 할 것'으로 샜다(2026-09-16 실측).
+is('실제 404 사후 확인(되살림 항목 없음)',
+  triageAlert('블로그 홍보 사후 확인 — 회수 0건 · 못 읽음 1건 · 조건 어긋남 0건\n· https://blog.naver.com/jin2jjin2/224412606372\n  주소를 열지 못했어요(404)'), 'settled')
+is('실제 빈 대문 사후 확인(되살림 항목 없음)',
+  triageAlert('블로그 홍보 사후 확인 — 회수 0건 · 못 읽음 2건 · 조건 어긋남 0건\n· https://blog.naver.com/ida0717\n  본문이 비어 있어요'), 'settled')
+is('그 자리에서 자동 통과·지급된 신청',
+  triageAlert('블로그 홍보 신청 — 자동 확인 통과 https://blog.naver.com/kcy7088/224414217681'), 'settled')
+
 // ── 사람이 반드시 봐야 하는 것 ─────────────────────────────────────────────
 is('실제 사람의 글이 회수됨',
   triageAlert('블로그 홍보 사후 확인 — 회수 1건 · 되살림 0건 · 못 읽음 0건 · 조건 어긋남 0건 · https://blog.naver.com/zkvpdla1/224398488516'), 'actionable')
+is('실제 조건 어긋남(사람이 볼 것)',
+  triageAlert('블로그 홍보 사후 확인 — 회수 0건 · 못 읽음 0건 · 조건 어긋남 1건\n· https://blog.naver.com/somebody/224400000000\n  광고 표시(누락)'), 'actionable')
+is('신청이 사람 확인 필요(자동 통과 아님)',
+  triageAlert('블로그 홍보 신청 — 사람 확인 필요 https://blog.naver.com/hwa_annn'), 'actionable')
 is('사파리 화면 오류(복구 안내 없음)',
   triageAlert('/cbt/2025-1/result — Load failed'), 'actionable')
 is('결제는 됐는데 발급 안 됨',
@@ -59,5 +73,5 @@ else bad('과잉 정리', '사람이 봐야 할 회수를 치운다')
   else bad('목록 분류', '가짜와 진짜가 섞여 나온다')
 }
 
-console.log(`\n${fail ? '알림 분류에 구멍이 있다.' : '볼 것만 위로 온다.'}`)
+console.log(`\n${pass}건 통과 · ${fail}건 실패 — ${fail ? '알림 분류에 구멍이 있다.' : '볼 것만 위로 온다.'}`)
 process.exit(fail ? 1 : 0)
