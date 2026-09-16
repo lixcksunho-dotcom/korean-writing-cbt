@@ -9,7 +9,7 @@
 // 반대로 넓게 잡으면 진짜 사고를 '검사 자국'으로 치워 버린다. 그게 더 나쁘다.
 // 그래서 실제로 찍힌 문구를 그대로 넣고 양쪽을 다 확인한다.
 
-import { triageAlert, isCheckArtifact, isSettled } from '../src/lib/operatorAlertTriage.ts'
+import { triageAlert, isCheckArtifact, isSettled, feedbackMatchHead } from '../src/lib/operatorAlertTriage.ts'
 
 let pass = 0, fail = 0
 const ok = (n, d = '') => { pass++; console.log(`  ○ ${n}${d ? ` — ${d}` : ''}`) }
@@ -62,6 +62,16 @@ else bad('빈 값', '아무것도 없는데 자국이라 한다')
 if (!isSettled('블로그 홍보 사후 확인 — 회수 2건 · 되살림 0건 · 못 읽음 0건 · 조건 어긋남 1건'))
   ok('회수가 있으면 스스로 끝난 일이 아니다')
 else bad('과잉 정리', '사람이 봐야 할 회수를 치운다')
+
+// ── 처리한 짧은 문의는 목록에서 내려가야 한다 ──────────────────────────────
+// 알림 문구 끝의 경로 꼬리표(" [/support]")는 feedback.message 에 없다. 안 떼고
+// 앞부분을 대조하면 짧은 문의가 처리 뒤에도 계속 '봐야 할 것'으로 남는다(실측 2026-09-16).
+{
+  const summary = '다시 신청합니다 수정했습니다 감사합니다 [/support]'
+  const message = '다시 신청합니다 수정했습니다 감사합니다'
+  if (message.startsWith(feedbackMatchHead(summary))) ok('처리된 짧은 문의는 꼬리표를 떼고 대조돼 내려간다')
+  else bad('처리된 문의가 계속 빨갛게 남는다', `head=${feedbackMatchHead(summary)}`)
+}
 
 // ── 알림을 만들 때부터 막는가 ──────────────────────────────────────────────
 {

@@ -60,6 +60,18 @@ export function isSettled(summary: string): boolean {
   return false
 }
 
+/**
+ * 알림 문구에서 feedback.message 와 대조할 앞부분을 뽑는다.
+ *
+ * 알림은 문구 끝에 경로 꼬리표(" [/support]")를 붙이는데(api/feedback/route),
+ * 저장된 feedback.message 에는 그 꼬리표가 없다. 이걸 그대로 앞 40자 대조에 쓰면
+ * '다시 신청합니다 수정했습니다' 같은 **짧은 문의는 꼬리표까지 포함돼 영영 매칭이
+ * 안 되고, 처리(resolved)한 뒤에도 목록에 빨갛게 남는다**(실측 2026-09-16). 떼고 대조한다.
+ */
+export function feedbackMatchHead(summary: string, len = 40): string {
+  return summary.replace(/\s*\[\/[^\]]*\]\s*$/, '').slice(0, len)
+}
+
 export function triageAlert(summary: string, ref?: string | null): AlertTriage {
   const text = `${summary ?? ''} ${ref ?? ''}`
   if (isCheckArtifact(text)) return 'test'
