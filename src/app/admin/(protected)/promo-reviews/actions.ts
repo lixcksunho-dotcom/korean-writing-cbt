@@ -25,6 +25,19 @@ export async function approveBlogReview(feedbackId: string): Promise<ApproveResu
   if (!row?.user_id) return { ok: false, message: '신청을 찾지 못했습니다(비회원 신청은 지급할 수 없습니다).' }
   if (row.resolved) return { ok: false, message: '이미 처리된 신청입니다.' }
 
+  // 조건을 다 갖춰 그 자리에서 자동 지급된 신청도 resolved=false 로 남아 승인 버튼이 보인다.
+  // 여기서 안 막으면 한 신청에 자동 7일 + 승인 7일이 겹쳐 나간다(2026-09-17 실제로 겹쳐 되돌렸다).
+  const { data: autoGrant } = await admin
+    .from('subscriptions')
+    .select('id')
+    .eq('order_id', `review-auto-${row.user_id}`)
+    .eq('status', 'active')
+    .gt('expires_at', new Date().toISOString())
+    .limit(1)
+  if (autoGrant && autoGrant.length > 0) {
+    return { ok: false, message: '이 신청은 이미 자동 지급됐습니다(계정당 1회). 따로 승인하지 않아도 돼요.' }
+  }
+
   // 자동 지급과 같은 자리를 쓴다 — 여기서 안 막으면 한도를 우회하는 문이 하나 열린다.
   const quota = await blogRewardQuota()
   if (quota.closed) {
