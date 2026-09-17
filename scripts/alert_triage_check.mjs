@@ -35,6 +35,8 @@ is('실제 404 사후 확인(되살림 항목 없음)',
   triageAlert('블로그 홍보 사후 확인 — 회수 0건 · 못 읽음 1건 · 조건 어긋남 0건\n· https://blog.naver.com/jin2jjin2/224412606372\n  주소를 열지 못했어요(404)'), 'settled')
 is('실제 빈 대문 사후 확인(되살림 항목 없음)',
   triageAlert('블로그 홍보 사후 확인 — 회수 0건 · 못 읽음 2건 · 조건 어긋남 0건\n· https://blog.naver.com/ida0717\n  본문이 비어 있어요'), 'settled')
+is('행사 코드가 쓰여 이용권이 나감(기계 발급)',
+  triageAlert('행사 코드 사용: 블로그 후기 이벤트 · 1주일 (BLOG7) · 3/100', 'd0a77939-a74f-4037-92a2-8e39a3b7a90c'), 'settled')
 is('그 자리에서 자동 통과·지급된 신청',
   triageAlert('블로그 홍보 신청 — 자동 확인 통과 https://blog.naver.com/kcy7088/224414217681'), 'settled')
 

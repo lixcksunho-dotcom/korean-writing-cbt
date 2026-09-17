@@ -55,6 +55,9 @@ export function isSettled(summary: string): boolean {
   // 신청이 그 자리에서 조건을 다 갖춰 자동 통과·지급된 것은 기계가 끝낸 일이다
   // (운영자 정책 2026-09-11). '사람 확인 필요'와 달리 사람이 볼 것이 없다.
   if (/자동 확인 통과/.test(summary)) return true
+  // 행사 코드가 쓰여 이용권이 나간 것은 기계가 발급한 일이다(운영자 정책 2026-09-11 '행사 코드 발급').
+  // 몇 명이 썼는지는 관리자 화면 숫자로 보면 되고, 한 건마다 사람이 볼 것은 없다.
+  if (/행사 코드 사용/.test(summary)) return true
   // 배포 직후 조각 오류는 새로고침으로 스스로 복구된다 — 우리 코드가 그렇게 적어 둔다.
   if (/새로고침으로 복구/.test(summary)) return true
   return false
