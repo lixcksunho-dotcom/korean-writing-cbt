@@ -3,6 +3,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { recordOperatorAlert } from '@/lib/operatorAlerts'
 import { BLOG_REVIEW_PATH, DISCLOSURE_RULE, GRANT_KEY_VIOLATED, checkBlogHtml } from '@/lib/blogPromoRules'
 import { fetchBlogPost, countPhotos, countBodyChars } from '@/lib/blogPromoFetch'
+import { discoverPromoPost } from '@/lib/blogPostDiscovery'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 60
@@ -24,7 +25,8 @@ function unauthorized(req: Request): boolean {
   return (req.headers.get('authorization') ?? '') !== `Bearer ${secret}`
 }
 
-type AuditState = 'ok' | 'revoked' | 'unreadable' | 'changed'
+/** healed = 못 읽던 주소를 그 블로그의 실글패스 글로 바꾼 뒤 조건까지 지키고 있는 것 */
+type AuditState = 'ok' | 'revoked' | 'unreadable' | 'changed' | 'healed'
 type AuditRow = { id: string; url: string; state: AuditState; detail: string }
 
 /**
@@ -95,8 +97,25 @@ export async function GET(req: Request) {
   const results: AuditRow[] = []
 
   for (const r of rows ?? []) {
-    const url = String(r.contact)
-    const fetched = await fetchBlogPost(url)
+    let url = String(r.contact)
+    let fetched = await fetchBlogPost(url)
+
+    // 못 읽은 주소(옛 글 번호 404·대문)는 그 블로그의 실글패스 글로 바꿔 본다(운영자 지시
+    // 2026-09-17). 비공개(blocked)는 안 바꾼다 — 일부러 내린 글을 다른 글로 살려 주면 안 된다.
+    // 바꾼 뒤엔 아래 조건 확인을 그대로 탄다 — '바꿨으니 통과'가 아니라 새 글로 다시 본다.
+    let healedFrom: string | null = null
+    if (fetched.html === null && !fetched.blocked) {
+      const found = await discoverPromoPost(url)
+      if (found && found.url !== url) {
+        const replacement = await fetchBlogPost(found.url)
+        if (replacement.html !== null) {
+          await admin.from('feedback').update({ contact: found.url }).eq('id', r.id)
+          healedFrom = url
+          url = found.url
+          fetched = replacement
+        }
+      }
+    }
 
     if (fetched.html === null) {
       if (!fetched.blocked) {
@@ -153,19 +172,27 @@ export async function GET(req: Request) {
 
     // 조건을 지키고 있다. 앞서 회수된 것은 여기서 되살리지 않는다 — 기간 안에 내린 것은
     // 한 번으로 끝이고(운영자 결정 2026-09-08), 실수는 관리자 화면에서 사람이 되살린다.
-    results.push({ id: r.id, url, state: 'ok', detail: '조건 유지' })
+    results.push({
+      id: r.id,
+      url,
+      state: healedFrom ? 'healed' : 'ok',
+      detail: healedFrom ? `옛 주소를 못 읽어 그 블로그의 실글패스 글로 바꿨어요 (${healedFrom} → ${url}) · 조건 유지` : '조건 유지',
+    })
   }
 
   const revoked = results.filter(r => r.state === 'revoked')
   const gone = results.filter(r => r.state === 'unreadable')
   const changed = results.filter(r => r.state === 'changed')
+  // 주소를 바꾼 것도 남긴다 — 남의 접수 데이터를 기계가 고쳤으니 흔적이 있어야 한다.
+  // 회수·조건 어긋남이 0이면 분류기가 '스스로 끝난 일'로 접는다(operatorAlertTriage).
+  const healed = results.filter(r => r.state === 'healed')
 
-  if (revoked.length || gone.length || changed.length) {
+  if (revoked.length || gone.length || changed.length || healed.length) {
     await recordOperatorAlert(
       'feedback',
       `블로그 홍보 사후 확인 — 회수 ${revoked.length}건 · ` +
-        `못 읽음 ${gone.length}건 · 조건 어긋남 ${changed.length}건\n` +
-        [...revoked, ...gone, ...changed].slice(0, 10)
+        `못 읽음 ${gone.length}건 · 조건 어긋남 ${changed.length}건 · 주소 바꿈 ${healed.length}건\n` +
+        [...revoked, ...gone, ...changed, ...healed].slice(0, 10)
           .map(r => `· ${r.url}\n  ${r.detail}`).join('\n'),
     ).catch(() => {})
   }
