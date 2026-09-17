@@ -1,5 +1,5 @@
 import { createAdminClient } from '@/lib/supabase/admin'
-import { triageAlert, type AlertTriage } from '@/lib/operatorAlertTriage'
+import { triageAlert, feedbackMatchHead, type AlertTriage } from '@/lib/operatorAlertTriage'
 import { isCheckArtifact } from '@/lib/operatorAlertTriage'
 
 // 운영자가 알아야 하는 사고를 한 곳으로 모은다.
@@ -154,8 +154,10 @@ export async function recentOperatorAlerts(days = 14, limit = 12): Promise<Opera
 
   const withResolved = all.map(a => {
     if (a.kind !== 'feedback') return a
-    const head = a.summary.slice(0, 40)
-    const hit = (fb ?? []).find(x => head && String(x.message).startsWith(head.slice(0, Math.min(40, head.length))))
+    // 알림 끝의 경로 꼬리표(" [/support]")를 떼고 대조한다 — 안 떼면 짧은 문의가
+    // 처리된 뒤에도 매칭이 안 돼 계속 빨갛게 남는다(feedbackMatchHead 주석 참조).
+    const head = feedbackMatchHead(a.summary)
+    const hit = (fb ?? []).find(x => head && String(x.message).startsWith(head))
     return { ...a, resolved: hit ? Boolean(hit.resolved) : a.resolved }
   })
 
