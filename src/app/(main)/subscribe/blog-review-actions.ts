@@ -124,7 +124,9 @@ export async function submitBlogReview(url: string): Promise<SubmitResult> {
     path: BLOG_REVIEW_PATH,
     contact: link,
     message: `[블로그 홍보 신청]\n${link}\n\n${summary}`,
-    resolved: false,
+    // 그 자리에서 지급된 신청은 사람이 할 일이 없다 — false 로 두면 관리자 화면에 '미처리'로
+    // 남고 승인 버튼까지 보여 두 번 지급하는 문이 열린다(2026-09-17 kcy7088 실제 사례).
+    resolved: granted,
   })
   if (error) return { ok: false, message: '접수 중 문제가 생겼어요. 잠시 뒤 다시 시도해 주세요.' }
 
