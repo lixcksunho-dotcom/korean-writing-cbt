@@ -33,6 +33,20 @@ async function all(path, order) {
   }
 }
 
+// auth 사용자 목록은 한 페이지에 200명까지만 준다. 한 페이지만 읽으면 201번째부터의
+// 세션·북마크가 '없는 계정'으로 보인다 — 실제로 262명일 때 130건이 고아로 잘못 잡혔다(2026-09-18).
+async function allUsers() {
+  const out = []
+  for (let page = 1; ; page += 1) {
+    const res = await fetch(`${SB}/auth/v1/admin/users?page=${page}&per_page=200`, {
+      headers: { apikey: KEY, Authorization: `Bearer ${KEY}` },
+    })
+    const users = (await res.json()).users ?? []
+    out.push(...users)
+    if (users.length < 200) return out
+  }
+}
+
 // 2026-06-01·06-06 두 건은 답안 insert 실패를 고치기 전의 기록이다. 지우면 그 사람의
 // 시험 기록이 사라지므로 남겨 두고, '이보다 늘면 실패'로 감시한다.
 const KNOWN_EMPTY_DONE = 2
@@ -47,8 +61,7 @@ try {
     all('questions?select=id', 'id'),
     all('bookmarks?select=user_id,question_id', 'created_at'),
     all('question_reports?select=id,question_id,resolved', 'created_at'),
-    fetch(`${SB}/auth/v1/admin/users?per_page=200`, { headers: { apikey: KEY, Authorization: `Bearer ${KEY}` } })
-      .then((r) => r.json()).then((j) => j.users ?? []),
+    allUsers(),
   ])
 
   const qid = new Set(questions.map((q) => q.id))
