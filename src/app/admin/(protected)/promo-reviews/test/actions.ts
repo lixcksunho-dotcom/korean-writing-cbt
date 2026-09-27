@@ -1,5 +1,7 @@
 'use server'
 
+import { createClient } from '@/lib/supabase/server'
+
 import {
   BODY_KEYWORDS,
   DISCLOSURE_SAMPLE,
@@ -39,6 +41,7 @@ export type RuleTestResult =
  * DB가 실험 찌꺼기로 더러워진다. 판정만 떼어내 마음대로 돌릴 자리가 필요하다.
  */
 export async function runBlogRuleTest(url: string): Promise<RuleTestResult> {
+  await assertAdmin()
   const link = (url ?? '').trim()
   if (!isLikelyBlogPostUrl(link)) {
     return { ok: false, message: '글 주소를 정확히 넣어 주세요(블로그 첫 화면이 아니라 글 주소여야 해요).' }
@@ -80,6 +83,7 @@ export async function runBlogRuleTest(url: string): Promise<RuleTestResult> {
 
 /** 규칙 값을 화면에 그대로 보여 준다 — 문서와 코드가 갈리지 않게 코드에서 읽어 온다. */
 export async function blogRuleSummary() {
+  await assertAdmin()
   return {
     titleKeywords: [...TITLE_KEYWORDS],
     bodyKeywords: [...BODY_KEYWORDS],
@@ -99,6 +103,7 @@ export async function blogRuleSummary() {
  * 태그가 없는 맨 글이면 본문 영역으로 감싸 준다 — 안 그러면 추출기가 본문을 못 찾는다.
  */
 export async function runBlogRuleTestOnHtml(raw: string, title = ''): Promise<RuleTestResult> {
+  await assertAdmin()
   const text = (raw ?? '').trim()
   if (text.length < 50) return { ok: false, message: '글을 붙여넣어 주세요(50자 이상).' }
 
@@ -141,6 +146,7 @@ export async function runBlogRuleTestOnHtml(raw: string, title = ''): Promise<Ru
  * '신청이 안 들어온다'와 구분이 안 된다. 그래서 실험실을 열 때마다 표본으로 확인한다.
  */
 export async function judgeSelfTest() {
+  await assertAdmin()
   const good = passingPostHtml()
   const bad = missingDisclosureHtml()
   const goodResult = checkBlogHtml(good, countPhotos(good), countBodyChars(good))
@@ -153,4 +159,12 @@ export async function judgeSelfTest() {
     catchesMissingDisclosure: badDisclosureOnly,
     failedRules: goodResult.checks.filter(c => !c.ok).map(c => `${c.rule} (${c.detail})`),
   }
+}
+
+// 서버 액션은 레이아웃을 거치지 않고도 호출되므로 관리자 권한을 확인한다.
+async function assertAdmin() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  const adminEmails = (process.env.ADMIN_EMAILS ?? '').split(',').map(e => e.trim()).filter(Boolean)
+  if (!user || !adminEmails.includes(user.email ?? '')) throw new Error('Forbidden')
 }

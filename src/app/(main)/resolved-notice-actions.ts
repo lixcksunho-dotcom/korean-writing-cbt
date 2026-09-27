@@ -39,13 +39,15 @@ export async function acknowledgeResolvedNotices(ids: string[]): Promise<void> {
   const fresh = mine.filter(f => !seen.has(f.id))
   if (!fresh.length) return
 
-  await admin.from('page_views').insert(
+  const { error } = await admin.from('page_views').insert(
     fresh.map(f => ({
       path: '#event/feedback_ack',
       visitor_id: f.id,
       referrer: `해결 알림 확인 · ${f.message.slice(0, 80)}`,
     })),
   )
+
+  if (error) throw new Error(error.message)
 
   // 텔레그램은 설정돼 있을 때만. 실패해도 기록은 이미 남았다.
   await sendTelegram(

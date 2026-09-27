@@ -1,5 +1,7 @@
 'use server'
 
+import { createClient } from '@/lib/supabase/server'
+
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getActiveSubscription } from '@/lib/subscription'
 import { REWARD_DAYS, BLOG_REVIEW_PATH, GRANT_KEY, GRANT_KEY_VIOLATED, GRANT_KEY_REVOKED, GRANT_KEY_RESTORED } from '@/lib/blogPromoRules'
@@ -15,6 +17,7 @@ export type ApproveResult = { ok: true; expiresAt: string } | { ok: false; messa
  * 그래서 지급이 성공한 뒤에만 처리 완료로 표시한다.
  */
 export async function approveBlogReview(feedbackId: string): Promise<ApproveResult> {
+  await assertAdmin()
   const admin = createAdminClient()
 
   const { data: row } = await admin
@@ -51,7 +54,8 @@ export async function approveBlogReview(feedbackId: string): Promise<ApproveResu
   }
 
   // 지급이 끝난 뒤에 처리 완료로 바꾼다(순서를 바꾸면 '승인했는데 안 나감'이 생긴다).
-  await admin.from('feedback').update({ resolved: true }).eq('id', row.id)
+  const { error: feedbackError } = await admin.from('feedback').update({ resolved: true }).eq('id', row.id)
+  if (feedbackError) return { ok: false, message: `이용권 지급은 완료됐지만 처리 표시만 실패했습니다: ${feedbackError.message}` }
 
   revalidatePath('/admin/promo-reviews')
   return { ok: true, expiresAt }
@@ -59,8 +63,10 @@ export async function approveBlogReview(feedbackId: string): Promise<ApproveResu
 
 /** 조건 미달로 돌려보낸다. 지급은 없고 접수만 닫는다. */
 export async function rejectBlogReview(feedbackId: string): Promise<{ ok: boolean }> {
+  await assertAdmin()
   const admin = createAdminClient()
-  await admin.from('feedback').update({ resolved: true }).eq('id', feedbackId)
+  const { error } = await admin.from('feedback').update({ resolved: true }).eq('id', feedbackId)
+  if (error) return { ok: false }
   revalidatePath('/admin/promo-reviews')
   return { ok: true }
 }
@@ -76,6 +82,7 @@ export async function rejectBlogReview(feedbackId: string): Promise<{ ok: boolea
  * 회수라는 사실은 payment_key에 남긴다 — 결제 취소와 구분되어야 한다.
  */
 export async function revokeBlogReview(feedbackId: string): Promise<{ ok: boolean; message: string }> {
+  await assertAdmin()
   const admin = createAdminClient()
   const { data, error } = await admin
     .from('subscriptions')
@@ -105,6 +112,7 @@ export async function revokeBlogReview(feedbackId: string): Promise<{ ok: boolea
 
 /** 자동 지급분(계정당 1회)도 회수할 수 있어야 한다 — order_id 규칙이 다르다. */
 export async function revokeAutoGrant(userId: string): Promise<{ ok: boolean; message: string }> {
+  await assertAdmin()
   const admin = createAdminClient()
   const { data, error } = await admin
     .from('subscriptions')
@@ -130,6 +138,7 @@ export async function revokeAutoGrant(userId: string): Promise<{ ok: boolean; me
  * 남은 기간이 이미 지난 것은 되살리지 않는다 — 되살려도 쓸 수 없는 이용권이다.
  */
 export async function restoreBlogReview(feedbackId: string, userId: string | null): Promise<{ ok: boolean; message: string }> {
+  await assertAdmin()
   const admin = createAdminClient()
   const orderIds = [`review-${feedbackId}`, ...(userId ? [`review-auto-${userId}`] : [])]
   const { data, error } = await admin
@@ -144,4 +153,11 @@ export async function restoreBlogReview(feedbackId: string, userId: string | nul
   if (!data?.length) return { ok: false, message: '되살릴 것이 없습니다(남은 기간이 이미 지났거나 회수된 적이 없습니다).' }
   revalidatePath('/admin/promo-reviews')
   return { ok: true, message: `이용권을 되살렸습니다. 이 계정의 이벤트 차단도 풀렸습니다.` }
+}
+// 서버 액션은 레이아웃을 거치지 않고도 호출되므로 관리자 권한을 확인한다.
+async function assertAdmin() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  const adminEmails = (process.env.ADMIN_EMAILS ?? '').split(',').map(e => e.trim()).filter(Boolean)
+  if (!user || !adminEmails.includes(user.email ?? '')) throw new Error('Forbidden')
 }
