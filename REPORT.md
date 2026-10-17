@@ -834,3 +834,18 @@ SDK 실물 대조: 설치된 `@portone/browser-sdk` v2에 `PaymentRequestUnionEa
 - `npm run report:funnel-daily`(어제=2026-08-23, 기본값) 재실행 → 진입 2건(2명)/시도 0/완결 0과 REPORT 기재 내용 일치.
 - `.env.local` 값이 stdout에 노출되지 않음을 위 실행 출력에서 확인.
 - main에 fast-forward 병합.
+
+## 기기 수 제한 판정 순수화 + 회귀 검사 (work/fable-codex-device-window, 2026-09-12, 워커 Codex)
+
+- 무엇을 왜: 2026-09-09 가상 데스크톱 기기 누적으로 유료 채점이 막힌 사고의 재발을 오프라인에서 감지하도록 창 계산과 기기 제한 판정을 순수 함수로 분리했다.
+- `deviceWindowStart(now, hours)`는 밀리초 단위 창 시작 ISO를 반환하고, `isDeviceBlocked`는 중복 ID를 제거해 현재 기기가 없는 경우에만 한도를 적용한다.
+- `DEVICE_WINDOW_HOURS = 24`와 사고 이유 한 줄 주석을 새 모듈로 옮겼다. 반환 문구·DB 조회 조건·upsert·일일 한도는 유지하고 `antiSharingLimits.ts`는 수정하지 않았다.
+- 변경 파일: `src/lib/deviceWindow.ts`(신규), `src/lib/antiSharing.ts`, `scripts/device_window_check.mjs`(신규), `package.json`, `REPORT.md`.
+- 회귀 사례: 기존 기기/새 기기의 한도 도달·미달, 중복 ID, 밀리초 창 계산, 25시간 전 제외와 ISO gte 경계 포함. 한도 초과의 기존 기기·빈 목록·일회성 iterable·경계 ±1ms도 확인했다.
+- 의도적 실패 확인: 현재 기기 예외 조건을 잠시 제거하고 `npm.cmd run check:device-window` 실행 → exit 1, 마지막 줄 `Passed: 5, Failed: 1`; finally에서 원복한 뒤 재검사했다.
+- 검증: `npm.cmd run check:device-window` → exit 0, 마지막 줄 `Passed: 6, Failed: 0`.
+- 검증: `npx.cmd tsc --noEmit` → exit 0, 출력 없음(마지막 줄 없음).
+- 검증: `npx.cmd eslint src/lib/antiSharing.ts src/lib/deviceWindow.ts scripts/device_window_check.mjs` → exit 0, 출력 없음(마지막 줄 없음).
+- 지시문과 달랐던 점: 실제 `scripts/paid_block_check.mjs`의 package.json 명령은 `check:paid-block`이 아니라 `check:blocks`다. 나머지 대상 함수·상수는 일치했다.
+- 하지 않은 것: 실제 DB·화면 검사(`check:paid-block`으로 지칭된 실제 `check:blocks`)는 네트워크가 없어 미실행. 외부 API·npm install·next build·dev 서버·git commit도 실행하지 않았다.
+- 커밋 메시지 제안: `refactor(paid): 기기 수 제한 판정을 순수 함수로 + 회귀 검사`
