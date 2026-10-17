@@ -3,6 +3,7 @@ import DailySales from '@/app/admin/(protected)/payments/DailySales'
 import { summarizeAiCost } from '@/lib/aiGradingCost'
 import { summarizeSales, type SubscriptionRow } from '@/lib/dailySales'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { WRONG_NOTE_RETAKE_YEAR } from '@/lib/wrongNoteRetake'
 import { DEFAULT_PROGRAM } from '@/lib/programs'
 import { isActivePass } from '@/lib/subscription'
 import { REVOKED } from '@/lib/subscriptionRevocationPolicy'
@@ -34,7 +35,7 @@ async function loadAiCost(revenue30: number) {
   const admin = createAdminClient()
   const since = new Date(Date.now() - 30 * 86400000).toISOString()
   const [{ data: sessions }, { data: answers }, { data: manuscripts }] = await Promise.all([
-    admin.from('quiz_sessions').select('id, user_id').gte('completed_at', since).limit(2000),
+    admin.from('quiz_sessions').select('id, user_id').neq('year', WRONG_NOTE_RETAKE_YEAR).gte('completed_at', since).limit(2000),
     admin.from('quiz_answers').select('session_id').not('ai_score', 'is', null).limit(5000),
     admin.from('manuscript_submissions').select('user_id').gte('created_at', since).limit(2000),
   ])
@@ -90,7 +91,7 @@ export default async function AdminHome() {
     admin.from('questions').select('*', { count: 'exact', head: true }).eq('program', DEFAULT_PROGRAM),
     admin.from('reviews').select('proof_path, verified, is_visible'),
     admin.from('subscriptions').select('amount, status, expires_at'),
-    admin.from('quiz_sessions').select('*', { count: 'exact', head: true }).not('completed_at', 'is', null),
+    admin.from('quiz_sessions').select('*', { count: 'exact', head: true }).neq('year', WRONG_NOTE_RETAKE_YEAR).not('completed_at', 'is', null),
     admin.from('manuscript_submissions').select('*', { count: 'exact', head: true }),
     admin.from('question_reports').select('resolved'),
     loadTodayPulse(),

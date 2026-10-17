@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { WRONG_NOTE_RETAKE_YEAR } from '@/lib/wrongNoteRetake'
 import { nextRoundToTake } from '@/lib/nextRoundToTake'
 import { formatExamId } from '@/lib/examId'
 import { redirectToLogin } from '@/lib/loginRedirect'
@@ -66,7 +67,7 @@ export default async function ResultPage({
     readTrialUsed(user.id, Number(user.app_metadata?.ai_trial_used ?? 0)),
     // 이 사람이 끝낸 회차 — '다음은 이 회차'를 정하려면 필요하다.
     supabase.from('quiz_sessions').select('year, round').eq('user_id', user.id)
-      .eq('program', program).not('completed_at', 'is', null),
+      .eq('program', program).neq('year', WRONG_NOTE_RETAKE_YEAR).not('completed_at', 'is', null),
   ])
   const lockedRoundCount = Math.max(
     0,

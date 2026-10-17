@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { ArrowLeft, UserRound, ShieldCheck } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { WRONG_NOTE_RETAKE_YEAR } from '@/lib/wrongNoteRetake'
 import { redirectToLogin } from '@/lib/loginRedirect'
 import { getActiveSubscription } from '@/lib/subscription'
 import DeleteAccountForm from '@/components/account/DeleteAccountForm'
@@ -22,7 +23,7 @@ export default async function AccountPage() {
 
   const [sub, sessions] = await Promise.all([
     getActiveSubscription(user.id),
-    createAdminClient().from('quiz_sessions').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
+    createAdminClient().from('quiz_sessions').select('id', { count: 'exact', head: true }).eq('user_id', user.id).neq('year', WRONG_NOTE_RETAKE_YEAR),
   ])
   const sessionCount = sessions.count ?? 0
   const passUntil = sub ? new Date(sub.expires_at).toLocaleDateString('ko-KR') : null
