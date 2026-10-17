@@ -48,6 +48,7 @@ const body = (extra = '') =>
   `<div class="se-module se-module-text"><p>${DISCLOSURE_SAMPLE}</p></div>` +
   Array.from({ length: 8 }, () => `<div class="se-module se-module-text"><p>${'실용글쓰기시험 준비하면서 실글패스를 썼습니다. 실용글쓰기CBT 모의고사가 특히 좋았고 공기업자격증 준비에 도움이 됐습니다. '.repeat(6)}</p></div>`).join('') +
   `<div class="se-module se-module-text"><p>실용글쓰기시험은 많이 어렵나요? 선택형은 평이한 편이지만 서술형이 배점의 대부분이라 여기서 등급이 갈립니다. 저도 첫 회차에 시간 배분이 무너져서 마지막 문항을 통째로 비웠습니다. 독학으로도 준비가 되나요? 서술형 채점만 해결되면 충분히 가능합니다. 저는 모의고사를 회차별로 풀면서 틀린 유형만 골라 반복하는 식으로 준비했습니다. </p></div>` +
+  `<div class="se-module se-module-text"><p>모의고사 2회차를 풀고 서술형 AI 첨삭에서 감점 이유를 문장 단위로 받았습니다.</p></div>` +
   Array.from({ length: MIN_IMAGES }, (_, i) => `<div class="se-module se-module-image"><img src="https://postfiles.pstatic.net/p${i}.jpg"></div>`).join('') +
   `${extra}</body></html>`
 
