@@ -14,6 +14,7 @@ import { parseCharLimit } from '@/lib/charLimit'
 import { formatExamId } from '@/lib/examId'
 import { type ProgramId } from '@/lib/programs'
 import { questionBank } from '@/lib/questionBank'
+import { sanitizeSavedAnswers } from '@/lib/savedAnswers'
 
 export type EssayGrade = {
   score: number
@@ -273,7 +274,7 @@ export async function getOrCreateExamSession(
   if (existing) {
     return {
       sessionId: existing.id as string,
-      savedAnswers: (existing.saved_answers as Record<string, string> | null) ?? {},
+      savedAnswers: sanitizeSavedAnswers(existing.saved_answers),
       timeLeft: (existing.time_left as number | null) ?? null,
       resumed: !!existing.saved_at,
     }
@@ -306,7 +307,7 @@ export async function saveExamProgress(
   const { error } = await supabase
     .from('quiz_sessions')
     .update({
-      saved_answers: answers,
+      saved_answers: sanitizeSavedAnswers(answers),
       time_left: Math.max(0, Math.round(timeLeftSec)),
       saved_at: new Date().toISOString(),
     })

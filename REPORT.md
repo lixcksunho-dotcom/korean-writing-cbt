@@ -834,3 +834,27 @@ SDK 실물 대조: 설치된 `@portone/browser-sdk` v2에 `PaymentRequestUnionEa
 - `npm run report:funnel-daily`(어제=2026-08-23, 기본값) 재실행 → 진입 2건(2명)/시도 0/완결 0과 REPORT 기재 내용 일치.
 - `.env.local` 값이 stdout에 노출되지 않음을 위 실행 출력에서 확인.
 - main에 fast-forward 병합.
+
+
+## 중간 저장 답안 서버 쪽 손상 검증 (work/fable-codex-saved-answers, 2026-09-12, 워커 Codex)
+
+### 무엇을 왜 바꿨는지
+서버 액션은 TypeScript 타입만 있고 런타임 검증이 없어, 클라이언트가 보낸 배열·비문자 값이 `quiz_sessions.saved_answers`에 저장되고 그대로 시험 화면에 복구될 수 있었다(야간에 고친 localStorage 초안 검증의 서버 쪽 짝). 순수 함수 `sanitizeSavedAnswers(raw: unknown)`(`src/lib/savedAnswers.ts`)가 객체가 아니거나 배열이면 `{}`, 객체면 문자열 값인 자체 열거 항목만 남긴다. 던지지 않는다(복구 실패가 시험 진입을 막으면 안 된다). 시험 `saveExamProgress`·`getOrCreateExamSession`, 연습 `savePracticeProgress`·`getPracticeProgress` 4곳에 연결했다.
+
+### 지시문과 달랐던 점
+- 이 브랜치(main 기준)에는 야간 `examDraft.ts` 수정이 없다. `examDraft.ts`는 건드리지 않았다 — 초안은 '하나라도 비문자면 전체 거부', 서버는 '부분 복구'로 정책이 달라 함수를 공유하면 판정이 바뀐다.
+- 워커가 야간 검사 파일과 `check:draft`를 이 브랜치에 복사해 넣었으나 그 검사는 여기서 첫 사례부터 실패한다(전제가 되는 수정이 없다). 리뷰어 Fable이 반려해 둘 다 이 브랜치에서 뺐다. 야간 수정은 원본 폴더 WIP로 따로 들어간다.
+
+### 변경 파일
+`src/lib/savedAnswers.ts`(신규) · `scripts/saved_answers_check.mjs`(신규) · `src/app/(main)/cbt/actions.ts` · `src/app/(main)/practice/actions.ts` · `package.json`(`check:saved-answers`) · `REPORT.md`
+
+### 검증 (워커 실행 → 리뷰어 재실행)
+- 빈 객체를 돌려주는 임시 구현으로 먼저 돌림: 통과 9 · 실패 7 · exit 1 → 검사가 실제로 잡는 것 확인
+- `Array.isArray` 조건을 일부러 빼고 돌림: 통과 15 · 실패 1 · exit 1 → 빨간불 확인 후 복원
+- `npm run check:saved-answers`: 통과 16 · 실패 0 · exit 0 (리뷰어 재실행 동일)
+- `npx tsc --noEmit`: exit 0 (리뷰어 재실행 동일)
+- 변경 TS/MJS 4파일 `npx eslint`: 오류 0 (리뷰어 재실행 동일)
+- 설치된 Next 문서(`node_modules/next/dist/docs/…/use-server.md`, `mutating-data.md`)의 서버 함수 입력 검증 지침과 대조함
+
+### 하지 않은 것
+운영 DB의 기존 `saved_answers` 행 점검(네트워크 없는 샌드박스), `next build`, 브라우저 확인. 워커 Codex는 두 번 모두 30분 타임아웃으로 커밋 전에 끊겨(2회차는 첫 명령도 못 돌림), 반려 반영·축약·커밋은 리뷰어 Fable이 대신 했다.
