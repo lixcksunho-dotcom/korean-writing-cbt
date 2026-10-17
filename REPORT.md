@@ -834,3 +834,24 @@ SDK 실물 대조: 설치된 `@portone/browser-sdk` v2에 `PaymentRequestUnionEa
 - `npm run report:funnel-daily`(어제=2026-08-23, 기본값) 재실행 → 진입 2건(2명)/시도 0/완결 0과 REPORT 기재 내용 일치.
 - `.env.local` 값이 stdout에 노출되지 않음을 위 실행 출력에서 확인.
 - main에 fast-forward 병합.
+
+## 맞춤법 검사 문서 확장 (work/fable-codex-own-copy-docs, 2026-09-12, 워커 Codex)
+
+- 화면으로 복사되는 문서의 오표기도 막도록 기존 src ts·tsx에 README.md와 docs/**/*.md만 추가했다.
+- 변경 파일: scripts/own_copy_spelling_check.mjs, REPORT.md.
+- src 271개·문서 8개(README 1개, docs 재귀 7개)·ALWAYS_WRONG 34개 규칙을 확인했다.
+- Markdown의 백틱/물결표 코드 블록과 백틱 인라인 코드를 공백으로 가려 원문 줄 번호를 유지한다.
+- 기존 ts·tsx 제외 경로·교육용 자료 및 표기 설명 예외·검출 출력 형식은 유지했다. 파일 수만 src/문서로 나눴다.
+- 문서에서 걸린 것: 0건 / 고친 것: 0건 / 남긴 것: 0건. 인용이라 남김·판단 보류 항목 없음.
+- README 검사 표에 check:own-copy 행이 없어 요청대로 추가하지 않았다.
+- 실물 대조: walk·ALWAYS_WRONG·스크립트 경로는 지시문과 일치한다. 기존 자기 검증은 문자열 검출 1건이며 오탐 예외는 검사 루프에 있다.
+- 문서 자기 검증은 실제 findHits 경로로 코드 블록·인라인 코드의 오표기를 제외하고 같은 표기의 본문 5행만 잡는지 확인한다.
+- 실패 확인 1: README 끝에 틀린 본문을 임시 추가하고 npm.cmd run check:own-copy 실행 → exit 1, README.md:369 검출, 마지막 줄 `우리 글에 틀린 표기가 있다.`
+- 실패 확인 2: 인라인 코드 마스킹을 임시 해제하고 같은 명령 실행 → exit 1, 문서 자기 검증 실패, 마지막 줄 `우리 글에 틀린 표기가 있다.`
+- 두 실패 확인 후 임시 변경은 원본 바이트로 복구했다.
+- 최종 검증: npm.cmd run check:own-copy · exit 0 · 마지막 줄 `우리 글은 깨끗하다.`
+- 최종 검증: npx.cmd eslint scripts/own_copy_spelling_check.mjs · exit 0 · 마지막 비어 있지 않은 줄 `✖ 1 problem (0 errors, 1 warning)`; 기존 pass 미사용 경고 1건.
+- 최종 검증: npx.cmd tsc --noEmit · exit 0 · 출력 없음(마지막 줄 없음). TS import는 없지만 추가 실행했다.
+- git diff --check · exit 0 · 공백 오류 없음. 규칙 비활성화·네트워크·DB·외부 API·설치·커밋 없음.
+- 커밋 메시지 제안: feat(check): 맞춤법 검사가 README·docs 도 훑는다
+- 리뷰어 Fable 보정: 스크립트 머리의 "왜 필요한가" 주석(보기 제외·언제나 틀린 것만 넣는 이유)이 한 줄로 갈렸던 것을 되살리고 문서 범위 설명 두 줄만 더했다.

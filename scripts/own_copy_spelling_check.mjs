@@ -10,6 +10,9 @@
 //
 // 규칙은 **언제나 틀린 것**만 넣는다. 문맥에 따라 갈리는 것(되/돼, 안/않)은 넣지 않는다 —
 // 틀린 것을 놓치는 것보다 멀쩡한 것을 틀렸다고 하는 쪽이 검사를 못 믿게 만든다.
+//
+// README·docs 의 문서도 본다(2026-09-12) — 거기 틀린 표기가 화면으로 복사돼 들어온다.
+// 문서에서는 코드 블록·인라인 코드를 가린다(명령·식별자가 규칙에 걸리면 안 된다).
 
 import fs from 'node:fs'
 import path from 'node:path'
@@ -62,28 +65,43 @@ const bad = (n, d = '') => { fail++; console.log(`  × ${n}${d ? ` — ${d}` : '
 
 console.log('\n우리가 쓴 문구의 맞춤법\n')
 
-function walk(dir, out = []) {
+function walk(dir, out = [], markdown = false) {
   for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
     const p = path.join(dir, e.name).replace(/\\/g, '/')
-    if (SKIP_DIR.some(s => p.includes(s))) continue
-    if (e.isDirectory()) walk(p, out)
-    else if (/\.(tsx|ts)$/.test(e.name) && !SKIP_FILE.test(p)) out.push(p)
+    if (!markdown && SKIP_DIR.some(s => p.includes(s))) continue
+    if (e.isDirectory()) walk(p, out, markdown)
+    else if (markdown ? /\.md$/.test(e.name) : /\.(tsx|ts)$/.test(e.name) && !SKIP_FILE.test(p)) out.push(p)
   }
   return out
 }
 
-const files = walk('src')
-const hits = []
+// 코드의 식별자를 오탐하지 않고 원문의 줄 번호를 유지하기 위해 공백으로 가린다.
+function maskMarkdownCode(text) {
+  const blank = value => value.replace(/[^\r\n]/g, ' ')
+  let fence = null
+  const prose = text.split('\n').map(line => {
+    if (fence) {
+      if (new RegExp(`^ {0,3}${fence[0]}{${fence.length},}\\s*$`).test(line)) fence = null
+      return blank(line)
+    }
+    const opening = line.match(/^ {0,3}(`{3,}|~{3,})(.*)$/)
+    if (!opening || (opening[1][0] === '`' && opening[2].includes('`'))) return line
+    fence = opening[1]
+    return blank(line)
+  }).join('\n')
+  return prose.replace(/(?<!`)(`+)(?!`)[\s\S]*?(?<!`)\1(?!`)/g, blank)
+}
 
-for (const f of files) {
-  const lines = fs.readFileSync(f, 'utf8').split('\n')
+function findHits(f, text) {
+  const hits = []
+  const lines = (f.endsWith('.md') ? maskMarkdownCode(text) : text).split('\n')
   lines.forEach((line, i) => {
     // 한글이 없는 줄은 코드다 — 볼 것이 없다.
     if (!/[가-힣]/.test(line)) return
     // 가르치려고 적어 둔 자료는 오류가 아니다 — 맞춤법 페이지는 틀린 표기를 보여 주는 것이 일이다.
     //   { wrong: "몇일", right: "며칠" } · { q: "'왠지'와 '웬지' 중…" } · { how: "…" }
     // 이 줄까지 잡으면 가르치는 내용을 통째로 오류라고 답한다(처음 돌렸을 때 11건이 다 그랬다).
-    if (/^\s*[{,]?\s*(wrong|right|bad|good|correct|incorrect|q|a|b|how|tip|topic|why)\s*:/.test(line)) return
+    if (!f.endsWith('.md') && /^\s*[{,]?\s*(wrong|right|bad|good|correct|incorrect|q|a|b|how|tip|topic|why)\s*:/.test(line)) return
 
     for (const [wrong, right] of ALWAYS_WRONG) {
       if (!line.includes(wrong)) continue
@@ -99,9 +117,15 @@ for (const f of files) {
       hits.push({ file: f, line: i + 1, wrong, right, text: line.trim().slice(0, 90) })
     }
   })
+  return hits
 }
 
-console.log(`  훑은 파일 ${files.length}개 · 규칙 ${ALWAYS_WRONG.length}개`)
+const sourceFiles = walk('src')
+const documents = ['README.md', ...walk('docs', [], true)]
+const files = [...sourceFiles, ...documents]
+const hits = files.flatMap(f => findHits(f, fs.readFileSync(f, 'utf8')))
+
+console.log(`  훑은 파일 src ${sourceFiles.length}개 · 문서 ${documents.length}개 · 규칙 ${ALWAYS_WRONG.length}개`)
 
 if (!hits.length) ok('언제나 틀린 표기는 없다')
 else {
@@ -116,6 +140,14 @@ else {
   const caught = ALWAYS_WRONG.some(([w]) => sample.includes(w))
   if (caught) ok('규칙이 실제로 걸러낸다', "'몇일' 검출")
   else bad('규칙 동작', '틀린 예시도 못 잡는다')
+}
+
+{
+  const sample = ['```text', '그는 몇일 만에 왔다', '```', '`몇일` · ``몇일``', '그는 몇일 만에 왔다'].join('\n')
+  const found = findHits('sample.md', sample)
+  if (found.length === 1 && found[0].line === 5 && found[0].wrong === '몇일') {
+    ok('문서는 코드 제외 후 본문만 걸러낸다', '본문 5행 검출')
+  } else bad('문서 규칙 동작', '코드 제외 또는 본문 검출 실패')
 }
 
 console.log(`\n${fail ? '우리 글에 틀린 표기가 있다.' : '우리 글은 깨끗하다.'}`)
