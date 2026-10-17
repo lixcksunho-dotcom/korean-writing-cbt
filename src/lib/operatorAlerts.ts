@@ -1,6 +1,6 @@
 import { createAdminClient } from '@/lib/supabase/admin'
-import { triageAlert, type AlertTriage } from '@/lib/operatorAlertTriage'
-import { isCheckArtifact } from '@/lib/operatorAlertTriage'
+import { triageAlert, isCheckArtifact, type AlertTriage } from '@/lib/operatorAlertTriage'
+import { linkAlertToFeedback, type FeedbackRowLite } from '@/lib/operatorAlertFeedbackLink'
 
 // 운영자가 알아야 하는 사고를 한 곳으로 모은다.
 //
@@ -144,25 +144,27 @@ export async function recentOperatorAlerts(days = 14, limit = 12): Promise<Opera
 
   // 고객이 남긴 건은 '처리했는지'가 가장 궁금한 정보다. 알림에는 그 상태가 없어서
   // 처리를 끝내고도 목록에는 계속 빨갛게 남아 있었다 — 다 한 일을 또 보게 된다.
-  // 알림 문구가 접수 내용으로 시작하므로 그것으로 되짚는다.
+  // 접수 행과 잇는 규칙은 operatorAlertFeedbackLink 에 있다(문구 머리·신청 주소).
   const { data: fb } = await createAdminClient()
     .from('feedback')
-    .select('message, resolved, created_at')
+    .select('path, contact, message, resolved, created_at')
     .gte('created_at', since)
     .order('created_at', { ascending: false })
     .limit(200)
-
-  const withResolved = all.map(a => {
-    if (a.kind !== 'feedback') return a
-    const head = a.summary.slice(0, 40)
-    const hit = (fb ?? []).find(x => head && String(x.message).startsWith(head.slice(0, Math.min(40, head.length))))
-    return { ...a, resolved: hit ? Boolean(hit.resolved) : a.resolved }
-  })
+  const rows = (fb ?? []) as FeedbackRowLite[]
 
   // 처리 끝난 고객 건은 '볼 것'에서 내린다 — 다 한 일이 목록을 채우면 안 된다.
-  const settled = withResolved.map(a =>
-    a.triage === 'actionable' && a.resolved === true ? { ...a, triage: 'settled' as AlertTriage } : a,
-  )
+  // 접수 행이 지워진 신청도 내린다 — 심사할 것이 없어졌다.
+  const settled = all.map(a => {
+    if (a.kind !== 'feedback') return a
+    const link = linkAlertToFeedback(a, rows)
+    if (link.kind === 'found') {
+      const triage: AlertTriage = a.triage === 'actionable' && link.resolved ? 'settled' : a.triage
+      return { ...a, resolved: link.resolved, triage }
+    }
+    if (link.kind === 'missing' && a.triage === 'actionable') return { ...a, triage: 'settled' as AlertTriage }
+    return a
+  })
 
   // 사람이 볼 것을 먼저 채운다. 자리가 남으면 나머지도 준다 —
   // 화면에서 접어 두되, 있었다는 사실 자체는 숨기지 않는다.
