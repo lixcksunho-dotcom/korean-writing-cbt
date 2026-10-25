@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { BUSINESS, biz } from '@/lib/businessInfo'
+import { BUSINESS, CHECKOUT_MIGRATION, biz } from '@/lib/businessInfo'
 
 // 전자상거래법 표시의무 + PG 심사를 위한 공통 푸터.
 // 사업자 정보와 약관/정책 링크를 모든 페이지 하단에 노출한다.
@@ -69,6 +69,23 @@ export default function SiteFooter() {
           ))}
         </ul>
 
+        <section aria-labelledby="operator-change-heading" className="mb-4 rounded-xl border border-white/20 p-4 text-white/75">
+          <h2 id="operator-change-heading" className="font-semibold text-white">운영사업자 전환 안내</h2>
+          <p className="mt-1"><time dateTime="2026-10-26">2026.10.26</time> 게시</p>
+          <p className="mt-2 leading-relaxed">
+            {BUSINESS.serviceName}의 운영사업자가 만물아들(743-38-01680)에서
+            {' '}{biz(BUSINESS.companyName)}({biz(BUSINESS.businessNumber)})로 전환하는 작업을 진행하고 있습니다.
+            기존 계정과 유효한 이용권은 그대로 유지됩니다.
+            최종 전환 일정과 개인정보 관련 안내는 별도로 공지합니다.
+          </p>
+          <p className="mt-1 leading-relaxed">
+            이전 결제의 취소·환불은 기존 거래 내역과 원래 결제수단을 기준으로 처리합니다.
+            개인정보 관련 문의나 열람·정정·삭제 요청은
+            {' '}<Link href="/support" className="font-semibold text-white underline">고객센터</Link>로 연락해 주세요.
+          </p>
+          {CHECKOUT_MIGRATION.paused && <p className="mt-2 font-semibold text-white">{CHECKOUT_MIGRATION.notice}</p>}
+        </section>
+
         <div className="space-y-1 leading-relaxed">
           <p className="text-white/60 font-semibold">{BUSINESS.serviceName}</p>
           <p>
@@ -87,7 +104,7 @@ export default function SiteFooter() {
           본 서비스는 한국실용글쓰기 자격시험 대비를 돕는 <b className="text-white/50">비공식 사설 학습 서비스</b>로,
           시험 시행·주관 기관과 제휴·후원·인증 관계가 없습니다. 모든 문제·지문·자료·해설·모범답안은 시험 유형을
           참고해 자체 제작한 오리지널 콘텐츠이며, 기출문제를 복제하지 않습니다.
-          <b className="text-white/50"> 이 모든 콘텐츠의 저작권은 운영자(만물아들)에게 단독으로 귀속되며, 무단 복제·캡처·배포·전송을 금합니다.</b>
+          <b className="text-white/50"> 이 모든 콘텐츠의 저작권은 운영자({biz(BUSINESS.companyName)})에게 단독으로 귀속되며, 무단 복제·캡처·배포·전송을 금합니다.</b>
           ‘한국실용글쓰기’ 등 시험 명칭의 권리는 각 권리자에게 있습니다.
         </p>
         <p className="mt-3 text-white/25">
