@@ -40,3 +40,11 @@ export const isBusinessInfoIncomplete =
 export function biz(value: string): string {
   return value && value.trim() ? value : '(등록 예정)'
 }
+
+// 만물엄마(749-33-01719) 운영 전환 중에는 신규 결제를 닫는다.
+// 749 계약 승인, KPTEST 사이트 등록, 신규 채널의 사업자 일치와 기존 거래 조회/환불 경로를
+// 확인한 뒤에만 paused를 해제한다. 기존 상점 ID와 서버 API/웹훅 비밀키는 유지한다.
+export const CHECKOUT_MIGRATION: { paused: boolean; notice: string } = {
+  paused: true,
+  notice: '운영사업자 전환 및 결제 심사로 신규 결제를 잠시 중지했습니다. 기존 계정과 이용권은 그대로 이용할 수 있습니다.',
+}
