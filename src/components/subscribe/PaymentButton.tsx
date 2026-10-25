@@ -3,6 +3,7 @@
 import { useRef, useState } from 'react'
 import * as PortOne from '@portone/browser-sdk/v2'
 import { trackEvent } from '@/lib/analytics/trackEvent'
+import { CHECKOUT_MIGRATION } from '@/lib/businessInfo'
 
 type Method = 'card' | 'kakaopay'
 /** 아직 못 여는 수단도 자리는 만들어 둔다 — 누가 무엇을 원하는지 세어야 준비 순서를 감으로 안 정한다. */
@@ -104,11 +105,18 @@ export default function PaymentButton({
   // 눌리게 두고 왜 안 되는지 말해 준 다음, 원한 수단을 세어 둔다.
   function handleUnavailable(key: MethodKey, message?: string) {
     setError('')
-    setNotice(message ?? '지금은 카드 결제로 이용해 주세요.')
+    setNotice(CHECKOUT_MIGRATION.paused ? CHECKOUT_MIGRATION.notice : (message ?? '지금은 카드 결제로 이용해 주세요.'))
     trackEvent('method_unavailable', key)
   }
 
   async function handlePayment(method: Method) {
+    // 결제창을 열기 전에 차단한다. 과거 결제의 성공 검증/환불 경로는 변경하지 않는다.
+    if (CHECKOUT_MIGRATION.paused) {
+      setError('')
+      setNotice(CHECKOUT_MIGRATION.notice)
+      trackEvent('payment_blocked', 'merchant_migration')
+      return
+    }
     setNotice('')
     // 결제창까지 못 간 이유도 남긴다. payment_started는 아래 가드를 모두 통과해야 찍혀서,
     // 여기서 막힌 사람은 퍼널에 아예 안 보였다(구독 페이지 조회는 있는데 결제 시작이 0인 구간이 있었다).
@@ -203,12 +211,20 @@ export default function PaymentButton({
 
   return (
     <div className="space-y-3">
+      {CHECKOUT_MIGRATION.paused && (
+        <div role="status" className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-relaxed text-amber-950">
+          <p className="font-semibold">신규 결제 일시 중지</p>
+          <p className="mt-1">{CHECKOUT_MIGRATION.notice}</p>
+          <a href="/support" className="mt-2 inline-block font-semibold underline">고객센터 문의</a>
+        </div>
+      )}
       {/* 휴대폰 번호 (KG이니시스 결제 필수) */}
       <div>
         <label className="block text-xs font-semibold text-[#475569] mb-1.5">휴대폰 번호 <span className="text-red-600">*</span></label>
         <input
           ref={phoneRef}
           type="tel"
+          disabled={CHECKOUT_MIGRATION.paused}
           inputMode="numeric"
           value={phone}
           onChange={e => onPhoneChange(e.target.value)}
@@ -227,6 +243,7 @@ export default function PaymentButton({
         <input
           ref={agreeRef}
           type="checkbox"
+          disabled={CHECKOUT_MIGRATION.paused}
           checked={agreed}
           onChange={e => { setAgreed(e.target.checked); if (e.target.checked) setMissing(null) }}
           aria-invalid={missing === 'agree'}
@@ -245,12 +262,12 @@ export default function PaymentButton({
           onClick={() => (soon ? handleUnavailable(key, soonNotice) : handlePayment(key as Method))}
           // 동의 전이라고 버튼을 잠그면, 누른 사람은 아무 반응도 못 받고 이유도 모른다.
           // 눌리게 두고 handlePayment가 "무엇이 빠졌는지"를 말해 주게 한다(결제는 그대로 막힌다).
-          disabled={loading !== null}
+          disabled={CHECKOUT_MIGRATION.paused || loading !== null}
           className={`w-full flex items-center justify-center gap-2.5 py-3.5 rounded-xl font-bold text-sm border-2 transition-all disabled:opacity-60 disabled:cursor-not-allowed hover:-translate-y-0.5 hover:shadow-lg ${color}`}
         >
           <span className="text-base">{emoji}</span>
-          {loading === key ? '결제창 열리는 중...' : label}
-          {soon && (
+          {CHECKOUT_MIGRATION.paused ? `${label} (전환 중)` : loading === key ? '결제창 열리는 중...' : label}
+          {!CHECKOUT_MIGRATION.paused && soon && (
             <span className="rounded-full bg-[#FEE500] px-2 py-0.5 text-[11px] font-bold text-[#3C1E1E]">준비중</span>
           )}
         </button>
@@ -266,7 +283,9 @@ export default function PaymentButton({
       )}
 
       <p className="text-center text-xs text-[#64748b] pt-1">
-        결제 후 즉시 30일 이용권이 활성화됩니다
+        {CHECKOUT_MIGRATION.paused
+          ? '기존 계정과 이용권은 그대로 이용할 수 있습니다.'
+          : '결제 후 즉시 30일 이용권이 활성화됩니다'}
       </p>
     </div>
   )
