@@ -1,5 +1,26 @@
 # REPORT
 
+## 경쟁 CBT 기능 대조 — 검토 표시·객관식 풀이 설정 (work/cbt-competitor-parity, 2026-11-01)
+
+- 배경: 경쟁 서비스를 찾아 기능을 대조했다. 실용글쓰기 전용 CBT는 **박문각 무료 모의고사 1회분**(로그인 필수·PDF 뷰어 필요·서술형 미채점)뿐이고, 사용성 기준은 범용 CBT 3곳(cbtbank·comcbt·machuda)이다. REA(`rea analyze-web-bundle`)로 박문각 페이지를 캡처해 응시 단추가 로그인 페이지(`/Comm/member/member2019/CbnMem_login.asp`)로만 간다는 것까지 확인했다. 로그인은 하지 않았다.
+- 대조 결과 우리에게 없던 것: ①실제 CBT의 **검토 표시**(답은 골랐지만 다시 볼 문항 표시 → 제출 전 복귀) ②연습의 **문항 순서·보기 순서 섞기** ③**고르면 바로 ↔ 다 풀고 채점** 선택 ④**틀린 문항만 다시 풀기**(comcbt의 오답 중심 재출제). 이미 있던 것(타이머·속도 안내·문제 목록·저장하고 나가기·초안 복구·오답 연습·북마크·AI 채점)은 경쟁사보다 앞선다.
+- 바꾼 것:
+  - `src/lib/examReviewFlags.ts`(신규) — 세션별 검토 표시를 브라우저에 보관. 초안(examDraft)과 키를 분리해 표시가 깨져도 답은 남는다.
+  - `src/components/cbt/ExamPlayer.tsx` — 문제 카드 머리에 '검토 표시' 토글(aria-pressed, 44px), 문제 목록(넓은·좁은 폭 두 벌)에 호박색 테두리+범례, 제출 대화상자에 "검토 표시한 문항이 N개" + '첫 검토 문항으로 가기'. 제출·초안 삭제 시 표시도 같이 지운다.
+  - `src/lib/practiceSession.ts`(신규) — 설정 저장/복원(깨진 값은 기본값), 씨앗 고정 Fisher–Yates, 문항별 보기 순열. **답은 원래 보기 번호로 저장·채점**(섞기를 꺼도 정답이 안 바뀜).
+  - `src/app/(main)/practice/multiple/PracticeMultiple.tsx` — '풀이 설정' 패널(문항 순서·보기 순서·정답 확인, 브라우저에 기억), 채점 모드에서는 채점 전까지 답 변경 가능·마지막 문항에 '채점하기', 결과 요약에 '틀린 N문항만 다시 풀기'/'전체 문항으로 돌아가기'.
+  - `scripts/practice_options_check.mjs`(`check:practice`), `scripts/exam_review_practice_check.mjs`(`check:review-practice`) 추가.
+- 안 바꾼 것: DB·결제·배포·기존 검사 스크립트. 서버 저장 없음(표시·설정은 브라우저 보관).
+- 검증(실제 실행):
+  - `npx tsc --noEmit` 통과, `npx eslint`(바뀐 4파일) 경고 0.
+  - `npm run check:practice` — 20/20 통과(설정 복원·순열 전단사·씨앗 재현·섞인 화면에서 정답 판정·표시 토글).
+  - `npx next build --webpack` 성공 후 `next start -p 3123`에서 `EXAM_UI_BASE=http://localhost:3123 npm run check:review-practice` — **휴대폰(iPhone 13)·데스크톱 58/58 통과**(검토 표시 켜짐/꺼짐·목록 테두리·제출 대화상자 개수·첫 검토 문항 이동·설정 저장·채점 모드·채점하기·틀린 문항만 다시 풀기·즉시 모드 복귀·가로 넘침 없음·손가락 높이 44px·페이지 오류 0).
+- 지시문과 달랐던 점 / 알게 된 것:
+  - 워크트리에서 Turbopack 빌드는 node_modules 정션을 거부한다(`Symlink … points out of the filesystem root`) → `--webpack`으로 빌드.
+  - 기존 `check:exam-ui`는 `/cbt/2025-1`에서 바로 보기 단추를 기다리는데, main의 시험 화면은 **시작 안내(ExamIntro)** 가 먼저 떠서 30초 타임아웃으로 실패한다(이번 변경과 무관, main 그대로도 같음). `?start=1`로 들어가야 한다 — 새 검사는 그렇게 했고, 기존 검사 수정은 범위 밖이라 두었다.
+  - 지역 검사는 `127.0.0.1`이 아니라 `localhost`로 열어야 로그인이 붙는다(Secure 쿠키).
+- 사람이 할 것: main 병합(=Vercel 배포)은 사람 판단. 병합 뒤 `/cbt/2025-1`에서 검토 표시 한 번, `/practice/multiple?set=all`에서 풀이 설정 한 번 눌러 보기.
+
 ## 간편결제 잔여 경로 점검 (work/easypay-remaining-check, 2026-09-10)
 
 - 백로그: "`scripts/payment_method_diagnose.mjs` 재실행 후 표 갱신 — ①현재 열려 있는 payMethod ②easyPayProvider 지정 ③각 수단을 열려면 무엇이 더 필요한지(채널 추가 심사 여부 포함)를 REPORT 에 표로".

@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo, useRef, useSyncExternalStore, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { examTimerLevel } from '@/lib/examTimerLevel'
-import { Clock, ChevronLeft, ChevronRight, ChevronDown, Send, AlertCircle, CheckCircle2, FileText, Save } from 'lucide-react'
+import { Clock, ChevronLeft, ChevronRight, ChevronDown, Send, AlertCircle, CheckCircle2, FileText, Save, Flag } from 'lucide-react'
 import { submitSession, saveExamProgress } from '@/app/(main)/cbt/actions'
 import { readableActionError } from '@/lib/actionErrorMessage'
 import EditableManuscript, { type EditableManuscriptHandle } from '@/components/manuscript/EditableManuscript'
@@ -15,6 +15,7 @@ import MarkedText from '@/components/cbt/MarkedText'
 import CopyGuard from '@/components/cbt/CopyGuard'
 import { getProgram, type ProgramId } from '@/lib/programs'
 import { readDraftRaw, parseDraft, saveDraft, clearDraft } from '@/lib/examDraft'
+import { readFlagsRaw, parseFlags, toggleFlag, saveFlags, clearFlags } from '@/lib/examReviewFlags'
 import PaceGuide from '@/components/cbt/PaceGuide'
 import ExamExitDialog from '@/components/cbt/ExamExitDialog'
 import { useExamExitGuard } from '@/components/cbt/useExamExitGuard'
@@ -92,6 +93,20 @@ export default function ExamPlayer({
   // 자동으로 덮어쓰지는 않는다 — 시험 도중 답이 갑자기 바뀌면 그게 더 놀랍다.
   const rawDraft = useSyncExternalStore(noSubscribe, () => readDraftRaw(sessionId), () => null)
   const draft = useMemo(() => parseDraft(rawDraft), [rawDraft])
+
+  // ── 검토 표시(다시 볼 문항) ───────────────────────────────────────────
+  // 실제 CBT처럼 '답은 골랐지만 확신이 없는' 문항에 표시를 남겨 제출 전에 돌아온다.
+  // 초안과 같은 방식으로 마운트 시점 값만 읽고, 이후 변경은 상태로 든다.
+  const rawFlags = useSyncExternalStore(noSubscribe, () => readFlagsRaw(sessionId), () => null)
+  const storedFlags = useMemo(() => parseFlags(rawFlags), [rawFlags])
+  const [flagEdits, setFlagEdits] = useState<string[] | null>(null)
+  const flags = flagEdits ?? storedFlags
+  const flagged = useMemo(() => new Set(flags), [flags])
+  const toggleReview = (id: string) => {
+    const next = toggleFlag(flags, id)
+    setFlagEdits(next)
+    saveFlags(sessionId, next)
+  }
   const [draftDismissed, setDraftDismissed] = useState(false)
   const answeredCount = Object.keys(answers).length
   const showDraftBanner = !!draft && !draftDismissed && answeredCount === 0
@@ -169,6 +184,7 @@ export default function ExamPlayer({
 
   function discardDraft() {
     clearDraft(sessionId)
+    clearFlags(sessionId)
     setDraftDismissed(true)
   }
 
@@ -188,6 +204,7 @@ export default function ExamPlayer({
         return
       }
       clearDraft(sessionId)
+      clearFlags(sessionId)
       router.push(`/cbt/${examYear}-${examRound}/result?session=${sessionId}`)
     })
   }, [timeLeft, sessionId, examYear, examRound, router])
@@ -208,6 +225,7 @@ export default function ExamPlayer({
         return
       }
       clearDraft(sessionId)
+      clearFlags(sessionId)
       router.push(`/cbt/${examYear}-${examRound}/result?session=${sessionId}`)
     })
     setShowConfirm(false)
@@ -385,6 +403,7 @@ export default function ExamPlayer({
                   onClick={() => setCurrentIdx(idx)}
                   className={[
                     'h-9 w-9 rounded-lg text-xs font-bold transition-all relative',
+                    flagged.has(question.id) ? 'ring-2 ring-amber-500 ring-offset-1' : '',
                     idx === currentIdx
                       ? 'bg-gradient-to-br from-[#1e3a5f] to-[#2d5488] text-white shadow-md'
                       : answers[question.id]
@@ -408,6 +427,7 @@ export default function ExamPlayer({
                 <div className="relative w-3 h-3 rounded bg-[#f1f5f9]"><span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-amber-400 rounded-full" /></div>
                 서술형
               </div>
+              <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded bg-[#f1f5f9] ring-2 ring-amber-500" />검토 표시</div>
             </div>
           </div>
         </div>
@@ -435,6 +455,7 @@ export default function ExamPlayer({
                   onClick={() => setCurrentIdx(idx)}
                   className={[
                     'h-9 w-9 rounded-lg text-xs font-bold transition-all relative',
+                    flagged.has(question.id) ? 'ring-2 ring-amber-500 ring-offset-1' : '',
                     idx === currentIdx ? 'bg-gradient-to-br from-[#1e3a5f] to-[#2d5488] text-white'
                       : answers[question.id] ? 'bg-emerald-100 text-emerald-700'
                       : 'bg-[#f1f5f9] text-[#475569]',
@@ -485,7 +506,24 @@ export default function ExamPlayer({
                   </span>
                 )}
               </div>
-              <span className="text-xs text-[#64748b] font-medium">{currentIdx + 1} / {questions.length}</span>
+              <div className="flex items-center gap-2">
+                {/* 답은 골랐지만 확신이 없는 문항 — 제출 전에 돌아올 수 있게 표시해 둔다. */}
+                <button
+                  type="button"
+                  onClick={() => toggleReview(q.id)}
+                  aria-pressed={flagged.has(q.id)}
+                  title="제출 전에 다시 볼 문항으로 표시해요"
+                  className={`flex min-h-11 items-center gap-1 rounded-full border-2 px-3 py-1 text-xs font-bold transition-colors ${
+                    flagged.has(q.id)
+                      ? 'border-amber-500 bg-amber-100 text-amber-900'
+                      : 'border-[#e2e8f0] text-[#475569] hover:bg-[#f8fafc]'
+                  }`}
+                >
+                  <Flag className="h-3.5 w-3.5" aria-hidden="true" />
+                  {flagged.has(q.id) ? '검토 표시됨' : '검토 표시'}
+                </button>
+                <span className="text-xs text-[#64748b] font-medium">{currentIdx + 1} / {questions.length}</span>
+              </div>
             </div>
 
             <p className="text-[#0f172a] font-medium leading-relaxed mb-8 whitespace-pre-wrap text-base">
@@ -677,6 +715,24 @@ export default function ExamPlayer({
                     className="mt-2 inline-flex min-h-11 items-center gap-1 text-xs font-bold text-[#1e3a5f] underline underline-offset-4"
                   >
                     안 푼 첫 문항으로 가기
+                  </button>
+                </div>
+              )}
+              {flags.length > 0 && (
+                <div className="pt-1">
+                  <p className="text-amber-700 text-xs font-medium">
+                    🚩 검토 표시한 문항이 {flags.length}개 있어요.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const first = questions.findIndex(q => flagged.has(q.id))
+                      if (first >= 0) setCurrentIdx(first)
+                      setShowConfirm(false)
+                    }}
+                    className="mt-2 inline-flex min-h-11 items-center gap-1 text-xs font-bold text-[#1e3a5f] underline underline-offset-4"
+                  >
+                    첫 검토 문항으로 가기
                   </button>
                 </div>
               )}
