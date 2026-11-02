@@ -14,7 +14,11 @@
 import fs from 'node:fs'
 import { spawnSync } from 'node:child_process'
 
-const SCOPE = 'sunhos-projects-821f9575'
+// kptest(korean-writing-cbt) 는 kbspass 와 다른 Vercel 팀에 있다(.vercel/project.json 의 orgId). 이 PC 의 vercel 로그인이
+// 그 팀을 못 보면(2026-11-02 실측: 로그인 계정에 kbstest 팀만 있음) 아래 사전 점검에서 멈춘다 — `npx vercel login` 으로 kptest 소유 계정에 들어갈 것.
+const SCOPE = process.env.VERCEL_SCOPE
+  || (fs.existsSync('.vercel/project.json') ? JSON.parse(fs.readFileSync('.vercel/project.json', 'utf-8')).orgId : '')
+  || 'team_93bAHMFniABDqPstw278AvmA'
 const DRY = process.argv.includes('--dry')
 const ENV_FILE = process.env.PORTONE_ENV_FILE || 'portone.new.env'
 
@@ -56,6 +60,18 @@ if (missingRequired) {
 }
 if (badShape) { console.log(`\n생김새가 다른 값 ${badShape}개 — 복사가 잘렸는지 확인할 것.`); process.exit(1) }
 if (!has('NEXT_PUBLIC_PORTONE_CHANNEL_KEY_KAKAOPAY')) console.log('\n※ 카카오페이 채널 키가 없다 — Vercel 의 옛 키를 지워 버튼을 숨긴다. 749 카카오페이 심사가 끝나면 키를 넣고 다시 이 명령을 돌리면 된다.')
+
+// 0) 사전 점검 — 이 로그인으로 kptest 프로젝트의 환경변수를 볼 수 있어야 아래가 전부 의미가 있다(값은 안 찍힌다: 이름 목록만).
+{
+  const r = spawnSync('npx', ['vercel', 'env', 'ls', '--environment', 'production', '--scope', SCOPE], { encoding: 'utf-8', shell: process.platform === 'win32' })
+  const out = (r.stdout || '') + (r.stderr || '')
+  if (r.status !== 0 || !/PORTONE/.test(out)) {
+    console.log(`\nVercel 사전 점검 실패(scope ${SCOPE}): ${out.trim().split('\n').filter((l) => /Error|scope|login/i.test(l)).join(' / ') || '포트원 변수가 안 보인다'}`)
+    console.log('이 PC 의 vercel 로그인이 kptest 프로젝트 팀에 접근하지 못한다. `npx vercel login` 으로 kptest(korean-writing-cbt) 소유 계정에 로그인하거나 VERCEL_SCOPE=<팀 slug> 로 지정하고 다시 돌릴 것. 아무것도 바꾸지 않았다.')
+    process.exit(1)
+  }
+  console.log(`Vercel 사전 점검 OK — scope ${SCOPE} 에서 포트원 변수 확인됨`)
+}
 
 const run = (cmd, args, input) => {
   console.log(`\n$ ${cmd} ${args.join(' ')}`)
