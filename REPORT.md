@@ -1,5 +1,20 @@
 # REPORT
 
+## 블로그 체험단 선착순 한도 5명 → 20명 (work/blog-review-20, 2026-11-02)
+
+- 지시: "kptest·kbspass 둘 다 유료(광고) 다시 틀기 전에 블로그 체험단을 20명까지 받아라"(운영자, 2026-11-02). 자매 서비스 kbspass 도 같은 날 같은 수로 올렸다(그쪽 REPORT 참조).
+- **실물 대조**: 라이브 `/api/promo/quota` = `{"used":5,"total":5,"left":0,"closed":true}` — 2026-09-13~16에 다섯 자리가 다 차서 **팝업·대시보드 카드·블로그 글 아래 카드·자동 지급이 전부 닫혀 있었다.** 접수는 9건(지급 5·미지급 4 — 미지급 4건은 글자 수 미달 2, 블로그 첫 화면 주소 1, 자동 확인 통과였으나 자리 없음 1). 지급 5건 전부 자동 통과→지급→사후 확인(글 공개 유지)까지 실제로 돌았다.
+- 바꾼 것(3파일): `src/lib/blogPromoRules.ts` `MAX_REWARDS` 5→20(주석에 경위) · `scripts/blog_promo_review_check.mjs` 한도 단언 5→20 · `scripts/blog_quota_cap_check.mjs` 머리 주석. 화면·자동지급·관리자 승인은 전부 이 상수 하나를 읽으므로 다른 코드 변경 없음. 결제·DB·환경변수 무변경.
+- 검증(워크트리 `kptest-parity`, `next build --webpack` 뒤 `next start -p 3123` 로컬 서버, 검사는 한 번에 하나씩):
+  - `npx tsc --noEmit` 0 · `next build --webpack` 0.
+  - `PAGE_SWEEP_BASE=http://localhost:3123 npm run check:quota-cap` **10/10** — 화면 한도 20 · 5/20 씀 · 15자리 남음 · 대시보드 카드 있음 · 15자리 채우면 마감+카드 사라짐 · 채운 자리 되돌림.
+  - `POPUP_BASE=http://localhost:3123 npm run check:popup` **14/14** — 처음 온 사람에게 뜸(15자리 남음·선착순 20명), 7일·광고표시·회수·30일 부탁 고지, 이용권 있는 사람에겐 안 뜸.
+  - `BLOG_PROMO_BASE=http://localhost:3123 npm run check:blog-promo` **53 OK / 0 NG** — 신청→자동 확인→지급→회수→재신청 차단까지 종단.
+  - 폰 폭 캡처: 첫 화면 팝업 "15자리 남음 / 선착순 20명", `/event/blog-review` 머리글 "15자리 남음".
+- 라이브 반영은 main 병합(=Vercel 배포)이라 사람 판단. 병합 즉시 팝업·카드가 다시 열리고 남은 15자리부터 자동 지급된다. 미지급 4건 중 '자동 확인 통과·자리 없음' 1건(09-13)은 `/admin/promo-reviews` 에서 승인하면 지급된다.
+- 함정: 이전 세션의 `next start -p 3123` 이 살아 있어 새 빌드가 EADDRINUSE 로 못 뜨고 옛 서버(한도 5)가 답했다 — 로컬 검사 전에 `Get-CimInstance Win32_Process` 로 `next start` 를 찾아 내려야 한다(netstat 에 안 잡힘).
+
+
 ## 간편결제 잔여 경로 점검 (work/easypay-remaining-check, 2026-09-10)
 
 - 백로그: "`scripts/payment_method_diagnose.mjs` 재실행 후 표 갱신 — ①현재 열려 있는 payMethod ②easyPayProvider 지정 ③각 수단을 열려면 무엇이 더 필요한지(채널 추가 심사 여부 포함)를 REPORT 에 표로".
