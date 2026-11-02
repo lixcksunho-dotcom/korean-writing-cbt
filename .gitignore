@@ -72,3 +72,6 @@ logs/
 
 # 블로그 이벤트 실전 돌리기 상태(검사 계정)
 .blog-event-live.json
+
+# 포트원 새 채널 키 임시 파일 (scripts/portone_apply.mjs) — 절대 커밋하지 않는다
+portone.new.env

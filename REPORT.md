@@ -1,5 +1,19 @@
 # REPORT
 
+## 만물엄마(749) 채널로 결제 다시 붙이기 — 준비 (work/portone-attach, 2026-11-02, 운영자 지시 "kptest 결제도 얼른 붙여줘")
+
+- **실물 대조**: 라이브(origin/main dfd3218, PR #33 2026-10-26)는 `CHECKOUT_MIGRATION.paused = true` 로 결제창 진입을 코드로 막아 둔 상태. 포트원 원장(옛 계정 API 조회, 최근 60일): 카카오페이는 10/24부터 "KAKAOPAY 가 요청 파라미터를 거부(invalid cid)" 로 전부 실패, 카드는 10/24 05:36 PAID 가 마지막, 10/26 이후 결제 시도 0. 자매 서비스 kbspass 는 이미 만물엄마 포트원으로 카드 결제 중(10월 7건). **새 사업자(749) 채널 키는 아직 어디에도 없다**(.env.local·Vercel 모두 옛 743 값) — 포트원 심사가 끝나야 나오므로 지금 붙일 수는 없고, 나오는 날 한 명령으로 끝나게 준비했다.
+- 바꾼 것(4파일, 결제 호출부·`src/app/api/portone/**`·DB 무변경):
+  - `src/lib/businessInfo.ts`: `CHECKOUT_MIGRATION.paused` 를 코드 상수에서 **환경변수 `NEXT_PUBLIC_CHECKOUT_PAUSED`** 로. 변수가 없으면 지금처럼 **닫힘**, 정확히 `false` 일 때만 열림 — 키 등록과 코드 배포의 순서가 어긋나도 새 채널 없이 열리는 일이 없다.
+  - `scripts/portone_apply.mjs` + `npm run portone:apply`: **`portone.new.env`**(git 제외, `.gitignore` 추가)에서만 값을 읽는다. `.env.local` 을 읽지 않는 이유: 거기엔 옛 743 키가 그대로 있어 읽으면 옛 채널(카카오 invalid cid)로 결제를 다시 여는 사고가 된다. 새 카드 채널 키가 없으면 아무것도 안 함(exit 1). 있으면 Vercel 프로덕션에 등록 → 카카오페이 새 키가 없으면 옛 `NEXT_PUBLIC_PORTONE_CHANNEL_KEY_KAKAOPAY` 를 지워 버튼 숨김 → `NEXT_PUBLIC_CHECKOUT_PAUSED=false` 등록 → `vercel deploy --prod` → `check:deployed`·`check:methods` → 첫 화면 푸터에서 "신규 결제를 잠시 중지" 가 사라졌는지 확인. 상점 ID·API 시크릿·웹훅 시크릿은 파일에 있을 때만 덮어쓴다(businessInfo 주석 "기존 상점 ID와 서버 API/웹훅 비밀키는 유지"). 값은 출력하지 않는다. `--dry` 는 명령만 보여 준다.
+- 검증(워크트리 `kptest-parity`, origin/main 기준):
+  - `tsc --noEmit` 0 · `node --check scripts/portone_apply.mjs` OK.
+  - `portone:apply --dry`: 파일 없음 → "새 카드 채널 키가 portone.new.env 에 없다 — 아무것도 바꾸지 않는다" exit 1. 가짜 파일(카드 키만) → env add 카드 키 · env rm 옛 카카오 키 · PAUSED=false · deploy · 두 검사 순서로 계획만 출력, 실제 변경 0.
+  - `next build --webpack`(변수 없음) → `next start -p 3125` 첫 화면에 "신규 결제를 잠시 중지" **있음(1)** = 기본 닫힘 유지.
+  - `NEXT_PUBLIC_CHECKOUT_PAUSED=false next build --webpack` → 첫 화면에 그 문구 **없음(0)** = 열림. 변수는 빌드 때 인라인된다(`.next/server` 청크에 런타임 참조 0) — Vercel 에서도 변수 등록 뒤 **새 빌드 배포**가 필수이고, 스크립트가 그 순서로 돈다. ⚠️첫 측정은 옛 `next start` 가 포트를 쥐고 있어 1이 나왔다(netstat 에 안 잡힘, `Get-CimInstance Win32_Process` 로 내리고 재측정).
+- 사람이 할 일(포트원 심사 완료 후): ① 콘솔 → 결제 연동 → 채널 관리에서 749(만물엄마) 이니시스 채널 키(+카카오페이 키가 나왔으면 그것도) 복사 → `kptest-parity/portone.new.env` 에 `NEXT_PUBLIC_PORTONE_CHANNEL_KEY=...` 로 붙임(.env.local 에 붙이지 말 것) ② 이 PR 병합(병합만으로는 아무것도 안 열린다 — 변수 기본 닫힘) ③ `npm run portone:apply` ④ 콘솔 웹훅이 새 채널에도 걸려 있는지 확인 → 실결제 1건 → `npm run verify:payment` ⑤ 사업자 표기(businessInfo.ts BUSINESS → 만물엄마 749-33-01719·김기정·울산 중구 약사로 25·통신판매 2025-울산중구-0132)와 푸터 전환 안내 정리는 전환 확정 시 별도 배포. 감시: `C:\Users\선호\portone-watch`(PortoneWatch_6h) 가 6시간마다 라이브 결제 중지 문구·카카오 실패·Vercel 변수 이름을 텔레그램으로 보고한다.
+
+
 ## 간편결제 잔여 경로 점검 (work/easypay-remaining-check, 2026-09-10)
 
 - 백로그: "`scripts/payment_method_diagnose.mjs` 재실행 후 표 갱신 — ①현재 열려 있는 payMethod ②easyPayProvider 지정 ③각 수단을 열려면 무엇이 더 필요한지(채널 추가 심사 여부 포함)를 REPORT 에 표로".
